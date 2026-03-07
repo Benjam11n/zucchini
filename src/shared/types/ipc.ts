@@ -1,6 +1,7 @@
-import type { HabitWithStatus } from "../domain/habit";
+import type { HabitCategory, HabitWithStatus } from "../domain/habit";
+import type { HistoryDay } from "../domain/history";
 import type { AppSettings } from "../domain/settings";
-import type { DailySummary, StreakState } from "../domain/streak";
+import type { StreakState } from "../domain/streak";
 
 export interface TodayState {
   date: string;
@@ -12,10 +13,14 @@ export interface TodayState {
 export interface HabitApi {
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
-  getHistory: () => Promise<DailySummary[]>;
+  getHistory: () => Promise<HistoryDay[]>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;
-  createHabit: (name: string) => Promise<TodayState>;
+  createHabit: (name: string, category: HabitCategory) => Promise<TodayState>;
   renameHabit: (habitId: number, name: string) => Promise<TodayState>;
+  updateHabitCategory: (
+    habitId: number,
+    category: HabitCategory
+  ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
 }

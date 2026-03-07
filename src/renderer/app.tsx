@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import type { HabitWithStatus } from "../shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "../shared/domain/habit";
+import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings, ThemeMode } from "../shared/domain/settings";
-import type { DailySummary } from "../shared/domain/streak";
 import type { TodayState } from "../shared/types/ipc";
 import { HistoryPage } from "./pages/history-page";
 import { SettingsPage } from "./pages/settings-page";
@@ -21,7 +21,7 @@ type Tab = "today" | "history" | "settings";
 
 interface AppState {
   todayState: TodayState | null;
-  history: DailySummary[];
+  history: HistoryDay[];
   settingsDraft: AppSettings | null;
 }
 
@@ -75,8 +75,11 @@ export default function App() {
     }));
   }
 
-  async function handleCreateHabit(name: string): Promise<void> {
-    await refreshToday(window.habits.createHabit(name));
+  async function handleCreateHabit(
+    name: string,
+    category: HabitCategory
+  ): Promise<void> {
+    await refreshToday(window.habits.createHabit(name, category));
     setState((current) => ({
       ...current,
       settingsDraft: current.todayState?.settings ?? current.settingsDraft,
@@ -88,6 +91,13 @@ export default function App() {
     name: string
   ): Promise<void> {
     await refreshToday(window.habits.renameHabit(habitId, name));
+  }
+
+  async function handleUpdateHabitCategory(
+    habitId: number,
+    category: HabitCategory
+  ): Promise<void> {
+    await refreshToday(window.habits.updateHabitCategory(habitId, category));
   }
 
   async function handleArchiveHabit(habitId: number): Promise<void> {
@@ -256,6 +266,7 @@ export default function App() {
                 onRenameHabit={handleRenameHabit}
                 onReorderHabits={handleReorderHabits}
                 onSave={handleUpdateSettings}
+                onUpdateHabitCategory={handleUpdateHabitCategory}
               />
             </TabsContent>
           </div>

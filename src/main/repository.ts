@@ -5,7 +5,15 @@ import Database from "better-sqlite3";
 import { Effect } from "effect";
 import { app } from "electron";
 
-import type { Habit, HabitWithStatus } from "../shared/domain/habit";
+import {
+  DEFAULT_HABIT_CATEGORY,
+  normalizeHabitCategory,
+} from "../shared/domain/habit";
+import type {
+  Habit,
+  HabitCategory,
+  HabitWithStatus,
+} from "../shared/domain/habit";
 import type { AppSettings, ThemeMode } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 
@@ -23,6 +31,7 @@ interface HistoryRow {
 }
 
 interface HabitRow {
+  category: string;
   id: number;
   name: string;
   sortOrder: number;
@@ -53,10 +62,11 @@ export interface HabitRepository {
   seedDefaults(nowIso: string, timezone: string): void;
   getHabits(): Habit[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
+  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
-  getSettledHistory(limit: number): DailySummary[];
+  getSettledHistory(limit?: number): DailySummary[];
   getPersistedStreakState(): StreakState;
   savePersistedStreakState(state: StreakState): void;
   getSettings(defaultTimezone: string): AppSettings;
@@ -65,8 +75,14 @@ export interface HabitRepository {
   getExistingCompletedAt(date: string): string | null;
   saveDailySummary(summary: DailySummary): void;
   getMaxSortOrder(): number;
-  insertHabit(name: string, sortOrder: number, createdAt: string): number;
+  insertHabit(
+    name: string,
+    category: HabitCategory,
+    sortOrder: number,
+    createdAt: string
+  ): number;
   renameHabit(habitId: number, name: string): void;
+  updateHabitCategory(habitId: number, category: HabitCategory): void;
   archiveHabit(habitId: number): void;
   normalizeHabitOrder(): void;
   reorderHabits(habitIds: number[]): void;
@@ -104,6 +120,7 @@ export class SqliteHabitRepository implements HabitRepository {
         CREATE TABLE IF NOT EXISTS habits (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
+          category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}',
           sort_order INTEGER NOT NULL,
           is_archived INTEGER NOT NULL DEFAULT 0,
           created_at TEXT NOT NULL
@@ -137,6 +154,8 @@ export class SqliteHabitRepository implements HabitRepository {
           value TEXT NOT NULL
         );
       `);
+
+      this.ensureHabitsCategoryColumn();
     });
   }
 
@@ -149,23 +168,26 @@ export class SqliteHabitRepository implements HabitRepository {
 
       if (habitCount.count === 0) {
         const insertHabit = db.prepare(`
-          INSERT INTO habits (name, sort_order, is_archived, created_at)
-          VALUES (@name, @sortOrder, 0, @createdAt)
+          INSERT INTO habits (name, category, sort_order, is_archived, created_at)
+          VALUES (@name, @category, @sortOrder, 0, @createdAt)
         `);
 
         insertHabit.run({
+          category: "nutrition",
           createdAt: nowIso,
-          name: "Review goals",
+          name: "Eat a whole food meal",
           sortOrder: 0,
         });
         insertHabit.run({
+          category: "productivity",
           createdAt: nowIso,
-          name: "Move for 20 minutes",
+          name: "Deep work block",
           sortOrder: 1,
         });
         insertHabit.run({
+          category: "fitness",
           createdAt: nowIso,
-          name: "Write one line of reflection",
+          name: "Move for 20 minutes",
           sortOrder: 2,
         });
       }
@@ -191,6 +213,7 @@ export class SqliteHabitRepository implements HabitRepository {
           SELECT
             id,
             name,
+            category,
             sort_order AS sortOrder,
             is_archived AS isArchived,
             created_at AS createdAt
@@ -200,6 +223,7 @@ export class SqliteHabitRepository implements HabitRepository {
         `)
           .all() as HabitRow[]
       ).map((row) => ({
+        category: normalizeHabitCategory(row.category),
         createdAt: row.createdAt,
         id: row.id,
         isArchived: Boolean(row.isArchived),
@@ -217,6 +241,7 @@ export class SqliteHabitRepository implements HabitRepository {
           SELECT
             h.id,
             h.name,
+            h.category AS category,
             h.sort_order AS sortOrder,
             h.is_archived AS isArchived,
             h.created_at AS createdAt,
@@ -229,6 +254,39 @@ export class SqliteHabitRepository implements HabitRepository {
         `)
           .all(date) as HabitWithStatusRow[]
       ).map((row) => ({
+        category: normalizeHabitCategory(row.category),
+        completed: Boolean(row.completed),
+        createdAt: row.createdAt,
+        id: row.id,
+        isArchived: Boolean(row.isArchived),
+        name: row.name,
+        sortOrder: row.sortOrder,
+      }))
+    );
+  }
+
+  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
+    return this.runDb("getHistoricalHabitsWithStatus", () =>
+      (
+        this.getDb()
+          .prepare(`
+          SELECT
+            h.id,
+            h.name,
+            h.category AS category,
+            h.sort_order AS sortOrder,
+            h.is_archived AS isArchived,
+            h.created_at AS createdAt,
+            dhs.completed AS completed
+          FROM daily_habit_status dhs
+          INNER JOIN habits h
+            ON h.id = dhs.habit_id
+          WHERE dhs.date = ?
+          ORDER BY h.sort_order ASC, h.id ASC
+        `)
+          .all(date) as HabitWithStatusRow[]
+      ).map((row) => ({
+        category: normalizeHabitCategory(row.category),
         completed: Boolean(row.completed),
         createdAt: row.createdAt,
         id: row.id,
@@ -277,11 +335,9 @@ export class SqliteHabitRepository implements HabitRepository {
     });
   }
 
-  getSettledHistory(limit: number): DailySummary[] {
-    return this.runDb("getSettledHistory", () =>
-      (
-        this.getDb()
-          .prepare(`
+  getSettledHistory(limit?: number): DailySummary[] {
+    return this.runDb("getSettledHistory", () => {
+      const baseQuery = `
           SELECT
             date,
             all_completed AS allCompleted,
@@ -290,17 +346,23 @@ export class SqliteHabitRepository implements HabitRepository {
             completed_at AS completedAt
           FROM daily_summary
           ORDER BY date DESC
-          LIMIT ?
-        `)
-          .all(limit) as HistoryRow[]
-      ).map((row) => ({
+        `;
+
+      const rows =
+        limit === undefined
+          ? (this.getDb().prepare(baseQuery).all() as HistoryRow[])
+          : (this.getDb()
+              .prepare(`${baseQuery}\nLIMIT ?`)
+              .all(limit) as HistoryRow[]);
+
+      return rows.map((row) => ({
         allCompleted: Boolean(row.allCompleted),
         completedAt: row.completedAt,
         date: row.date,
         freezeUsed: Boolean(row.freezeUsed),
         streakCountAfterDay: row.streakCountAfterDay,
-      }))
-    );
+      }));
+    });
   }
 
   getPersistedStreakState(): StreakState {
@@ -428,14 +490,19 @@ export class SqliteHabitRepository implements HabitRepository {
     });
   }
 
-  insertHabit(name: string, sortOrder: number, createdAt: string): number {
+  insertHabit(
+    name: string,
+    category: HabitCategory,
+    sortOrder: number,
+    createdAt: string
+  ): number {
     return this.runDb("insertHabit", () => {
       const result = this.getDb()
         .prepare(`
-          INSERT INTO habits (name, sort_order, is_archived, created_at)
-          VALUES (?, ?, 0, ?)
+          INSERT INTO habits (name, category, sort_order, is_archived, created_at)
+          VALUES (?, ?, ?, 0, ?)
         `)
-        .run(name, sortOrder, createdAt);
+        .run(name, category, sortOrder, createdAt);
 
       return Number(result.lastInsertRowid);
     });
@@ -446,6 +513,16 @@ export class SqliteHabitRepository implements HabitRepository {
       this.getDb()
         .prepare("UPDATE habits SET name = ? WHERE id = ? AND is_archived = 0")
         .run(name, habitId);
+    });
+  }
+
+  updateHabitCategory(habitId: number, category: HabitCategory): void {
+    this.runDb("updateHabitCategory", () => {
+      this.getDb()
+        .prepare(
+          "UPDATE habits SET category = ? WHERE id = ? AND is_archived = 0"
+        )
+        .run(category, habitId);
     });
   }
 
@@ -499,5 +576,21 @@ export class SqliteHabitRepository implements HabitRepository {
     }
 
     return "system";
+  }
+
+  private ensureHabitsCategoryColumn(): void {
+    const columns = this.getDb().prepare("PRAGMA table_info(habits)").all() as {
+      name: string;
+    }[];
+
+    if (columns.some((column) => column.name === "category")) {
+      return;
+    }
+
+    this.getDb()
+      .prepare(
+        `ALTER TABLE habits ADD COLUMN category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}'`
+      )
+      .run();
   }
 }

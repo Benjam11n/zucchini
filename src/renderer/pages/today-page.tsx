@@ -1,4 +1,4 @@
-import { getProgress } from "../../shared/domain/streak";
+import { getHabitCategoryProgress } from "../../shared/domain/habit";
 import type { TodayState } from "../../shared/types/ipc";
 import { HabitChecklist } from "../components/habit-checklist";
 import { StreakCard } from "../components/streak-card";
@@ -9,21 +9,16 @@ interface TodayPageProps {
 }
 
 export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
-  const progress = getProgress(
-    state.habits.map((habit) => habit.completed),
-    state.habits.length
-  );
+  const categoryProgress = getHabitCategoryProgress(state.habits);
   const completedCount = state.habits.filter((habit) => habit.completed).length;
 
   return (
     <div className="grid gap-6">
       <StreakCard
-        bestStreak={state.streak.bestStreak}
-        completedHabits={completedCount}
+        availableFreezes={state.streak.availableFreezes}
         currentStreak={state.streak.currentStreak}
+        categoryProgress={categoryProgress}
         dateLabel={state.date}
-        progress={progress}
-        totalHabits={state.habits.length}
       />
 
       <HabitChecklist

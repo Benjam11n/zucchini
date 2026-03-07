@@ -1,4 +1,9 @@
-import type { Habit, HabitWithStatus } from "../shared/domain/habit";
+import type {
+  Habit,
+  HabitCategory,
+  HabitWithStatus,
+} from "../shared/domain/habit";
+import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 import type { Clock } from "./clock";
@@ -46,6 +51,7 @@ class FakeClock implements Clock {
 class FakeRepository implements HabitRepository {
   habits: Habit[] = [
     {
+      category: "productivity",
       createdAt: "2026-03-01T00:00:00.000Z",
       id: 1,
       isArchived: false,
@@ -86,6 +92,18 @@ class FakeRepository implements HabitRepository {
     }));
   }
 
+  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
+    const day = this.statusByDate.get(date) ?? new Map<number, boolean>();
+
+    return this.habits
+      .filter((habit) => day.has(habit.id))
+      .toSorted((left, right) => left.sortOrder - right.sortOrder)
+      .map((habit) => ({
+        ...habit,
+        completed: day.get(habit.id) ?? false,
+      }));
+  }
+
   ensureStatusRowsForDate(date: string): void {
     const day = this.statusByDate.get(date) ?? new Map<number, boolean>();
     this.getHabits().forEach((habit) => {
@@ -107,10 +125,12 @@ class FakeRepository implements HabitRepository {
     this.statusByDate.get(date)?.set(habitId, !current);
   }
 
-  getSettledHistory(limit: number): DailySummary[] {
-    return [...this.dailySummaries.values()]
-      .toSorted((left, right) => right.date.localeCompare(left.date))
-      .slice(0, limit);
+  getSettledHistory(limit?: number): DailySummary[] {
+    const history = [...this.dailySummaries.values()].toSorted((left, right) =>
+      right.date.localeCompare(left.date)
+    );
+
+    return limit === undefined ? history : history.slice(0, limit);
   }
 
   getPersistedStreakState(): StreakState {
@@ -152,9 +172,21 @@ class FakeRepository implements HabitRepository {
     return Math.max(...this.getHabits().map((habit) => habit.sortOrder), -1);
   }
 
-  insertHabit(name: string, sortOrder: number, createdAt: string): number {
+  insertHabit(
+    name: string,
+    category: HabitCategory,
+    sortOrder: number,
+    createdAt: string
+  ): number {
     const id = this.habits.length + 1;
-    this.habits.push({ createdAt, id, isArchived: false, name, sortOrder });
+    this.habits.push({
+      category,
+      createdAt,
+      id,
+      isArchived: false,
+      name,
+      sortOrder,
+    });
     return id;
   }
 
@@ -162,6 +194,13 @@ class FakeRepository implements HabitRepository {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
       habit.name = name;
+    }
+  }
+
+  updateHabitCategory(habitId: number, category: HabitCategory): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (habit) {
+      habit.category = category;
     }
   }
 
@@ -223,5 +262,104 @@ describe("habitService rollover", () => {
       currentStreak: 0,
       lastEvaluatedDate: "2026-03-07",
     });
+  });
+});
+
+describe("habit categories", () => {
+  it("creates habits with the selected category", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.createHabit("Drink water", "nutrition");
+
+    expect(todayState.habits.at(-1)).toMatchObject({
+      category: "nutrition",
+      name: "Drink water",
+    });
+  });
+
+  it("updates a habit category and returns refreshed state", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitCategory(1, "fitness");
+
+    expect(todayState.habits[0]?.category).toBe("fitness");
+  });
+});
+
+describe("history retrieval", () => {
+  it("returns the full settled history plus the current day preview", () => {
+    const repository = new FakeRepository();
+    repository.streak.lastEvaluatedDate = "2026-03-07";
+    repository.statusByDate.set(
+      "2026-03-07",
+      new Map([
+        [1, true],
+        [2, false],
+      ])
+    );
+    repository.statusByDate.set(
+      "2026-01-15",
+      new Map([
+        [1, true],
+        [2, true],
+      ])
+    );
+    repository.dailySummaries.set("2026-03-07", {
+      allCompleted: false,
+      completedAt: null,
+      date: "2026-03-07",
+      freezeUsed: false,
+      streakCountAfterDay: 2,
+    });
+    repository.dailySummaries.set("2026-01-15", {
+      allCompleted: true,
+      completedAt: "2026-01-15T21:00:00.000Z",
+      date: "2026-01-15",
+      freezeUsed: false,
+      streakCountAfterDay: 6,
+    });
+    repository.dailySummaries.set("2025-04-01", {
+      allCompleted: false,
+      completedAt: null,
+      date: "2025-04-01",
+      freezeUsed: true,
+      streakCountAfterDay: 3,
+    });
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      id: 2,
+      isArchived: true,
+      name: "Archived habit",
+      sortOrder: 1,
+    });
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const history = service.getHistory();
+
+    expect(history.map((day) => day.date)).toStrictEqual([
+      "2026-03-08",
+      "2026-03-07",
+      "2026-01-15",
+      "2025-04-01",
+    ]);
+    expect(history[1]?.habits.map((habit) => habit.name)).toStrictEqual([
+      "Habit 1",
+      "Archived habit",
+    ]);
+    expect(history[1]?.summary.freezeUsed).toBe(false);
+    expect(history[0]?.categoryProgress).toHaveLength(3);
   });
 });

@@ -1,3 +1,12 @@
+import {
+  getHabitCategoryProgress,
+  normalizeHabitCategory,
+} from "../shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitWithStatus,
+} from "../shared/domain/habit";
+import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 import {
@@ -12,10 +21,11 @@ export interface HabitsService {
   initialize(): void;
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
-  getHistory(): DailySummary[];
+  getHistory(): HistoryDay[];
   updateSettings(settings: AppSettings): AppSettings;
-  createHabit(name: string): TodayState;
+  createHabit(name: string, category: HabitCategory): TodayState;
   renameHabit(habitId: number, name: string): TodayState;
+  updateHabitCategory(habitId: number, category: HabitCategory): TodayState;
   archiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
 }
@@ -51,19 +61,29 @@ export class HabitService implements HabitsService {
     return this.buildTodayState();
   }
 
-  getHistory(): DailySummary[] {
+  getHistory(): HistoryDay[] {
     this.syncRollingState();
     return [
-      this.getTodayPreviewSummary(),
-      ...this.repository.getSettledHistory(59),
-    ].slice(0, 60);
+      this.buildHistoryDay(
+        this.getTodayPreviewSummary(),
+        this.repository.getHabitsWithStatus(this.clock.todayKey())
+      ),
+      ...this.repository
+        .getSettledHistory()
+        .map((summary) =>
+          this.buildHistoryDay(
+            summary,
+            this.repository.getHistoricalHabitsWithStatus(summary.date)
+          )
+        ),
+    ];
   }
 
   updateSettings(settings: AppSettings): AppSettings {
     return this.repository.saveSettings(settings, this.clock.timezone());
   }
 
-  createHabit(name: string): TodayState {
+  createHabit(name: string, category: HabitCategory): TodayState {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return this.getTodayState();
@@ -73,6 +93,7 @@ export class HabitService implements HabitsService {
     this.syncRollingState();
     const habitId = this.repository.insertHabit(
       trimmedName,
+      normalizeHabitCategory(category),
       this.repository.getMaxSortOrder() + 1,
       this.clock.now().toISOString()
     );
@@ -87,6 +108,14 @@ export class HabitService implements HabitsService {
     }
 
     this.repository.renameHabit(habitId, trimmedName);
+    return this.buildTodayState();
+  }
+
+  updateHabitCategory(habitId: number, category: HabitCategory): TodayState {
+    this.repository.updateHabitCategory(
+      habitId,
+      normalizeHabitCategory(category)
+    );
     return this.buildTodayState();
   }
 
@@ -143,6 +172,18 @@ export class HabitService implements HabitsService {
       date: todayState.date,
       freezeUsed: false,
       streakCountAfterDay: todayState.streak.currentStreak,
+    };
+  }
+
+  private buildHistoryDay(
+    summary: DailySummary,
+    habits: HabitWithStatus[]
+  ): HistoryDay {
+    return {
+      categoryProgress: getHabitCategoryProgress(habits),
+      date: summary.date,
+      habits,
+      summary,
     };
   }
 
