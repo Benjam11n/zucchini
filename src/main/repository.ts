@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import Database from "better-sqlite3";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { Effect } from "effect";
 import { app } from "electron";
 
@@ -14,33 +18,15 @@ import type {
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
-import { initializeSqliteSchema } from "./schema";
-
-interface SettingRow {
-  key: string;
-  value: string;
-}
-
-interface HistoryRow {
-  date: string;
-  allCompleted: number;
-  streakCountAfterDay: number;
-  freezeUsed: number;
-  completedAt: string | null;
-}
-
-interface HabitRow {
-  category: string;
-  id: number;
-  name: string;
-  sortOrder: number;
-  isArchived: number;
-  createdAt: string;
-}
-
-type HabitWithStatusRow = HabitRow & {
-  completed: number;
-};
+import {
+  dailyHabitStatus,
+  dailySummary,
+  habits,
+  repairLegacySchema,
+  schema,
+  settings,
+  streakState,
+} from "./schema";
 
 class DatabaseError extends Error {
   override cause: unknown;
@@ -87,8 +73,15 @@ export interface HabitRepository {
   reorderHabits(habitIds: number[]): void;
 }
 
+type DrizzleDatabase = BetterSQLite3Database<typeof schema>;
+
+type HabitRow = typeof habits.$inferSelect;
+type DailySummaryRow = typeof dailySummary.$inferSelect;
+type StreakStateRow = typeof streakState.$inferSelect;
+
 export class SqliteHabitRepository implements HabitRepository {
   private database: Database.Database | null = null;
+  private drizzleDb: DrizzleDatabase | null = null;
 
   private runDb<A>(label: string, execute: () => A): A {
     return Effect.runSync(
@@ -105,7 +98,11 @@ export class SqliteHabitRepository implements HabitRepository {
     return path.join(userData, "zucchini.db");
   }
 
-  private getDb(): Database.Database {
+  private getMigrationsFolder(): string {
+    return path.join(app.getAppPath(), "drizzle");
+  }
+
+  private getSqlite(): Database.Database {
     if (!this.database) {
       this.database = new Database(this.getDbPath());
     }
@@ -113,50 +110,70 @@ export class SqliteHabitRepository implements HabitRepository {
     return this.database;
   }
 
+  private getDrizzle(): DrizzleDatabase {
+    if (!this.drizzleDb) {
+      this.drizzleDb = drizzle(this.getSqlite(), { schema });
+    }
+
+    return this.drizzleDb;
+  }
+
   initializeSchema(): void {
     this.runDb("initializeSchema", () => {
-      initializeSqliteSchema(this.getDb());
+      migrate(this.getDrizzle(), {
+        migrationsFolder: this.getMigrationsFolder(),
+      });
+      repairLegacySchema(this.getSqlite());
     });
   }
 
   seedDefaults(nowIso: string, timezone: string): void {
     this.runDb("seedDefaults", () => {
-      const db = this.getDb();
-      const habitCount = db
-        .prepare("SELECT COUNT(*) as count FROM habits WHERE is_archived = 0")
-        .get() as { count: number };
+      const habitCount = this.getDrizzle()
+        .select({
+          count: sql<number>`count(*)`,
+        })
+        .from(habits)
+        .where(eq(habits.isArchived, false))
+        .get();
 
-      if (habitCount.count === 0) {
-        const insertHabit = db.prepare(`
-          INSERT INTO habits (name, category, sort_order, is_archived, created_at)
-          VALUES (@name, @category, @sortOrder, 0, @createdAt)
-        `);
-
-        insertHabit.run({
-          category: "nutrition",
-          createdAt: nowIso,
-          name: "Eat a whole food meal",
-          sortOrder: 0,
-        });
-        insertHabit.run({
-          category: "productivity",
-          createdAt: nowIso,
-          name: "Deep work block",
-          sortOrder: 1,
-        });
-        insertHabit.run({
-          category: "fitness",
-          createdAt: nowIso,
-          name: "Move for 20 minutes",
-          sortOrder: 2,
-        });
+      if ((habitCount?.count ?? 0) === 0) {
+        this.getDrizzle()
+          .insert(habits)
+          .values([
+            {
+              category: "nutrition",
+              createdAt: nowIso,
+              name: "Eat a whole food meal",
+              sortOrder: 0,
+            },
+            {
+              category: "productivity",
+              createdAt: nowIso,
+              name: "Deep work block",
+              sortOrder: 1,
+            },
+            {
+              category: "fitness",
+              createdAt: nowIso,
+              name: "Move for 20 minutes",
+              sortOrder: 2,
+            },
+          ])
+          .run();
       }
 
-      db.prepare(`
-        INSERT INTO streak_state (id, current_streak, best_streak, available_freezes, last_evaluated_date)
-        VALUES (1, 0, 0, 1, NULL)
-        ON CONFLICT(id) DO NOTHING
-      `).run();
+      this.getDrizzle()
+        .insert(streakState)
+        .values({
+          availableFreezes: 1,
+          bestStreak: 0,
+          currentStreak: 0,
+          id: 1,
+          lastEvaluatedDate: null,
+        })
+        .onConflictDoNothing()
+        .run();
 
       this.upsertSetting("reminderEnabled", "true");
       this.upsertSetting("reminderTime", "20:30");
@@ -167,120 +184,103 @@ export class SqliteHabitRepository implements HabitRepository {
 
   getHabits(): Habit[] {
     return this.runDb("getHabits", () =>
-      (
-        this.getDb()
-          .prepare(`
-          SELECT
-            id,
-            name,
-            category,
-            sort_order AS sortOrder,
-            is_archived AS isArchived,
-            created_at AS createdAt
-          FROM habits
-          WHERE is_archived = 0
-          ORDER BY sort_order ASC, id ASC
-        `)
-          .all() as HabitRow[]
-      ).map((row) => ({
-        category: normalizeHabitCategory(row.category),
-        createdAt: row.createdAt,
-        id: row.id,
-        isArchived: Boolean(row.isArchived),
-        name: row.name,
-        sortOrder: row.sortOrder,
-      }))
+      this.getDrizzle()
+        .select()
+        .from(habits)
+        .where(eq(habits.isArchived, false))
+        .orderBy(asc(habits.sortOrder), asc(habits.id))
+        .all()
+        .map((row) => this.mapHabit(row))
     );
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
     return this.runDb("getHabitsWithStatus", () =>
-      (
-        this.getDb()
-          .prepare(`
-          SELECT
-            h.id,
-            h.name,
-            h.category AS category,
-            h.sort_order AS sortOrder,
-            h.is_archived AS isArchived,
-            h.created_at AS createdAt,
-            COALESCE(dhs.completed, 0) AS completed
-          FROM habits h
-          LEFT JOIN daily_habit_status dhs
-            ON dhs.habit_id = h.id AND dhs.date = ?
-          WHERE h.is_archived = 0
-          ORDER BY h.sort_order ASC, h.id ASC
-        `)
-          .all(date) as HabitWithStatusRow[]
-      ).map((row) => ({
-        category: normalizeHabitCategory(row.category),
-        completed: Boolean(row.completed),
-        createdAt: row.createdAt,
-        id: row.id,
-        isArchived: Boolean(row.isArchived),
-        name: row.name,
-        sortOrder: row.sortOrder,
-      }))
+      this.getDrizzle()
+        .select({
+          category: habits.category,
+          completed: sql<boolean>`coalesce(${dailyHabitStatus.completed}, 0)`,
+          createdAt: habits.createdAt,
+          id: habits.id,
+          isArchived: habits.isArchived,
+          name: habits.name,
+          sortOrder: habits.sortOrder,
+        })
+        .from(habits)
+        .leftJoin(
+          dailyHabitStatus,
+          and(
+            eq(dailyHabitStatus.habitId, habits.id),
+            eq(dailyHabitStatus.date, date)
+          )
+        )
+        .where(eq(habits.isArchived, false))
+        .orderBy(asc(habits.sortOrder), asc(habits.id))
+        .all()
+        .map((row) => ({
+          category: normalizeHabitCategory(row.category),
+          completed: Boolean(row.completed),
+          createdAt: row.createdAt,
+          id: row.id,
+          isArchived: row.isArchived,
+          name: row.name,
+          sortOrder: row.sortOrder,
+        }))
     );
   }
 
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
     return this.runDb("getHistoricalHabitsWithStatus", () =>
-      (
-        this.getDb()
-          .prepare(`
-          SELECT
-            dhs.habit_id AS id,
-            dhs.habit_name AS name,
-            dhs.habit_category AS category,
-            dhs.habit_sort_order AS sortOrder,
-            0 AS isArchived,
-            dhs.habit_created_at AS createdAt,
-            dhs.completed AS completed
-          FROM daily_habit_status dhs
-          WHERE dhs.date = ?
-          ORDER BY dhs.habit_sort_order ASC, dhs.habit_id ASC
-        `)
-          .all(date) as HabitWithStatusRow[]
-      ).map((row) => ({
-        category: normalizeHabitCategory(row.category),
-        completed: Boolean(row.completed),
-        createdAt: row.createdAt,
-        id: row.id,
-        isArchived: Boolean(row.isArchived),
-        name: row.name,
-        sortOrder: row.sortOrder,
-      }))
+      this.getDrizzle()
+        .select({
+          category: dailyHabitStatus.habitCategory,
+          completed: dailyHabitStatus.completed,
+          createdAt: dailyHabitStatus.habitCreatedAt,
+          id: dailyHabitStatus.habitId,
+          name: dailyHabitStatus.habitName,
+          sortOrder: dailyHabitStatus.habitSortOrder,
+        })
+        .from(dailyHabitStatus)
+        .where(eq(dailyHabitStatus.date, date))
+        .orderBy(
+          asc(dailyHabitStatus.habitSortOrder),
+          asc(dailyHabitStatus.habitId)
+        )
+        .all()
+        .map((row) => ({
+          category: normalizeHabitCategory(row.category),
+          completed: row.completed,
+          createdAt: row.createdAt,
+          id: row.id,
+          isArchived: false,
+          name: row.name,
+          sortOrder: row.sortOrder,
+        }))
     );
   }
 
   ensureStatusRowsForDate(date: string): void {
     this.runDb("ensureStatusRowsForDate", () => {
-      const insert = this.getDb().prepare(`
-        INSERT INTO daily_habit_status (
-          date,
-          habit_id,
-          completed,
-          habit_name,
-          habit_category,
-          habit_sort_order,
-          habit_created_at
-        )
-        VALUES (?, ?, 0, ?, ?, ?, ?)
-        ON CONFLICT(date, habit_id) DO NOTHING
-      `);
+      const activeHabits = this.getHabits();
+      if (activeHabits.length === 0) {
+        return;
+      }
 
-      this.getHabits().forEach((habit) => {
-        insert.run(
-          date,
-          habit.id,
-          habit.name,
-          habit.category,
-          habit.sortOrder,
-          habit.createdAt
-        );
-      });
+      this.getDrizzle()
+        .insert(dailyHabitStatus)
+        .values(
+          activeHabits.map((habit) => ({
+            completed: false,
+            date,
+            habitCategory: habit.category,
+            habitCreatedAt: habit.createdAt,
+            habitId: habit.id,
+            habitName: habit.name,
+            habitSortOrder: habit.sortOrder,
+          }))
+        )
+        .onConflictDoNothing()
+        .run();
     });
   }
 
@@ -291,113 +291,88 @@ export class SqliteHabitRepository implements HabitRepository {
         return;
       }
 
-      this.getDb()
-        .prepare(`
-          INSERT INTO daily_habit_status (
-            date,
-            habit_id,
-            completed,
-            habit_name,
-            habit_category,
-            habit_sort_order,
-            habit_created_at
-          )
-          VALUES (?, ?, 0, ?, ?, ?, ?)
-          ON CONFLICT(date, habit_id) DO NOTHING
-        `)
-        .run(
+      this.getDrizzle()
+        .insert(dailyHabitStatus)
+        .values({
+          completed: false,
           date,
+          habitCategory: habit.category,
+          habitCreatedAt: habit.createdAt,
           habitId,
-          habit.name,
-          habit.category,
-          habit.sortOrder,
-          habit.createdAt
-        );
+          habitName: habit.name,
+          habitSortOrder: habit.sortOrder,
+        })
+        .onConflictDoNothing()
+        .run();
     });
   }
 
   toggleHabit(date: string, habitId: number): void {
     this.runDb("toggleHabit", () => {
-      this.getDb()
-        .prepare(`
-          UPDATE daily_habit_status
-          SET completed = CASE completed WHEN 1 THEN 0 ELSE 1 END
-          WHERE date = ? AND habit_id = ?
-        `)
-        .run(date, habitId);
+      this.getDrizzle()
+        .update(dailyHabitStatus)
+        .set({
+          completed: sql<boolean>`case when ${dailyHabitStatus.completed} = 1 then 0 else 1 end`,
+        })
+        .where(
+          and(
+            eq(dailyHabitStatus.date, date),
+            eq(dailyHabitStatus.habitId, habitId)
+          )
+        )
+        .run();
     });
   }
 
   getSettledHistory(limit?: number): DailySummary[] {
     return this.runDb("getSettledHistory", () => {
-      const baseQuery = `
-          SELECT
-            date,
-            all_completed AS allCompleted,
-            streak_count_after_day AS streakCountAfterDay,
-            freeze_used AS freezeUsed,
-            completed_at AS completedAt
-          FROM daily_summary
-          ORDER BY date DESC
-        `;
+      const query = this.getDrizzle()
+        .select()
+        .from(dailySummary)
+        .orderBy(desc(dailySummary.date));
+      const rows = limit === undefined ? query.all() : query.limit(limit).all();
 
-      const rows =
-        limit === undefined
-          ? (this.getDb().prepare(baseQuery).all() as HistoryRow[])
-          : (this.getDb()
-              .prepare(`${baseQuery}\nLIMIT ?`)
-              .all(limit) as HistoryRow[]);
-
-      return rows.map((row) => ({
-        allCompleted: Boolean(row.allCompleted),
-        completedAt: row.completedAt,
-        date: row.date,
-        freezeUsed: Boolean(row.freezeUsed),
-        streakCountAfterDay: row.streakCountAfterDay,
-      }));
+      return rows.map((row) => this.mapDailySummary(row));
     });
   }
 
   getPersistedStreakState(): StreakState {
-    return this.runDb(
-      "getPersistedStreakState",
-      () =>
-        this.getDb()
-          .prepare(`
-          SELECT
-            current_streak AS currentStreak,
-            best_streak AS bestStreak,
-            available_freezes AS availableFreezes,
-            last_evaluated_date AS lastEvaluatedDate
-          FROM streak_state
-          WHERE id = 1
-        `)
-          .get() as StreakState
-    );
+    return this.runDb("getPersistedStreakState", () => {
+      const row = this.getDrizzle()
+        .select()
+        .from(streakState)
+        .where(eq(streakState.id, 1))
+        .get();
+
+      return row
+        ? this.mapStreakState(row)
+        : {
+            availableFreezes: 0,
+            bestStreak: 0,
+            currentStreak: 0,
+            lastEvaluatedDate: null,
+          };
+    });
   }
 
   savePersistedStreakState(state: StreakState): void {
     this.runDb("savePersistedStreakState", () => {
-      this.getDb()
-        .prepare(`
-          UPDATE streak_state
-          SET current_streak = ?, best_streak = ?, available_freezes = ?, last_evaluated_date = ?
-          WHERE id = 1
-        `)
-        .run(
-          state.currentStreak,
-          state.bestStreak,
-          state.availableFreezes,
-          state.lastEvaluatedDate
-        );
+      this.getDrizzle()
+        .update(streakState)
+        .set({
+          availableFreezes: state.availableFreezes,
+          bestStreak: state.bestStreak,
+          currentStreak: state.currentStreak,
+          lastEvaluatedDate: state.lastEvaluatedDate,
+        })
+        .where(eq(streakState.id, 1))
+        .run();
     });
   }
 
   getSettings(defaultTimezone: string): AppSettings {
     return this.runDb("getSettings", () => {
-      const rows = this.getDb()
-        .prepare("SELECT key, value FROM settings")
-        .all() as SettingRow[];
+      const rows = this.getDrizzle().select().from(settings).all();
       const map = new Map(rows.map((row) => [row.key, row.value]));
 
       return {
@@ -409,12 +384,18 @@ export class SqliteHabitRepository implements HabitRepository {
     });
   }
 
-  saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings {
+  saveSettings(
+    nextSettings: AppSettings,
+    defaultTimezone: string
+  ): AppSettings {
     this.runDb("saveSettings", () => {
-      this.upsertSetting("reminderEnabled", String(settings.reminderEnabled));
-      this.upsertSetting("reminderTime", settings.reminderTime);
-      this.upsertSetting("themeMode", settings.themeMode);
-      this.upsertSetting("timezone", settings.timezone);
+      this.upsertSetting(
+        "reminderEnabled",
+        String(nextSettings.reminderEnabled)
+      );
+      this.upsertSetting("reminderTime", nextSettings.reminderTime);
+      this.upsertSetting("themeMode", nextSettings.themeMode);
+      this.upsertSetting("timezone", nextSettings.timezone);
     });
 
     return this.getSettings(defaultTimezone);
@@ -422,28 +403,39 @@ export class SqliteHabitRepository implements HabitRepository {
 
   getFirstTrackedDate(): string | null {
     return this.runDb("getFirstTrackedDate", () => {
-      const row = this.getDb()
-        .prepare(`
-          SELECT MIN(date) as firstDate
-          FROM (
-            SELECT date FROM daily_habit_status
-            UNION ALL
-            SELECT date FROM daily_summary
-          )
-        `)
-        .get() as { firstDate: string | null };
+      const statusRow = this.getDrizzle()
+        .select({
+          firstDate: sql<string | null>`min(${dailyHabitStatus.date})`,
+        })
+        .from(dailyHabitStatus)
+        .get();
+      const summaryRow = this.getDrizzle()
+        .select({
+          firstDate: sql<string | null>`min(${dailySummary.date})`,
+        })
+        .from(dailySummary)
+        .get();
+      const candidates = [statusRow?.firstDate, summaryRow?.firstDate].filter(
+        (value): value is string => value !== null && value !== undefined
+      );
 
-      return row.firstDate;
+      if (candidates.length === 0) {
+        return null;
+      }
+
+      return candidates.toSorted((left, right) => left.localeCompare(right))[0];
     });
   }
 
   getExistingCompletedAt(date: string): string | null {
     return this.runDb("getExistingCompletedAt", () => {
-      const row = this.getDb()
-        .prepare(
-          "SELECT completed_at as completedAt FROM daily_summary WHERE date = ?"
-        )
-        .get(date) as { completedAt: string | null } | undefined;
+      const row = this.getDrizzle()
+        .select({
+          completedAt: dailySummary.completedAt,
+        })
+        .from(dailySummary)
+        .where(eq(dailySummary.date, date))
+        .get();
 
       return row?.completedAt ?? null;
     });
@@ -451,35 +443,39 @@ export class SqliteHabitRepository implements HabitRepository {
 
   saveDailySummary(summary: DailySummary): void {
     this.runDb("saveDailySummary", () => {
-      this.getDb()
-        .prepare(`
-          INSERT INTO daily_summary (date, all_completed, streak_count_after_day, freeze_used, completed_at)
-          VALUES (?, ?, ?, ?, ?)
-          ON CONFLICT(date) DO UPDATE SET
-            all_completed = excluded.all_completed,
-            streak_count_after_day = excluded.streak_count_after_day,
-            freeze_used = excluded.freeze_used,
-            completed_at = excluded.completed_at
-        `)
-        .run(
-          summary.date,
-          Number(summary.allCompleted),
-          summary.streakCountAfterDay,
-          Number(summary.freezeUsed),
-          summary.completedAt
-        );
+      this.getDrizzle()
+        .insert(dailySummary)
+        .values({
+          allCompleted: summary.allCompleted,
+          completedAt: summary.completedAt,
+          date: summary.date,
+          freezeUsed: summary.freezeUsed,
+          streakCountAfterDay: summary.streakCountAfterDay,
+        })
+        .onConflictDoUpdate({
+          set: {
+            allCompleted: summary.allCompleted,
+            completedAt: summary.completedAt,
+            freezeUsed: summary.freezeUsed,
+            streakCountAfterDay: summary.streakCountAfterDay,
+          },
+          target: dailySummary.date,
+        })
+        .run();
     });
   }
 
   getMaxSortOrder(): number {
     return this.runDb("getMaxSortOrder", () => {
-      const row = this.getDb()
-        .prepare(
-          "SELECT COALESCE(MAX(sort_order), -1) as maxSortOrder FROM habits WHERE is_archived = 0"
-        )
-        .get() as { maxSortOrder: number };
+      const row = this.getDrizzle()
+        .select({
+          maxSortOrder: sql<number>`coalesce(max(${habits.sortOrder}), -1)`,
+        })
+        .from(habits)
+        .where(eq(habits.isArchived, false))
+        .get();
 
-      return row.maxSortOrder;
+      return row?.maxSortOrder ?? -1;
     });
   }
 
@@ -490,77 +486,90 @@ export class SqliteHabitRepository implements HabitRepository {
     createdAt: string
   ): number {
     return this.runDb("insertHabit", () => {
-      const result = this.getDb()
-        .prepare(`
-          INSERT INTO habits (name, category, sort_order, is_archived, created_at)
-          VALUES (?, ?, ?, 0, ?)
-        `)
-        .run(name, category, sortOrder, createdAt);
+      const result = this.getDrizzle()
+        .insert(habits)
+        .values({
+          category,
+          createdAt,
+          name,
+          sortOrder,
+        })
+        .returning({
+          id: habits.id,
+        })
+        .get();
 
-      return Number(result.lastInsertRowid);
+      return result.id;
     });
   }
 
   renameHabit(habitId: number, name: string): void {
     this.runDb("renameHabit", () => {
-      this.getDb()
-        .prepare("UPDATE habits SET name = ? WHERE id = ? AND is_archived = 0")
-        .run(name, habitId);
+      this.getDrizzle()
+        .update(habits)
+        .set({ name })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
     });
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): void {
     this.runDb("updateHabitCategory", () => {
-      this.getDb()
-        .prepare(
-          "UPDATE habits SET category = ? WHERE id = ? AND is_archived = 0"
-        )
-        .run(category, habitId);
+      this.getDrizzle()
+        .update(habits)
+        .set({ category })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
     });
   }
 
   archiveHabit(habitId: number): void {
     this.runDb("archiveHabit", () => {
-      this.getDb()
-        .prepare("UPDATE habits SET is_archived = 1 WHERE id = ?")
-        .run(habitId);
+      this.getDrizzle()
+        .update(habits)
+        .set({ isArchived: true })
+        .where(eq(habits.id, habitId))
+        .run();
     });
   }
 
   normalizeHabitOrder(): void {
     this.runDb("normalizeHabitOrder", () => {
-      const update = this.getDb().prepare(
-        "UPDATE habits SET sort_order = ? WHERE id = ?"
-      );
-      this.getHabits().forEach((habit, index) => {
-        update.run(index, habit.id);
+      const activeHabits = this.getHabits();
+
+      this.getDrizzle().transaction((tx) => {
+        activeHabits.forEach((habit, index) => {
+          tx.update(habits)
+            .set({ sortOrder: index })
+            .where(eq(habits.id, habit.id))
+            .run();
+        });
       });
     });
   }
 
   reorderHabits(habitIds: number[]): void {
     this.runDb("reorderHabits", () => {
-      const update = this.getDb().prepare(
-        "UPDATE habits SET sort_order = ? WHERE id = ?"
-      );
-      const transaction = this.getDb().transaction((orderedIds: number[]) => {
-        orderedIds.forEach((habitId, index) => {
-          update.run(index, habitId);
+      this.getDrizzle().transaction((tx) => {
+        habitIds.forEach((habitId, index) => {
+          tx.update(habits)
+            .set({ sortOrder: index })
+            .where(eq(habits.id, habitId))
+            .run();
         });
       });
-
-      transaction(habitIds);
     });
   }
 
   private upsertSetting(key: string, value: string): void {
-    this.getDb()
-      .prepare(`
-        INSERT INTO settings (key, value)
-        VALUES (?, ?)
-        ON CONFLICT(key) DO UPDATE SET value = excluded.value
-      `)
-      .run(key, value);
+    this.getDrizzle()
+      .insert(settings)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        set: { value },
+        target: settings.key,
+      })
+      .run();
   }
 
   private getThemeMode(value: string | undefined): ThemeMode {
@@ -572,31 +581,42 @@ export class SqliteHabitRepository implements HabitRepository {
   }
 
   private getHabitById(habitId: number): Habit | null {
-    const row = this.getDb()
-      .prepare(`
-        SELECT
-          id,
-          name,
-          category,
-          sort_order AS sortOrder,
-          is_archived AS isArchived,
-          created_at AS createdAt
-        FROM habits
-        WHERE id = ? AND is_archived = 0
-      `)
-      .get(habitId) as HabitRow | undefined;
+    const row = this.getDrizzle()
+      .select()
+      .from(habits)
+      .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+      .get();
 
-    if (!row) {
-      return null;
-    }
+    return row ? this.mapHabit(row) : null;
+  }
 
+  private mapHabit(row: HabitRow): Habit {
     return {
       category: normalizeHabitCategory(row.category),
       createdAt: row.createdAt,
       id: row.id,
-      isArchived: Boolean(row.isArchived),
+      isArchived: row.isArchived,
       name: row.name,
       sortOrder: row.sortOrder,
+    };
+  }
+
+  private mapDailySummary(row: DailySummaryRow): DailySummary {
+    return {
+      allCompleted: row.allCompleted,
+      completedAt: row.completedAt,
+      date: row.date,
+      freezeUsed: row.freezeUsed,
+      streakCountAfterDay: row.streakCountAfterDay,
+    };
+  }
+
+  private mapStreakState(row: StreakStateRow): StreakState {
+    return {
+      availableFreezes: row.availableFreezes,
+      bestStreak: row.bestStreak,
+      currentStreak: row.currentStreak,
+      lastEvaluatedDate: row.lastEvaluatedDate,
     };
   }
 }

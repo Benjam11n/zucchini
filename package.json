@@ -4,6 +4,7 @@
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
+    "db:generate": "drizzle-kit generate",
     "dev": "concurrently -k \"bun run dev:renderer\" \"bun run dev:bundle\" \"bun run dev:electron\"",
     "dev:renderer": "vite",
     "dev:bundle": "tsdown --watch",
@@ -25,6 +26,7 @@
     "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
     "effect": "^3.19.19",
     "framer-motion": "^12.35.0",
     "lucide-react": "^0.577.0",
@@ -44,6 +46,7 @@
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.9",
     "electron": "28.3.3",
     "electron-builder": "^26.8.1",
     "knip": "^5.85.0",
@@ -66,6 +69,7 @@
     "files": [
       "dist/**",
       "dist-electron/**",
+      "drizzle/**",
       "package.json"
     ],
     "asarUnpack": [

@@ -1,6 +1,68 @@
 import type Database from "better-sqlite3";
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
-import { DEFAULT_HABIT_CATEGORY } from "@/shared/domain/habit";
+import { DEFAULT_HABIT_CATEGORY } from "../shared/domain/habit";
+
+export const habits = sqliteTable("habits", {
+  category: text().notNull().default(DEFAULT_HABIT_CATEGORY),
+  createdAt: text("created_at").notNull(),
+  id: integer().primaryKey({ autoIncrement: true }),
+  isArchived: integer("is_archived", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  name: text().notNull(),
+  sortOrder: integer("sort_order").notNull(),
+});
+
+export const dailyHabitStatus = sqliteTable(
+  "daily_habit_status",
+  {
+    completed: integer({ mode: "boolean" }).notNull().default(false),
+    date: text().notNull(),
+    habitCategory: text("habit_category")
+      .notNull()
+      .default(DEFAULT_HABIT_CATEGORY),
+    habitCreatedAt: text("habit_created_at").notNull(),
+    habitId: integer("habit_id").notNull(),
+    habitName: text("habit_name").notNull(),
+    habitSortOrder: integer("habit_sort_order").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.date, table.habitId] })]
+);
+
+export const dailySummary = sqliteTable("daily_summary", {
+  allCompleted: integer("all_completed", { mode: "boolean" }).notNull(),
+  completedAt: text("completed_at"),
+  date: text().primaryKey(),
+  freezeUsed: integer("freeze_used", { mode: "boolean" }).notNull(),
+  streakCountAfterDay: integer("streak_count_after_day").notNull(),
+});
+
+export const streakState = sqliteTable("streak_state", {
+  availableFreezes: integer("available_freezes").notNull(),
+  bestStreak: integer("best_streak").notNull(),
+  currentStreak: integer("current_streak").notNull(),
+  id: integer().primaryKey(),
+  lastEvaluatedDate: text("last_evaluated_date"),
+});
+
+export const settings = sqliteTable("settings", {
+  key: text().primaryKey(),
+  value: text().notNull(),
+});
+
+export const schema = {
+  dailyHabitStatus,
+  dailySummary,
+  habits,
+  settings,
+  streakState,
+};
 
 function ensureHabitsCategoryColumn(db: Database.Database): void {
   const columns = db.prepare("PRAGMA table_info(habits)").all() as {
@@ -81,50 +143,7 @@ function ensureDailyHabitStatusSnapshotColumns(db: Database.Database): void {
   `).run();
 }
 
-export function initializeSqliteSchema(db: Database.Database): void {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS habits (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}',
-      sort_order INTEGER NOT NULL,
-      is_archived INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS daily_habit_status (
-      date TEXT NOT NULL,
-      habit_id INTEGER NOT NULL,
-      completed INTEGER NOT NULL DEFAULT 0,
-      habit_name TEXT NOT NULL,
-      habit_category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}',
-      habit_sort_order INTEGER NOT NULL DEFAULT 0,
-      habit_created_at TEXT NOT NULL,
-      PRIMARY KEY (date, habit_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS daily_summary (
-      date TEXT PRIMARY KEY,
-      all_completed INTEGER NOT NULL,
-      streak_count_after_day INTEGER NOT NULL,
-      freeze_used INTEGER NOT NULL,
-      completed_at TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS streak_state (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      current_streak INTEGER NOT NULL,
-      best_streak INTEGER NOT NULL,
-      available_freezes INTEGER NOT NULL,
-      last_evaluated_date TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
-
+export function repairLegacySchema(db: Database.Database): void {
   ensureHabitsCategoryColumn(db);
   ensureDailyHabitStatusSnapshotColumns(db);
 }
