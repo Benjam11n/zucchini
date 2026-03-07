@@ -26,12 +26,16 @@ interface HabitChecklistProps {
   habits: HabitWithStatus[];
   onToggleHabit: (habitId: number) => void;
   completedCount: number;
+  emptyMessage?: string;
+  title?: string;
 }
 
 export function HabitChecklist({
   habits,
   onToggleHabit,
   completedCount,
+  emptyMessage = "Add habits in Settings to get started.",
+  title = "Today",
 }: HabitChecklistProps) {
   const totalHabits = habits.length;
   const habitsByCategory = HABIT_CATEGORY_DEFINITIONS.map((category) => ({
@@ -43,7 +47,7 @@ export function HabitChecklist({
     <Card>
       <CardHeader className="gap-2 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">Today</CardTitle>
+          <CardTitle className="text-base font-medium">{title}</CardTitle>
           {totalHabits > 0 && (
             <AnimatePresence initial={false} mode="popLayout">
               <motion.span
@@ -75,9 +79,7 @@ export function HabitChecklist({
             initial={{ opacity: 0, y: 12 }}
             transition={microTransition}
           >
-            <p className="text-sm text-muted-foreground">
-              Add habits in Settings to get started.
-            </p>
+            <p className="text-sm text-muted-foreground">{emptyMessage}</p>
           </motion.div>
         ) : null}
 

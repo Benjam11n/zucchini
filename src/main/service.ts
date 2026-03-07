@@ -1,8 +1,14 @@
 import {
   getHabitCategoryProgress,
+  isDailyHabit,
   normalizeHabitCategory,
+  normalizeHabitFrequency,
 } from "@/shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -18,9 +24,14 @@ export interface HabitsService {
   toggleHabit(habitId: number): TodayState;
   getHistory(): HistoryDay[];
   updateSettings(settings: AppSettings): AppSettings;
-  createHabit(name: string, category: HabitCategory): TodayState;
+  createHabit(
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ): TodayState;
   renameHabit(habitId: number, name: string): TodayState;
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState;
+  updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState;
   archiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
 }
@@ -78,7 +89,11 @@ export class HabitService implements HabitsService {
     return this.repository.saveSettings(settings, this.clock.timezone());
   }
 
-  createHabit(name: string, category: HabitCategory): TodayState {
+  createHabit(
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ): TodayState {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return this.getTodayState();
@@ -89,6 +104,7 @@ export class HabitService implements HabitsService {
     const habitId = this.repository.insertHabit(
       trimmedName,
       normalizeHabitCategory(category),
+      normalizeHabitFrequency(frequency),
       this.repository.getMaxSortOrder() + 1,
       this.clock.now().toISOString()
     );
@@ -114,6 +130,15 @@ export class HabitService implements HabitsService {
     return this.buildTodayState();
   }
 
+  updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState {
+    this.repository.updateHabitFrequency(
+      habitId,
+      normalizeHabitFrequency(frequency)
+    );
+    this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+    return this.buildTodayState();
+  }
+
   archiveHabit(habitId: number): TodayState {
     this.repository.archiveHabit(habitId);
     this.repository.normalizeHabitOrder();
@@ -136,10 +161,11 @@ export class HabitService implements HabitsService {
     this.repository.ensureStatusRowsForDate(today);
 
     const habits = this.repository.getHabitsWithStatus(today);
+    const dailyHabits = habits.filter(isDailyHabit);
     const settledStreak = this.repository.getPersistedStreakState();
     const preview = previewOpenDay(
       settledStreak,
-      habits.length > 0 && habits.every((habit) => habit.completed)
+      dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed)
     );
 
     return {
@@ -157,9 +183,9 @@ export class HabitService implements HabitsService {
 
   private getTodayPreviewSummary(): DailySummary {
     const todayState = this.buildTodayState();
+    const dailyHabits = todayState.habits.filter(isDailyHabit);
     const allCompleted =
-      todayState.habits.length > 0 &&
-      todayState.habits.every((habit) => habit.completed);
+      dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed);
 
     return {
       allCompleted,
@@ -175,7 +201,7 @@ export class HabitService implements HabitsService {
     habits: HabitWithStatus[]
   ): HistoryDay {
     return {
-      categoryProgress: getHabitCategoryProgress(habits),
+      categoryProgress: getHabitCategoryProgress(habits.filter(isDailyHabit)),
       date: summary.date,
       habits,
       summary,
@@ -202,11 +228,24 @@ export class HabitService implements HabitsService {
       return;
     }
 
-    let rollingState: StreakState = { ...persisted };
+    let rollingState: StreakState = {
+      availableFreezes: persisted.availableFreezes,
+      bestStreak: persisted.bestStreak,
+      currentStreak: persisted.currentStreak,
+      lastEvaluatedDate: persisted.lastEvaluatedDate,
+    };
 
     while (this.clock.compareDateKeys(cursor, yesterday) <= 0) {
       this.repository.ensureStatusRowsForDate(cursor);
-      const habits = this.repository.getHabitsWithStatus(cursor);
+      const habits = this.repository
+        .getHabitsWithStatus(cursor)
+        .filter(isDailyHabit);
+      if (habits.length === 0) {
+        rollingState.lastEvaluatedDate = cursor;
+        cursor = this.clock.addDays(cursor, 1);
+        continue;
+      }
+
       const allCompleted =
         habits.length > 0 && habits.every((habit) => habit.completed);
       const completedAt = allCompleted

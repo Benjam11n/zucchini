@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 
 import { HabitChecklist } from "@/components/habit-checklist";
+import { PeriodHabitBoard } from "@/components/period-habit-board";
 import { StreakCard } from "@/components/streak-card";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/lib/motion";
-import { getHabitCategoryProgress } from "@/shared/domain/habit";
+import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { TodayState } from "@/shared/types/ipc";
 
 interface TodayPageProps {
@@ -15,8 +16,10 @@ interface TodayPageProps {
 }
 
 export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
-  const categoryProgress = getHabitCategoryProgress(state.habits);
-  const completedCount = state.habits.filter((habit) => habit.completed).length;
+  const dailyHabits = state.habits.filter(isDailyHabit);
+  const periodicHabits = state.habits.filter((habit) => !isDailyHabit(habit));
+  const categoryProgress = getHabitCategoryProgress(dailyHabits);
+  const completedCount = dailyHabits.filter((habit) => habit.completed).length;
 
   return (
     <motion.div
@@ -37,10 +40,21 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
       <motion.section variants={staggerItemVariants}>
         <HabitChecklist
           completedCount={completedCount}
-          habits={state.habits}
+          emptyMessage="No daily habits yet. Add one in Settings to power the rings and streak."
+          habits={dailyHabits}
           onToggleHabit={onToggleHabit}
         />
       </motion.section>
+
+      {periodicHabits.length > 0 ? (
+        <motion.section variants={staggerItemVariants}>
+          <PeriodHabitBoard
+            dateKey={state.date}
+            habits={periodicHabits}
+            onToggleHabit={onToggleHabit}
+          />
+        </motion.section>
+      ) : null}
     </motion.div>
   );
 }

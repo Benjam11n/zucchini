@@ -18,5 +18,3 @@ export const RING_COLORS = {
     glow: "var(--ring-productivity-glow)",
   },
 } as const;
-
-export type RingCategory = keyof typeof RING_COLORS;

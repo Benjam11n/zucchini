@@ -11,7 +11,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { pageVariants } from "@/renderer/lib/motion";
 
-import type { HabitCategory, HabitWithStatus } from "../shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWithStatus,
+} from "../shared/domain/habit";
 import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings, ThemeMode } from "../shared/domain/settings";
 import type { TodayState } from "../shared/types/ipc";
@@ -104,9 +108,10 @@ export default function App() {
 
   async function handleCreateHabit(
     name: string,
-    category: HabitCategory
+    category: HabitCategory,
+    frequency: HabitFrequency
   ): Promise<void> {
-    await refreshToday(window.habits.createHabit(name, category));
+    await refreshToday(window.habits.createHabit(name, category, frequency));
     setState((current) => ({
       ...current,
       settingsDraft: current.todayState?.settings ?? current.settingsDraft,
@@ -125,6 +130,13 @@ export default function App() {
     category: HabitCategory
   ): Promise<void> {
     await refreshToday(window.habits.updateHabitCategory(habitId, category));
+  }
+
+  async function handleUpdateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency
+  ): Promise<void> {
+    await refreshToday(window.habits.updateHabitFrequency(habitId, frequency));
   }
 
   async function handleArchiveHabit(habitId: number): Promise<void> {
@@ -219,6 +231,7 @@ export default function App() {
         onRenameHabit={handleRenameHabit}
         onReorderHabits={handleReorderHabits}
         onUpdateHabitCategory={handleUpdateHabitCategory}
+        onUpdateHabitFrequency={handleUpdateHabitFrequency}
       />
     );
   }

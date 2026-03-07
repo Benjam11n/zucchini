@@ -1,3 +1,4 @@
+import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { TodayState } from "@/shared/types/ipc";
 
@@ -13,9 +14,13 @@ interface ReminderScheduler {
   cancel: () => void;
 }
 
-function hasIncompleteHabits(today: TodayState): boolean {
+function hasIncompleteHabitsClosingToday(today: TodayState): boolean {
   return (
-    today.habits.length > 0 && today.habits.some((habit) => !habit.completed)
+    today.habits.length > 0 &&
+    today.habits.some(
+      (habit) =>
+        !habit.completed && isLastDayOfHabitPeriod(habit.frequency, today.date)
+    )
   );
 }
 
@@ -199,7 +204,7 @@ export function createReminderScheduler(
         midnightWarningTimeout = timer;
       },
       () => {
-        if (hasIncompleteHabits(getTodayState())) {
+        if (hasIncompleteHabitsClosingToday(getTodayState())) {
           showMidnightWarning();
         }
       }
@@ -222,7 +227,7 @@ export function createReminderScheduler(
         reminderTimeout = timer;
       },
       () => {
-        if (hasIncompleteHabits(getTodayState())) {
+        if (hasIncompleteHabitsClosingToday(getTodayState())) {
           showIncompleteReminder();
         }
       }

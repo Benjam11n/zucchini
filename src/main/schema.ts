@@ -5,11 +5,15 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 
-import { DEFAULT_HABIT_CATEGORY } from "../shared/domain/habit";
+import {
+  DEFAULT_HABIT_CATEGORY,
+  DEFAULT_HABIT_FREQUENCY,
+} from "../shared/domain/habit";
 
 export const habits = sqliteTable("habits", {
   category: text().notNull().default(DEFAULT_HABIT_CATEGORY),
   createdAt: text("created_at").notNull(),
+  frequency: text().notNull().default(DEFAULT_HABIT_FREQUENCY),
   id: integer().primaryKey({ autoIncrement: true }),
   isArchived: integer("is_archived", { mode: "boolean" })
     .notNull()
@@ -18,11 +22,11 @@ export const habits = sqliteTable("habits", {
   sortOrder: integer("sort_order").notNull(),
 });
 
-export const dailyHabitStatus = sqliteTable(
-  "daily_habit_status",
+export const habitPeriodStatus = sqliteTable(
+  "habit_period_status",
   {
     completed: integer({ mode: "boolean" }).notNull().default(false),
-    date: text().notNull(),
+    frequency: text().notNull().default(DEFAULT_HABIT_FREQUENCY),
     habitCategory: text("habit_category")
       .notNull()
       .default(DEFAULT_HABIT_CATEGORY),
@@ -30,8 +34,14 @@ export const dailyHabitStatus = sqliteTable(
     habitId: integer("habit_id").notNull(),
     habitName: text("habit_name").notNull(),
     habitSortOrder: integer("habit_sort_order").notNull().default(0),
+    periodEnd: text("period_end").notNull(),
+    periodStart: text("period_start").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.date, table.habitId] })]
+  (table) => [
+    primaryKey({
+      columns: [table.frequency, table.periodStart, table.habitId],
+    }),
+  ]
 );
 
 export const dailySummary = sqliteTable("daily_summary", {
@@ -56,8 +66,8 @@ export const settings = sqliteTable("settings", {
 });
 
 export const schema = {
-  dailyHabitStatus,
   dailySummary,
+  habitPeriodStatus,
   habits,
   settings,
   streakState,

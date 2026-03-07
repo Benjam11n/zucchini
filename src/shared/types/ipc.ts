@@ -1,4 +1,8 @@
-import type { HabitCategory, HabitWithStatus } from "../domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWithStatus,
+} from "../domain/habit";
 import type { HistoryDay } from "../domain/history";
 import type { AppSettings } from "../domain/settings";
 import type { StreakState } from "../domain/streak";
@@ -15,11 +19,19 @@ export interface HabitApi {
   toggleHabit: (habitId: number) => Promise<TodayState>;
   getHistory: () => Promise<HistoryDay[]>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;
-  createHabit: (name: string, category: HabitCategory) => Promise<TodayState>;
+  createHabit: (
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ) => Promise<TodayState>;
   renameHabit: (habitId: number, name: string) => Promise<TodayState>;
   updateHabitCategory: (
     habitId: number,
     category: HabitCategory
+  ) => Promise<TodayState>;
+  updateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;

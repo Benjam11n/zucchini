@@ -1,8 +1,10 @@
 import type {
   Habit,
   HabitCategory,
+  HabitFrequency,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
@@ -53,6 +55,7 @@ class FakeRepository implements HabitRepository {
     {
       category: "productivity",
       createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
       id: 1,
       isArchived: false,
       name: "Habit 1",
@@ -60,7 +63,15 @@ class FakeRepository implements HabitRepository {
     },
   ];
 
-  statusByDate = new Map<string, Map<number, boolean>>();
+  statusByPeriod = new Map<
+    string,
+    {
+      end: string;
+      frequency: HabitFrequency;
+      start: string;
+      values: Map<number, boolean>;
+    }
+  >();
   dailySummaries = new Map<string, DailySummary>();
   streak: StreakState = {
     availableFreezes: 1,
@@ -85,44 +96,65 @@ class FakeRepository implements HabitRepository {
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
-    const day = this.statusByDate.get(date) ?? new Map<number, boolean>();
     return this.getHabits().map((habit) => ({
       ...habit,
-      completed: day.get(habit.id) ?? false,
+      completed:
+        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false,
     }));
   }
 
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
-    const day = this.statusByDate.get(date) ?? new Map<number, boolean>();
-
     return this.habits
-      .filter((habit) => day.has(habit.id))
+      .filter((habit) =>
+        [...this.statusByPeriod.values()].some(
+          (entry) =>
+            entry.end === date &&
+            entry.frequency === habit.frequency &&
+            entry.values.has(habit.id)
+        )
+      )
       .toSorted((left, right) => left.sortOrder - right.sortOrder)
       .map((habit) => ({
         ...habit,
-        completed: day.get(habit.id) ?? false,
+        completed:
+          [...this.statusByPeriod.values()]
+            .find(
+              (entry) =>
+                entry.end === date &&
+                entry.frequency === habit.frequency &&
+                entry.values.has(habit.id)
+            )
+            ?.values.get(habit.id) ?? false,
       }));
   }
 
   ensureStatusRowsForDate(date: string): void {
-    const day = this.statusByDate.get(date) ?? new Map<number, boolean>();
     this.getHabits().forEach((habit) => {
-      if (!day.has(habit.id)) {
-        day.set(habit.id, false);
-      }
+      this.getStatusValues(date, habit.frequency).set(
+        habit.id,
+        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
+      );
     });
-    this.statusByDate.set(date, day);
   }
 
   ensureStatusRow(date: string, habitId: number): void {
-    this.ensureStatusRowsForDate(date);
-    this.statusByDate.get(date)?.set(habitId, false);
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (!habit) {
+      return;
+    }
+
+    this.getStatusValues(date, habit.frequency).set(habitId, false);
   }
 
   toggleHabit(date: string, habitId: number): void {
-    this.ensureStatusRowsForDate(date);
-    const current = this.statusByDate.get(date)?.get(habitId) ?? false;
-    this.statusByDate.get(date)?.set(habitId, !current);
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (!habit) {
+      return;
+    }
+
+    const values = this.getStatusValues(date, habit.frequency);
+    const current = values.get(habitId) ?? false;
+    values.set(habitId, !current);
   }
 
   getSettledHistory(limit?: number): DailySummary[] {
@@ -152,7 +184,9 @@ class FakeRepository implements HabitRepository {
 
   getFirstTrackedDate(): string | null {
     const keys = new Set<string>([
-      ...this.statusByDate.keys(),
+      ...[...this.statusByPeriod.values()]
+        .filter((entry) => entry.frequency === "daily")
+        .map((entry) => entry.start),
       ...this.dailySummaries.keys(),
       this.streak.lastEvaluatedDate ?? "",
     ]);
@@ -175,6 +209,7 @@ class FakeRepository implements HabitRepository {
   insertHabit(
     name: string,
     category: HabitCategory,
+    frequency: HabitFrequency,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -182,6 +217,7 @@ class FakeRepository implements HabitRepository {
     this.habits.push({
       category,
       createdAt,
+      frequency,
       id,
       isArchived: false,
       name,
@@ -201,6 +237,13 @@ class FakeRepository implements HabitRepository {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
       habit.category = category;
+    }
+  }
+
+  updateHabitFrequency(habitId: number, frequency: HabitFrequency): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (habit) {
+      habit.frequency = frequency;
     }
   }
 
@@ -225,13 +268,53 @@ class FakeRepository implements HabitRepository {
       }
     });
   }
+
+  setStatusForDate(
+    date: string,
+    values: Map<number, boolean>,
+    frequency: HabitFrequency = "daily"
+  ): void {
+    const period = getHabitPeriod(frequency, date);
+    this.statusByPeriod.set(this.getPeriodKey(frequency, period.start), {
+      end: period.end,
+      frequency,
+      start: period.start,
+      values,
+    });
+  }
+
+  private getStatusValues(
+    date: string,
+    frequency: HabitFrequency
+  ): Map<number, boolean> {
+    const period = getHabitPeriod(frequency, date);
+    const key = this.getPeriodKey(frequency, period.start);
+    const existing = this.statusByPeriod.get(key);
+
+    if (existing) {
+      return existing.values;
+    }
+
+    const values = new Map<number, boolean>();
+    this.statusByPeriod.set(key, {
+      end: period.end,
+      frequency,
+      start: period.start,
+      values,
+    });
+    return values;
+  }
+
+  private getPeriodKey(frequency: HabitFrequency, periodStart: string): string {
+    return `${frequency}:${periodStart}`;
+  }
 }
 
 describe("habitService rollover", () => {
   it("uses a freeze for the first missed closed day and resets on the next missed day", () => {
     const repository = new FakeRepository();
-    repository.statusByDate.set("2026-03-06", new Map([[1, false]]));
-    repository.statusByDate.set("2026-03-07", new Map([[1, false]]));
+    repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
+    repository.setStatusForDate("2026-03-07", new Map([[1, false]]));
 
     const service = new HabitService(
       repository,
@@ -273,7 +356,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.createHabit("Drink water", "nutrition");
+    const todayState = service.createHabit("Drink water", "nutrition", "daily");
 
     expect(todayState.habits.at(-1)).toMatchObject({
       category: "nutrition",
@@ -292,20 +375,32 @@ describe("habit categories", () => {
 
     expect(todayState.habits[0]?.category).toBe("fitness");
   });
+
+  it("updates a habit frequency and returns refreshed state", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitFrequency(1, "weekly");
+
+    expect(todayState.habits[0]?.frequency).toBe("weekly");
+  });
 });
 
 describe("history retrieval", () => {
   it("returns the full settled history plus the current day preview", () => {
     const repository = new FakeRepository();
     repository.streak.lastEvaluatedDate = "2026-03-07";
-    repository.statusByDate.set(
+    repository.setStatusForDate(
       "2026-03-07",
       new Map([
         [1, true],
         [2, false],
       ])
     );
-    repository.statusByDate.set(
+    repository.setStatusForDate(
       "2026-01-15",
       new Map([
         [1, true],
@@ -336,6 +431,7 @@ describe("history retrieval", () => {
     repository.habits.push({
       category: "fitness",
       createdAt: "2026-01-01T00:00:00.000Z",
+      frequency: "daily",
       id: 2,
       isArchived: true,
       name: "Archived habit",

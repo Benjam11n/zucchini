@@ -1,4 +1,4 @@
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { TodayState } from "@/shared/types/ipc";
 
@@ -26,9 +26,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   timezone: "UTC",
 };
 
-function buildTodayState(habits: HabitWithStatus[]): TodayState {
+function buildTodayState(
+  habits: HabitWithStatus[],
+  date = "2026-01-15"
+): TodayState {
   return {
-    date: "2026-01-15",
+    date,
     habits,
     settings: DEFAULT_SETTINGS,
     streak: {
@@ -40,11 +43,15 @@ function buildTodayState(habits: HabitWithStatus[]): TodayState {
   };
 }
 
-function buildHabit(completed: boolean): HabitWithStatus {
+function buildHabit(
+  completed: boolean,
+  frequency: HabitFrequency = "daily"
+): HabitWithStatus {
   return {
     category: "productivity",
     completed,
     createdAt: "2026-01-01T00:00:00.000Z",
+    frequency,
     id: 1,
     isArchived: false,
     name: "Habit 1",
@@ -151,6 +158,45 @@ describe("reminder scheduler", () => {
       today = buildTodayState([]);
       vi.advanceTimersByTime(24 * 60 * 60 * 1000 - 60 * 1000);
       expect(notificationState.incompleteReminderCount).toBe(0);
+      expect(notificationState.midnightWarningCount).toBe(0);
+    });
+  });
+
+  it("suppresses weekly reminders before the final day of the week", () => {
+    withFakeTime("2026-01-15T20:29:00.000Z", () => {
+      const scheduler = createReminderScheduler(() =>
+        buildTodayState([buildHabit(false, "weekly")], "2026-01-15")
+      );
+
+      scheduler.schedule({
+        ...DEFAULT_SETTINGS,
+        reminderTime: "20:30",
+        timezone: "UTC",
+      });
+
+      vi.advanceTimersByTime(31 * 60 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(0);
+      expect(notificationState.midnightWarningCount).toBe(0);
+    });
+  });
+
+  it("fires weekly reminders on the final day of the week", () => {
+    withFakeTime("2026-01-17T20:29:00.000Z", () => {
+      const scheduler = createReminderScheduler(() =>
+        buildTodayState([buildHabit(false, "weekly")], "2026-01-17")
+      );
+
+      scheduler.schedule({
+        ...DEFAULT_SETTINGS,
+        reminderTime: "20:30",
+        timezone: "UTC",
+      });
+
+      vi.advanceTimersByTime(59 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(0);
+
+      vi.advanceTimersByTime(1000);
+      expect(notificationState.incompleteReminderCount).toBe(1);
       expect(notificationState.midnightWarningCount).toBe(0);
     });
   });

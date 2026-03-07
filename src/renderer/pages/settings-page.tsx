@@ -25,10 +25,17 @@ import {
 } from "@/renderer/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
+  DEFAULT_HABIT_FREQUENCY,
   HABIT_CATEGORY_DEFINITIONS,
+  HABIT_FREQUENCY_DEFINITIONS,
   normalizeHabitCategory,
+  normalizeHabitFrequency,
 } from "@/shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import { RING_COLORS } from "../lib/ring-colors";
@@ -73,15 +80,29 @@ interface HabitCategorySelectorProps {
   selectedCategory: HabitCategory;
 }
 
+interface HabitFrequencySelectorProps {
+  name: string;
+  onChange: (frequency: HabitFrequency) => void;
+  selectedFrequency: HabitFrequency;
+}
+
 interface SettingsPageProps {
   habits: HabitWithStatus[];
   settings: AppSettings;
   onChange: (settings: AppSettings) => void;
-  onCreateHabit: (name: string, category: HabitCategory) => Promise<void>;
+  onCreateHabit: (
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory
+  ) => Promise<void>;
+  onUpdateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
@@ -90,12 +111,20 @@ interface SettingsPageProps {
 interface HabitManagementCardProps {
   habits: HabitWithStatus[];
   onArchiveHabit: (habitId: number) => Promise<void>;
-  onCreateHabit: (name: string, category: HabitCategory) => Promise<void>;
+  onCreateHabit: (
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory
+  ) => Promise<void>;
+  onUpdateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency
   ) => Promise<void>;
 }
 
@@ -146,6 +175,43 @@ function HabitCategorySelector({
               }}
             />
             {category.label}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+function HabitFrequencySelector({
+  name,
+  onChange,
+  selectedFrequency,
+}: HabitFrequencySelectorProps) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {HABIT_FREQUENCY_DEFINITIONS.map((frequency) => {
+        const isSelected = selectedFrequency === frequency.value;
+
+        return (
+          <motion.button
+            key={frequency.value}
+            animate={{ opacity: 1, scale: 1 }}
+            id={`${name}-${frequency.value}`}
+            initial={{ opacity: 0, scale: 0.94 }}
+            type="button"
+            onClick={() => onChange(normalizeHabitFrequency(frequency.value))}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs transition-all",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
+              isSelected
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
+            )}
+            transition={microTransition}
+            whileHover={hoverLift}
+            whileTap={tapPress}
+          >
+            {frequency.label}
           </motion.button>
         );
       })}
@@ -281,6 +347,7 @@ function HabitRow({
   onRenameHabit,
   onReorderHabits,
   onUpdateHabitCategory,
+  onUpdateHabitFrequency,
 }: {
   habit: HabitWithStatus;
   habits: HabitWithStatus[];
@@ -291,6 +358,7 @@ function HabitRow({
   | "onRenameHabit"
   | "onReorderHabits"
   | "onUpdateHabitCategory"
+  | "onUpdateHabitFrequency"
 >) {
   return (
     <motion.div
@@ -317,14 +385,35 @@ function HabitRow({
         </span>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <HabitCategorySelector
-          name={`habit-category-${habit.id}`}
-          onChange={(category) => {
-            void onUpdateHabitCategory(habit.id, category);
-          }}
-          selectedCategory={habit.category}
-        />
+      <div className="grid gap-3">
+        <div className="grid gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Category
+          </Label>
+          <HabitCategorySelector
+            name={`habit-category-${habit.id}`}
+            onChange={(category) => {
+              void onUpdateHabitCategory(habit.id, category);
+            }}
+            selectedCategory={habit.category}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Frequency
+          </Label>
+          <HabitFrequencySelector
+            name={`habit-frequency-${habit.id}`}
+            onChange={(frequency) => {
+              void onUpdateHabitFrequency(habit.id, frequency);
+            }}
+            selectedFrequency={habit.frequency}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-3">
         <div className="flex gap-1.5">
           <Button
             className="h-7 px-2 text-xs"
@@ -371,15 +460,19 @@ function NewHabitForm({
   const [newHabitCategory, setNewHabitCategory] = useState<HabitCategory>(
     DEFAULT_HABIT_CATEGORY
   );
+  const [newHabitFrequency, setNewHabitFrequency] = useState<HabitFrequency>(
+    DEFAULT_HABIT_FREQUENCY
+  );
 
   async function handleCreate(): Promise<void> {
     if (!newHabitName.trim()) {
       return;
     }
 
-    await onCreateHabit(newHabitName, newHabitCategory);
+    await onCreateHabit(newHabitName, newHabitCategory, newHabitFrequency);
     setNewHabitName("");
     setNewHabitCategory(DEFAULT_HABIT_CATEGORY);
+    setNewHabitFrequency(DEFAULT_HABIT_FREQUENCY);
   }
 
   return (
@@ -410,6 +503,11 @@ function NewHabitForm({
         onChange={setNewHabitCategory}
         selectedCategory={newHabitCategory}
       />
+      <HabitFrequencySelector
+        name="new-habit-frequency"
+        onChange={setNewHabitFrequency}
+        selectedFrequency={newHabitFrequency}
+      />
     </motion.div>
   );
 }
@@ -421,6 +519,7 @@ function HabitManagementCard({
   onRenameHabit,
   onReorderHabits,
   onUpdateHabitCategory,
+  onUpdateHabitFrequency,
 }: HabitManagementCardProps) {
   return (
     <Card>
@@ -441,6 +540,7 @@ function HabitManagementCard({
                 onRenameHabit={onRenameHabit}
                 onReorderHabits={onReorderHabits}
                 onUpdateHabitCategory={onUpdateHabitCategory}
+                onUpdateHabitFrequency={onUpdateHabitFrequency}
               />
             ))}
           </AnimatePresence>
@@ -480,6 +580,7 @@ export function SettingsPage(props: SettingsPageProps) {
           onRenameHabit={props.onRenameHabit}
           onReorderHabits={props.onReorderHabits}
           onUpdateHabitCategory={props.onUpdateHabitCategory}
+          onUpdateHabitFrequency={props.onUpdateHabitFrequency}
         />
       </motion.section>
     </motion.div>

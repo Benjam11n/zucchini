@@ -16,12 +16,32 @@ export const HABIT_CATEGORY_DEFINITIONS = [
 export type HabitCategory =
   (typeof HABIT_CATEGORY_DEFINITIONS)[number]["value"];
 
+export const HABIT_FREQUENCY_DEFINITIONS = [
+  {
+    label: "Daily",
+    value: "daily",
+  },
+  {
+    label: "Weekly",
+    value: "weekly",
+  },
+  {
+    label: "Monthly",
+    value: "monthly",
+  },
+] as const;
+
+export type HabitFrequency =
+  (typeof HABIT_FREQUENCY_DEFINITIONS)[number]["value"];
+
 export const DEFAULT_HABIT_CATEGORY: HabitCategory = "productivity";
+export const DEFAULT_HABIT_FREQUENCY: HabitFrequency = "daily";
 
 export interface Habit {
   category: HabitCategory;
   id: number;
   name: string;
+  frequency: HabitFrequency;
   sortOrder: number;
   isArchived: boolean;
   createdAt: string;
@@ -44,8 +64,22 @@ function isHabitCategory(value: string): value is HabitCategory {
   );
 }
 
+function isHabitFrequency(value: string): value is HabitFrequency {
+  return HABIT_FREQUENCY_DEFINITIONS.some(
+    (definition) => definition.value === value
+  );
+}
+
 export function normalizeHabitCategory(value: string): HabitCategory {
   return isHabitCategory(value) ? value : DEFAULT_HABIT_CATEGORY;
+}
+
+export function normalizeHabitFrequency(value: string): HabitFrequency {
+  return isHabitFrequency(value) ? value : DEFAULT_HABIT_FREQUENCY;
+}
+
+export function isDailyHabit(habit: Pick<Habit, "frequency">): boolean {
+  return habit.frequency === "daily";
 }
 
 export function getHabitCategoryProgress(

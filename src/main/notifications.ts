@@ -9,15 +9,12 @@ function showNotification(title: string, body: string): void {
 }
 
 export function showIncompleteReminder(): void {
-  showNotification(
-    "Zucchini reminder",
-    "Your habits are still open for today."
-  );
+  showNotification("Zucchini reminder", "You still have habits closing today.");
 }
 
 export function showMidnightWarning(): void {
   showNotification(
     "One hour left",
-    "You have 1 hour to complete your habits before midnight."
+    "You have 1 hour left to finish habits closing today."
   );
 }

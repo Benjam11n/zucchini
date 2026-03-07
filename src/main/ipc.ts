@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 
-import type { HabitCategory } from "../shared/domain/habit";
+import type { HabitCategory, HabitFrequency } from "../shared/domain/habit";
 import type { AppSettings } from "../shared/domain/settings";
 import type { HabitsService } from "./service";
 
@@ -25,8 +25,12 @@ export function registerIpcHandlers({
   });
   ipcMain.handle(
     "habits:createHabit",
-    (_event, name: string, category: HabitCategory) =>
-      service.createHabit(name, category)
+    (
+      _event,
+      name: string,
+      category: HabitCategory,
+      frequency: HabitFrequency
+    ) => service.createHabit(name, category, frequency)
   );
   ipcMain.handle(
     "habits:renameHabit",
@@ -37,6 +41,11 @@ export function registerIpcHandlers({
     "habits:updateHabitCategory",
     (_event, habitId: number, category: HabitCategory) =>
       service.updateHabitCategory(habitId, category)
+  );
+  ipcMain.handle(
+    "habits:updateHabitFrequency",
+    (_event, habitId: number, frequency: HabitFrequency) =>
+      service.updateHabitFrequency(habitId, frequency)
   );
   ipcMain.handle("habits:archiveHabit", (_event, habitId: number) =>
     service.archiveHabit(habitId)

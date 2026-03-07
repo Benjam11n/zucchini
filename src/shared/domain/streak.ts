@@ -12,15 +12,3 @@ export interface DailySummary {
   freezeUsed: boolean;
   completedAt: string | null;
 }
-
-function countCompletedHabits(completed: boolean[]): number {
-  return completed.filter(Boolean).length;
-}
-
-export function getProgress(completed: boolean[], total: number): number {
-  if (total === 0) {
-    return 0;
-  }
-
-  return Math.round((countCompletedHabits(completed) / total) * 100);
-}
