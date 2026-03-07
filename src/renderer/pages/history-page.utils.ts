@@ -1,12 +1,11 @@
+import type { HistoryStatus } from "@/renderer/lib/history-status";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
-
-export type ContributionStatus = "complete" | "empty" | "freeze" | "missed";
 
 export interface ContributionCell {
   date: string;
   isToday: boolean;
-  status: ContributionStatus;
+  status: HistoryStatus;
   summary: DailySummary | null;
 }
 
@@ -55,9 +54,7 @@ function endOfWeek(dateKey: string): string {
   return toDateKey(date);
 }
 
-function getContributionStatus(
-  summary: DailySummary | null
-): ContributionStatus {
+function getContributionStatus(summary: DailySummary | null): HistoryStatus {
   if (!summary) {
     return "empty";
   }
@@ -67,6 +64,18 @@ function getContributionStatus(
   }
 
   return summary.allCompleted ? "complete" : "missed";
+}
+
+export function getActivityStatus(summary: DailySummary): HistoryStatus {
+  if (summary.freezeUsed) {
+    return "freeze";
+  }
+
+  if (summary.allCompleted) {
+    return "complete";
+  }
+
+  return "missed";
 }
 
 export function getActivitySummary(summary: DailySummary): string {
@@ -82,11 +91,13 @@ export function getActivitySummary(summary: DailySummary): string {
 }
 
 export function getActivityBadgeLabel(summary: DailySummary): string {
-  if (summary.allCompleted) {
+  const status = getActivityStatus(summary);
+
+  if (status === "complete") {
     return "Complete";
   }
 
-  if (summary.freezeUsed) {
+  if (status === "freeze") {
     return "Freeze";
   }
 

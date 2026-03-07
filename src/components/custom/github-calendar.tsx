@@ -1,12 +1,15 @@
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
-type ContributionStatus = "complete" | "empty" | "freeze" | "missed";
+import { cn } from "@/lib/utils";
+import { HISTORY_STATUS_UI } from "@/renderer/lib/history-status";
+import type { HistoryStatus } from "@/renderer/lib/history-status";
+import { hoverLift, tapPress } from "@/renderer/lib/motion";
 
 interface GitHubCalendarCell {
   date: string;
   isToday: boolean;
   label: string;
-  status: ContributionStatus;
+  status: HistoryStatus;
 }
 
 interface GitHubCalendarWeek {
@@ -19,19 +22,12 @@ interface GitHubCalendarProps {
 }
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const LEGEND_STATUSES: ContributionStatus[] = [
+const LEGEND_STATUSES: HistoryStatus[] = [
   "empty",
   "missed",
   "freeze",
   "complete",
 ];
-
-const STATUS_STYLES: Record<ContributionStatus, string> = {
-  complete: "border-primary/80 bg-primary",
-  empty: "border-border/60 bg-transparent",
-  freeze: "border-secondary/80 bg-secondary/75",
-  missed: "border-border/70 bg-muted/55",
-};
 
 function parseDateKey(dateKey: string): Date {
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -67,15 +63,17 @@ function getMonthLabel(
 
 function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
   return (
-    <div
+    <motion.div
       aria-label={cell.label}
       className={cn(
         "size-3.5 rounded-[4px] border",
-        STATUS_STYLES[cell.status],
+        HISTORY_STATUS_UI[cell.status].squareClassName,
         cell.isToday && "ring-1 ring-ring/60 ring-offset-1 ring-offset-card"
       )}
       role="img"
       title={cell.label}
+      whileHover={hoverLift}
+      whileTap={tapPress}
     />
   );
 }
@@ -133,7 +131,7 @@ function GitHubCalendar({ weeks }: GitHubCalendarProps) {
               key={status}
               className={cn(
                 "size-3.5 rounded-[4px] border",
-                STATUS_STYLES[status]
+                HISTORY_STATUS_UI[status].squareClassName
               )}
             />
           ))}

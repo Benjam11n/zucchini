@@ -1,3 +1,4 @@
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Monitor, MoonStar, SunMedium } from "lucide-react";
 import { useState } from "react";
 
@@ -15,6 +16,13 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TimeInput } from "@/components/ui/time-input";
 import { cn } from "@/lib/utils";
+import {
+  hoverLift,
+  microTransition,
+  staggerContainerVariants,
+  staggerItemVariants,
+  tapPress,
+} from "@/renderer/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
   HABIT_CATEGORY_DEFINITIONS,
@@ -103,9 +111,11 @@ function HabitCategorySelector({
         const color = CATEGORY_COLORS[category.value];
 
         return (
-          <button
+          <motion.button
             key={category.value}
+            animate={{ opacity: 1, scale: 1 }}
             id={`${name}-${category.value}`}
+            initial={{ opacity: 0, scale: 0.94 }}
             type="button"
             onClick={() => onChange(normalizeHabitCategory(category.value))}
             className={cn(
@@ -123,6 +133,9 @@ function HabitCategorySelector({
                   }
                 : undefined
             }
+            transition={microTransition}
+            whileHover={hoverLift}
+            whileTap={tapPress}
           >
             <span
               className="size-2 shrink-0 rounded-full"
@@ -133,7 +146,7 @@ function HabitCategorySelector({
               }}
             />
             {category.label}
-          </button>
+          </motion.button>
         );
       })}
     </div>
@@ -230,9 +243,11 @@ function AppearanceSettingsCard({
             const Icon = option.icon;
 
             return (
-              <button
+              <motion.button
                 key={option.value}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
                 id={`theme-mode-${option.value}`}
+                initial={{ opacity: 0, scale: 0.96, y: 8 }}
                 type="button"
                 onClick={() =>
                   onChange({ ...settings, themeMode: option.value })
@@ -243,10 +258,13 @@ function AppearanceSettingsCard({
                     ? "border-primary bg-primary/8 text-foreground"
                     : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
                 )}
+                transition={microTransition}
+                whileHover={hoverLift}
+                whileTap={tapPress}
               >
                 <Icon className="size-5 opacity-70" />
                 {option.label}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -275,7 +293,15 @@ function HabitRow({
   | "onUpdateHabitCategory"
 >) {
   return (
-    <div className="grid gap-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+    <motion.div
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className="grid gap-3 rounded-xl border border-border/60 bg-muted/20 p-4"
+      exit={{ opacity: 0, scale: 0.96, y: -10 }}
+      initial={{ opacity: 0, scale: 0.96, y: 12 }}
+      layout
+      transition={microTransition}
+      whileHover={hoverLift}
+    >
       <div className="flex items-center gap-3">
         <Input
           className="h-8 text-sm"
@@ -334,7 +360,7 @@ function HabitRow({
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -357,7 +383,11 @@ function NewHabitForm({
   }
 
   return (
-    <div className="grid gap-3 rounded-xl border border-dashed border-border/60 p-4">
+    <motion.div
+      className="grid gap-3 rounded-xl border border-dashed border-border/60 p-4"
+      layout
+      transition={microTransition}
+    >
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input
           id="new-habit"
@@ -380,7 +410,7 @@ function NewHabitForm({
         onChange={setNewHabitCategory}
         selectedCategory={newHabitCategory}
       />
-    </div>
+    </motion.div>
   );
 }
 
@@ -399,18 +429,22 @@ function HabitManagementCard({
         <CardTitle>Manage</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
-        {habits.map((habit, index) => (
-          <HabitRow
-            key={habit.id}
-            habit={habit}
-            habits={habits}
-            index={index}
-            onArchiveHabit={onArchiveHabit}
-            onRenameHabit={onRenameHabit}
-            onReorderHabits={onReorderHabits}
-            onUpdateHabitCategory={onUpdateHabitCategory}
-          />
-        ))}
+        <LayoutGroup>
+          <AnimatePresence initial={false}>
+            {habits.map((habit, index) => (
+              <HabitRow
+                key={habit.id}
+                habit={habit}
+                habits={habits}
+                index={index}
+                onArchiveHabit={onArchiveHabit}
+                onRenameHabit={onRenameHabit}
+                onReorderHabits={onReorderHabits}
+                onUpdateHabitCategory={onUpdateHabitCategory}
+              />
+            ))}
+          </AnimatePresence>
+        </LayoutGroup>
 
         <NewHabitForm onCreateHabit={onCreateHabit} />
       </CardContent>
@@ -420,23 +454,34 @@ function HabitManagementCard({
 
 export function SettingsPage(props: SettingsPageProps) {
   return (
-    <div className="grid gap-6">
-      <ReminderSettingsCard
-        onChange={props.onChange}
-        settings={props.settings}
-      />
-      <AppearanceSettingsCard
-        onChange={props.onChange}
-        settings={props.settings}
-      />
-      <HabitManagementCard
-        habits={props.habits}
-        onArchiveHabit={props.onArchiveHabit}
-        onCreateHabit={props.onCreateHabit}
-        onRenameHabit={props.onRenameHabit}
-        onReorderHabits={props.onReorderHabits}
-        onUpdateHabitCategory={props.onUpdateHabitCategory}
-      />
-    </div>
+    <motion.div
+      animate="animate"
+      className="grid gap-6"
+      initial="initial"
+      variants={staggerContainerVariants}
+    >
+      <motion.section variants={staggerItemVariants}>
+        <ReminderSettingsCard
+          onChange={props.onChange}
+          settings={props.settings}
+        />
+      </motion.section>
+      <motion.section variants={staggerItemVariants}>
+        <AppearanceSettingsCard
+          onChange={props.onChange}
+          settings={props.settings}
+        />
+      </motion.section>
+      <motion.section variants={staggerItemVariants}>
+        <HabitManagementCard
+          habits={props.habits}
+          onArchiveHabit={props.onArchiveHabit}
+          onCreateHabit={props.onCreateHabit}
+          onRenameHabit={props.onRenameHabit}
+          onReorderHabits={props.onReorderHabits}
+          onUpdateHabitCategory={props.onUpdateHabitCategory}
+        />
+      </motion.section>
+    </motion.div>
   );
 }

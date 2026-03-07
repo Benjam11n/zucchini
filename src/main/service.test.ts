@@ -2,9 +2,10 @@ import type {
   Habit,
   HabitCategory,
   HabitWithStatus,
-} from "../shared/domain/habit";
-import type { AppSettings } from "../shared/domain/settings";
-import type { DailySummary, StreakState } from "../shared/domain/streak";
+} from "@/shared/domain/habit";
+import type { AppSettings } from "@/shared/domain/settings";
+import type { DailySummary, StreakState } from "@/shared/domain/streak";
+
 import type { Clock } from "./clock";
 import type { HabitRepository } from "./repository";
 import { HabitService } from "./service";

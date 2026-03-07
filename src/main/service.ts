@@ -1,16 +1,14 @@
 import {
   getHabitCategoryProgress,
   normalizeHabitCategory,
-} from "../shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "../shared/domain/habit";
-import type { HistoryDay } from "../shared/domain/history";
-import type { AppSettings } from "../shared/domain/settings";
-import type { DailySummary, StreakState } from "../shared/domain/streak";
-import {
-  previewOpenDay,
-  settleClosedDay,
-} from "../shared/domain/streak-engine";
-import type { TodayState } from "../shared/types/ipc";
+} from "@/shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type { HistoryDay } from "@/shared/domain/history";
+import type { AppSettings } from "@/shared/domain/settings";
+import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import { previewOpenDay, settleClosedDay } from "@/shared/domain/streak-engine";
+import type { TodayState } from "@/shared/types/ipc";
+
 import type { Clock } from "./clock";
 import type { HabitRepository } from "./repository";
 

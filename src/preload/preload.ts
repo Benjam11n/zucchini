@@ -1,8 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { HabitCategory } from "../shared/domain/habit";
-import type { AppSettings } from "../shared/domain/settings";
-import type { HabitApi } from "../shared/types/ipc";
+import type { HabitCategory } from "@/shared/domain/habit";
+import type { AppSettings } from "@/shared/domain/settings";
+import type { HabitApi } from "@/shared/types/ipc";
 
 const habitsApi: HabitApi = {
   archiveHabit: (habitId: number) =>

@@ -1,3 +1,4 @@
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { BarChart3, CalendarDays, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { pageVariants } from "@/renderer/lib/motion";
 
 import type { HabitCategory, HabitWithStatus } from "../shared/domain/habit";
 import type { HistoryDay } from "../shared/domain/history";
@@ -193,109 +195,126 @@ export default function App() {
     );
   }
 
+  let renderedPage = (
+    <TodayPage state={state.todayState} onToggleHabit={handleToggleHabit} />
+  );
+
+  if (tab === "history") {
+    renderedPage = <HistoryPage history={state.history} />;
+  }
+
+  if (tab === "settings") {
+    renderedPage = (
+      <SettingsPage
+        habits={state.todayState.habits}
+        settings={state.settingsDraft ?? state.todayState.settings}
+        onArchiveHabit={handleArchiveHabit}
+        onChange={(settingsDraft) =>
+          setState((current) => ({
+            ...current,
+            settingsDraft,
+          }))
+        }
+        onCreateHabit={handleCreateHabit}
+        onRenameHabit={handleRenameHabit}
+        onReorderHabits={handleReorderHabits}
+        onUpdateHabitCategory={handleUpdateHabitCategory}
+      />
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <Tabs
-        className="grid min-h-screen lg:grid-cols-[96px_1fr]"
-        onValueChange={(value) => handleTabChange(value as Tab)}
-        value={tab}
-      >
-        <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-3 lg:py-6">
-          <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
-            <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
-              <div className="flex size-12 items-center justify-center bg-primary text-lg font-black text-primary-foreground shadow-sm">
-                Z
+    <MotionConfig reducedMotion="user">
+      <main className="min-h-screen bg-background text-foreground">
+        <Tabs
+          className="grid min-h-screen lg:grid-cols-[96px_1fr]"
+          onValueChange={(value) => handleTabChange(value as Tab)}
+          value={tab}
+        >
+          <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-3 lg:py-6">
+            <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
+              <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
+                <div className="flex size-12 items-center justify-center bg-primary text-lg font-black text-primary-foreground shadow-sm">
+                  Z
+                </div>
+                <span className="text-[0.68rem] font-bold tracking-[0.24em] uppercase text-foreground/55">
+                  Zucchini
+                </span>
               </div>
-              <span className="text-[0.68rem] font-bold tracking-[0.24em] uppercase text-foreground/55">
-                Zucchini
-              </span>
-            </div>
 
-            <TabsList className="hidden flex-col gap-2 rounded-none bg-transparent p-0 lg:flex">
-              <TabsTrigger
-                aria-label="Today"
-                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                value="today"
-              >
-                <span className="sr-only">Today</span>
-                <CalendarDays className="size-5" />
-              </TabsTrigger>
-              <TabsTrigger
-                aria-label="History"
-                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                value="history"
-              >
-                <span className="sr-only">History</span>
-                <BarChart3 className="size-5" />
-              </TabsTrigger>
-              <TabsTrigger
-                aria-label="Settings"
-                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                value="settings"
-              >
-                <span className="sr-only">Settings</span>
-                <Settings2 className="size-5" />
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex flex-1 items-center gap-3 lg:hidden">
-              <TabsList className="grid flex-1 grid-cols-3 rounded-2xl bg-muted/80 p-1">
-                <TabsTrigger className="px-4" value="today">
-                  Today
+              <TabsList className="hidden flex-col gap-2 rounded-none bg-transparent p-0 lg:flex">
+                <TabsTrigger
+                  aria-label="Today"
+                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  value="today"
+                >
+                  <span className="sr-only">Today</span>
+                  <CalendarDays className="size-5" />
                 </TabsTrigger>
-                <TabsTrigger className="px-4" value="history">
-                  History
+                <TabsTrigger
+                  aria-label="History"
+                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  value="history"
+                >
+                  <span className="sr-only">History</span>
+                  <BarChart3 className="size-5" />
                 </TabsTrigger>
-                <TabsTrigger className="px-4" value="settings">
-                  Settings
+                <TabsTrigger
+                  aria-label="Settings"
+                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  value="settings"
+                >
+                  <span className="sr-only">Settings</span>
+                  <Settings2 className="size-5" />
                 </TabsTrigger>
               </TabsList>
 
-              <Card>
-                <CardHeader className="px-0 py-0 text-right">
-                  <CardTitle className="text-base font-black tracking-tight text-foreground">
-                    Zucchini
-                  </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground">
-                    Keep the streak alive
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
-          </div>
-        </aside>
+              <div className="flex flex-1 items-center gap-3 lg:hidden">
+                <TabsList className="grid flex-1 grid-cols-3 rounded-2xl bg-muted/80 p-1">
+                  <TabsTrigger className="px-4" value="today">
+                    Today
+                  </TabsTrigger>
+                  <TabsTrigger className="px-4" value="history">
+                    History
+                  </TabsTrigger>
+                  <TabsTrigger className="px-4" value="settings">
+                    Settings
+                  </TabsTrigger>
+                </TabsList>
 
-        <section className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto w-full max-w-6xl">
-            <TabsContent className="mt-0" value="today">
-              <TodayPage
-                state={state.todayState}
-                onToggleHabit={handleToggleHabit}
-              />
-            </TabsContent>
-            <TabsContent className="mt-0" value="history">
-              <HistoryPage history={state.history} />
-            </TabsContent>
-            <TabsContent className="mt-0" value="settings">
-              <SettingsPage
-                habits={state.todayState.habits}
-                settings={state.settingsDraft ?? state.todayState.settings}
-                onArchiveHabit={handleArchiveHabit}
-                onChange={(settingsDraft) =>
-                  setState((current) => ({
-                    ...current,
-                    settingsDraft,
-                  }))
-                }
-                onCreateHabit={handleCreateHabit}
-                onRenameHabit={handleRenameHabit}
-                onReorderHabits={handleReorderHabits}
-                onUpdateHabitCategory={handleUpdateHabitCategory}
-              />
-            </TabsContent>
-          </div>
-        </section>
-      </Tabs>
-    </main>
+                <Card>
+                  <CardHeader className="px-0 py-0 text-right">
+                    <CardTitle className="text-base font-black tracking-tight text-foreground">
+                      Zucchini
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Keep the streak alive
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              </div>
+            </div>
+          </aside>
+
+          <section className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="mx-auto w-full max-w-6xl overflow-hidden">
+              <TabsContent className="mt-0" forceMount value={tab}>
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={tab}
+                    animate="animate"
+                    exit="exit"
+                    initial="initial"
+                    variants={pageVariants}
+                  >
+                    {renderedPage}
+                  </motion.div>
+                </AnimatePresence>
+              </TabsContent>
+            </div>
+          </section>
+        </Tabs>
+      </main>
+    </MotionConfig>
   );
 }
