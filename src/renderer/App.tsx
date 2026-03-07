@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import type { HabitWithStatus } from "../shared/domain/habit";
 import type { ReminderSettings } from "../shared/domain/settings";
 import type { DailySummary } from "../shared/domain/streak";
@@ -93,78 +101,98 @@ export default function App() {
   }, []);
 
   if (!state.todayState) {
-    return <main className="shell loading">Loading...</main>;
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-6">
+        <Card className="w-full max-w-sm shadow-sm">
+          <CardHeader>
+            <CardTitle>Loading</CardTitle>
+            <CardDescription>
+              Preparing your local habit dashboard.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    );
   }
 
   return (
-    <main className="shell">
-      <aside className="sidebar">
-        <div>
-          <p className="eyebrow">Habit tracker</p>
-          <h1>Zucchini</h1>
-          <p className="sidebar-copy">
-            Local-first daily streaks with freezes, reminders, and history.
-          </p>
-        </div>
+    <main className="min-h-screen bg-muted/40 text-foreground">
+      <Tabs
+        className="grid min-h-screen lg:grid-cols-[280px_1fr]"
+        onValueChange={(value) => {
+          const nextTab = value as Tab;
+          setTab(nextTab);
 
-        <nav className="nav">
-          <button
-            className={tab === "today" ? "nav-button active" : "nav-button"}
-            onClick={() => setTab("today")}
-            type="button"
-          >
-            Today
-          </button>
-          <button
-            className={tab === "history" ? "nav-button active" : "nav-button"}
-            onClick={() => setTab("history")}
-            type="button"
-          >
-            History
-          </button>
-          <button
-            className={tab === "settings" ? "nav-button active" : "nav-button"}
-            onClick={() => {
-              setTab("settings");
-              setState((current) => ({
-                ...current,
-                settingsDraft:
-                  current.todayState?.settings ?? current.settingsDraft,
-              }));
-            }}
-            type="button"
-          >
-            Settings
-          </button>
-        </nav>
-      </aside>
+          if (nextTab === "settings") {
+            setState((current) => ({
+              ...current,
+              settingsDraft:
+                current.todayState?.settings ?? current.settingsDraft,
+            }));
+          }
+        }}
+        value={tab}
+      >
+        <aside className="border-b bg-card/90 px-4 py-4 backdrop-blur lg:border-r lg:border-b-0 lg:px-6 lg:py-8">
+          <Card className="border-0 bg-transparent py-0 shadow-none ring-0">
+            <CardHeader className="px-0">
+              <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
+                Habit tracker
+              </CardDescription>
+              <CardTitle className="text-3xl font-semibold tracking-tight">
+                Zucchini
+              </CardTitle>
+              <CardDescription className="max-w-xs text-sm leading-6">
+                Local-first daily streaks with freezes, reminders, and history.
+              </CardDescription>
+            </CardHeader>
+            <div className="px-0 pt-4">
+              <TabsList className="grid h-auto w-full grid-cols-3 rounded-2xl bg-muted p-1 lg:grid-cols-1">
+                <TabsTrigger className="rounded-xl" value="today">
+                  Today
+                </TabsTrigger>
+                <TabsTrigger className="rounded-xl" value="history">
+                  History
+                </TabsTrigger>
+                <TabsTrigger className="rounded-xl" value="settings">
+                  Settings
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </Card>
+        </aside>
 
-      <section className="content">
-        {tab === "today" ? (
-          <TodayPage
-            state={state.todayState}
-            onToggleHabit={handleToggleHabit}
-          />
-        ) : null}
-        {tab === "history" ? <HistoryPage history={state.history} /> : null}
-        {tab === "settings" ? (
-          <SettingsPage
-            habits={state.todayState.habits}
-            settings={state.settingsDraft ?? state.todayState.settings}
-            onArchiveHabit={handleArchiveHabit}
-            onChange={(settingsDraft) =>
-              setState((current) => ({
-                ...current,
-                settingsDraft,
-              }))
-            }
-            onCreateHabit={handleCreateHabit}
-            onRenameHabit={handleRenameHabit}
-            onReorderHabits={handleReorderHabits}
-            onSave={handleUpdateSettings}
-          />
-        ) : null}
-      </section>
+        <section className="px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-6xl">
+            <TabsContent className="mt-0" value="today">
+              <TodayPage
+                state={state.todayState}
+                onToggleHabit={handleToggleHabit}
+              />
+            </TabsContent>
+            <TabsContent className="mt-0" value="history">
+              <HistoryPage history={state.history} />
+            </TabsContent>
+            <TabsContent className="mt-0" value="settings">
+              <SettingsPage
+                habits={state.todayState.habits}
+                settings={state.settingsDraft ?? state.todayState.settings}
+                onArchiveHabit={handleArchiveHabit}
+                onChange={(settingsDraft) =>
+                  setState((current) => ({
+                    ...current,
+                    settingsDraft,
+                  }))
+                }
+                onCreateHabit={handleCreateHabit}
+                onRenameHabit={handleRenameHabit}
+                onReorderHabits={handleReorderHabits}
+                onSave={handleUpdateSettings}
+              />
+            </TabsContent>
+          </div>
+        </section>
+      </Tabs>
     </main>
   );
 }

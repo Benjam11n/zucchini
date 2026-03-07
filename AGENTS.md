@@ -9,6 +9,7 @@
 ## Workflow Commands
 
 - Use `bun` at the repo root for all tasks.
+- Never start the dev server (`bun run dev`) unless the user explicitly asks for it.
 - Common scripts: `bun run dev`, `bun run build`, `bun run test`, `bun run lint`, `bun run format`, `bun run typecheck`, `bun run knip`, `bun run react-doctor`.
 - Packaging scripts: `bun run package` and `bun run dist:desktop`.
 - Run scripts from the repo root only.

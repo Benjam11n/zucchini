@@ -1,3 +1,10 @@
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import { getProgress } from "../../shared/domain/streak";
 import type { TodayState } from "../../shared/types/ipc";
 import { FreezeCard } from "../components/FreezeCard";
@@ -17,18 +24,22 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
   );
 
   return (
-    <div className="page">
-      <header className="hero panel">
-        <div>
-          <p className="eyebrow">Today</p>
-          <h2>{state.date}</h2>
-          <p className="hero-copy">
+    <div className="grid gap-6">
+      <Card className="rounded-[2rem] shadow-sm">
+        <CardHeader className="gap-3 px-6 py-8">
+          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
+            Today
+          </CardDescription>
+          <CardTitle className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {state.date}
+          </CardTitle>
+          <CardDescription className="max-w-2xl text-sm leading-6 sm:text-base">
             Complete every habit before the day ends to keep the streak alive.
-          </p>
-        </div>
-      </header>
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-      <section className="metrics-grid">
+      <section className="grid gap-4 xl:grid-cols-3">
         <StreakCard
           bestStreak={state.streak.bestStreak}
           currentStreak={state.streak.currentStreak}

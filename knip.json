@@ -1,7 +1,13 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "tags": ["-lintignore"],
-  "entry": ["index.html", "src/main/main.ts", "src/preload/preload.ts"],
+  "entry": ["index.html"],
+  "ignoreDependencies": [
+    "@fontsource-variable/geist",
+    "shadcn",
+    "tailwindcss",
+    "tw-animate-css"
+  ],
   "project": ["src/**/*.{ts,tsx}"],
   "ignoreExportsUsedInFile": {
     "interface": true,

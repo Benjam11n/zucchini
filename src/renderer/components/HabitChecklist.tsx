@@ -1,3 +1,12 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import type { HabitWithStatus } from "../../shared/domain/habit";
 
 interface HabitChecklistProps {
@@ -7,26 +16,32 @@ interface HabitChecklistProps {
 
 export function HabitChecklist({ habits, onToggleHabit }: HabitChecklistProps) {
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <div>
-          <p className="eyebrow">Checklist</p>
-          <h2>Today&apos;s habits</h2>
-        </div>
-      </div>
+    <Card className="rounded-[2rem] shadow-sm">
+      <CardHeader>
+        <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
+          Checklist
+        </CardDescription>
+        <CardTitle className="text-2xl font-semibold tracking-tight">
+          Today&apos;s habits
+        </CardTitle>
+      </CardHeader>
 
-      <div className="habit-list">
+      <CardContent className="grid gap-3">
         {habits.map((habit) => (
-          <label className="habit-item" key={habit.id}>
-            <input
+          <label
+            className="flex cursor-pointer items-center gap-4 rounded-2xl border bg-muted/30 px-4 py-4 transition-colors hover:bg-muted/50"
+            key={habit.id}
+          >
+            <Checkbox
               checked={habit.completed}
-              onChange={() => onToggleHabit(habit.id)}
-              type="checkbox"
+              onCheckedChange={() => onToggleHabit(habit.id)}
             />
-            <span>{habit.name}</span>
+            <span className="text-sm font-medium sm:text-base">
+              {habit.name}
+            </span>
           </label>
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,5 +1,18 @@
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+
 import type { HabitWithStatus } from "../../shared/domain/habit";
 import type { ReminderSettings } from "../../shared/domain/settings";
 
@@ -45,79 +58,111 @@ export function SettingsPage({
   const [newHabitName, setNewHabitName] = useState("");
 
   return (
-    <div className="page">
-      <header className="panel">
-        <p className="eyebrow">Settings</p>
-        <h2>Reminders</h2>
-      </header>
+    <div className="grid gap-6">
+      <Card className="rounded-[2rem] shadow-sm">
+        <CardHeader>
+          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
+            Settings
+          </CardDescription>
+          <CardTitle className="text-3xl font-semibold tracking-tight">
+            Reminders
+          </CardTitle>
+        </CardHeader>
+      </Card>
 
-      <section className="panel settings-form">
-        <label className="field">
-          <span>Enable reminder</span>
-          <input
-            checked={settings.reminderEnabled}
-            onChange={(event) =>
-              onChange({
-                ...settings,
-                reminderEnabled: event.target.checked,
-              })
-            }
-            type="checkbox"
-          />
-        </label>
-
-        <label className="field">
-          <span>Reminder time</span>
-          <input
-            onChange={(event) =>
-              onChange({
-                ...settings,
-                reminderTime: event.target.value,
-              })
-            }
-            type="time"
-            value={settings.reminderTime}
-          />
-        </label>
-
-        <label className="field">
-          <span>Timezone</span>
-          <input
-            onChange={(event) =>
-              onChange({
-                ...settings,
-                timezone: event.target.value,
-              })
-            }
-            type="text"
-            value={settings.timezone}
-          />
-        </label>
-
-        <button
-          className="primary-button"
-          onClick={() => {
-            void onSave(settings);
-          }}
-          type="button"
-        >
-          Save settings
-        </button>
-      </section>
-
-      <section className="panel settings-form">
-        <div className="settings-header">
-          <div>
-            <p className="eyebrow">Habits</p>
-            <h2>Manage checklist</h2>
+      <Card className="rounded-[2rem] shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold tracking-tight">
+            Reminder preferences
+          </CardTitle>
+          <CardDescription>
+            Structured with shadcn form primitives so future dialogs and
+            settings panels can reuse the same controls.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border bg-muted/20 px-4 py-4">
+            <div className="space-y-1">
+              <Label htmlFor="reminder-enabled">Enable reminder</Label>
+              <p className="text-sm text-muted-foreground">
+                Show a desktop reminder if today&apos;s checklist is still open.
+              </p>
+            </div>
+            <Switch
+              checked={settings.reminderEnabled}
+              id="reminder-enabled"
+              onCheckedChange={(checked) =>
+                onChange({
+                  ...settings,
+                  reminderEnabled: checked,
+                })
+              }
+            />
           </div>
-        </div>
 
-        <div className="habit-settings-list">
+          <div className="grid gap-2">
+            <Label htmlFor="reminder-time">Reminder time</Label>
+            <Input
+              id="reminder-time"
+              onChange={(event) =>
+                onChange({
+                  ...settings,
+                  reminderTime: event.target.value,
+                })
+              }
+              type="time"
+              value={settings.reminderTime}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="reminder-timezone">Timezone</Label>
+            <Input
+              id="reminder-timezone"
+              onChange={(event) =>
+                onChange({
+                  ...settings,
+                  timezone: event.target.value,
+                })
+              }
+              type="text"
+              value={settings.timezone}
+            />
+          </div>
+
+          <Button
+            className="w-fit rounded-2xl"
+            onClick={() => {
+              void onSave(settings);
+            }}
+            type="button"
+          >
+            Save settings
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-[2rem] shadow-sm">
+        <CardHeader>
+          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
+            Habits
+          </CardDescription>
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            Manage checklist
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4">
           {habits.map((habit, index) => (
-            <div className="habit-settings-item" key={habit.id}>
-              <input
-                className="habit-name-input"
+            <div
+              className="grid gap-3 rounded-2xl border bg-muted/20 p-4"
+              key={habit.id}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <Label className="text-sm font-medium">{habit.name}</Label>
+                <Badge variant="outline">#{index + 1}</Badge>
+              </div>
+
+              <Input
                 defaultValue={habit.name}
                 onBlur={(event) => {
                   void onRenameHabit(habit.id, event.target.value);
@@ -125,9 +170,8 @@ export function SettingsPage({
                 type="text"
               />
 
-              <div className="habit-actions">
-                <button
-                  className="secondary-button"
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
                   disabled={index === 0}
                   onClick={() => {
                     void onReorderHabits(
@@ -135,58 +179,62 @@ export function SettingsPage({
                     );
                   }}
                   type="button"
+                  variant="outline"
                 >
                   Up
-                </button>
-                <button
-                  className="secondary-button"
+                </Button>
+                <Button
                   disabled={index === habits.length - 1}
                   onClick={() => {
                     void onReorderHabits(reorderHabitList(habits, habit.id, 1));
                   }}
                   type="button"
+                  variant="outline"
                 >
                   Down
-                </button>
-                <button
-                  className="secondary-button danger"
+                </Button>
+                <Button
                   onClick={() => {
                     void onArchiveHabit(habit.id);
                   }}
                   type="button"
+                  variant="destructive"
                 >
                   Archive
-                </button>
+                </Button>
               </div>
             </div>
           ))}
-        </div>
 
-        <div className="habit-create-row">
-          <input
-            className="habit-name-input"
-            onChange={(event) => setNewHabitName(event.target.value)}
-            placeholder="Add a new habit"
-            type="text"
-            value={newHabitName}
-          />
-          <button
-            className="primary-button"
-            onClick={() => {
-              if (!newHabitName.trim()) {
-                return;
-              }
+          <div className="grid gap-3 rounded-2xl border border-dashed bg-muted/10 p-4">
+            <Label htmlFor="new-habit">New habit</Label>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Input
+                id="new-habit"
+                onChange={(event) => setNewHabitName(event.target.value)}
+                placeholder="Add a new habit"
+                type="text"
+                value={newHabitName}
+              />
+              <Button
+                className="rounded-2xl"
+                onClick={() => {
+                  if (!newHabitName.trim()) {
+                    return;
+                  }
 
-              void onCreateHabit(newHabitName).then(() => {
-                setNewHabitName("");
-              });
-            }}
-            type="button"
-          >
-            Add habit
-          </button>
-        </div>
-      </section>
+                  void onCreateHabit(newHabitName).then(() => {
+                    setNewHabitName("");
+                  });
+                }}
+                type="button"
+              >
+                Add habit
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
