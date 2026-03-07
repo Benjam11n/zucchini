@@ -33,7 +33,7 @@ export function HabitChecklist({
   })).filter((category) => category.habits.length > 0);
 
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card>
       <CardHeader className="gap-2 pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-medium">Today</CardTitle>

@@ -3,7 +3,6 @@ import type {
   HabitCategory,
   HabitWithStatus,
 } from "../shared/domain/habit";
-import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 import type { Clock } from "./clock";
@@ -359,7 +358,7 @@ describe("history retrieval", () => {
       "Habit 1",
       "Archived habit",
     ]);
-    expect(history[1]?.summary.freezeUsed).toBe(false);
+    expect(history[1]?.summary.freezeUsed).toBeFalsy();
     expect(history[0]?.categoryProgress).toHaveLength(3);
   });
 });

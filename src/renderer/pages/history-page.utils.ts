@@ -1,7 +1,7 @@
-import type { DailySummary } from "../../shared/domain/streak";
+import type { HistoryDay } from "@/shared/domain/history";
+import type { DailySummary } from "@/shared/domain/streak";
 
 export type ContributionStatus = "complete" | "empty" | "freeze" | "missed";
-export type HistoryRange = "week" | "month" | "year";
 
 export interface ContributionCell {
   date: string;
@@ -22,43 +22,14 @@ export interface HistoryStats {
   missedDays: number;
 }
 
-export interface HistoryRangeOption {
-  label: string;
-  title: string;
-  value: HistoryRange;
-}
-
 const DAY_IN_WEEK = 7;
-const HISTORY_RANGE_DAYS: Record<HistoryRange, number> = {
-  month: 30,
-  week: 7,
-  year: 365,
-};
 
-export const HISTORY_RANGE_OPTIONS: HistoryRangeOption[] = [
-  {
-    label: "Weekly",
-    title: "Last 7 days",
-    value: "week",
-  },
-  {
-    label: "Monthly",
-    title: "Last 30 days",
-    value: "month",
-  },
-  {
-    label: "Yearly",
-    title: "Last 365 days",
-    value: "year",
-  },
-];
-
-function parseDateKey(dateKey: string): Date {
+export function parseDateKey(dateKey: string): Date {
   const [year, month, day] = dateKey.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
 
-function toDateKey(date: Date): string {
+export function toDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -98,30 +69,24 @@ function getContributionStatus(
   return summary.allCompleted ? "complete" : "missed";
 }
 
-function sortHistoryNewestFirst(history: DailySummary[]): DailySummary[] {
-  return [...history].toSorted((left, right) =>
-    right.date.localeCompare(left.date)
-  );
-}
-
-export function getActivitySummary(day: DailySummary): string {
-  if (day.freezeUsed) {
+export function getActivitySummary(summary: DailySummary): string {
+  if (summary.freezeUsed) {
     return "Missed day covered by a freeze";
   }
 
-  if (day.allCompleted) {
+  if (summary.allCompleted) {
     return "All habits completed";
   }
 
   return "Incomplete day";
 }
 
-export function getActivityBadgeLabel(day: DailySummary): string {
-  if (day.allCompleted) {
+export function getActivityBadgeLabel(summary: DailySummary): string {
+  if (summary.allCompleted) {
     return "Complete";
   }
 
-  if (day.freezeUsed) {
+  if (summary.freezeUsed) {
     return "Freeze";
   }
 
@@ -129,7 +94,7 @@ export function getActivityBadgeLabel(day: DailySummary): string {
 }
 
 export function buildContributionWeeks(
-  history: DailySummary[]
+  history: HistoryDay[]
 ): ContributionWeek[] {
   if (history.length === 0) {
     return [];
@@ -147,7 +112,9 @@ export function buildContributionWeeks(
 
   const firstCellDate = startOfWeek(firstDate);
   const lastCellDate = endOfWeek(lastDate);
-  const summaryByDate = new Map(sortedHistory.map((day) => [day.date, day]));
+  const summaryByDate = new Map(
+    sortedHistory.map((day) => [day.date, day.summary])
+  );
   const cells: ContributionCell[] = [];
 
   let cursor = firstCellDate;
@@ -183,34 +150,11 @@ export function buildContributionWeeks(
   return weeks;
 }
 
-export function getRecentHistory(
-  history: DailySummary[],
-  range: HistoryRange
-): DailySummary[] {
-  if (history.length === 0) {
-    return [];
-  }
-
-  const sortedHistory = sortHistoryNewestFirst(history);
-  const latestDate = sortedHistory[0]?.date;
-
-  if (!latestDate) {
-    return [];
-  }
-
-  const earliestVisibleDate = addDays(
-    latestDate,
-    -(HISTORY_RANGE_DAYS[range] - 1)
-  );
-
-  return sortedHistory.filter(
-    (day) => day.date.localeCompare(earliestVisibleDate) >= 0
-  );
-}
-
-export function getHistoryStats(history: DailySummary[]): HistoryStats {
-  const completedDays = history.filter((day) => day.allCompleted).length;
-  const freezeDays = history.filter((day) => day.freezeUsed).length;
+export function getHistoryStats(history: HistoryDay[]): HistoryStats {
+  const completedDays = history.filter(
+    (day) => day.summary.allCompleted
+  ).length;
+  const freezeDays = history.filter((day) => day.summary.freezeUsed).length;
   const missedDays = history.length - completedDays - freezeDays;
   const completionRate =
     history.length === 0
@@ -223,6 +167,12 @@ export function getHistoryStats(history: DailySummary[]): HistoryStats {
     freezeDays,
     missedDays,
   };
+}
+
+export function getHistoryDayLookup(
+  history: HistoryDay[]
+): Map<string, HistoryDay> {
+  return new Map(history.map((day) => [day.date, day]));
 }
 
 export function formatDateKey(
@@ -255,8 +205,4 @@ export function formatContributionLabel(cell: ContributionCell): string {
   }
 
   return `${dateLabel}: incomplete`;
-}
-
-export function isHistoryRange(value: string): value is HistoryRange {
-  return HISTORY_RANGE_OPTIONS.some((option) => option.value === value);
 }

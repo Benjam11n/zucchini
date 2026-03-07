@@ -1,7 +1,4 @@
-import type {
-  HabitCategoryProgress,
-  HabitWithStatus,
-} from "./habit";
+import type { HabitCategoryProgress, HabitWithStatus } from "./habit";
 import type { DailySummary } from "./streak";
 
 export interface HistoryDay {

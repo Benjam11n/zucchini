@@ -156,7 +156,7 @@ export default function App() {
   if (!state.todayState) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-        <Card className="w-full max-w-sm border-border/70 bg-card/88">
+        <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle>Loading</CardTitle>
             <CardDescription>
@@ -226,7 +226,7 @@ export default function App() {
                 </TabsTrigger>
               </TabsList>
 
-              <Card className="border-none bg-transparent py-0 shadow-none">
+              <Card>
                 <CardHeader className="px-0 py-0 text-right">
                   <CardTitle className="text-base font-black tracking-tight text-foreground">
                     Zucchini

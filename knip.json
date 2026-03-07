@@ -3,7 +3,6 @@
   "tags": ["-lintignore"],
   "entry": ["index.html"],
   "ignoreDependencies": [
-    "@fontsource-variable/geist",
     "shadcn",
     "tailwindcss",
     "tw-animate-css"

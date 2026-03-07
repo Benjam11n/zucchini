@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
-export interface ActivityData {
+import { HABIT_CATEGORY_UI } from "../../renderer/lib/habit-categories";
+
+interface ActivityData {
   label: string;
   value: number;
   color: string;
@@ -13,6 +16,36 @@ export interface ActivityData {
   current: number;
   target: number;
   unit: string;
+}
+
+interface HabitActivityRingProps {
+  categoryProgress: HabitCategoryProgress[];
+  className?: string;
+  showDetails?: boolean;
+  size?: number;
+}
+
+const ACTIVITY_RING_SIZES = [280, 220, 160] as const;
+const ACTIVITY_RING_ORDER = ["fitness", "nutrition", "productivity"] as const;
+
+function buildHabitActivityData(
+  categoryProgress: HabitCategoryProgress[]
+): ActivityData[] {
+  return ACTIVITY_RING_ORDER.map((category, index) => {
+    const progress = categoryProgress.find(
+      (item) => item.category === category
+    );
+
+    return {
+      color: HABIT_CATEGORY_UI[category].ringColor,
+      current: progress?.completed ?? 0,
+      label: category.toUpperCase(),
+      size: ACTIVITY_RING_SIZES[index],
+      target: progress?.total ?? 0,
+      unit: "HABITS",
+      value: progress?.progress ?? 0,
+    };
+  });
 }
 
 interface ActivityRingGlyphProps {
@@ -115,12 +148,15 @@ const DetailedActivityInfo = ({
   </motion.div>
 );
 
-export function ActivityRingGlyph({
+function ActivityRingGlyph({
   activities,
   className,
   size = 56,
 }: ActivityRingGlyphProps) {
-  const containerSize = Math.max(...activities.map((activity) => activity.size), 1);
+  const containerSize = Math.max(
+    ...activities.map((activity) => activity.size),
+    1
+  );
   const center = size / 2;
   const strokeWidth = Math.max(3, Math.round(size * 0.12));
 
@@ -169,7 +205,21 @@ export function ActivityRingGlyph({
   );
 }
 
-export function AppleActivityCard({
+export function HabitActivityRingGlyph({
+  categoryProgress,
+  className,
+  size = 56,
+}: HabitActivityRingProps) {
+  return (
+    <ActivityRingGlyph
+      activities={buildHabitActivityData(categoryProgress)}
+      className={className}
+      size={size}
+    />
+  );
+}
+
+function AppleActivityCard({
   activities,
   className,
   showDetails = true,
@@ -205,5 +255,19 @@ export function AppleActivityCard({
         {showDetails ? <DetailedActivityInfo activities={activities} /> : null}
       </div>
     </div>
+  );
+}
+
+export function HabitActivityCard({
+  categoryProgress,
+  className,
+  showDetails = true,
+}: Omit<HabitActivityRingProps, "size">) {
+  return (
+    <AppleActivityCard
+      activities={buildHabitActivityData(categoryProgress)}
+      className={className}
+      showDetails={showDetails}
+    />
   );
 }

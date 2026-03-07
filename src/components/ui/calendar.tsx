@@ -26,7 +26,7 @@ function Calendar({
         disabled: "opacity-35",
         hidden: "invisible",
         month: "space-y-4",
-        month_caption: "flex items-center justify-between px-1",
+        month_caption: "mb-4 flex items-center justify-between px-1",
         month_grid: "w-full border-collapse",
         months: "flex flex-col",
         nav: "flex items-center gap-2",
@@ -44,7 +44,10 @@ function Calendar({
       components={{
         Chevron: ({ className: iconClassName, orientation, ...iconProps }) =>
           orientation === "left" ? (
-            <ChevronLeft className={cn("size-4", iconClassName)} {...iconProps} />
+            <ChevronLeft
+              className={cn("size-4", iconClassName)}
+              {...iconProps}
+            />
           ) : (
             <ChevronRight
               className={cn("size-4", iconClassName)}

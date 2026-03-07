@@ -1,10 +1,9 @@
 import { CalendarDays, Flame, Snowflake } from "lucide-react";
 
-import { AppleActivityCard } from "@/components/ui/apple-activity-ring";
+import { HabitActivityCard } from "@/components/custom/apple-activity-ring";
 import { Card, CardContent } from "@/components/ui/card";
 
 import type { HabitCategoryProgress } from "../../shared/domain/habit";
-import { mapCategoryProgressToActivities } from "../lib/activity-rings";
 import { RING_COLORS } from "../lib/ring-colors";
 
 interface StreakCardProps {
@@ -27,7 +26,6 @@ export function StreakCard({
   categoryProgress,
   dateLabel,
 }: StreakCardProps) {
-  const activities = mapCategoryProgressToActivities(categoryProgress);
   const formattedDate = new Intl.DateTimeFormat(undefined, {
     day: "numeric",
     month: "short",
@@ -35,16 +33,31 @@ export function StreakCard({
   }).format(new Date(`${dateLabel}T00:00:00`));
 
   const stats: StatConfig[] = [
-    { color: RING_COLORS.fitness.base,      icon: Flame,        label: "Streak", value: currentStreak },
-    { color: RING_COLORS.productivity.base, icon: Snowflake,    label: "Freeze", value: availableFreezes },
-    { color: undefined,                     icon: CalendarDays, label: "Date",   value: formattedDate },
+    {
+      color: RING_COLORS.fitness.base,
+      icon: Flame,
+      label: "Streak",
+      value: currentStreak,
+    },
+    {
+      color: RING_COLORS.productivity.base,
+      icon: Snowflake,
+      label: "Freeze",
+      value: availableFreezes,
+    },
+    {
+      color: undefined,
+      icon: CalendarDays,
+      label: "Date",
+      value: formattedDate,
+    },
   ];
 
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card>
       <CardContent className="grid gap-6 p-6 lg:p-8">
         <div className="flex justify-center">
-          <AppleActivityCard activities={activities} />
+          <HabitActivityCard categoryProgress={categoryProgress} />
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
@@ -57,11 +70,15 @@ export function StreakCard({
                 <CardContent className="flex items-center gap-3">
                   <span
                     className="rounded-full border p-2"
-                    style={c ? {
-                      backgroundColor: `color-mix(in srgb, ${c} 12%, transparent)`,
-                      borderColor: `color-mix(in srgb, ${c} 30%, transparent)`,
-                      color: c,
-                    } : undefined}
+                    style={
+                      c
+                        ? {
+                            backgroundColor: `color-mix(in srgb, ${c} 12%, transparent)`,
+                            borderColor: `color-mix(in srgb, ${c} 30%, transparent)`,
+                            color: c,
+                          }
+                        : undefined
+                    }
                   >
                     <Icon className="size-4" />
                   </span>

@@ -1,7 +1,30 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("./assets/fonts/satoshi-400.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("./assets/fonts/satoshi-500.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("./assets/fonts/satoshi-700.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 700;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,7 +61,7 @@
   --sidebar-accent-foreground: oklch(0.2836 0.0272 156.4301);
   --sidebar-border: oklch(0.8513 0.0142 158.3553);
   --sidebar-ring: oklch(0.5313 0.1014 153.3713);
-  --font-sans: ui-monospace, "JetBrains Mono", "Fira Code", "Menlo", monospace;
+  --font-sans: "Satoshi", "Avenir Next", "Segoe UI", sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", "Menlo", monospace;
   --radius: 1rem;
@@ -103,7 +126,7 @@
   --sidebar-accent-foreground: oklch(0.901 0.0364 157.8146);
   --sidebar-border: oklch(0.2797 0.0207 157.0037);
   --sidebar-ring: oklch(0.6369 0.1241 153.2123);
-  --font-sans: ui-monospace, "JetBrains Mono", "Fira Code", "Menlo", monospace;
+  --font-sans: "Satoshi", "Avenir Next", "Segoe UI", sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", "Menlo", monospace;
   --radius: 1rem;

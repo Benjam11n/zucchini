@@ -1,34 +1,46 @@
-import type { DailySummary } from "../../shared/domain/streak";
+import type { HistoryDay } from "@/shared/domain/history";
+
 import {
   buildContributionWeeks,
+  getHistoryDayLookup,
   getHistoryStats,
-  getRecentHistory,
+  toDateKey,
 } from "./history-page.utils";
+
+function createHistoryDay(
+  date: string,
+  summary: Partial<HistoryDay["summary"]> = {}
+): HistoryDay {
+  return {
+    categoryProgress: [],
+    date,
+    habits: [],
+    summary: {
+      allCompleted: false,
+      completedAt: null,
+      date,
+      freezeUsed: false,
+      streakCountAfterDay: 0,
+      ...summary,
+    },
+  };
+}
 
 describe("buildContributionWeeks()", () => {
   it("pads the range to whole weeks and preserves completion states", () => {
-    const history: DailySummary[] = [
-      {
+    const history = [
+      createHistoryDay("2026-03-02", {
         allCompleted: true,
         completedAt: "2026-03-02T21:00:00.000Z",
-        date: "2026-03-02",
-        freezeUsed: false,
         streakCountAfterDay: 2,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-03-03",
+      }),
+      createHistoryDay("2026-03-03", {
         freezeUsed: true,
         streakCountAfterDay: 2,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-03-04",
-        freezeUsed: false,
+      }),
+      createHistoryDay("2026-03-04", {
         streakCountAfterDay: 0,
-      },
+      }),
     ];
 
     const weeks = buildContributionWeeks(history);
@@ -62,28 +74,10 @@ describe("buildContributionWeeks()", () => {
 
 describe("getHistoryStats()", () => {
   it("counts complete, freeze, and missed days separately", () => {
-    const history: DailySummary[] = [
-      {
-        allCompleted: true,
-        completedAt: "2026-03-02T21:00:00.000Z",
-        date: "2026-03-02",
-        freezeUsed: false,
-        streakCountAfterDay: 2,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-03-03",
-        freezeUsed: true,
-        streakCountAfterDay: 2,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-03-04",
-        freezeUsed: false,
-        streakCountAfterDay: 0,
-      },
+    const history = [
+      createHistoryDay("2026-03-02", { allCompleted: true }),
+      createHistoryDay("2026-03-03", { freezeUsed: true }),
+      createHistoryDay("2026-03-04"),
     ];
 
     expect(getHistoryStats(history)).toStrictEqual({
@@ -95,54 +89,12 @@ describe("getHistoryStats()", () => {
   });
 });
 
-describe("getRecentHistory()", () => {
-  it("filters by the selected range relative to the latest day", () => {
-    const history: DailySummary[] = [
-      {
-        allCompleted: true,
-        completedAt: "2026-03-08T21:00:00.000Z",
-        date: "2026-03-08",
-        freezeUsed: false,
-        streakCountAfterDay: 5,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-03-03",
-        freezeUsed: true,
-        streakCountAfterDay: 4,
-      },
-      {
-        allCompleted: false,
-        completedAt: null,
-        date: "2026-02-10",
-        freezeUsed: false,
-        streakCountAfterDay: 0,
-      },
-      {
-        allCompleted: true,
-        completedAt: "2025-03-12T21:00:00.000Z",
-        date: "2025-03-12",
-        freezeUsed: false,
-        streakCountAfterDay: 7,
-      },
-      {
-        allCompleted: true,
-        completedAt: "2025-03-08T21:00:00.000Z",
-        date: "2025-03-08",
-        freezeUsed: false,
-        streakCountAfterDay: 3,
-      },
-    ];
+describe("history date helpers", () => {
+  it("creates a date lookup and formats a date back to the same key", () => {
+    const history = [createHistoryDay("2026-03-08")];
+    const lookup = getHistoryDayLookup(history);
 
-    expect(
-      getRecentHistory(history, "week").map((day) => day.date)
-    ).toStrictEqual(["2026-03-08", "2026-03-03"]);
-    expect(
-      getRecentHistory(history, "month").map((day) => day.date)
-    ).toStrictEqual(["2026-03-08", "2026-03-03", "2026-02-10"]);
-    expect(
-      getRecentHistory(history, "year").map((day) => day.date)
-    ).toStrictEqual(["2026-03-08", "2026-03-03", "2026-02-10", "2025-03-12"]);
+    expect(lookup.get("2026-03-08")?.date).toBe("2026-03-08");
+    expect(toDateKey(new Date(2026, 2, 8))).toBe("2026-03-08");
   });
 });

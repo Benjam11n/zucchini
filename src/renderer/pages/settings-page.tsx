@@ -18,9 +18,9 @@ import {
   DEFAULT_HABIT_CATEGORY,
   HABIT_CATEGORY_DEFINITIONS,
   normalizeHabitCategory,
-} from "../../shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "../../shared/domain/habit";
-import type { AppSettings, ThemeMode } from "../../shared/domain/settings";
+} from "@/shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 import { RING_COLORS } from "../lib/ring-colors";
 
 // ─── Theme options with inline SVG icons ────────────────────────────────────
@@ -120,7 +120,8 @@ function HabitCategorySelector({
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-all",
               "border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
-              !isSelected && "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
+              !isSelected &&
+                "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
             )}
             style={
               isSelected
@@ -205,7 +206,6 @@ export function SettingsPage({
 
   return (
     <div className="grid gap-6">
-      {/* ── Reminders ─────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardDescription>Settings</CardDescription>
@@ -268,7 +268,6 @@ export function SettingsPage({
         </CardContent>
       </Card>
 
-      {/* ── Appearance ────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
@@ -310,7 +309,6 @@ export function SettingsPage({
         </CardContent>
       </Card>
 
-      {/* ── Habits ────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardDescription>Habits</CardDescription>

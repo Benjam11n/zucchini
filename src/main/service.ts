@@ -2,10 +2,7 @@ import {
   getHabitCategoryProgress,
   normalizeHabitCategory,
 } from "../shared/domain/habit";
-import type {
-  HabitCategory,
-  HabitWithStatus,
-} from "../shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "../shared/domain/habit";
 import type { HistoryDay } from "../shared/domain/history";
 import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
