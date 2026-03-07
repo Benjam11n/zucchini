@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import type { HabitWithStatus } from "../shared/domain/habit";
 import type { ReminderSettings } from "../shared/domain/settings";
 import type { DailySummary } from "../shared/domain/streak";
@@ -9,32 +10,28 @@ import { TodayPage } from "./pages/TodayPage";
 
 type Tab = "today" | "history" | "settings";
 
-type AppState = {
+interface AppState {
   todayState: TodayState | null;
   history: DailySummary[];
   settingsDraft: ReminderSettings | null;
-};
+}
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("today");
   const [state, setState] = useState<AppState>({
-    todayState: null,
     history: [],
     settingsDraft: null,
+    todayState: null,
   });
-
-  useEffect(() => {
-    void reloadAll();
-  }, []);
 
   async function reloadAll(nextTodayState?: TodayState): Promise<void> {
     const todayState = nextTodayState ?? (await window.habits.getTodayState());
     const history = await window.habits.getHistory();
 
     setState((current) => ({
-      todayState,
       history,
       settingsDraft: current.settingsDraft ?? todayState.settings,
+      todayState,
     }));
   }
 
@@ -47,18 +44,20 @@ export default function App() {
     await refreshToday(window.habits.toggleHabit(habitId));
   }
 
-  async function handleUpdateSettings(settings: ReminderSettings): Promise<void> {
+  async function handleUpdateSettings(
+    settings: ReminderSettings
+  ): Promise<void> {
     const nextSettings = await window.habits.updateReminderSettings(settings);
 
     setState((current) => ({
+      history: current.history,
+      settingsDraft: nextSettings,
       todayState: current.todayState
         ? {
             ...current.todayState,
             settings: nextSettings,
           }
         : current.todayState,
-      history: current.history,
-      settingsDraft: nextSettings,
     }));
   }
 
@@ -70,7 +69,10 @@ export default function App() {
     }));
   }
 
-  async function handleRenameHabit(habitId: number, name: string): Promise<void> {
+  async function handleRenameHabit(
+    habitId: number,
+    name: string
+  ): Promise<void> {
     await refreshToday(window.habits.renameHabit(habitId, name));
   }
 
@@ -78,9 +80,17 @@ export default function App() {
     await refreshToday(window.habits.archiveHabit(habitId));
   }
 
-  async function handleReorderHabits(nextHabits: HabitWithStatus[]): Promise<void> {
-    await refreshToday(window.habits.reorderHabits(nextHabits.map((habit) => habit.id)));
+  async function handleReorderHabits(
+    nextHabits: HabitWithStatus[]
+  ): Promise<void> {
+    await refreshToday(
+      window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
+    );
   }
+
+  useEffect(() => {
+    void reloadAll();
+  }, []);
 
   if (!state.todayState) {
     return <main className="shell loading">Loading...</main>;
@@ -118,7 +128,8 @@ export default function App() {
               setTab("settings");
               setState((current) => ({
                 ...current,
-                settingsDraft: current.todayState?.settings ?? current.settingsDraft,
+                settingsDraft:
+                  current.todayState?.settings ?? current.settingsDraft,
               }));
             }}
             type="button"
@@ -130,7 +141,10 @@ export default function App() {
 
       <section className="content">
         {tab === "today" ? (
-          <TodayPage state={state.todayState} onToggleHabit={handleToggleHabit} />
+          <TodayPage
+            state={state.todayState}
+            onToggleHabit={handleToggleHabit}
+          />
         ) : null}
         {tab === "history" ? <HistoryPage history={state.history} /> : null}
         {tab === "settings" ? (

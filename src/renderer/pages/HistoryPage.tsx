@@ -1,8 +1,8 @@
 import type { DailySummary } from "../../shared/domain/streak";
 
-type HistoryPageProps = {
+interface HistoryPageProps {
   history: DailySummary[];
-};
+}
 
 export function HistoryPage({ history }: HistoryPageProps) {
   return (
@@ -18,8 +18,8 @@ export function HistoryPage({ history }: HistoryPageProps) {
             <div>
               <strong>{day.date}</strong>
               <p>
-                {day.allCompleted ? "Completed" : "Incomplete"} · Streak after day:{" "}
-                {day.streakCountAfterDay}
+                {day.allCompleted ? "Completed" : "Incomplete"} · Streak after
+                day: {day.streakCountAfterDay}
               </p>
             </div>
             <span className={day.freezeUsed ? "pill used" : "pill"}>

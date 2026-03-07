@@ -1,40 +1,51 @@
 import path from "node:path";
-import { app, BrowserWindow } from "electron";
+
 import { Effect } from "effect";
-import { initializeDatabase, getTodayState } from "./db";
+import { app, BrowserWindow } from "electron";
+
+import { systemClock } from "./clock";
 import { registerIpcHandlers } from "./ipc";
-import { scheduleReminder } from "./scheduler";
+import { SqliteHabitRepository } from "./repository";
+import { createReminderScheduler } from "./scheduler";
+import { HabitService } from "./service";
 
 function createWindow(): void {
   const win = new BrowserWindow({
-    width: 1100,
-    height: 760,
-    minWidth: 900,
-    minHeight: 640,
     backgroundColor: "#f7f3e8",
+    height: 760,
+    minHeight: 640,
+    minWidth: 900,
+    title: "Zucchini",
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.mjs"),
     },
-    title: "Zucchini",
+    width: 1100,
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    win.loadFile(path.join(__dirname, "../renderer/index.html"));
+    win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
+
+const service = new HabitService(new SqliteHabitRepository(), systemClock);
+const reminders = createReminderScheduler(() => service.getTodayState());
 
 void app.whenReady().then(() => {
   Effect.runSync(
     Effect.sync(() => {
-      initializeDatabase();
-      registerIpcHandlers();
+      service.initialize();
 
-      const today = getTodayState();
-      scheduleReminder(today.settings);
+      registerIpcHandlers({
+        onReminderSettingsChanged: (settings) => reminders.schedule(settings),
+        service,
+      });
+
+      const today = service.getTodayState();
+      reminders.schedule(today.settings);
       createWindow();
-    }),
+    })
   );
 
   app.on("activate", () => {
@@ -45,6 +56,8 @@ void app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  reminders.cancel();
+
   if (process.platform !== "darwin") {
     app.quit();
   }

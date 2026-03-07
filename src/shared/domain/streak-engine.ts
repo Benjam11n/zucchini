@@ -1,10 +1,10 @@
 import { awardedFreezeForStreak } from "./freeze";
 
-export type RollingStreakState = {
+export interface RollingStreakState {
   currentStreak: number;
   bestStreak: number;
   availableFreezes: number;
-};
+}
 
 export type SettledDayResult = RollingStreakState & {
   freezeUsed: boolean;
@@ -15,47 +15,48 @@ export type SettledDayResult = RollingStreakState & {
 export function settleClosedDay(
   state: RollingStreakState,
   allCompleted: boolean,
-  completedAt: string | null,
+  completedAt: string | null
 ): SettledDayResult {
   if (allCompleted) {
     const currentStreak = state.currentStreak + 1;
     const bestStreak = Math.max(state.bestStreak, currentStreak);
-    const availableFreezes = state.availableFreezes + Number(awardedFreezeForStreak(currentStreak));
+    const availableFreezes =
+      state.availableFreezes + Number(awardedFreezeForStreak(currentStreak));
 
     return {
-      currentStreak,
-      bestStreak,
-      availableFreezes,
-      freezeUsed: false,
       allCompleted: true,
+      availableFreezes,
+      bestStreak,
       completedAt,
+      currentStreak,
+      freezeUsed: false,
     };
   }
 
   if (state.availableFreezes > 0) {
     return {
-      currentStreak: state.currentStreak,
-      bestStreak: state.bestStreak,
-      availableFreezes: state.availableFreezes - 1,
-      freezeUsed: true,
       allCompleted: false,
+      availableFreezes: state.availableFreezes - 1,
+      bestStreak: state.bestStreak,
       completedAt: null,
+      currentStreak: state.currentStreak,
+      freezeUsed: true,
     };
   }
 
   return {
-    currentStreak: 0,
-    bestStreak: state.bestStreak,
-    availableFreezes: 0,
-    freezeUsed: false,
     allCompleted: false,
+    availableFreezes: 0,
+    bestStreak: state.bestStreak,
     completedAt: null,
+    currentStreak: 0,
+    freezeUsed: false,
   };
 }
 
 export function previewOpenDay(
   state: RollingStreakState,
-  allCompleted: boolean,
+  allCompleted: boolean
 ): RollingStreakState {
   if (!allCompleted) {
     return state;
@@ -64,8 +65,9 @@ export function previewOpenDay(
   const currentStreak = state.currentStreak + 1;
 
   return {
-    currentStreak,
+    availableFreezes:
+      state.availableFreezes + Number(awardedFreezeForStreak(currentStreak)),
     bestStreak: Math.max(state.bestStreak, currentStreak),
-    availableFreezes: state.availableFreezes + Number(awardedFreezeForStreak(currentStreak)),
+    currentStreak,
   };
 }

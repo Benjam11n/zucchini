@@ -1,6 +1,6 @@
-type FreezeCardProps = {
+interface FreezeCardProps {
   availableFreezes: number;
-};
+}
 
 export function FreezeCard({ availableFreezes }: FreezeCardProps) {
   return (

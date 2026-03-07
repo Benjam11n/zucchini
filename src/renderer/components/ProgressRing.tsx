@@ -1,6 +1,6 @@
-type ProgressRingProps = {
+interface ProgressRingProps {
   progress: number;
-};
+}
 
 export function ProgressRing({ progress }: ProgressRingProps) {
   const circumference = 2 * Math.PI * 52;

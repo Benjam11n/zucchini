@@ -1,8 +1,9 @@
 import { useState } from "react";
+
 import type { HabitWithStatus } from "../../shared/domain/habit";
 import type { ReminderSettings } from "../../shared/domain/settings";
 
-type SettingsPageProps = {
+interface SettingsPageProps {
   habits: HabitWithStatus[];
   settings: ReminderSettings;
   onChange: (settings: ReminderSettings) => void;
@@ -11,17 +12,17 @@ type SettingsPageProps = {
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
-};
+}
 
 function reorderHabitList(
   habits: HabitWithStatus[],
   habitId: number,
-  direction: -1 | 1,
+  direction: -1 | 1
 ): HabitWithStatus[] {
   const index = habits.findIndex((habit) => habit.id === habitId);
   const targetIndex = index + direction;
 
-  if (index < 0 || targetIndex < 0 || targetIndex >= habits.length) {
+  if (index === -1 || targetIndex < 0 || targetIndex >= habits.length) {
     return habits;
   }
 
@@ -129,7 +130,9 @@ export function SettingsPage({
                   className="secondary-button"
                   disabled={index === 0}
                   onClick={() => {
-                    void onReorderHabits(reorderHabitList(habits, habit.id, -1));
+                    void onReorderHabits(
+                      reorderHabitList(habits, habit.id, -1)
+                    );
                   }}
                   type="button"
                 >

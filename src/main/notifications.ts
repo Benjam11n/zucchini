@@ -6,7 +6,7 @@ export function showIncompleteReminder(): void {
   }
 
   new Notification({
-    title: "Zucchini reminder",
     body: "Your habits are still open for today.",
+    title: "Zucchini reminder",
   }).show();
 }

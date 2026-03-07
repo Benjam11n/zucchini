@@ -1,7 +1,30 @@
 {
-  "ignorePatterns": ["dist", "dist-electron", "node_modules"],
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "dist/**",
+    "dist-electron/**",
+    "node_modules/**",
+    "release/**"
+  ],
   "rules": {
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
-  }
+    "class-methods-use-this": "off",
+    "func-style": "off",
+    "import/no-relative-parent-imports": "off",
+    "max-classes-per-file": "off",
+    "max-statements": "off",
+    "no-empty-function": "off",
+    "no-void": "off",
+    "promise/prefer-await-to-then": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    "typescript-eslint/parameter-properties": "off",
+    "typescript/no-import-type-side-effects": "off",
+    "typescript/no-non-null-assertion": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/prefer-module": "off"
+  },
+  "extends": [
+    "./node_modules/ultracite/config/oxlint/core/.oxlintrc.json",
+    "./node_modules/ultracite/config/oxlint/react/.oxlintrc.json"
+  ]
 }

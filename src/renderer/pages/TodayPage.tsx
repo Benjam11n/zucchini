@@ -1,19 +1,19 @@
+import { getProgress } from "../../shared/domain/streak";
+import type { TodayState } from "../../shared/types/ipc";
 import { FreezeCard } from "../components/FreezeCard";
 import { HabitChecklist } from "../components/HabitChecklist";
 import { ProgressRing } from "../components/ProgressRing";
 import { StreakCard } from "../components/StreakCard";
-import { getProgress } from "../../shared/domain/streak";
-import type { TodayState } from "../../shared/types/ipc";
 
-type TodayPageProps = {
+interface TodayPageProps {
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
-};
+}
 
 export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
   const progress = getProgress(
     state.habits.map((habit) => habit.completed),
-    state.habits.length,
+    state.habits.length
   );
 
   return (

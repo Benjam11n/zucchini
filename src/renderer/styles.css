@@ -5,8 +5,16 @@
   font-weight: 400;
   color: #1c1b17;
   background:
-    radial-gradient(circle at top left, rgba(243, 180, 94, 0.35), transparent 28%),
-    radial-gradient(circle at top right, rgba(118, 182, 126, 0.28), transparent 24%),
+    radial-gradient(
+      circle at top left,
+      rgba(243, 180, 94, 0.35),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(118, 182, 126, 0.28),
+      transparent 24%
+    ),
     linear-gradient(180deg, #f7f3e8 0%, #efe7d4 100%);
 }
 

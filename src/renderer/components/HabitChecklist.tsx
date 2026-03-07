@@ -1,9 +1,9 @@
 import type { HabitWithStatus } from "../../shared/domain/habit";
 
-type HabitChecklistProps = {
+interface HabitChecklistProps {
   habits: HabitWithStatus[];
   onToggleHabit: (habitId: number) => void;
-};
+}
 
 export function HabitChecklist({ habits, onToggleHabit }: HabitChecklistProps) {
   return (

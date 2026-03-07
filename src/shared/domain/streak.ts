@@ -1,19 +1,19 @@
-export type StreakState = {
+export interface StreakState {
   currentStreak: number;
   bestStreak: number;
   availableFreezes: number;
   lastEvaluatedDate: string | null;
-};
+}
 
-export type DailySummary = {
+export interface DailySummary {
   date: string;
   allCompleted: boolean;
   streakCountAfterDay: number;
   freezeUsed: boolean;
   completedAt: string | null;
-};
+}
 
-export function countCompletedHabits(completed: boolean[]): number {
+function countCompletedHabits(completed: boolean[]): number {
   return completed.filter(Boolean).length;
 }
 

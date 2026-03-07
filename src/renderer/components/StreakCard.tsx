@@ -1,7 +1,7 @@
-type StreakCardProps = {
+interface StreakCardProps {
   currentStreak: number;
   bestStreak: number;
-};
+}
 
 export function StreakCard({ currentStreak, bestStreak }: StreakCardProps) {
   return (

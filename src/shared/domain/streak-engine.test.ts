@@ -1,124 +1,123 @@
-import { describe, expect, it } from "vitest";
 import { previewOpenDay, settleClosedDay } from "./streak-engine";
 
-describe("settleClosedDay", () => {
+describe("settleClosedDay behavior", () => {
   it("increments streak for a completed closed day", () => {
     const result = settleClosedDay(
       {
-        currentStreak: 4,
-        bestStreak: 7,
         availableFreezes: 1,
+        bestStreak: 7,
+        currentStreak: 4,
       },
       true,
-      "2026-03-07T21:30:00.000",
+      "2026-03-07T21:30:00.000"
     );
 
-    expect(result).toEqual({
-      currentStreak: 5,
-      bestStreak: 7,
-      availableFreezes: 1,
-      freezeUsed: false,
+    expect(result).toStrictEqual({
       allCompleted: true,
+      availableFreezes: 1,
+      bestStreak: 7,
       completedAt: "2026-03-07T21:30:00.000",
+      currentStreak: 5,
+      freezeUsed: false,
     });
   });
 
   it("consumes a freeze instead of resetting when a missed day has one available", () => {
     const result = settleClosedDay(
       {
-        currentStreak: 9,
-        bestStreak: 11,
         availableFreezes: 2,
+        bestStreak: 11,
+        currentStreak: 9,
       },
       false,
-      null,
+      null
     );
 
-    expect(result).toEqual({
-      currentStreak: 9,
-      bestStreak: 11,
-      availableFreezes: 1,
-      freezeUsed: true,
+    expect(result).toStrictEqual({
       allCompleted: false,
+      availableFreezes: 1,
+      bestStreak: 11,
       completedAt: null,
+      currentStreak: 9,
+      freezeUsed: true,
     });
   });
 
   it("resets the streak when a missed day has no freezes left", () => {
     const result = settleClosedDay(
       {
-        currentStreak: 9,
-        bestStreak: 11,
         availableFreezes: 0,
+        bestStreak: 11,
+        currentStreak: 9,
       },
       false,
-      null,
+      null
     );
 
-    expect(result).toEqual({
-      currentStreak: 0,
-      bestStreak: 11,
-      availableFreezes: 0,
-      freezeUsed: false,
+    expect(result).toStrictEqual({
       allCompleted: false,
+      availableFreezes: 0,
+      bestStreak: 11,
       completedAt: null,
+      currentStreak: 0,
+      freezeUsed: false,
     });
   });
 
   it("awards a new freeze on 15-streak milestones", () => {
     const result = settleClosedDay(
       {
-        currentStreak: 14,
-        bestStreak: 14,
         availableFreezes: 0,
+        bestStreak: 14,
+        currentStreak: 14,
       },
       true,
-      "2026-03-15T22:00:00.000",
+      "2026-03-15T22:00:00.000"
     );
 
-    expect(result).toEqual({
-      currentStreak: 15,
-      bestStreak: 15,
-      availableFreezes: 1,
-      freezeUsed: false,
+    expect(result).toStrictEqual({
       allCompleted: true,
+      availableFreezes: 1,
+      bestStreak: 15,
       completedAt: "2026-03-15T22:00:00.000",
+      currentStreak: 15,
+      freezeUsed: false,
     });
   });
 });
 
-describe("previewOpenDay", () => {
+describe("previewOpenDay behavior", () => {
   it("shows today's completed habits as a streak preview", () => {
     const result = previewOpenDay(
       {
-        currentStreak: 6,
-        bestStreak: 8,
         availableFreezes: 1,
+        bestStreak: 8,
+        currentStreak: 6,
       },
-      true,
+      true
     );
 
-    expect(result).toEqual({
-      currentStreak: 7,
-      bestStreak: 8,
+    expect(result).toStrictEqual({
       availableFreezes: 1,
+      bestStreak: 8,
+      currentStreak: 7,
     });
   });
 
   it("keeps the settled state unchanged when today is incomplete", () => {
     const result = previewOpenDay(
       {
-        currentStreak: 6,
-        bestStreak: 8,
         availableFreezes: 1,
+        bestStreak: 8,
+        currentStreak: 6,
       },
-      false,
+      false
     );
 
-    expect(result).toEqual({
-      currentStreak: 6,
-      bestStreak: 8,
+    expect(result).toStrictEqual({
       availableFreezes: 1,
+      bestStreak: 8,
+      currentStreak: 6,
     });
   });
 });
