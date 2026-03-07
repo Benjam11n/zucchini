@@ -1,4 +1,4 @@
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 import {
   previewOpenDay,
@@ -13,7 +13,7 @@ export interface HabitsService {
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getHistory(): DailySummary[];
-  updateReminderSettings(settings: ReminderSettings): ReminderSettings;
+  updateSettings(settings: AppSettings): AppSettings;
   createHabit(name: string): TodayState;
   renameHabit(habitId: number, name: string): TodayState;
   archiveHabit(habitId: number): TodayState;
@@ -59,11 +59,8 @@ export class HabitService implements HabitsService {
     ].slice(0, 60);
   }
 
-  updateReminderSettings(settings: ReminderSettings): ReminderSettings {
-    return this.repository.saveReminderSettings(
-      settings,
-      this.clock.timezone()
-    );
+  updateSettings(settings: AppSettings): AppSettings {
+    return this.repository.saveSettings(settings, this.clock.timezone());
   }
 
   createHabit(name: string): TodayState {
@@ -124,7 +121,7 @@ export class HabitService implements HabitsService {
     return {
       date: today,
       habits,
-      settings: this.repository.getReminderSettings(this.clock.timezone()),
+      settings: this.repository.getSettings(this.clock.timezone()),
       streak: {
         availableFreezes: preview.availableFreezes,
         bestStreak: preview.bestStreak,

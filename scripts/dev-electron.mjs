@@ -1,43 +1,90 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import { watch } from "node:fs";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 import waitOn from "wait-on";
 
-import { resolveElectronPath } from "./electron-launcher.mjs";
+import { desktopDir, resolveElectronPath } from "./electron-launcher.mjs";
 
-const devServerUrl = "http://127.0.0.1:5173";
+const port = Number(process.env.ELECTRON_RENDERER_PORT ?? 5173);
+const devServerUrl = `http://localhost:${port}`;
 const requiredFiles = ["dist-electron/main.js", "dist-electron/preload.js"];
-const watchedFiles = new Set(["main.js", "preload.js"]);
-const childEnv = { ...process.env, VITE_DEV_SERVER_URL: devServerUrl };
-
-delete childEnv.ELECTRON_RUN_AS_NODE;
+const watchedDirectories = [
+  { directory: "dist-electron", files: new Set(["main.js", "preload.js"]) },
+];
+const forcedShutdownTimeoutMs = 1500;
+const restartDebounceMs = 120;
+const childTreeGracePeriodMs = 1200;
 
 await waitOn({
   resources: [
-    `tcp:5173`,
+    `tcp:${port}`,
     ...requiredFiles.map((filePath) => `file:${filePath}`),
   ],
 });
 
-let currentApp = null;
-let restartTimer = null;
-let shuttingDown = false;
-const expectedExits = new WeakSet();
+const childEnv = { ...process.env };
+delete childEnv.ELECTRON_RUN_AS_NODE;
 
-function startApp() {
-  if (shuttingDown || currentApp) {
+let shuttingDown = false;
+let restartTimer = null;
+let currentApp = null;
+let restartQueue = Promise.resolve();
+const expectedExits = new WeakSet();
+const watchers = [];
+let launchCount = 0;
+
+function killChildTreeByPid(pid, signal) {
+  if (process.platform === "win32" || typeof pid !== "number") {
     return;
   }
 
-  const app = spawn(resolveElectronPath(), ["dist-electron/main.js"], {
-    cwd: process.cwd(),
-    env: childEnv,
-    stdio: "inherit",
+  spawnSync("pkill", [`-${signal}`, "-P", String(pid)], { stdio: "ignore" });
+}
+
+function cleanupStaleDevApps() {
+  if (process.platform === "win32") {
+    return;
+  }
+
+  spawnSync("pkill", ["-f", "--", `--zucchini-dev-root=${desktopDir}`], {
+    stdio: "ignore",
   });
+}
+
+function startApp() {
+  if (shuttingDown || currentApp !== null) {
+    return;
+  }
+
+  const app = spawn(
+    resolveElectronPath(),
+    [`--zucchini-dev-root=${desktopDir}`, "dist-electron/main.js"],
+    {
+      cwd: desktopDir,
+      env: {
+        ...childEnv,
+        VITE_DEV_SERVER_URL: devServerUrl,
+        ZUCCHINI_ELECTRON_RESTART: launchCount > 0 ? "true" : "false",
+      },
+      stdio: "inherit",
+    }
+  );
 
   currentApp = app;
+  launchCount += 1;
+
+  app.once("error", () => {
+    if (currentApp === app) {
+      currentApp = null;
+    }
+
+    if (!shuttingDown) {
+      scheduleRestart();
+    }
+  });
 
   app.once("exit", () => {
     if (currentApp === app) {
@@ -58,23 +105,23 @@ async function stopApp() {
 
   currentApp = null;
   expectedExits.add(app);
-  const abortController = new AbortController();
-  const exitPromise = once(app, "exit").finally(() => {
-    abortController.abort();
-  });
+
+  const exitPromise = once(app, "exit").then(() => {});
 
   app.kill("SIGTERM");
+  killChildTreeByPid(app.pid, "TERM");
 
-  try {
-    await delay(1500, undefined, {
-      ref: false,
-      signal: abortController.signal,
-    });
-    app.kill("SIGKILL");
-  } catch {
-    // Exit arrived before the timeout elapsed.
+  const exitedGracefully = await Promise.race([
+    exitPromise.then(() => true),
+    delay(forcedShutdownTimeoutMs, false),
+  ]);
+
+  if (exitedGracefully) {
+    return;
   }
 
+  app.kill("SIGKILL");
+  killChildTreeByPid(app.pid, "KILL");
   await exitPromise;
 }
 
@@ -87,33 +134,52 @@ function scheduleRestart() {
     clearTimeout(restartTimer);
   }
 
-  restartTimer = setTimeout(async () => {
+  restartTimer = setTimeout(() => {
     restartTimer = null;
-    await stopApp();
-
-    if (!shuttingDown) {
-      startApp();
-    }
-  }, 150);
+    restartQueue = restartQueue
+      .catch(() => null)
+      .then(async () => {
+        await stopApp();
+        if (!shuttingDown) {
+          startApp();
+        }
+      });
+  }, restartDebounceMs);
 }
 
-const watcher = watch(
-  "dist-electron",
-  { persistent: true },
-  (_eventType, fileName) => {
-    if (typeof fileName !== "string" || !watchedFiles.has(fileName)) {
-      return;
-    }
+function startWatchers() {
+  for (const { directory, files } of watchedDirectories) {
+    const watcher = watch(
+      join(desktopDir, directory),
+      { persistent: true },
+      (_eventType, filename) => {
+        if (typeof filename !== "string" || !files.has(filename)) {
+          return;
+        }
 
-    scheduleRestart();
+        scheduleRestart();
+      }
+    );
+
+    watchers.push(watcher);
   }
-);
+}
+
+function killChildTree(signal) {
+  if (process.platform === "win32") {
+    return;
+  }
+
+  // Kill direct children as a final fallback in case normal shutdown leaves stragglers.
+  spawnSync("pkill", [`-${signal}`, "-P", String(process.pid)], {
+    stdio: "ignore",
+  });
+}
 
 async function shutdown(exitCode) {
   if (shuttingDown) {
     return;
   }
-
   shuttingDown = true;
 
   if (restartTimer) {
@@ -121,17 +187,28 @@ async function shutdown(exitCode) {
     restartTimer = null;
   }
 
-  watcher.close();
+  for (const watcher of watchers) {
+    watcher.close();
+  }
+
   await stopApp();
+  killChildTree("TERM");
+  await delay(childTreeGracePeriodMs);
+  killChildTree("KILL");
+
   process.exit(exitCode);
 }
 
+startWatchers();
+cleanupStaleDevApps();
 startApp();
 
 process.once("SIGINT", () => {
   void shutdown(130);
 });
-
 process.once("SIGTERM", () => {
   void shutdown(143);
+});
+process.once("SIGHUP", () => {
+  void shutdown(129);
 });

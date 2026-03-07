@@ -1,18 +1,16 @@
+import { BarChart3, CalendarDays, Settings2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import type { HabitWithStatus } from "../shared/domain/habit";
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings, ThemeMode } from "../shared/domain/settings";
 import type { DailySummary } from "../shared/domain/streak";
 import type { TodayState } from "../shared/types/ipc";
 import { HistoryPage } from "./pages/history-page";
@@ -24,11 +22,18 @@ type Tab = "today" | "history" | "settings";
 interface AppState {
   todayState: TodayState | null;
   history: DailySummary[];
-  settingsDraft: ReminderSettings | null;
+  settingsDraft: AppSettings | null;
+}
+
+function getSystemTheme(): ThemeMode {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("today");
+  const [systemTheme, setSystemTheme] = useState<ThemeMode>(getSystemTheme);
   const [state, setState] = useState<AppState>({
     history: [],
     settingsDraft: null,
@@ -55,10 +60,8 @@ export default function App() {
     await refreshToday(window.habits.toggleHabit(habitId));
   }
 
-  async function handleUpdateSettings(
-    settings: ReminderSettings
-  ): Promise<void> {
-    const nextSettings = await window.habits.updateReminderSettings(settings);
+  async function handleUpdateSettings(settings: AppSettings): Promise<void> {
+    const nextSettings = await window.habits.updateSettings(settings);
 
     setState((current) => ({
       history: current.history,
@@ -99,14 +102,51 @@ export default function App() {
     );
   }
 
+  function handleTabChange(nextTab: Tab): void {
+    setTab(nextTab);
+
+    if (nextTab !== "settings") {
+      return;
+    }
+
+    setState((current) => ({
+      ...current,
+      settingsDraft: current.todayState?.settings ?? current.settingsDraft,
+    }));
+  }
+
   useEffect(() => {
     void reloadAll();
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncSystemTheme = () => {
+      setSystemTheme(mediaQuery.matches ? "dark" : "light");
+    };
+
+    syncSystemTheme();
+    mediaQuery.addEventListener("change", syncSystemTheme);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncSystemTheme);
+    };
+  }, []);
+
+  useEffect(() => {
+    const preferredTheme =
+      (state.settingsDraft ?? state.todayState?.settings)?.themeMode ??
+      "system";
+    const resolvedTheme =
+      preferredTheme === "system" ? systemTheme : preferredTheme;
+
+    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
+  }, [state.settingsDraft, state.todayState, systemTheme]);
+
   if (!state.todayState) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <Card className="w-full max-w-sm">
+      <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
+        <Card className="w-full max-w-sm border-border/70 bg-card/88">
           <CardHeader>
             <CardTitle>Loading</CardTitle>
             <CardDescription>
@@ -121,77 +161,76 @@ export default function App() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Tabs
-        className="grid min-h-screen lg:grid-cols-[280px_1fr]"
-        onValueChange={(value) => {
-          const nextTab = value as Tab;
-          setTab(nextTab);
-
-          if (nextTab === "settings") {
-            setState((current) => ({
-              ...current,
-              settingsDraft:
-                current.todayState?.settings ?? current.settingsDraft,
-            }));
-          }
-        }}
+        className="grid min-h-screen lg:grid-cols-[96px_1fr]"
+        onValueChange={(value) => handleTabChange(value as Tab)}
         value={tab}
       >
-        <aside className="border-b px-4 py-4 lg:border-r lg:border-b-0 lg:px-6 lg:py-8">
-          <Card>
-            <CardHeader>
-              <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-                Habit tracker
-              </CardDescription>
-              <CardTitle className="text-3xl font-semibold tracking-tight">
+        <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-3 lg:py-6">
+          <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
+            <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
+              <div className="flex size-12 items-center justify-center bg-primary text-lg font-black text-primary-foreground shadow-sm">
+                Z
+              </div>
+              <span className="text-[0.68rem] font-bold tracking-[0.24em] uppercase text-foreground/55">
                 Zucchini
-              </CardTitle>
-              <CardDescription className="max-w-xs text-sm leading-6">
-                Local-first daily streaks with freezes, reminders, and history.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-2">
-              <Button
-                className={cn("justify-start", tab === "today" && "shadow-sm")}
-                onClick={() => setTab("today")}
-                type="button"
-                variant={tab === "today" ? "default" : "ghost"}
+              </span>
+            </div>
+
+            <TabsList className="hidden flex-col gap-2 rounded-none bg-transparent p-0 lg:flex">
+              <TabsTrigger
+                aria-label="Today"
+                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="today"
               >
-                Today
-              </Button>
-              <Button
-                className={cn(
-                  "justify-start",
-                  tab === "history" && "shadow-sm"
-                )}
-                onClick={() => setTab("history")}
-                type="button"
-                variant={tab === "history" ? "default" : "ghost"}
+                <span className="sr-only">Today</span>
+                <CalendarDays className="size-5" />
+              </TabsTrigger>
+              <TabsTrigger
+                aria-label="History"
+                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="history"
               >
-                History
-              </Button>
-              <Button
-                className={cn(
-                  "justify-start",
-                  tab === "settings" && "shadow-sm"
-                )}
-                onClick={() => {
-                  setTab("settings");
-                  setState((current) => ({
-                    ...current,
-                    settingsDraft:
-                      current.todayState?.settings ?? current.settingsDraft,
-                  }));
-                }}
-                type="button"
-                variant={tab === "settings" ? "default" : "ghost"}
+                <span className="sr-only">History</span>
+                <BarChart3 className="size-5" />
+              </TabsTrigger>
+              <TabsTrigger
+                aria-label="Settings"
+                className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="settings"
               >
-                Settings
-              </Button>
-            </CardContent>
-          </Card>
+                <span className="sr-only">Settings</span>
+                <Settings2 className="size-5" />
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex flex-1 items-center gap-3 lg:hidden">
+              <TabsList className="grid flex-1 grid-cols-3 rounded-2xl bg-muted/80 p-1">
+                <TabsTrigger className="px-4" value="today">
+                  Today
+                </TabsTrigger>
+                <TabsTrigger className="px-4" value="history">
+                  History
+                </TabsTrigger>
+                <TabsTrigger className="px-4" value="settings">
+                  Settings
+                </TabsTrigger>
+              </TabsList>
+
+              <Card className="border-none bg-transparent py-0 shadow-none">
+                <CardHeader className="px-0 py-0 text-right">
+                  <CardTitle className="text-base font-black tracking-tight text-foreground">
+                    Zucchini
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    Keep the streak alive
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+          </div>
         </aside>
 
-        <section className="px-4 py-6 sm:px-6 lg:px-8">
+        <section className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <div className="mx-auto w-full max-w-6xl">
             <TabsContent className="mt-0" value="today">
               <TodayPage

@@ -1,11 +1,11 @@
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings } from "../shared/domain/settings";
 import type { TodayState } from "../shared/types/ipc";
 import { showIncompleteReminder } from "./notifications";
 
 let reminderTimeout: NodeJS.Timeout | null = null;
 
 interface ReminderScheduler {
-  schedule: (settings: ReminderSettings) => void;
+  schedule: (settings: AppSettings) => void;
   cancel: () => void;
 }
 
@@ -19,7 +19,7 @@ export function createReminderScheduler(
     }
   }
 
-  function schedule(settings: ReminderSettings): void {
+  function schedule(settings: AppSettings): void {
     cancel();
 
     if (!settings.reminderEnabled) {

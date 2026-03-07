@@ -1,15 +1,6 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { getProgress } from "../../shared/domain/streak";
 import type { TodayState } from "../../shared/types/ipc";
-import { FreezeCard } from "../components/freeze-card";
 import { HabitChecklist } from "../components/habit-checklist";
-import { ProgressRing } from "../components/progress-ring";
 import { StreakCard } from "../components/streak-card";
 
 interface TodayPageProps {
@@ -22,29 +13,24 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
     state.habits.map((habit) => habit.completed),
     state.habits.length
   );
+  const completedCount = state.habits.filter((habit) => habit.completed).length;
 
   return (
     <div className="grid gap-6">
-      <Card>
-        <CardHeader className="gap-3">
-          <CardDescription>Today</CardDescription>
-          <CardTitle>{state.date}</CardTitle>
-          <CardDescription>
-            Complete every habit before the day ends to keep the streak alive.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <StreakCard
+        bestStreak={state.streak.bestStreak}
+        completedHabits={completedCount}
+        currentStreak={state.streak.currentStreak}
+        dateLabel={state.date}
+        progress={progress}
+        totalHabits={state.habits.length}
+      />
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <StreakCard
-          bestStreak={state.streak.bestStreak}
-          currentStreak={state.streak.currentStreak}
-        />
-        <FreezeCard availableFreezes={state.streak.availableFreezes} />
-        <ProgressRing progress={progress} />
-      </section>
-
-      <HabitChecklist habits={state.habits} onToggleHabit={onToggleHabit} />
+      <HabitChecklist
+        completedCount={completedCount}
+        habits={state.habits}
+        onToggleHabit={onToggleHabit}
+      />
     </div>
   );
 }

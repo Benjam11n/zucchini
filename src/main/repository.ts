@@ -6,7 +6,7 @@ import { Effect } from "effect";
 import { app } from "electron";
 
 import type { Habit, HabitWithStatus } from "../shared/domain/habit";
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings, ThemeMode } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 
 interface SettingRow {
@@ -59,11 +59,8 @@ export interface HabitRepository {
   getSettledHistory(limit: number): DailySummary[];
   getPersistedStreakState(): StreakState;
   savePersistedStreakState(state: StreakState): void;
-  getReminderSettings(defaultTimezone: string): ReminderSettings;
-  saveReminderSettings(
-    settings: ReminderSettings,
-    defaultTimezone: string
-  ): ReminderSettings;
+  getSettings(defaultTimezone: string): AppSettings;
+  saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
   getFirstTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
   saveDailySummary(summary: DailySummary): void;
@@ -181,6 +178,7 @@ export class SqliteHabitRepository implements HabitRepository {
 
       this.upsertSetting("reminderEnabled", "true");
       this.upsertSetting("reminderTime", "20:30");
+      this.upsertSetting("themeMode", "system");
       this.upsertSetting("timezone", timezone);
     });
   }
@@ -340,8 +338,8 @@ export class SqliteHabitRepository implements HabitRepository {
     });
   }
 
-  getReminderSettings(defaultTimezone: string): ReminderSettings {
-    return this.runDb("getReminderSettings", () => {
+  getSettings(defaultTimezone: string): AppSettings {
+    return this.runDb("getSettings", () => {
       const rows = this.getDb()
         .prepare("SELECT key, value FROM settings")
         .all() as SettingRow[];
@@ -350,22 +348,21 @@ export class SqliteHabitRepository implements HabitRepository {
       return {
         reminderEnabled: map.get("reminderEnabled") === "true",
         reminderTime: map.get("reminderTime") ?? "20:30",
+        themeMode: this.getThemeMode(map.get("themeMode")),
         timezone: map.get("timezone") ?? defaultTimezone,
       };
     });
   }
 
-  saveReminderSettings(
-    settings: ReminderSettings,
-    defaultTimezone: string
-  ): ReminderSettings {
-    this.runDb("saveReminderSettings", () => {
+  saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings {
+    this.runDb("saveSettings", () => {
       this.upsertSetting("reminderEnabled", String(settings.reminderEnabled));
       this.upsertSetting("reminderTime", settings.reminderTime);
+      this.upsertSetting("themeMode", settings.themeMode);
       this.upsertSetting("timezone", settings.timezone);
     });
 
-    return this.getReminderSettings(defaultTimezone);
+    return this.getSettings(defaultTimezone);
   }
 
   getFirstTrackedDate(): string | null {
@@ -494,5 +491,13 @@ export class SqliteHabitRepository implements HabitRepository {
         ON CONFLICT(key) DO UPDATE SET value = excluded.value
       `)
       .run(key, value);
+  }
+
+  private getThemeMode(value: string | undefined): ThemeMode {
+    if (value === "light" || value === "dark") {
+      return value;
+    }
+
+    return "system";
   }
 }

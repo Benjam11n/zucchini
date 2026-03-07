@@ -1,30 +1,27 @@
 import { ipcMain } from "electron";
 
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings } from "../shared/domain/settings";
 import type { HabitsService } from "./service";
 
 interface RegisterIpcHandlersOptions {
   service: HabitsService;
-  onReminderSettingsChanged: (settings: ReminderSettings) => void;
+  onSettingsChanged: (settings: AppSettings) => void;
 }
 
 export function registerIpcHandlers({
   service,
-  onReminderSettingsChanged,
+  onSettingsChanged,
 }: RegisterIpcHandlersOptions): void {
   ipcMain.handle("habits:getTodayState", () => service.getTodayState());
   ipcMain.handle("habits:toggleHabit", (_event, habitId: number) =>
     service.toggleHabit(habitId)
   );
   ipcMain.handle("habits:getHistory", () => service.getHistory());
-  ipcMain.handle(
-    "habits:updateReminderSettings",
-    (_event, settings: ReminderSettings) => {
-      const nextSettings = service.updateReminderSettings(settings);
-      onReminderSettingsChanged(nextSettings);
-      return nextSettings;
-    }
-  );
+  ipcMain.handle("habits:updateSettings", (_event, settings: AppSettings) => {
+    const nextSettings = service.updateSettings(settings);
+    onSettingsChanged(nextSettings);
+    return nextSettings;
+  });
   ipcMain.handle("habits:createHabit", (_event, name: string) =>
     service.createHabit(name)
   );

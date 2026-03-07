@@ -1,5 +1,5 @@
 import type { Habit, HabitWithStatus } from "../shared/domain/habit";
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings } from "../shared/domain/settings";
 import type { DailySummary, StreakState } from "../shared/domain/streak";
 import type { Clock } from "./clock";
 import type { HabitRepository } from "./repository";
@@ -62,9 +62,10 @@ class FakeRepository implements HabitRepository {
     currentStreak: 3,
     lastEvaluatedDate: "2026-03-05",
   };
-  settings: ReminderSettings = {
+  settings: AppSettings = {
     reminderEnabled: true,
     reminderTime: "20:30",
+    themeMode: "system",
     timezone: "Asia/Singapore",
   };
 
@@ -120,11 +121,11 @@ class FakeRepository implements HabitRepository {
     this.streak = { ...state };
   }
 
-  getReminderSettings(): ReminderSettings {
+  getSettings(): AppSettings {
     return { ...this.settings };
   }
 
-  saveReminderSettings(settings: ReminderSettings): ReminderSettings {
+  saveSettings(settings: AppSettings): AppSettings {
     this.settings = { ...settings };
     return { ...this.settings };
   }

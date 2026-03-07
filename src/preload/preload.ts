@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { ReminderSettings } from "../shared/domain/settings";
+import type { AppSettings } from "../shared/domain/settings";
 import type { HabitApi } from "../shared/types/ipc";
 
 const habitsApi: HabitApi = {
@@ -15,8 +15,8 @@ const habitsApi: HabitApi = {
     ipcRenderer.invoke("habits:reorderHabits", habitIds),
   toggleHabit: (habitId: number) =>
     ipcRenderer.invoke("habits:toggleHabit", habitId),
-  updateReminderSettings: (settings: ReminderSettings) =>
-    ipcRenderer.invoke("habits:updateReminderSettings", settings),
+  updateSettings: (settings: AppSettings) =>
+    ipcRenderer.invoke("habits:updateSettings", settings),
 };
 
 contextBridge.exposeInMainWorld("habits", habitsApi);
