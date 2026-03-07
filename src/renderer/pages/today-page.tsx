@@ -7,10 +7,10 @@ import {
 
 import { getProgress } from "../../shared/domain/streak";
 import type { TodayState } from "../../shared/types/ipc";
-import { FreezeCard } from "../components/FreezeCard";
-import { HabitChecklist } from "../components/HabitChecklist";
-import { ProgressRing } from "../components/ProgressRing";
-import { StreakCard } from "../components/StreakCard";
+import { FreezeCard } from "../components/freeze-card";
+import { HabitChecklist } from "../components/habit-checklist";
+import { ProgressRing } from "../components/progress-ring";
+import { StreakCard } from "../components/streak-card";
 
 interface TodayPageProps {
   state: TodayState;

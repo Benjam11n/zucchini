@@ -15,9 +15,9 @@ import type { HabitWithStatus } from "../shared/domain/habit";
 import type { ReminderSettings } from "../shared/domain/settings";
 import type { DailySummary } from "../shared/domain/streak";
 import type { TodayState } from "../shared/types/ipc";
-import { HistoryPage } from "./pages/HistoryPage";
-import { SettingsPage } from "./pages/SettingsPage";
-import { TodayPage } from "./pages/TodayPage";
+import { HistoryPage } from "./pages/history-page";
+import { SettingsPage } from "./pages/settings-page";
+import { TodayPage } from "./pages/today-page";
 
 type Tab = "today" | "history" | "settings";
 
