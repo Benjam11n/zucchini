@@ -8,6 +8,11 @@ const habitsApi: HabitApi = {
   getHistory: () => ipcRenderer.invoke("habits:getHistory"),
   updateReminderSettings: (settings: ReminderSettings) =>
     ipcRenderer.invoke("habits:updateReminderSettings", settings),
+  createHabit: (name: string) => ipcRenderer.invoke("habits:createHabit", name),
+  renameHabit: (habitId: number, name: string) =>
+    ipcRenderer.invoke("habits:renameHabit", habitId, name),
+  archiveHabit: (habitId: number) => ipcRenderer.invoke("habits:archiveHabit", habitId),
+  reorderHabits: (habitIds: number[]) => ipcRenderer.invoke("habits:reorderHabits", habitIds),
 };
 
 contextBridge.exposeInMainWorld("habits", habitsApi);

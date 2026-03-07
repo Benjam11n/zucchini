@@ -5,10 +5,7 @@ type HabitChecklistProps = {
   onToggleHabit: (habitId: number) => void;
 };
 
-export function HabitChecklist({
-  habits,
-  onToggleHabit,
-}: HabitChecklistProps) {
+export function HabitChecklist({ habits, onToggleHabit }: HabitChecklistProps) {
   return (
     <div className="panel">
       <div className="panel-header">

@@ -1,50 +1,88 @@
 import { useEffect, useState } from "react";
+import type { HabitWithStatus } from "../shared/domain/habit";
 import type { ReminderSettings } from "../shared/domain/settings";
 import type { DailySummary } from "../shared/domain/streak";
 import type { TodayState } from "../shared/types/ipc";
-import { TodayPage } from "./pages/TodayPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { TodayPage } from "./pages/TodayPage";
 
 type Tab = "today" | "history" | "settings";
 
+type AppState = {
+  todayState: TodayState | null;
+  history: DailySummary[];
+  settingsDraft: ReminderSettings | null;
+};
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("today");
-  const [todayState, setTodayState] = useState<TodayState | null>(null);
-  const [history, setHistory] = useState<DailySummary[]>([]);
-  const [settingsDraft, setSettingsDraft] = useState<ReminderSettings | null>(null);
+  const [state, setState] = useState<AppState>({
+    todayState: null,
+    history: [],
+    settingsDraft: null,
+  });
 
   useEffect(() => {
-    void Promise.all([window.habits.getTodayState(), window.habits.getHistory()]).then(
-      ([today, historyRows]) => {
-        setTodayState(today);
-        setHistory(historyRows);
-        setSettingsDraft(today.settings);
-      },
-    );
+    void reloadAll();
   }, []);
 
+  async function reloadAll(nextTodayState?: TodayState): Promise<void> {
+    const todayState = nextTodayState ?? (await window.habits.getTodayState());
+    const history = await window.habits.getHistory();
+
+    setState((current) => ({
+      todayState,
+      history,
+      settingsDraft: current.settingsDraft ?? todayState.settings,
+    }));
+  }
+
+  async function refreshToday(mutator: Promise<TodayState>): Promise<void> {
+    const nextTodayState = await mutator;
+    await reloadAll(nextTodayState);
+  }
+
   async function handleToggleHabit(habitId: number): Promise<void> {
-    const nextState = await window.habits.toggleHabit(habitId);
-    setTodayState(nextState);
-    const historyRows = await window.habits.getHistory();
-    setHistory(historyRows);
+    await refreshToday(window.habits.toggleHabit(habitId));
   }
 
   async function handleUpdateSettings(settings: ReminderSettings): Promise<void> {
     const nextSettings = await window.habits.updateReminderSettings(settings);
-    setTodayState((current) =>
-      current
+
+    setState((current) => ({
+      todayState: current.todayState
         ? {
-            ...current,
+            ...current.todayState,
             settings: nextSettings,
           }
-        : current,
-    );
-    setSettingsDraft(nextSettings);
+        : current.todayState,
+      history: current.history,
+      settingsDraft: nextSettings,
+    }));
   }
 
-  if (!todayState) {
+  async function handleCreateHabit(name: string): Promise<void> {
+    await refreshToday(window.habits.createHabit(name));
+    setState((current) => ({
+      ...current,
+      settingsDraft: current.todayState?.settings ?? current.settingsDraft,
+    }));
+  }
+
+  async function handleRenameHabit(habitId: number, name: string): Promise<void> {
+    await refreshToday(window.habits.renameHabit(habitId, name));
+  }
+
+  async function handleArchiveHabit(habitId: number): Promise<void> {
+    await refreshToday(window.habits.archiveHabit(habitId));
+  }
+
+  async function handleReorderHabits(nextHabits: HabitWithStatus[]): Promise<void> {
+    await refreshToday(window.habits.reorderHabits(nextHabits.map((habit) => habit.id)));
+  }
+
+  if (!state.todayState) {
     return <main className="shell loading">Loading...</main>;
   }
 
@@ -78,7 +116,10 @@ export default function App() {
             className={tab === "settings" ? "nav-button active" : "nav-button"}
             onClick={() => {
               setTab("settings");
-              setSettingsDraft(todayState.settings);
+              setState((current) => ({
+                ...current,
+                settingsDraft: current.todayState?.settings ?? current.settingsDraft,
+              }));
             }}
             type="button"
           >
@@ -89,13 +130,23 @@ export default function App() {
 
       <section className="content">
         {tab === "today" ? (
-          <TodayPage state={todayState} onToggleHabit={handleToggleHabit} />
+          <TodayPage state={state.todayState} onToggleHabit={handleToggleHabit} />
         ) : null}
-        {tab === "history" ? <HistoryPage history={history} /> : null}
+        {tab === "history" ? <HistoryPage history={state.history} /> : null}
         {tab === "settings" ? (
           <SettingsPage
-            settings={settingsDraft ?? todayState.settings}
-            onChange={setSettingsDraft}
+            habits={state.todayState.habits}
+            settings={state.settingsDraft ?? state.todayState.settings}
+            onArchiveHabit={handleArchiveHabit}
+            onChange={(settingsDraft) =>
+              setState((current) => ({
+                ...current,
+                settingsDraft,
+              }))
+            }
+            onCreateHabit={handleCreateHabit}
+            onRenameHabit={handleRenameHabit}
+            onReorderHabits={handleReorderHabits}
             onSave={handleUpdateSettings}
           />
         ) : null}

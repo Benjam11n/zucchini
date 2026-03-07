@@ -1,5 +1,6 @@
 import path from "node:path";
 import { app, BrowserWindow } from "electron";
+import { Effect } from "effect";
 import { initializeDatabase, getTodayState } from "./db";
 import { registerIpcHandlers } from "./ipc";
 import { scheduleReminder } from "./scheduler";
@@ -24,13 +25,17 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
-  initializeDatabase();
-  registerIpcHandlers();
+void app.whenReady().then(() => {
+  Effect.runSync(
+    Effect.sync(() => {
+      initializeDatabase();
+      registerIpcHandlers();
 
-  const today = getTodayState();
-  scheduleReminder(today.settings.reminderEnabled, today.settings.reminderTime);
-  createWindow();
+      const today = getTodayState();
+      scheduleReminder(today.settings);
+      createWindow();
+    }),
+  );
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

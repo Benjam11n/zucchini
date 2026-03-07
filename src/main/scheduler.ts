@@ -1,18 +1,20 @@
+import type { ReminderSettings } from "../shared/domain/settings";
+import { getTodayState } from "./db";
 import { showIncompleteReminder } from "./notifications";
 
 let reminderTimeout: NodeJS.Timeout | null = null;
 
-export function scheduleReminder(reminderEnabled: boolean, reminderTime: string): void {
+export function scheduleReminder(settings: ReminderSettings): void {
   if (reminderTimeout) {
     clearTimeout(reminderTimeout);
     reminderTimeout = null;
   }
 
-  if (!reminderEnabled) {
+  if (!settings.reminderEnabled) {
     return;
   }
 
-  const [hours, minutes] = reminderTime.split(":").map(Number);
+  const [hours, minutes] = settings.reminderTime.split(":").map(Number);
   const now = new Date();
   const target = new Date();
   target.setHours(hours, minutes, 0, 0);
@@ -22,7 +24,13 @@ export function scheduleReminder(reminderEnabled: boolean, reminderTime: string)
   }
 
   reminderTimeout = setTimeout(() => {
-    showIncompleteReminder();
-    scheduleReminder(reminderEnabled, reminderTime);
+    const today = getTodayState();
+    const incomplete = today.habits.length > 0 && today.habits.some((habit) => !habit.completed);
+
+    if (incomplete) {
+      showIncompleteReminder();
+    }
+
+    scheduleReminder(settings);
   }, target.getTime() - now.getTime());
 }
