@@ -17,7 +17,7 @@ function createWindow(): void {
     minWidth: 900,
     title: "Zucchini",
     webPreferences: {
-      preload: path.join(__dirname, "../preload/preload.mjs"),
+      preload: path.join(__dirname, "preload.js"),
     },
     width: 1100,
   });

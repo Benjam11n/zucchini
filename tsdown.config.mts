@@ -1,0 +1,21 @@
+import { defineConfig } from "tsdown";
+
+const shared = {
+  external: ["better-sqlite3", "electron"],
+  format: "cjs" as const,
+  outDir: "dist-electron",
+  outExtensions: () => ({ js: ".js" }),
+  sourcemap: true,
+};
+
+export default defineConfig([
+  {
+    ...shared,
+    clean: true,
+    entry: ["src/main/main.ts"],
+  },
+  {
+    ...shared,
+    entry: ["src/preload/preload.ts"],
+  },
+]);
