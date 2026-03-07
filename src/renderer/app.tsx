@@ -1,5 +1,5 @@
 import { BarChart3, CalendarDays, Settings2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Card,
@@ -74,6 +74,27 @@ export default function App() {
         : current.todayState,
     }));
   }
+
+  // Auto-save settings 600 ms after the last change, skipping the initial load.
+  const lastSavedDraft = useRef<AppSettings | null>(null);
+  useEffect(() => {
+    const draft = state.settingsDraft;
+    if (!draft) { return; }
+    // Skip the very first population (same reference as what we just loaded)
+    if (lastSavedDraft.current === null) {
+      lastSavedDraft.current = draft;
+      return;
+    }
+    if (draft === lastSavedDraft.current) { return; }
+
+    const timer = setTimeout(() => {
+      lastSavedDraft.current = draft;
+      void handleUpdateSettings(draft);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.settingsDraft]);
 
   async function handleCreateHabit(
     name: string,
@@ -265,7 +286,6 @@ export default function App() {
                 onCreateHabit={handleCreateHabit}
                 onRenameHabit={handleRenameHabit}
                 onReorderHabits={handleReorderHabits}
-                onSave={handleUpdateSettings}
                 onUpdateHabitCategory={handleUpdateHabitCategory}
               />
             </TabsContent>

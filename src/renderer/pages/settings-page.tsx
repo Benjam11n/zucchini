@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { TimeInput } from "@/components/ui/time-input";
 import { cn } from "@/lib/utils";
-
 import {
   DEFAULT_HABIT_CATEGORY,
   HABIT_CATEGORY_DEFINITIONS,
@@ -21,6 +21,7 @@ import {
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
+
 import { RING_COLORS } from "../lib/ring-colors";
 
 // ─── Theme options with inline SVG icons ────────────────────────────────────
@@ -175,7 +176,6 @@ interface SettingsPageProps {
   habits: HabitWithStatus[];
   settings: AppSettings;
   onChange: (settings: AppSettings) => void;
-  onSave: (settings: AppSettings) => Promise<void>;
   onCreateHabit: (name: string, category: HabitCategory) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onUpdateHabitCategory: (
@@ -192,7 +192,6 @@ export function SettingsPage({
   habits,
   settings,
   onChange,
-  onSave,
   onCreateHabit,
   onRenameHabit,
   onUpdateHabitCategory,
@@ -232,12 +231,9 @@ export function SettingsPage({
               <Label htmlFor="reminder-time" className="font-normal">
                 Time
               </Label>
-              <Input
+              <TimeInput
                 id="reminder-time"
-                onChange={(event) =>
-                  onChange({ ...settings, reminderTime: event.target.value })
-                }
-                type="time"
+                onChange={(val) => onChange({ ...settings, reminderTime: val })}
                 value={settings.reminderTime}
               />
             </div>
@@ -255,16 +251,6 @@ export function SettingsPage({
               />
             </div>
           </div>
-
-          <Button
-            className="w-fit"
-            onClick={() => {
-              void onSave(settings);
-            }}
-            type="button"
-          >
-            Save
-          </Button>
         </CardContent>
       </Card>
 
@@ -297,15 +283,6 @@ export function SettingsPage({
               );
             })}
           </div>
-          <Button
-            className="w-fit"
-            onClick={() => {
-              void onSave(settings);
-            }}
-            type="button"
-          >
-            Save
-          </Button>
         </CardContent>
       </Card>
 

@@ -130,6 +130,10 @@ export class SqliteHabitRepository implements HabitRepository {
           date TEXT NOT NULL,
           habit_id INTEGER NOT NULL,
           completed INTEGER NOT NULL DEFAULT 0,
+          habit_name TEXT NOT NULL,
+          habit_category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}',
+          habit_sort_order INTEGER NOT NULL DEFAULT 0,
+          habit_created_at TEXT NOT NULL,
           PRIMARY KEY (date, habit_id)
         );
 
@@ -156,6 +160,7 @@ export class SqliteHabitRepository implements HabitRepository {
       `);
 
       this.ensureHabitsCategoryColumn();
+      this.ensureDailyHabitStatusSnapshotColumns();
     });
   }
 
@@ -271,18 +276,16 @@ export class SqliteHabitRepository implements HabitRepository {
         this.getDb()
           .prepare(`
           SELECT
-            h.id,
-            h.name,
-            h.category AS category,
-            h.sort_order AS sortOrder,
-            h.is_archived AS isArchived,
-            h.created_at AS createdAt,
+            dhs.habit_id AS id,
+            dhs.habit_name AS name,
+            dhs.habit_category AS category,
+            dhs.habit_sort_order AS sortOrder,
+            0 AS isArchived,
+            dhs.habit_created_at AS createdAt,
             dhs.completed AS completed
           FROM daily_habit_status dhs
-          INNER JOIN habits h
-            ON h.id = dhs.habit_id
           WHERE dhs.date = ?
-          ORDER BY h.sort_order ASC, h.id ASC
+          ORDER BY dhs.habit_sort_order ASC, dhs.habit_id ASC
         `)
           .all(date) as HabitWithStatusRow[]
       ).map((row) => ({
@@ -300,26 +303,61 @@ export class SqliteHabitRepository implements HabitRepository {
   ensureStatusRowsForDate(date: string): void {
     this.runDb("ensureStatusRowsForDate", () => {
       const insert = this.getDb().prepare(`
-        INSERT INTO daily_habit_status (date, habit_id, completed)
-        VALUES (?, ?, 0)
+        INSERT INTO daily_habit_status (
+          date,
+          habit_id,
+          completed,
+          habit_name,
+          habit_category,
+          habit_sort_order,
+          habit_created_at
+        )
+        VALUES (?, ?, 0, ?, ?, ?, ?)
         ON CONFLICT(date, habit_id) DO NOTHING
       `);
 
       this.getHabits().forEach((habit) => {
-        insert.run(date, habit.id);
+        insert.run(
+          date,
+          habit.id,
+          habit.name,
+          habit.category,
+          habit.sortOrder,
+          habit.createdAt
+        );
       });
     });
   }
 
   ensureStatusRow(date: string, habitId: number): void {
     this.runDb("ensureStatusRow", () => {
+      const habit = this.getHabitById(habitId);
+      if (!habit) {
+        return;
+      }
+
       this.getDb()
         .prepare(`
-          INSERT INTO daily_habit_status (date, habit_id, completed)
-          VALUES (?, ?, 0)
+          INSERT INTO daily_habit_status (
+            date,
+            habit_id,
+            completed,
+            habit_name,
+            habit_category,
+            habit_sort_order,
+            habit_created_at
+          )
+          VALUES (?, ?, 0, ?, ?, ?, ?)
           ON CONFLICT(date, habit_id) DO NOTHING
         `)
-        .run(date, habitId);
+        .run(
+          date,
+          habitId,
+          habit.name,
+          habit.category,
+          habit.sortOrder,
+          habit.createdAt
+        );
     });
   }
 
@@ -592,5 +630,107 @@ export class SqliteHabitRepository implements HabitRepository {
         `ALTER TABLE habits ADD COLUMN category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}'`
       )
       .run();
+  }
+
+  private ensureDailyHabitStatusSnapshotColumns(): void {
+    const columns = this.getDb()
+      .prepare("PRAGMA table_info(daily_habit_status)")
+      .all() as { name: string }[];
+    const columnNames = new Set(columns.map((column) => column.name));
+    let addedSnapshotColumn = false;
+
+    if (!columnNames.has("habit_name")) {
+      this.getDb()
+        .prepare("ALTER TABLE daily_habit_status ADD COLUMN habit_name TEXT")
+        .run();
+      addedSnapshotColumn = true;
+    }
+
+    if (!columnNames.has("habit_category")) {
+      this.getDb()
+        .prepare(
+          `ALTER TABLE daily_habit_status ADD COLUMN habit_category TEXT NOT NULL DEFAULT '${DEFAULT_HABIT_CATEGORY}'`
+        )
+        .run();
+      addedSnapshotColumn = true;
+    }
+
+    if (!columnNames.has("habit_sort_order")) {
+      this.getDb()
+        .prepare(
+          "ALTER TABLE daily_habit_status ADD COLUMN habit_sort_order INTEGER NOT NULL DEFAULT 0"
+        )
+        .run();
+      addedSnapshotColumn = true;
+    }
+
+    if (!columnNames.has("habit_created_at")) {
+      this.getDb()
+        .prepare(
+          "ALTER TABLE daily_habit_status ADD COLUMN habit_created_at TEXT NOT NULL DEFAULT ''"
+        )
+        .run();
+      addedSnapshotColumn = true;
+    }
+
+    if (!addedSnapshotColumn) {
+      return;
+    }
+
+    this.getDb()
+      .prepare(`
+        UPDATE daily_habit_status
+        SET
+          habit_name = COALESCE(
+            (SELECT name FROM habits WHERE habits.id = daily_habit_status.habit_id),
+            habit_name,
+            ''
+          ),
+          habit_category = COALESCE(
+            (SELECT category FROM habits WHERE habits.id = daily_habit_status.habit_id),
+            habit_category,
+            '${DEFAULT_HABIT_CATEGORY}'
+          ),
+          habit_sort_order = COALESCE(
+            (SELECT sort_order FROM habits WHERE habits.id = daily_habit_status.habit_id),
+            habit_sort_order,
+            0
+          ),
+          habit_created_at = COALESCE(
+            (SELECT created_at FROM habits WHERE habits.id = daily_habit_status.habit_id),
+            habit_created_at,
+            ''
+          )
+      `)
+      .run();
+  }
+
+  private getHabitById(habitId: number): Habit | null {
+    const row = this.getDb()
+      .prepare(`
+        SELECT
+          id,
+          name,
+          category,
+          sort_order AS sortOrder,
+          is_archived AS isArchived,
+          created_at AS createdAt
+        FROM habits
+        WHERE id = ? AND is_archived = 0
+      `)
+      .get(habitId) as HabitRow | undefined;
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      category: normalizeHabitCategory(row.category),
+      createdAt: row.createdAt,
+      id: row.id,
+      isArchived: Boolean(row.isArchived),
+      name: row.name,
+      sortOrder: row.sortOrder,
+    };
   }
 }

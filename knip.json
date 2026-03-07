@@ -2,11 +2,7 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "tags": ["-lintignore"],
   "entry": ["index.html"],
-  "ignoreDependencies": [
-    "shadcn",
-    "tailwindcss",
-    "tw-animate-css"
-  ],
+  "ignoreDependencies": ["shadcn", "tailwindcss", "tw-animate-css"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignoreExportsUsedInFile": {
     "interface": true,
