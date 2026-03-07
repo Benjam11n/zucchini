@@ -5,11 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-
+import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
 import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
-import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
-
 
 const CATEGORY_ICONS: Record<HabitCategory, React.ElementType> = {
   fitness: Dumbbell,

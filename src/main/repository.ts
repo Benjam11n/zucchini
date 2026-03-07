@@ -8,14 +8,14 @@ import { app } from "electron";
 import {
   DEFAULT_HABIT_CATEGORY,
   normalizeHabitCategory,
-} from "../shared/domain/habit";
+} from "@/shared/domain/habit";
 import type {
   Habit,
   HabitCategory,
   HabitWithStatus,
-} from "../shared/domain/habit";
-import type { AppSettings, ThemeMode } from "../shared/domain/settings";
-import type { DailySummary, StreakState } from "../shared/domain/streak";
+} from "@/shared/domain/habit";
+import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
+import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 interface SettingRow {
   key: string;

@@ -1,4 +1,5 @@
 import type { HabitCategory } from "@/shared/domain/habit";
+
 import { RING_COLORS } from "./ring-colors";
 
 /**

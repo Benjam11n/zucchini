@@ -3,9 +3,8 @@
 import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import type { HabitCategoryProgress } from "@/shared/domain/habit";
-
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
+import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
 interface ActivityData {
   label: string;

@@ -2,9 +2,8 @@ import { CalendarDays, Flame, Snowflake } from "lucide-react";
 
 import { HabitActivityCard } from "@/components/custom/apple-activity-ring";
 import { Card, CardContent } from "@/components/ui/card";
-
-import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { RING_COLORS } from "@/renderer/lib/ring-colors";
+import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
 interface StreakCardProps {
   currentStreak: number;
