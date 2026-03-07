@@ -53,6 +53,12 @@
   --chart-3: oklch(0.5107 0.1226 22.3963);
   --chart-4: oklch(0.5907 0.0672 155.9315);
   --chart-5: oklch(0.7038 0.0439 157.2884);
+  --ring-fitness: #ff2d55;
+  --ring-fitness-glow: #ff6b8b;
+  --ring-nutrition: #78c500;
+  --ring-nutrition-glow: #97dc1f;
+  --ring-productivity: #009fb8;
+  --ring-productivity-glow: #37c5d8;
   --sidebar: oklch(0.9278 0.0104 158.475);
   --sidebar-foreground: oklch(0.3391 0.0346 156.2653);
   --sidebar-primary: oklch(0.5313 0.1014 153.3713);
@@ -118,6 +124,12 @@
   --chart-3: oklch(0.5119 0.1503 24.1184);
   --chart-4: oklch(0.6951 0.0955 155.2328);
   --chart-5: oklch(0.494 0.0548 156.0155);
+  --ring-fitness: #ff2d55;
+  --ring-fitness-glow: #ff6b8b;
+  --ring-nutrition: #a3f900;
+  --ring-nutrition-glow: #c5ff4d;
+  --ring-productivity: #04c7dd;
+  --ring-productivity-glow: #4ddfed;
   --sidebar: oklch(0.1616 0.008 157.6046);
   --sidebar-foreground: oklch(0.8352 0.0611 157.0203);
   --sidebar-primary: oklch(0.6369 0.1241 153.2123);

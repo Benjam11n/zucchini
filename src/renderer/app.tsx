@@ -79,13 +79,17 @@ export default function App() {
   const lastSavedDraft = useRef<AppSettings | null>(null);
   useEffect(() => {
     const draft = state.settingsDraft;
-    if (!draft) { return; }
+    if (!draft) {
+      return;
+    }
     // Skip the very first population (same reference as what we just loaded)
     if (lastSavedDraft.current === null) {
       lastSavedDraft.current = draft;
       return;
     }
-    if (draft === lastSavedDraft.current) { return; }
+    if (draft === lastSavedDraft.current) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       lastSavedDraft.current = draft;
@@ -93,7 +97,7 @@ export default function App() {
     }, 600);
 
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.settingsDraft]);
 
   async function handleCreateHabit(

@@ -1,7 +1,8 @@
-import { getHabitCategoryProgress } from "../../shared/domain/habit";
-import type { TodayState } from "../../shared/types/ipc";
-import { HabitChecklist } from "../components/habit-checklist";
-import { StreakCard } from "../components/streak-card";
+import { HabitChecklist } from "@/components/habit-checklist";
+import { StreakCard } from "@/components/streak-card";
+import { getHabitCategoryProgress } from "@/shared/domain/habit";
+import type { TodayState } from "@/shared/types/ipc";
+
 
 interface TodayPageProps {
   state: TodayState;

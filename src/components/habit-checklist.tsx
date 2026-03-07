@@ -3,11 +3,13 @@ import type { CSSProperties } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-import { HABIT_CATEGORY_DEFINITIONS } from "../../shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "../../shared/domain/habit";
-import { HABIT_CATEGORY_UI } from "../lib/habit-categories";
+import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
+
 
 const CATEGORY_ICONS: Record<HabitCategory, React.ElementType> = {
   fitness: Dumbbell,
@@ -44,14 +46,10 @@ export function HabitChecklist({
           )}
         </div>
         {totalHabits > 0 && (
-          <div className="h-px overflow-hidden rounded-full bg-muted/50">
-            <div
-              className="h-full rounded-full bg-primary/60 transition-[width] duration-500"
-              style={{
-                width: `${Math.round((completedCount / totalHabits) * 100)}%`,
-              }}
-            />
-          </div>
+          <Progress
+            className="h-1"
+            value={Math.round((completedCount / totalHabits) * 100)}
+          />
         )}
       </CardHeader>
 

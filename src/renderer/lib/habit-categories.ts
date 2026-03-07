@@ -1,4 +1,4 @@
-import type { HabitCategory } from "../../shared/domain/habit";
+import type { HabitCategory } from "@/shared/domain/habit";
 import { RING_COLORS } from "./ring-colors";
 
 /**
@@ -23,7 +23,7 @@ export const HABIT_CATEGORY_UI: Record<
       "border-[#FF2D55]/30 bg-[#FF2D55]/8 text-[#c01038] dark:border-[#FF2D55]/40 dark:bg-[#FF2D55]/12 dark:text-[#ff7a95]",
     panelClassName:
       "border-[#FF2D55]/20 bg-[#FF2D55]/5 dark:border-[#FF2D55]/30 dark:bg-[#FF2D55]/10",
-    progressClassName: "bg-[#FF2D55]",
+    progressClassName: "bg-[var(--ring-fitness)]",
     ringColor: RING_COLORS.fitness.base,
     ringTrackColor: "rgba(255, 45, 85, 0.15)",
     textClassName: "text-[#c01038] dark:text-[#ff7a95]",
@@ -34,9 +34,10 @@ export const HABIT_CATEGORY_UI: Record<
       "border-[#6aad00]/30 bg-[#6aad00]/8 text-[#496e00] dark:border-[#A3F900]/30 dark:bg-[#A3F900]/10 dark:text-[#C5FF4D]",
     panelClassName:
       "border-[#6aad00]/20 bg-[#6aad00]/5 dark:border-[#A3F900]/20 dark:bg-[#A3F900]/8",
-    progressClassName: "bg-[#A3F900]",
+    progressClassName: "bg-[var(--ring-nutrition)]",
     ringColor: RING_COLORS.nutrition.base,
-    ringTrackColor: "rgba(163, 249, 0, 0.15)",
+    ringTrackColor:
+      "color-mix(in srgb, var(--ring-nutrition) 15%, transparent)",
     textClassName: "text-[#496e00] dark:text-[#C5FF4D]",
   },
   // Productivity → Stand ring: #04C7DD cyan
@@ -45,9 +46,10 @@ export const HABIT_CATEGORY_UI: Record<
       "border-[#04C7DD]/30 bg-[#04C7DD]/8 text-[#04758a] dark:border-[#04C7DD]/40 dark:bg-[#04C7DD]/12 dark:text-[#4DDFED]",
     panelClassName:
       "border-[#04C7DD]/20 bg-[#04C7DD]/5 dark:border-[#04C7DD]/30 dark:bg-[#04C7DD]/10",
-    progressClassName: "bg-[#04C7DD]",
+    progressClassName: "bg-[var(--ring-productivity)]",
     ringColor: RING_COLORS.productivity.base,
-    ringTrackColor: "rgba(4, 199, 221, 0.15)",
+    ringTrackColor:
+      "color-mix(in srgb, var(--ring-productivity) 15%, transparent)",
     textClassName: "text-[#04758a] dark:text-[#4DDFED]",
   },
 };
