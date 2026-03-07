@@ -59,29 +59,23 @@ export function SettingsPage({
 
   return (
     <div className="grid gap-6">
-      <Card className="rounded-[2rem] shadow-sm">
+      <Card>
         <CardHeader>
-          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-            Settings
-          </CardDescription>
-          <CardTitle className="text-3xl font-semibold tracking-tight">
-            Reminders
-          </CardTitle>
+          <CardDescription>Settings</CardDescription>
+          <CardTitle>Reminders</CardTitle>
         </CardHeader>
       </Card>
 
-      <Card className="rounded-[2rem] shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-semibold tracking-tight">
-            Reminder preferences
-          </CardTitle>
+          <CardTitle>Reminder preferences</CardTitle>
           <CardDescription>
             Structured with shadcn form primitives so future dialogs and
             settings panels can reuse the same controls.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5">
-          <div className="flex items-center justify-between gap-4 rounded-2xl border bg-muted/20 px-4 py-4">
+          <div className="flex items-center justify-between gap-4 border p-4">
             <div className="space-y-1">
               <Label htmlFor="reminder-enabled">Enable reminder</Label>
               <p className="text-sm text-muted-foreground">
@@ -131,7 +125,7 @@ export function SettingsPage({
           </div>
 
           <Button
-            className="w-fit rounded-2xl"
+            className="w-fit"
             onClick={() => {
               void onSave(settings);
             }}
@@ -142,21 +136,14 @@ export function SettingsPage({
         </CardContent>
       </Card>
 
-      <Card className="rounded-[2rem] shadow-sm">
+      <Card>
         <CardHeader>
-          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-            Habits
-          </CardDescription>
-          <CardTitle className="text-2xl font-semibold tracking-tight">
-            Manage checklist
-          </CardTitle>
+          <CardDescription>Habits</CardDescription>
+          <CardTitle>Manage checklist</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           {habits.map((habit, index) => (
-            <div
-              className="grid gap-3 rounded-2xl border bg-muted/20 p-4"
-              key={habit.id}
-            >
+            <div className="grid gap-3 border p-4" key={habit.id}>
               <div className="flex items-center justify-between gap-3">
                 <Label className="text-sm font-medium">{habit.name}</Label>
                 <Badge variant="outline">#{index + 1}</Badge>
@@ -206,7 +193,7 @@ export function SettingsPage({
             </div>
           ))}
 
-          <div className="grid gap-3 rounded-2xl border border-dashed bg-muted/10 p-4">
+          <div className="grid gap-3 border p-4">
             <Label htmlFor="new-habit">New habit</Label>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
@@ -217,7 +204,6 @@ export function SettingsPage({
                 value={newHabitName}
               />
               <Button
-                className="rounded-2xl"
                 onClick={() => {
                   if (!newHabitName.trim()) {
                     return;

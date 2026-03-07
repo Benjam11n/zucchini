@@ -12,16 +12,12 @@ interface FreezeCardProps {
 
 export function FreezeCard({ availableFreezes }: FreezeCardProps) {
   return (
-    <Card className="rounded-[2rem] shadow-sm">
+    <Card>
       <CardHeader className="pb-0">
-        <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-          Freezes
-        </CardDescription>
+        <CardDescription>Freezes</CardDescription>
       </CardHeader>
-      <CardContent className="px-6 pb-6">
-        <CardTitle className="text-4xl font-semibold tracking-tight">
-          {availableFreezes}
-        </CardTitle>
+      <CardContent>
+        <CardTitle>{availableFreezes}</CardTitle>
         <p className="mt-2 text-sm text-muted-foreground">
           Earn +1 every 15 streak days
         </p>

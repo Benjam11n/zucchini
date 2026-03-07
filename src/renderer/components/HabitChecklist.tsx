@@ -16,20 +16,16 @@ interface HabitChecklistProps {
 
 export function HabitChecklist({ habits, onToggleHabit }: HabitChecklistProps) {
   return (
-    <Card className="rounded-[2rem] shadow-sm">
+    <Card>
       <CardHeader>
-        <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-          Checklist
-        </CardDescription>
-        <CardTitle className="text-2xl font-semibold tracking-tight">
-          Today&apos;s habits
-        </CardTitle>
+        <CardDescription>Checklist</CardDescription>
+        <CardTitle>Today&apos;s habits</CardTitle>
       </CardHeader>
 
       <CardContent className="grid gap-3">
         {habits.map((habit) => (
           <label
-            className="flex cursor-pointer items-center gap-4 rounded-2xl border bg-muted/30 px-4 py-4 transition-colors hover:bg-muted/50"
+            className="flex cursor-pointer items-center gap-4 border px-4 py-4"
             key={habit.id}
           >
             <Checkbox

@@ -25,15 +25,11 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
 
   return (
     <div className="grid gap-6">
-      <Card className="rounded-[2rem] shadow-sm">
-        <CardHeader className="gap-3 px-6 py-8">
-          <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
-            Today
-          </CardDescription>
-          <CardTitle className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {state.date}
-          </CardTitle>
-          <CardDescription className="max-w-2xl text-sm leading-6 sm:text-base">
+      <Card>
+        <CardHeader className="gap-3">
+          <CardDescription>Today</CardDescription>
+          <CardTitle>{state.date}</CardTitle>
+          <CardDescription>
             Complete every habit before the day ends to keep the streak alive.
           </CardDescription>
         </CardHeader>

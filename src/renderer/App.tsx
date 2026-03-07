@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 import type { HabitWithStatus } from "../shared/domain/habit";
 import type { ReminderSettings } from "../shared/domain/settings";
@@ -102,8 +105,8 @@ export default function App() {
 
   if (!state.todayState) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-6">
-        <Card className="w-full max-w-sm shadow-sm">
+      <main className="flex min-h-screen items-center justify-center px-6">
+        <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle>Loading</CardTitle>
             <CardDescription>
@@ -116,7 +119,7 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-muted/40 text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
       <Tabs
         className="grid min-h-screen lg:grid-cols-[280px_1fr]"
         onValueChange={(value) => {
@@ -133,9 +136,9 @@ export default function App() {
         }}
         value={tab}
       >
-        <aside className="border-b bg-card/90 px-4 py-4 backdrop-blur lg:border-r lg:border-b-0 lg:px-6 lg:py-8">
-          <Card className="border-0 bg-transparent py-0 shadow-none ring-0">
-            <CardHeader className="px-0">
+        <aside className="border-b px-4 py-4 lg:border-r lg:border-b-0 lg:px-6 lg:py-8">
+          <Card>
+            <CardHeader>
               <CardDescription className="text-xs font-medium tracking-[0.24em] uppercase">
                 Habit tracker
               </CardDescription>
@@ -146,19 +149,45 @@ export default function App() {
                 Local-first daily streaks with freezes, reminders, and history.
               </CardDescription>
             </CardHeader>
-            <div className="px-0 pt-4">
-              <TabsList className="grid h-auto w-full grid-cols-3 rounded-2xl bg-muted p-1 lg:grid-cols-1">
-                <TabsTrigger className="rounded-xl" value="today">
-                  Today
-                </TabsTrigger>
-                <TabsTrigger className="rounded-xl" value="history">
-                  History
-                </TabsTrigger>
-                <TabsTrigger className="rounded-xl" value="settings">
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            <CardContent className="grid gap-2">
+              <Button
+                className={cn("justify-start", tab === "today" && "shadow-sm")}
+                onClick={() => setTab("today")}
+                type="button"
+                variant={tab === "today" ? "default" : "ghost"}
+              >
+                Today
+              </Button>
+              <Button
+                className={cn(
+                  "justify-start",
+                  tab === "history" && "shadow-sm"
+                )}
+                onClick={() => setTab("history")}
+                type="button"
+                variant={tab === "history" ? "default" : "ghost"}
+              >
+                History
+              </Button>
+              <Button
+                className={cn(
+                  "justify-start",
+                  tab === "settings" && "shadow-sm"
+                )}
+                onClick={() => {
+                  setTab("settings");
+                  setState((current) => ({
+                    ...current,
+                    settingsDraft:
+                      current.todayState?.settings ?? current.settingsDraft,
+                  }));
+                }}
+                type="button"
+                variant={tab === "settings" ? "default" : "ghost"}
+              >
+                Settings
+              </Button>
+            </CardContent>
           </Card>
         </aside>
 

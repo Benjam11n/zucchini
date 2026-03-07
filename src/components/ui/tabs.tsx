@@ -1,8 +1,9 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { Tabs as TabsPrimitive } from "radix-ui"
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
+import { Tabs as TabsPrimitive } from "radix-ui";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Tabs({
   className,
@@ -19,23 +20,23 @@ function Tabs({
       )}
       {...props}
     />
-  )
+  );
 }
 
 const tabsListVariants = cva(
   "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
   {
+    defaultVariants: {
+      variant: "default",
+    },
     variants: {
       variant: {
         default: "bg-muted",
         line: "gap-1 bg-transparent",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
   }
-)
+);
 
 function TabsList({
   className,
@@ -50,7 +51,7 @@ function TabsList({
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
-  )
+  );
 }
 
 function TabsTrigger({
@@ -69,7 +70,7 @@ function TabsTrigger({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function TabsContent({
@@ -82,7 +83,7 @@ function TabsContent({
       className={cn("flex-1 text-sm outline-none", className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };
