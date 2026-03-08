@@ -138,7 +138,7 @@ const DetailedActivityInfo = ({
           style={{ color: activity.color }}
         >
           {activity.value}
-          <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">
+          <span className="text-base font-normal text-zinc-500 dark:text-zinc-400 ml-0.5">
             %
           </span>
         </span>
@@ -227,7 +227,6 @@ function AppleActivityCard({
   className?: string;
   showDetails?: boolean;
 }) {
-  // Outer ring is always the largest; keep consistent container size
   const containerSize = activities[0]?.size ?? 280;
 
   return (

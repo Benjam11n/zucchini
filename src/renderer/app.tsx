@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { AppShell } from "@/renderer/features/app/app-shell";
 import { useAppController } from "@/renderer/features/app/use-app-controller";
 import { MASCOTS } from "@/renderer/lib/mascots";
@@ -19,7 +20,8 @@ export default function App() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
         <Card className="w-full max-w-md">
-          <CardContent className="flex justify-center px-6 pt-6 pb-0">
+          <CardContent className="flex flex-col items-center justify-center gap-6 px-6 pt-10 pb-0">
+            <Spinner className="size-8 text-primary/60" />
             <img
               alt="Loading Zucchini mascot"
               className="size-28 object-contain"
