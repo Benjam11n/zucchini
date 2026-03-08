@@ -12,8 +12,11 @@
     "dev:electron": "bun run scripts/dev-electron.mjs",
     "start": "bun run build && bun run scripts/start-electron.mjs",
     "build": "tsc --noEmit && vite build && tsdown",
-    "package": "bun run build && electron-builder --dir",
-    "dist:desktop": "bun run build && electron-builder",
+    "package": "bun run build && electron-builder --dir --config electron-builder.config.ts",
+    "dist:desktop": "bun run build && electron-builder --config electron-builder.config.ts",
+    "dist:release": "bun run build && bun run scripts/release-desktop.mjs",
+    "dist:release:win": "electron-builder --config electron-builder.config.ts --win nsis --publish always",
+    "dist:release:mac": "electron-builder --config electron-builder.config.ts --mac dmg zip --publish always",
     "typecheck": "tsc --noEmit",
     "lint": "ultracite check .",
     "format": "ultracite fix .",
@@ -66,42 +69,5 @@
     "vite": "^7.1.3",
     "vitest": "^4.0.18",
     "wait-on": "^9.0.4"
-  },
-  "build": {
-    "appId": "com.zucchini.habittracker",
-    "productName": "Zucchini",
-    "icon": "build/icon.png",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "build/icon.png",
-      "dist/**",
-      "dist-electron/**",
-      "drizzle/**",
-      "package.json"
-    ],
-    "asarUnpack": [
-      "node_modules/better-sqlite3/**/*"
-    ],
-    "mac": {
-      "icon": "build/icon.icns",
-      "target": [
-        "dmg",
-        "zip"
-      ]
-    },
-    "win": {
-      "icon": "build/icon.ico",
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "target": [
-        "AppImage"
-      ]
-    }
   }
 }
