@@ -1,5 +1,5 @@
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { Monitor, MoonStar, SunMedium } from "lucide-react";
+import { Bell, ListTodo, Monitor, MoonStar, Palette, SunMedium } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -245,7 +245,10 @@ function ReminderSettingsCard({
     <Card>
       <CardHeader>
         <CardDescription>Settings</CardDescription>
-        <CardTitle>Reminders</CardTitle>
+        <div className="flex items-center gap-2">
+          <Bell className="size-4 text-primary" />
+          <CardTitle>Reminders</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-5">
         <div className="flex items-center justify-between gap-4">
@@ -300,7 +303,10 @@ function AppearanceSettingsCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance</CardTitle>
+        <div className="flex items-center gap-2">
+          <Palette className="size-4 text-primary" />
+          <CardTitle>Appearance</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="flex gap-3">
@@ -525,7 +531,10 @@ function HabitManagementCard({
     <Card>
       <CardHeader>
         <CardDescription>Habits</CardDescription>
-        <CardTitle>Manage</CardTitle>
+        <div className="flex items-center gap-2">
+          <ListTodo className="size-4 text-primary" />
+          <CardTitle>Manage</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-3">
         <LayoutGroup>

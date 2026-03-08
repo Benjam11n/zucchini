@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
+import { ListChecks } from "lucide-react";
 
 import { HabitChecklist } from "@/components/habit-checklist";
-import { PeriodHabitBoard } from "@/components/period-habit-board";
+import { LongerHabitChecklist } from "@/components/longer-habit-checklist";
 import { StreakCard } from "@/components/streak-card";
 import {
   staggerContainerVariants,
@@ -39,6 +40,7 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
 
       <motion.section variants={staggerItemVariants}>
         <HabitChecklist
+          icon={ListChecks}
           completedCount={completedCount}
           emptyMessage="No daily habits yet. Add one in Settings to power the rings and streak."
           habits={dailyHabits}
@@ -48,7 +50,7 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
 
       {periodicHabits.length > 0 ? (
         <motion.section variants={staggerItemVariants}>
-          <PeriodHabitBoard
+          <LongerHabitChecklist
             dateKey={state.date}
             habits={periodicHabits}
             onToggleHabit={onToggleHabit}
