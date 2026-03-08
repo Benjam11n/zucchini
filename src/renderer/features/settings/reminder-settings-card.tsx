@@ -96,9 +96,7 @@ export function ReminderSettingsCard({
               <Label htmlFor="reminder-time" className="text-sm font-medium">
                 Time
               </Label>
-              <ItemDescription>
-                When should we remind you?
-              </ItemDescription>
+              <ItemDescription>When should we remind you?</ItemDescription>
             </ItemContent>
             <ItemActions>
               <TimeInput
@@ -111,12 +109,13 @@ export function ReminderSettingsCard({
 
           <Item>
             <ItemContent>
-              <Label htmlFor="reminder-timezone" className="text-sm font-medium">
+              <Label
+                htmlFor="reminder-timezone"
+                className="text-sm font-medium"
+              >
                 Timezone
               </Label>
-              <ItemDescription>
-                Your local timezone.
-              </ItemDescription>
+              <ItemDescription>Your local timezone.</ItemDescription>
             </ItemContent>
             <ItemActions className="max-w-[140px]">
               <Input
