@@ -1,0 +1,40 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "npm"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "automated"
+    groups:
+      # Batch minor and patch updates together
+      minor-patch-updates:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "react"
+          - "next"
+          - "typescript"
+          - "@effect/"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Prevent breaking updates for critical dependencies
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+    versioning-strategy: increase
