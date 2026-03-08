@@ -30,11 +30,8 @@ export function WeeklyReviewHeroCard({
     currentIndex === -1 ? undefined : availableWeeks[currentIndex + 1];
 
   return (
-    <Card className="overflow-hidden border-border/60 bg-card">
+    <Card className="overflow-hidden border-border/60 bg-card py-0">
       <CardContent className="relative overflow-hidden px-6 py-6 sm:px-7">
-        <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(145,201,150,0.24),transparent_55%),radial-gradient(circle_at_top_right,rgba(229,191,108,0.22),transparent_48%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_45%)]" />
-
         <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)] lg:items-end">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">

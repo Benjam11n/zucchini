@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,11 +8,12 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
 const chartConfig = {
   completionRate: {
-    color: "var(--color-chart-3)",
+    color: "var(--ring-productivity)",
     label: "Habit completion",
   },
 } satisfies ChartConfig;
@@ -25,6 +26,8 @@ export function WeeklyReviewHabitChart({
   habitMetrics,
 }: WeeklyReviewHabitChartProps) {
   const chartData = habitMetrics.map((metric) => ({
+    category: metric.category,
+    color: HABIT_CATEGORY_UI[metric.category].ringColor,
     completionRate: metric.completionRate,
     name: metric.name,
     opportunities: metric.opportunities,
@@ -76,13 +79,20 @@ export function WeeklyReviewHabitChart({
                     indicator="line"
                   />
                 }
+                cursor={{ fill: "var(--muted)", opacity: 0.4 }}
               />
               <Bar
                 dataKey="completionRate"
-                fill="var(--color-completionRate)"
                 name="Habit completion"
                 radius={[0, 12, 12, 0]}
-              />
+              >
+                {chartData.map((entry) => (
+                  <Cell
+                    key={entry.name}
+                    fill={entry.color}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ChartResponsiveContainer>
         </ChartContainer>
