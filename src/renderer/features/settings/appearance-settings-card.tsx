@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +28,7 @@ export function AppearanceSettingsCard({
             const Icon = option.icon;
 
             return (
-              <motion.button
+              <m.button
                 key={option.value}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 id={`theme-mode-${option.value}`}
@@ -50,7 +50,7 @@ export function AppearanceSettingsCard({
               >
                 <Icon className="size-5 opacity-70" />
                 {option.label}
-              </motion.button>
+              </m.button>
             );
           })}
         </div>
