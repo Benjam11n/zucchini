@@ -3,7 +3,7 @@
 Zucchini currently ships public GitHub Release artifacts for Windows and macOS.
 Both installers are intentionally unsigned in this phase.
 
-## Current release policy
+## Current Release Policy
 
 - Windows is published as an unsigned NSIS installer.
 - macOS is published as unsigned, unnotarized `dmg` and `zip` artifacts.
@@ -17,7 +17,7 @@ Both installers are intentionally unsigned in this phase.
 - A version tag in the format `v0.1.0`
 - GitHub Actions enabled for the repository
 
-## Release environment
+## Release Environment
 
 `electron-builder` reads the GitHub publishing configuration from these
 environment variables:
@@ -29,7 +29,7 @@ environment variables:
 In GitHub Actions, the workflow sets `GH_RELEASE_OWNER` and `GH_RELEASE_REPO`
 from the current repository and uses `secrets.GITHUB_TOKEN` as `GH_TOKEN`.
 
-## CI release flow
+## CI Release Flow
 
 The release workflow lives at `.github/workflows/release.yml`.
 
@@ -51,18 +51,18 @@ The workflow publishes these assets:
 The GitHub Release remains a draft so you can smoke-test the artifacts before
 publishing it.
 
-## Local release commands
+## Local Release Commands
 
 Use these commands from the repository root.
 
-### macOS shell
+### macOS Shell
 
 ```bash
 bun run build
 GH_RELEASE_OWNER=OWNER GH_RELEASE_REPO=REPO GH_TOKEN=TOKEN bun run dist:release:mac
 ```
 
-### PowerShell on Windows
+### PowerShell On Windows
 
 ```powershell
 bun run build
@@ -75,10 +75,10 @@ bun run dist:release:win
 `bun run dist:release` is a convenience wrapper that picks the current platform
 on macOS and Windows.
 
-If you need both Windows and macOS release artifacts, build them on their native
-platforms or rely on the GitHub Actions release workflow.
+If you need both Windows and macOS release artifacts, build them on their
+native platforms or rely on the GitHub Actions release workflow.
 
-## Tagging a release
+## Tagging A Release
 
 Create and push a version tag:
 
@@ -90,7 +90,7 @@ git push origin v0.1.0
 After the workflow completes, review the draft release on GitHub, test the
 artifacts, then publish the draft manually.
 
-## Unsigned install caveats
+## Unsigned Install Caveats
 
 ### Windows
 
