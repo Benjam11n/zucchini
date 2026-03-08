@@ -34,7 +34,9 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
   }
 
   const dailyHabits = selectedDay.habits.filter((h) => h.frequency === "daily");
-  const longTermHabits = selectedDay.habits.filter((h) => h.frequency !== "daily");
+  const longTermHabits = selectedDay.habits.filter(
+    (h) => h.frequency !== "daily"
+  );
 
   const completedDaily = dailyHabits.filter((habit) => habit.completed);
   const remainingDaily = dailyHabits.filter((habit) => !habit.completed);
@@ -180,7 +182,10 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
                     <div className="size-3.5 rounded-full border border-current" />
                   )}
                   {habit.name}
-                  <Badge variant="secondary" className="ml-1 text-[0.65rem] h-4 px-1 capitalize">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 text-[0.65rem] h-4 px-1 capitalize"
+                  >
                     {habit.frequency}
                   </Badge>
                 </div>

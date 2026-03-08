@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
+import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
 import { staggerItemVariants } from "@/renderer/lib/motion";
+import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { parseDateKey } from "@/shared/utils/date";
@@ -58,6 +60,7 @@ export function LongerHabitChecklist({
 
     return {
       ...section,
+      categoryProgress: getHabitCategoryProgress(sectionHabits),
       habits: sectionHabits,
       resetLabel: formatResetLabel(period.end),
     };
@@ -96,9 +99,17 @@ export function LongerHabitChecklist({
           >
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div className="grid gap-1">
-                <h3 className="text-sm font-semibold text-foreground">
-                  {section.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-border/70 bg-card/70 p-1 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.7)]">
+                    <HabitActivityRingGlyph
+                      categoryProgress={section.categoryProgress}
+                      size={24}
+                    />
+                  </span>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {section.title}
+                  </h3>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {section.description}
                 </p>
