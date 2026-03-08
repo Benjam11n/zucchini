@@ -101,45 +101,41 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
             </CardContent>
           </Card>
 
-          <div className="grid gap-2">
-            {selectedDay.categoryProgress.map((progress) => {
-              const categoryUi = HABIT_CATEGORY_UI[progress.category];
+          <Card className="border-border/60 bg-card/85">
+            <CardContent className="grid gap-4 p-4">
+              {selectedDay.categoryProgress.map((progress) => {
+                const categoryUi = HABIT_CATEGORY_UI[progress.category];
 
-              return (
-                <Card
-                  key={progress.category}
-                  className="border-border/60 bg-card/85"
-                >
+                return (
                   <motion.div
+                    key={progress.category}
                     animate={{ opacity: 1, y: 0 }}
                     initial={{ opacity: 0, y: 8 }}
                     transition={microTransition}
                   >
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <span
-                          className={cn(
-                            "text-xs font-semibold tracking-[0.18em] uppercase",
-                            categoryUi.textClassName
-                          )}
-                        >
-                          {progress.category}
-                        </span>
-                        <span className="text-sm font-semibold text-foreground">
-                          {progress.completed}/{progress.total}
-                        </span>
-                      </div>
-                      <Progress
-                        className="mt-2 h-2 bg-muted/60"
-                        indicatorClassName={categoryUi.progressClassName}
-                        value={progress.progress}
-                      />
-                    </CardContent>
+                    <div className="flex items-center justify-between gap-3">
+                      <span
+                        className={cn(
+                          "text-xs font-semibold tracking-[0.18em] uppercase",
+                          categoryUi.textClassName
+                        )}
+                      >
+                        {progress.category}
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {progress.completed}/{progress.total}
+                      </span>
+                    </div>
+                    <Progress
+                      className="mt-2 h-2 bg-muted/60"
+                      indicatorClassName={categoryUi.progressClassName}
+                      value={progress.progress}
+                    />
                   </motion.div>
-                </Card>
-              );
-            })}
-          </div>
+                );
+              })}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
