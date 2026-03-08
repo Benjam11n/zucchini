@@ -1,3 +1,4 @@
+import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
 import type {
   Habit,
   HabitCategory,
@@ -80,10 +81,19 @@ class FakeRepository implements HabitRepository {
     lastEvaluatedDate: "2026-03-05",
   };
   settings: AppSettings = {
+    launchAtLogin: false,
+    minimizeToTray: false,
     reminderEnabled: true,
+    reminderSnoozeMinutes: 15,
     reminderTime: "20:30",
     themeMode: "system",
     timezone: "Asia/Singapore",
+  };
+  reminderRuntimeState: ReminderRuntimeState = {
+    lastMidnightWarningSentAt: null,
+    lastMissedReminderSentAt: null,
+    lastReminderSentAt: null,
+    snoozedUntil: null,
   };
 
   initializeSchema(): void {}
@@ -171,6 +181,14 @@ class FakeRepository implements HabitRepository {
 
   savePersistedStreakState(state: StreakState): void {
     this.streak = { ...state };
+  }
+
+  getReminderRuntimeState(): ReminderRuntimeState {
+    return { ...this.reminderRuntimeState };
+  }
+
+  saveReminderRuntimeState(state: ReminderRuntimeState): void {
+    this.reminderRuntimeState = { ...state };
   }
 
   getSettings(): AppSettings {

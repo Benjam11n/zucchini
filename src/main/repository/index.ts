@@ -1,3 +1,4 @@
+import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
 import type {
   Habit,
   HabitCategory,
@@ -11,6 +12,7 @@ import { runMigrations } from "../db/migrations";
 import { SqliteDatabaseClient } from "../db/sqlite-client";
 import { SqliteHabitsRepository } from "./habit-repository";
 import { SqliteHistoryRepository } from "./history-repository";
+import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-repository";
 import { SqliteSettingsRepository } from "./settings-repository";
 import { SqliteStreakRepository } from "./streak-repository";
 
@@ -26,6 +28,8 @@ export interface HabitRepository {
   getSettledHistory(limit?: number): DailySummary[];
   getPersistedStreakState(): StreakState;
   savePersistedStreakState(state: StreakState): void;
+  getReminderRuntimeState(): ReminderRuntimeState;
+  saveReminderRuntimeState(state: ReminderRuntimeState): void;
   getSettings(defaultTimezone: string): AppSettings;
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
   getFirstTrackedDate(): string | null;
@@ -57,6 +61,8 @@ export class SqliteHabitRepository implements HabitRepository {
   private readonly settingsRepository = new SqliteSettingsRepository(
     this.client
   );
+  private readonly reminderRuntimeStateRepository =
+    new SqliteReminderRuntimeStateRepository(this.client);
   private readonly streakRepository = new SqliteStreakRepository(this.client);
 
   initializeSchema(): void {
@@ -126,6 +132,14 @@ export class SqliteHabitRepository implements HabitRepository {
 
   savePersistedStreakState(state: StreakState): void {
     this.streakRepository.savePersistedStreakState(state);
+  }
+
+  getReminderRuntimeState(): ReminderRuntimeState {
+    return this.reminderRuntimeStateRepository.getState();
+  }
+
+  saveReminderRuntimeState(state: ReminderRuntimeState): void {
+    this.reminderRuntimeStateRepository.saveState(state);
   }
 
   getSettings(defaultTimezone: string): AppSettings {

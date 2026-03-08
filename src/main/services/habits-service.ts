@@ -8,6 +8,7 @@ import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { Clock } from "../clock";
+import type { ReminderRuntimeState } from "../reminder-runtime-state";
 import type { HabitRepository } from "../repository";
 import { syncRollingState } from "./streak-sync-service";
 import {
@@ -21,7 +22,9 @@ export interface HabitsService {
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getHistory(): HistoryDay[];
+  getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
+  saveReminderRuntimeState(state: ReminderRuntimeState): void;
   createHabit(
     name: string,
     category: HabitCategory,
@@ -85,8 +88,16 @@ export class HabitService implements HabitsService {
     ];
   }
 
+  getReminderRuntimeState(): ReminderRuntimeState {
+    return this.repository.getReminderRuntimeState();
+  }
+
   updateSettings(settings: AppSettings): AppSettings {
     return this.repository.saveSettings(settings, this.clock.timezone());
+  }
+
+  saveReminderRuntimeState(state: ReminderRuntimeState): void {
+    this.repository.saveReminderRuntimeState(state);
   }
 
   createHabit(

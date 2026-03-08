@@ -1,7 +1,13 @@
 import path from "node:path";
 
 import { Effect } from "effect";
-import { app, BrowserWindow, nativeImage, nativeTheme } from "electron";
+import {
+  app,
+  BrowserWindow,
+  nativeImage,
+  nativeTheme,
+  powerMonitor,
+} from "electron";
 
 import { resolveRuntimeIconPath } from "@/main/assets";
 import { systemClock } from "@/main/clock";
@@ -9,7 +15,8 @@ import { registerIpcHandlers } from "@/main/ipc";
 import { SqliteHabitRepository } from "@/main/repository";
 import { createReminderScheduler } from "@/main/scheduler";
 import { HabitService } from "@/main/service";
-import type { ThemeMode } from "@/shared/domain/settings";
+import { createAppTray } from "@/main/tray";
+import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 function getWindowBackgroundColor(): string {
   return nativeTheme.shouldUseDarkColors ? "#18231e" : "#f7f3e8";
@@ -43,6 +50,16 @@ function configureWindowSecurity(win: BrowserWindow): void {
   });
 }
 
+function applyLoginItemSettings(settings: AppSettings): void {
+  app.setLoginItemSettings({
+    openAsHidden: settings.minimizeToTray,
+    openAtLogin: settings.launchAtLogin,
+  });
+}
+
+let isQuitting = false;
+let trayEnabled = false;
+
 function createWindow(): void {
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
@@ -69,6 +86,14 @@ function createWindow(): void {
   });
 
   configureWindowSecurity(win);
+  win.on("close", (event) => {
+    if (!trayEnabled || isQuitting) {
+      return;
+    }
+
+    event.preventDefault();
+    win.hide();
+  });
 
   if (shouldShowInactive) {
     win.once("ready-to-show", () => {
@@ -83,8 +108,37 @@ function createWindow(): void {
   }
 }
 
+function showMainWindow(): void {
+  const [existingWindow] = BrowserWindow.getAllWindows();
+  if (existingWindow) {
+    if (existingWindow.isMinimized()) {
+      existingWindow.restore();
+    }
+    existingWindow.show();
+    existingWindow.focus();
+    return;
+  }
+
+  createWindow();
+}
+
 const service = new HabitService(new SqliteHabitRepository(), systemClock);
-const reminders = createReminderScheduler(() => service.getTodayState());
+const reminders = createReminderScheduler({
+  clock: systemClock,
+  getTodayState: () => service.getTodayState(),
+  loadState: () => service.getReminderRuntimeState(),
+  saveState: (state) => {
+    service.saveReminderRuntimeState(state);
+  },
+});
+const tray = createAppTray({
+  onOpen: showMainWindow,
+  onQuit: () => {
+    isQuitting = true;
+    app.quit();
+  },
+  onSnooze: (settings) => reminders.snooze(settings),
+});
 
 void app.whenReady().then(() => {
   Effect.runSync(
@@ -100,15 +154,21 @@ void app.whenReady().then(() => {
 
       registerIpcHandlers({
         onSettingsChanged: (settings) => {
+          applyLoginItemSettings(settings);
           reminders.schedule(settings);
           applyThemeMode(settings.themeMode);
+          tray.applySettings(settings);
+          trayEnabled = settings.minimizeToTray;
         },
         service,
       });
 
       const today = service.getTodayState();
+      applyLoginItemSettings(today.settings);
       applyThemeMode(today.settings.themeMode);
       reminders.schedule(today.settings);
+      tray.applySettings(today.settings);
+      trayEnabled = today.settings.minimizeToTray;
       createWindow();
     })
   );
@@ -116,12 +176,27 @@ void app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
+      return;
     }
+
+    showMainWindow();
+  });
+
+  powerMonitor.on("resume", () => {
+    reminders.schedule(service.getTodayState().settings);
   });
 });
 
-app.on("window-all-closed", () => {
+app.on("before-quit", () => {
+  isQuitting = true;
   reminders.cancel();
+  tray.destroy();
+});
+
+app.on("window-all-closed", () => {
+  if (trayEnabled) {
+    return;
+  }
 
   if (process.platform !== "darwin") {
     app.quit();

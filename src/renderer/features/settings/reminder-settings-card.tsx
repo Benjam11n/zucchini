@@ -21,6 +21,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { TimeInput } from "@/components/ui/time-input";
+import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 
 import type { SettingsPageProps } from "./types";
 
@@ -107,6 +108,37 @@ export function ReminderSettingsCard({
             </ItemActions>
           </Item>
 
+          <ItemSeparator />
+
+          <Item>
+            <ItemContent>
+              <Label htmlFor="reminder-snooze" className="text-sm font-medium">
+                Snooze length
+              </Label>
+              <ItemDescription>
+                Delay the next reminder from the tray/menu bar.
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions className="max-w-[140px]">
+              <Input
+                id="reminder-snooze"
+                className="text-center"
+                min={1}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  onChange({
+                    ...settings,
+                    reminderSnoozeMinutes: Number.isFinite(value)
+                      ? value
+                      : DEFAULT_REMINDER_SNOOZE_MINUTES,
+                  });
+                }}
+                type="number"
+                value={settings.reminderSnoozeMinutes}
+              />
+            </ItemActions>
+          </Item>
+
           <Item>
             <ItemContent>
               <Label
@@ -126,6 +158,49 @@ export function ReminderSettingsCard({
                 }
                 type="text"
                 value={settings.timezone}
+              />
+            </ItemActions>
+          </Item>
+
+          <ItemSeparator />
+
+          <Item>
+            <ItemContent>
+              <Label htmlFor="launch-at-login" className="text-sm font-medium">
+                Launch at login
+              </Label>
+              <ItemDescription>
+                Start Zucchini automatically when you sign in.
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <Switch
+                checked={settings.launchAtLogin}
+                id="launch-at-login"
+                onCheckedChange={(checked) =>
+                  onChange({ ...settings, launchAtLogin: checked })
+                }
+              />
+            </ItemActions>
+          </Item>
+
+          <Item>
+            <ItemContent>
+              <Label htmlFor="minimize-to-tray" className="text-sm font-medium">
+                Keep running in tray
+              </Label>
+              <ItemDescription>
+                Hide the window to the menu bar/tray so reminders can keep
+                running.
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <Switch
+                checked={settings.minimizeToTray}
+                id="minimize-to-tray"
+                onCheckedChange={(checked) =>
+                  onChange({ ...settings, minimizeToTray: checked })
+                }
               />
             </ItemActions>
           </Item>

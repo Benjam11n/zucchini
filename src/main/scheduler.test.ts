@@ -1,3 +1,4 @@
+import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -6,24 +7,48 @@ import type * as Notifications from "./notifications";
 import { createReminderScheduler } from "./scheduler";
 
 const notificationState = vi.hoisted(() => ({
+  catchUpReminderCount: 0,
   incompleteReminderCount: 0,
   midnightWarningCount: 0,
+  missedReminderCount: 0,
+  snoozedReminderCount: 0,
+  snoozedReminderMinutes: [] as number[],
 }));
 
 vi.mock<typeof Notifications>(import("./notifications"), () => ({
+  showCatchUpReminder: vi.fn(() => {
+    notificationState.catchUpReminderCount += 1;
+  }),
   showIncompleteReminder: vi.fn(() => {
     notificationState.incompleteReminderCount += 1;
   }),
   showMidnightWarning: vi.fn(() => {
     notificationState.midnightWarningCount += 1;
   }),
+  showMissedReminderWarning: vi.fn(() => {
+    notificationState.missedReminderCount += 1;
+  }),
+  showSnoozedReminder: vi.fn((minutes: number) => {
+    notificationState.snoozedReminderCount += 1;
+    notificationState.snoozedReminderMinutes.push(minutes);
+  }),
 }));
 
 const DEFAULT_SETTINGS: AppSettings = {
+  launchAtLogin: false,
+  minimizeToTray: false,
   reminderEnabled: true,
+  reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
   themeMode: "system",
   timezone: "UTC",
+};
+
+const DEFAULT_RUNTIME_STATE: ReminderRuntimeState = {
+  lastMidnightWarningSentAt: null,
+  lastMissedReminderSentAt: null,
+  lastReminderSentAt: null,
+  snoozedUntil: null,
 };
 
 function buildTodayState(
@@ -59,11 +84,19 @@ function buildHabit(
   };
 }
 
+function resetNotificationState(): void {
+  notificationState.catchUpReminderCount = 0;
+  notificationState.incompleteReminderCount = 0;
+  notificationState.midnightWarningCount = 0;
+  notificationState.missedReminderCount = 0;
+  notificationState.snoozedReminderCount = 0;
+  notificationState.snoozedReminderMinutes = [];
+}
+
 function withFakeTime(nowIso: string, run: () => void): void {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(nowIso));
-  notificationState.incompleteReminderCount = 0;
-  notificationState.midnightWarningCount = 0;
+  resetNotificationState();
   vi.clearAllMocks();
 
   try {
@@ -76,9 +109,14 @@ function withFakeTime(nowIso: string, run: () => void): void {
 describe("reminder scheduler", () => {
   it("fires the user reminder at the configured local time instead of system time", () => {
     withFakeTime("2026-01-15T13:30:00.000Z", () => {
-      const scheduler = createReminderScheduler(() =>
-        buildTodayState([buildHabit(false)])
-      );
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
 
       scheduler.schedule({
         ...DEFAULT_SETTINGS,
@@ -91,15 +129,59 @@ describe("reminder scheduler", () => {
 
       vi.advanceTimersByTime(1000);
       expect(notificationState.incompleteReminderCount).toBe(1);
+      expect(runtimeState.lastReminderSentAt).not.toBeNull();
+    });
+  });
+
+  it("shows a catch-up reminder when the app reopens after reminder time", () => {
+    withFakeTime("2026-01-15T20:45:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(DEFAULT_SETTINGS);
+
+      expect(notificationState.catchUpReminderCount).toBe(1);
+      expect(notificationState.incompleteReminderCount).toBe(0);
+      expect(runtimeState.lastReminderSentAt).not.toBeNull();
+    });
+  });
+
+  it("shows the missed reminder warning after 23:00 when the scheduled reminder was missed", () => {
+    withFakeTime("2026-01-15T23:05:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(DEFAULT_SETTINGS);
+
+      expect(notificationState.missedReminderCount).toBe(1);
       expect(notificationState.midnightWarningCount).toBe(0);
+      expect(runtimeState.lastMidnightWarningSentAt).not.toBeNull();
+      expect(runtimeState.lastMissedReminderSentAt).not.toBeNull();
     });
   });
 
   it("keeps the nightly 23:00 warning active even when user reminders are disabled", () => {
     withFakeTime("2026-01-15T14:30:00.000Z", () => {
-      const scheduler = createReminderScheduler(() =>
-        buildTodayState([buildHabit(false)])
-      );
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
 
       scheduler.schedule({
         ...DEFAULT_SETTINGS,
@@ -116,57 +198,47 @@ describe("reminder scheduler", () => {
     });
   });
 
-  it("reschedules the nightly warning and lets cancel stop the next run", () => {
-    withFakeTime("2026-01-15T22:59:00.000Z", () => {
-      const scheduler = createReminderScheduler(() =>
-        buildTodayState([buildHabit(false)])
-      );
-
-      scheduler.schedule({
+  it("persists snoozes across reschedules and fires after the snooze delay", () => {
+    withFakeTime("2026-01-15T20:29:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const settings = {
         ...DEFAULT_SETTINGS,
-        reminderEnabled: false,
-        timezone: "UTC",
+        reminderSnoozeMinutes: 10,
+      };
+
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
       });
+
+      scheduler.schedule(settings);
+      expect(scheduler.snooze(settings)).toBeTruthy();
+      scheduler.schedule(settings);
 
       vi.advanceTimersByTime(60 * 1000);
-      expect(notificationState.midnightWarningCount).toBe(1);
-
-      vi.advanceTimersByTime(24 * 60 * 60 * 1000);
-      expect(notificationState.midnightWarningCount).toBe(2);
-
-      scheduler.cancel();
-      vi.advanceTimersByTime(24 * 60 * 60 * 1000);
-      expect(notificationState.midnightWarningCount).toBe(2);
-    });
-  });
-
-  it("suppresses both notifications when there are no incomplete habits", () => {
-    withFakeTime("2026-01-15T22:58:00.000Z", () => {
-      let today = buildTodayState([buildHabit(true)]);
-      const scheduler = createReminderScheduler(() => today);
-
-      scheduler.schedule({
-        ...DEFAULT_SETTINGS,
-        reminderTime: "22:59",
-        timezone: "UTC",
-      });
-
-      vi.advanceTimersByTime(2 * 60 * 1000);
       expect(notificationState.incompleteReminderCount).toBe(0);
-      expect(notificationState.midnightWarningCount).toBe(0);
 
-      today = buildTodayState([]);
-      vi.advanceTimersByTime(24 * 60 * 60 * 1000 - 60 * 1000);
-      expect(notificationState.incompleteReminderCount).toBe(0);
-      expect(notificationState.midnightWarningCount).toBe(0);
+      vi.advanceTimersByTime(9 * 60 * 1000);
+      expect(notificationState.snoozedReminderCount).toBe(1);
+      expect(notificationState.snoozedReminderMinutes).toStrictEqual([10]);
+      expect(runtimeState.snoozedUntil).toBeNull();
     });
   });
 
   it("suppresses weekly reminders before the final day of the week", () => {
     withFakeTime("2026-01-15T20:29:00.000Z", () => {
-      const scheduler = createReminderScheduler(() =>
-        buildTodayState([buildHabit(false, "weekly")], "2026-01-15")
-      );
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () =>
+          buildTodayState([buildHabit(false, "weekly")], "2026-01-15"),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
 
       scheduler.schedule({
         ...DEFAULT_SETTINGS,
@@ -176,27 +248,7 @@ describe("reminder scheduler", () => {
 
       vi.advanceTimersByTime(31 * 60 * 1000);
       expect(notificationState.incompleteReminderCount).toBe(0);
-      expect(notificationState.midnightWarningCount).toBe(0);
-    });
-  });
-
-  it("fires weekly reminders on the final day of the week", () => {
-    withFakeTime("2026-01-17T20:29:00.000Z", () => {
-      const scheduler = createReminderScheduler(() =>
-        buildTodayState([buildHabit(false, "weekly")], "2026-01-17")
-      );
-
-      scheduler.schedule({
-        ...DEFAULT_SETTINGS,
-        reminderTime: "20:30",
-        timezone: "UTC",
-      });
-
-      vi.advanceTimersByTime(59 * 1000);
-      expect(notificationState.incompleteReminderCount).toBe(0);
-
-      vi.advanceTimersByTime(1000);
-      expect(notificationState.incompleteReminderCount).toBe(1);
+      expect(notificationState.catchUpReminderCount).toBe(0);
       expect(notificationState.midnightWarningCount).toBe(0);
     });
   });

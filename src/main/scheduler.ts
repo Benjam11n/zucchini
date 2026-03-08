@@ -1,17 +1,35 @@
+import type { Clock } from "@/main/clock";
+import { systemClock } from "@/main/clock";
+import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
+import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/main/reminder-runtime-state";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import { showIncompleteReminder, showMidnightWarning } from "./notifications";
+import {
+  showCatchUpReminder,
+  showIncompleteReminder,
+  showMidnightWarning,
+  showMissedReminderWarning,
+  showSnoozedReminder,
+} from "./notifications";
 
 const MIDNIGHT_WARNING_HOUR = 23;
 const MIDNIGHT_WARNING_MINUTE = 0;
 
 type TimerHandle = ReturnType<typeof setTimeout>;
 
+interface ReminderSchedulerOptions {
+  clock?: Pick<Clock, "now">;
+  getTodayState: () => TodayState;
+  loadState?: () => ReminderRuntimeState;
+  saveState?: (state: ReminderRuntimeState) => void;
+}
+
 interface ReminderScheduler {
   schedule: (settings: AppSettings) => void;
   cancel: () => void;
+  snooze: (settings: AppSettings) => boolean;
 }
 
 function hasIncompleteHabitsClosingToday(today: TodayState): boolean {
@@ -64,7 +82,17 @@ function getPartValue(
   return Number(value);
 }
 
-function getTimeZoneOffsetMs(date: Date, timezone: string): number {
+function getZonedDateTimeParts(
+  date: Date,
+  timezone: string
+): {
+  day: number;
+  hour: number;
+  minute: number;
+  month: number;
+  second: number;
+  year: number;
+} {
   const parts = new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
     hour: "2-digit",
@@ -76,13 +104,25 @@ function getTimeZoneOffsetMs(date: Date, timezone: string): number {
     year: "numeric",
   }).formatToParts(date);
 
+  return {
+    day: getPartValue(parts, "day"),
+    hour: getPartValue(parts, "hour"),
+    minute: getPartValue(parts, "minute"),
+    month: getPartValue(parts, "month"),
+    second: getPartValue(parts, "second"),
+    year: getPartValue(parts, "year"),
+  };
+}
+
+function getTimeZoneOffsetMs(date: Date, timezone: string): number {
+  const parts = getZonedDateTimeParts(date, timezone);
   const utcTimestamp = Date.UTC(
-    getPartValue(parts, "year"),
-    getPartValue(parts, "month") - 1,
-    getPartValue(parts, "day"),
-    getPartValue(parts, "hour"),
-    getPartValue(parts, "minute"),
-    getPartValue(parts, "second")
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second
   );
 
   return utcTimestamp - date.getTime();
@@ -120,17 +160,12 @@ function getZonedDateParts(
   date: Date,
   timezone: string
 ): { year: number; month: number; day: number } {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: timezone,
-    year: "numeric",
-  }).formatToParts(date);
+  const parts = getZonedDateTimeParts(date, timezone);
 
   return {
-    day: getPartValue(parts, "day"),
-    month: getPartValue(parts, "month"),
-    year: getPartValue(parts, "year"),
+    day: parts.day,
+    month: parts.month,
+    year: parts.year,
   };
 }
 
@@ -165,36 +200,329 @@ function getDelayUntilNextOccurrence(
   return Math.max(nextRun.getTime() - now.getTime(), 0);
 }
 
+function isSameZonedDate(left: Date, right: Date, timezone: string): boolean {
+  const leftParts = getZonedDateParts(left, timezone);
+  const rightParts = getZonedDateParts(right, timezone);
+
+  return (
+    leftParts.year === rightParts.year &&
+    leftParts.month === rightParts.month &&
+    leftParts.day === rightParts.day
+  );
+}
+
+function isAtOrPastTime(
+  date: Date,
+  timezone: string,
+  hours: number,
+  minutes: number
+): boolean {
+  const parts = getZonedDateTimeParts(date, timezone);
+
+  if (parts.hour > hours) {
+    return true;
+  }
+
+  if (parts.hour < hours) {
+    return false;
+  }
+
+  return parts.minute >= minutes;
+}
+
 function scheduleDailyNotification(
   timezone: string,
   hours: number,
   minutes: number,
   setTimer: (timer: TimerHandle) => void,
-  onFire: () => void
+  onFire: () => void,
+  clock: Pick<Clock, "now">
 ): void {
-  const delay = getDelayUntilNextOccurrence(timezone, hours, minutes);
+  const delay = getDelayUntilNextOccurrence(
+    timezone,
+    hours,
+    minutes,
+    clock.now()
+  );
 
   const timer = setTimeout(() => {
     onFire();
-    scheduleDailyNotification(timezone, hours, minutes, setTimer, onFire);
+    scheduleDailyNotification(
+      timezone,
+      hours,
+      minutes,
+      setTimer,
+      onFire,
+      clock
+    );
   }, delay);
 
   setTimer(timer);
 }
 
-export function createReminderScheduler(
-  getTodayState: () => TodayState
-): ReminderScheduler {
+export function createReminderScheduler({
+  clock = systemClock,
+  getTodayState,
+  loadState = () => ({ ...DEFAULT_REMINDER_RUNTIME_STATE }),
+  saveState = () => {},
+}: ReminderSchedulerOptions): ReminderScheduler {
   let reminderTimeout: TimerHandle | null = null;
   let midnightWarningTimeout: TimerHandle | null = null;
+  let snoozeTimeout: TimerHandle | null = null;
+  let state = loadState();
+
+  function persistState(nextState: ReminderRuntimeState): void {
+    state = nextState;
+    saveState(state);
+  }
+
+  function updateState(
+    update:
+      | Partial<ReminderRuntimeState>
+      | ((current: ReminderRuntimeState) => ReminderRuntimeState)
+  ): void {
+    const nextState =
+      typeof update === "function" ? update(state) : { ...state, ...update };
+    persistState(nextState);
+  }
+
+  function getCurrentNow(): Date {
+    return clock.now();
+  }
+
+  function wasSentToday(sentAt: string | null, timezone: string): boolean {
+    if (!sentAt) {
+      return false;
+    }
+
+    return isSameZonedDate(new Date(sentAt), getCurrentNow(), timezone);
+  }
+
+  function hasActiveSnooze(now = getCurrentNow()): boolean {
+    return state.snoozedUntil !== null && new Date(state.snoozedUntil) > now;
+  }
+
+  function clearSnooze(): void {
+    if (state.snoozedUntil === null) {
+      return;
+    }
+
+    updateState({ snoozedUntil: null });
+  }
+
+  function showReminderNotification(notifier: () => void): void {
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return;
+    }
+
+    notifier();
+    updateState({
+      lastReminderSentAt: getCurrentNow().toISOString(),
+      snoozedUntil: null,
+    });
+  }
+
+  function maybeDeliverScheduledReminder(settings: AppSettings): void {
+    if (hasActiveSnooze()) {
+      return;
+    }
+
+    if (wasSentToday(state.lastReminderSentAt, settings.timezone)) {
+      return;
+    }
+
+    showReminderNotification(showIncompleteReminder);
+  }
+
+  function maybeDeliverCatchUpReminder(settings: AppSettings): boolean {
+    if (hasActiveSnooze()) {
+      return false;
+    }
+
+    if (wasSentToday(state.lastReminderSentAt, settings.timezone)) {
+      return false;
+    }
+
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return false;
+    }
+
+    showCatchUpReminder();
+    updateState({
+      lastReminderSentAt: getCurrentNow().toISOString(),
+      snoozedUntil: null,
+    });
+    return true;
+  }
+
+  function maybeDeliverSnoozedReminder(settings: AppSettings): boolean {
+    if (!settings.reminderEnabled || state.snoozedUntil === null) {
+      return false;
+    }
+
+    if (new Date(state.snoozedUntil) > getCurrentNow()) {
+      return false;
+    }
+
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return false;
+    }
+
+    const snoozeMinutes = Math.max(settings.reminderSnoozeMinutes, 1);
+    showSnoozedReminder(snoozeMinutes);
+    updateState({
+      lastReminderSentAt: getCurrentNow().toISOString(),
+      snoozedUntil: null,
+    });
+    return true;
+  }
+
+  function maybeDeliverMidnightWarning(settings: AppSettings): boolean {
+    if (wasSentToday(state.lastMidnightWarningSentAt, settings.timezone)) {
+      return false;
+    }
+
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return false;
+    }
+
+    showMidnightWarning();
+    updateState({
+      lastMidnightWarningSentAt: getCurrentNow().toISOString(),
+    });
+    return true;
+  }
+
+  function maybeDeliverMissedReminderWarning(settings: AppSettings): boolean {
+    if (!settings.reminderEnabled) {
+      return false;
+    }
+
+    if (hasActiveSnooze()) {
+      return false;
+    }
+
+    if (wasSentToday(state.lastReminderSentAt, settings.timezone)) {
+      return false;
+    }
+
+    if (wasSentToday(state.lastMissedReminderSentAt, settings.timezone)) {
+      return false;
+    }
+
+    const reminderTime = parseClockTime(settings.reminderTime);
+    if (!reminderTime) {
+      return false;
+    }
+
+    if (
+      !isAtOrPastTime(
+        getCurrentNow(),
+        settings.timezone,
+        reminderTime.hours,
+        reminderTime.minutes
+      )
+    ) {
+      return false;
+    }
+
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return false;
+    }
+
+    showMissedReminderWarning();
+    const sentAt = getCurrentNow().toISOString();
+    updateState({
+      lastMidnightWarningSentAt: sentAt,
+      lastMissedReminderSentAt: sentAt,
+      lastReminderSentAt: sentAt,
+      snoozedUntil: null,
+    });
+    return true;
+  }
+
+  function runCatchUpChecks(settings: AppSettings): void {
+    if (maybeDeliverSnoozedReminder(settings)) {
+      return;
+    }
+
+    if (
+      isAtOrPastTime(
+        getCurrentNow(),
+        settings.timezone,
+        MIDNIGHT_WARNING_HOUR,
+        MIDNIGHT_WARNING_MINUTE
+      )
+    ) {
+      if (maybeDeliverMissedReminderWarning(settings)) {
+        return;
+      }
+
+      void maybeDeliverMidnightWarning(settings);
+      return;
+    }
+
+    if (!settings.reminderEnabled) {
+      clearSnooze();
+      return;
+    }
+
+    const reminderTime = parseClockTime(settings.reminderTime);
+    if (!reminderTime) {
+      clearSnooze();
+      return;
+    }
+
+    if (
+      isAtOrPastTime(
+        getCurrentNow(),
+        settings.timezone,
+        reminderTime.hours,
+        reminderTime.minutes
+      )
+    ) {
+      void maybeDeliverCatchUpReminder(settings);
+    }
+  }
+
+  function scheduleSnoozedReminder(settings: AppSettings): void {
+    snoozeTimeout = clearTimer(snoozeTimeout);
+
+    if (!settings.reminderEnabled || state.snoozedUntil === null) {
+      return;
+    }
+
+    const now = getCurrentNow();
+    const dueAt = new Date(state.snoozedUntil);
+    if (dueAt <= now) {
+      return;
+    }
+
+    snoozeTimeout = setTimeout(() => {
+      void maybeDeliverSnoozedReminder(settings);
+      scheduleSnoozedReminder(settings);
+    }, dueAt.getTime() - now.getTime());
+  }
 
   function cancel(): void {
     reminderTimeout = clearTimer(reminderTimeout);
     midnightWarningTimeout = clearTimer(midnightWarningTimeout);
+    snoozeTimeout = clearTimer(snoozeTimeout);
   }
 
   function schedule(settings: AppSettings): void {
     cancel();
+    runCatchUpChecks(settings);
 
     scheduleDailyNotification(
       settings.timezone,
@@ -204,35 +532,55 @@ export function createReminderScheduler(
         midnightWarningTimeout = timer;
       },
       () => {
-        if (hasIncompleteHabitsClosingToday(getTodayState())) {
-          showMidnightWarning();
-        }
-      }
-    );
-
-    if (!settings.reminderEnabled) {
-      return;
-    }
-
-    const reminderTime = parseClockTime(settings.reminderTime);
-    if (!reminderTime) {
-      return;
-    }
-
-    scheduleDailyNotification(
-      settings.timezone,
-      reminderTime.hours,
-      reminderTime.minutes,
-      (timer) => {
-        reminderTimeout = timer;
+        void maybeDeliverMidnightWarning(settings);
       },
-      () => {
-        if (hasIncompleteHabitsClosingToday(getTodayState())) {
-          showIncompleteReminder();
-        }
-      }
+      clock
     );
+
+    if (settings.reminderEnabled) {
+      const reminderTime = parseClockTime(settings.reminderTime);
+
+      if (reminderTime) {
+        scheduleDailyNotification(
+          settings.timezone,
+          reminderTime.hours,
+          reminderTime.minutes,
+          (timer) => {
+            reminderTimeout = timer;
+          },
+          () => {
+            maybeDeliverScheduledReminder(settings);
+          },
+          clock
+        );
+      }
+    } else {
+      clearSnooze();
+    }
+
+    scheduleSnoozedReminder(settings);
   }
 
-  return { cancel, schedule };
+  function snooze(settings: AppSettings): boolean {
+    if (!settings.reminderEnabled) {
+      return false;
+    }
+
+    const today = getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      clearSnooze();
+      return false;
+    }
+
+    const snoozeMinutes = Math.max(settings.reminderSnoozeMinutes, 1);
+    const dueAt = new Date(getCurrentNow().getTime() + snoozeMinutes * 60_000);
+
+    updateState({
+      snoozedUntil: dueAt.toISOString(),
+    });
+    scheduleSnoozedReminder(settings);
+    return true;
+  }
+
+  return { cancel, schedule, snooze };
 }

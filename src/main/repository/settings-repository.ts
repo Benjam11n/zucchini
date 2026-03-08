@@ -1,3 +1,7 @@
+import {
+  DEFAULT_REMINDER_SNOOZE_MINUTES,
+  DEFAULT_REMINDER_TIME,
+} from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
@@ -17,8 +21,13 @@ export class SqliteSettingsRepository {
       const map = new Map(rows.map((row) => [row.key, row.value]));
 
       return {
+        launchAtLogin: map.get("launchAtLogin") === "true",
+        minimizeToTray: map.get("minimizeToTray") === "true",
         reminderEnabled: map.get("reminderEnabled") === "true",
-        reminderTime: map.get("reminderTime") ?? "20:30",
+        reminderSnoozeMinutes:
+          Number(map.get("reminderSnoozeMinutes")) ||
+          DEFAULT_REMINDER_SNOOZE_MINUTES,
+        reminderTime: map.get("reminderTime") ?? DEFAULT_REMINDER_TIME,
         themeMode: normalizeThemeMode(map.get("themeMode")),
         timezone: map.get("timezone") ?? defaultTimezone,
       };
@@ -30,9 +39,15 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
+      this.upsertSetting("launchAtLogin", String(nextSettings.launchAtLogin));
+      this.upsertSetting("minimizeToTray", String(nextSettings.minimizeToTray));
       this.upsertSetting(
         "reminderEnabled",
         String(nextSettings.reminderEnabled)
+      );
+      this.upsertSetting(
+        "reminderSnoozeMinutes",
+        String(nextSettings.reminderSnoozeMinutes)
       );
       this.upsertSetting("reminderTime", nextSettings.reminderTime);
       this.upsertSetting("themeMode", nextSettings.themeMode);
@@ -44,8 +59,14 @@ export class SqliteSettingsRepository {
 
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
+      this.upsertSetting("launchAtLogin", "false");
+      this.upsertSetting("minimizeToTray", "false");
       this.upsertSetting("reminderEnabled", "true");
-      this.upsertSetting("reminderTime", "20:30");
+      this.upsertSetting(
+        "reminderSnoozeMinutes",
+        String(DEFAULT_REMINDER_SNOOZE_MINUTES)
+      );
+      this.upsertSetting("reminderTime", DEFAULT_REMINDER_TIME);
       this.upsertSetting("themeMode", "system");
       this.upsertSetting("timezone", timezone);
     });

@@ -1,7 +1,13 @@
 import type * as ElectronModule from "electron";
 
 import type * as AssetsModule from "./assets";
-import { showIncompleteReminder, showMidnightWarning } from "./notifications";
+import {
+  showCatchUpReminder,
+  showIncompleteReminder,
+  showMidnightWarning,
+  showMissedReminderWarning,
+  showSnoozedReminder,
+} from "./notifications";
 
 const notificationState = vi.hoisted(() => ({
   lastNotification: null as null | {
@@ -81,6 +87,51 @@ describe("notifications", () => {
         path: "/mocked/mascot-sleepy.png",
       },
       title: "One hour left",
+    });
+  });
+
+  it("shows a catch-up reminder when the scheduled reminder was missed", () => {
+    notificationState.lastNotification = null;
+    notificationState.supported = true;
+    showCatchUpReminder();
+
+    expect(notificationState.lastNotification).toMatchObject({
+      body: "Zucchini was closed at your reminder time. You still have habits closing today.",
+      icon: {
+        empty: false,
+        path: "/mocked/mascot-reminder.png",
+      },
+      title: "Catch-up reminder",
+    });
+  });
+
+  it("shows the missed reminder warning with the sleepy mascot", () => {
+    notificationState.lastNotification = null;
+    notificationState.supported = true;
+    showMissedReminderWarning();
+
+    expect(notificationState.lastNotification).toMatchObject({
+      body: "You missed today's scheduled reminder. You still have habits closing today, and there is only one hour left.",
+      icon: {
+        empty: false,
+        path: "/mocked/mascot-sleepy.png",
+      },
+      title: "Last reminder missed",
+    });
+  });
+
+  it("includes the snooze duration in snoozed reminders", () => {
+    notificationState.lastNotification = null;
+    notificationState.supported = true;
+    showSnoozedReminder(15);
+
+    expect(notificationState.lastNotification).toMatchObject({
+      body: "Your 15-minute Zucchini snooze has ended. You still have habits closing today.",
+      icon: {
+        empty: false,
+        path: "/mocked/mascot-reminder.png",
+      },
+      title: "Snooze finished",
     });
   });
 
