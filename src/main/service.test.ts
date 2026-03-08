@@ -405,6 +405,28 @@ describe("habit categories", () => {
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
   });
+
+  it("ignores reorder payloads that do not match the active habit ids", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Habit 2",
+      sortOrder: 1,
+    });
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.reorderHabits([1, 999]);
+
+    expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
+  });
 });
 
 describe("history retrieval", () => {

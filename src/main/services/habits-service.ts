@@ -159,7 +159,12 @@ export class HabitService implements HabitsService {
 
   reorderHabits(habitIds: number[]): TodayState {
     const activeHabits = this.repository.getHabits();
-    if (habitIds.length !== activeHabits.length) {
+    const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
+
+    if (
+      habitIds.length !== activeHabits.length ||
+      habitIds.some((habitId) => !activeHabitIds.has(habitId))
+    ) {
       return buildTodayState(this.repository, this.clock);
     }
 

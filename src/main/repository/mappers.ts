@@ -3,6 +3,7 @@ import {
   normalizeHabitFrequency,
 } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
+import { isThemeMode } from "@/shared/domain/settings";
 import type { ThemeMode } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
@@ -39,8 +40,8 @@ export function mapStreakState(row: StreakStateRow): StreakState {
   };
 }
 
-export function normalizeThemeMode(value: string | undefined): ThemeMode {
-  if (value === "light" || value === "dark") {
+export function normalizeThemeMode(value = ""): ThemeMode {
+  if (isThemeMode(value)) {
     return value;
   }
 

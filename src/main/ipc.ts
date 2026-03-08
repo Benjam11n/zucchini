@@ -1,9 +1,19 @@
 import { ipcMain } from "electron";
 
+import {
+  validateAppSettings,
+  validateHabitCategory,
+  validateHabitFrequency,
+  validateHabitId,
+  validateHabitName,
+  validateNotificationBody,
+  validateNotificationIconFilename,
+  validateNotificationTitle,
+  validateReorderHabitIds,
+} from "@/main/ipc-validation";
 import { showDesktopNotification } from "@/main/notifications";
 import type { HabitsService } from "@/main/service";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
@@ -18,52 +28,65 @@ export function registerIpcHandlers({
   ipcMain.handle(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
   );
-  ipcMain.handle(HABITS_IPC_CHANNELS.toggleHabit, (_event, habitId: number) =>
-    service.toggleHabit(habitId)
+  ipcMain.handle(HABITS_IPC_CHANNELS.toggleHabit, (_event, habitId: unknown) =>
+    service.toggleHabit(validateHabitId(habitId))
   );
   ipcMain.handle(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
   ipcMain.handle(
     HABITS_IPC_CHANNELS.updateSettings,
-    (_event, settings: AppSettings) => {
-      const nextSettings = service.updateSettings(settings);
+    (_event, settings: unknown) => {
+      const nextSettings = service.updateSettings(
+        validateAppSettings(settings)
+      );
       onSettingsChanged(nextSettings);
       return nextSettings;
     }
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.createHabit,
-    (
-      _event,
-      name: string,
-      category: HabitCategory,
-      frequency: HabitFrequency
-    ) => service.createHabit(name, category, frequency)
+    (_event, name: unknown, category: unknown, frequency: unknown) =>
+      service.createHabit(
+        validateHabitName(name),
+        validateHabitCategory(category),
+        validateHabitFrequency(frequency)
+      )
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.renameHabit,
-    (_event, habitId: number, name: string) =>
-      service.renameHabit(habitId, name)
+    (_event, habitId: unknown, name: unknown) =>
+      service.renameHabit(validateHabitId(habitId), validateHabitName(name))
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.updateHabitCategory,
-    (_event, habitId: number, category: HabitCategory) =>
-      service.updateHabitCategory(habitId, category)
+    (_event, habitId: unknown, category: unknown) =>
+      service.updateHabitCategory(
+        validateHabitId(habitId),
+        validateHabitCategory(category)
+      )
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.updateHabitFrequency,
-    (_event, habitId: number, frequency: HabitFrequency) =>
-      service.updateHabitFrequency(habitId, frequency)
+    (_event, habitId: unknown, frequency: unknown) =>
+      service.updateHabitFrequency(
+        validateHabitId(habitId),
+        validateHabitFrequency(frequency)
+      )
   );
-  ipcMain.handle(HABITS_IPC_CHANNELS.archiveHabit, (_event, habitId: number) =>
-    service.archiveHabit(habitId)
+  ipcMain.handle(HABITS_IPC_CHANNELS.archiveHabit, (_event, habitId: unknown) =>
+    service.archiveHabit(validateHabitId(habitId))
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.reorderHabits,
-    (_event, habitIds: number[]) => service.reorderHabits(habitIds)
+    (_event, habitIds: unknown) =>
+      service.reorderHabits(validateReorderHabitIds(habitIds))
   );
   ipcMain.handle(
     HABITS_IPC_CHANNELS.showNotification,
-    (_event, title: string, body: string, iconFilename?: string) =>
-      showDesktopNotification(title, body, iconFilename)
+    (_event, title: unknown, body: unknown, iconFilename?: unknown) =>
+      showDesktopNotification(
+        validateNotificationTitle(title),
+        validateNotificationBody(body),
+        validateNotificationIconFilename(iconFilename)
+      )
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -75,9 +76,18 @@ export function useAppController() {
       return;
     }
 
-    const timer = setTimeout(() => {
-      lastSavedDraft.current = draft;
-      void handleUpdateSettings(draft);
+    const timer = setTimeout(async () => {
+      const validationResult = appSettingsSchema.safeParse(draft);
+      if (!validationResult.success) {
+        return;
+      }
+
+      try {
+        await handleUpdateSettings(validationResult.data);
+        lastSavedDraft.current = draft;
+      } catch (error: unknown) {
+        console.error("Failed to save app settings", error);
+      }
     }, 600);
 
     return () => clearTimeout(timer);

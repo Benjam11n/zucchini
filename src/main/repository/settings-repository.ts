@@ -1,7 +1,5 @@
-import {
-  DEFAULT_REMINDER_SNOOZE_MINUTES,
-  DEFAULT_REMINDER_TIME,
-} from "@/shared/domain/settings";
+import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
@@ -19,18 +17,19 @@ export class SqliteSettingsRepository {
     return this.client.run("getSettings", () => {
       const rows = this.client.getDrizzle().select().from(settings).all();
       const map = new Map(rows.map((row) => [row.key, row.value]));
-
-      return {
+      const defaults = createDefaultAppSettings(defaultTimezone);
+      const candidateSettings: AppSettings = {
         launchAtLogin: map.get("launchAtLogin") === "true",
         minimizeToTray: map.get("minimizeToTray") === "true",
         reminderEnabled: map.get("reminderEnabled") === "true",
-        reminderSnoozeMinutes:
-          Number(map.get("reminderSnoozeMinutes")) ||
-          DEFAULT_REMINDER_SNOOZE_MINUTES,
-        reminderTime: map.get("reminderTime") ?? DEFAULT_REMINDER_TIME,
+        reminderSnoozeMinutes: Number(map.get("reminderSnoozeMinutes")),
+        reminderTime: map.get("reminderTime") ?? defaults.reminderTime,
         themeMode: normalizeThemeMode(map.get("themeMode")),
-        timezone: map.get("timezone") ?? defaultTimezone,
+        timezone: map.get("timezone") ?? defaults.timezone,
       };
+
+      const validationResult = appSettingsSchema.safeParse(candidateSettings);
+      return validationResult.success ? validationResult.data : defaults;
     });
   }
 
@@ -59,16 +58,17 @@ export class SqliteSettingsRepository {
 
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
-      this.upsertSetting("launchAtLogin", "false");
-      this.upsertSetting("minimizeToTray", "false");
-      this.upsertSetting("reminderEnabled", "true");
+      const defaults = createDefaultAppSettings(timezone);
+      this.upsertSetting("launchAtLogin", String(defaults.launchAtLogin));
+      this.upsertSetting("minimizeToTray", String(defaults.minimizeToTray));
+      this.upsertSetting("reminderEnabled", String(defaults.reminderEnabled));
       this.upsertSetting(
         "reminderSnoozeMinutes",
-        String(DEFAULT_REMINDER_SNOOZE_MINUTES)
+        String(defaults.reminderSnoozeMinutes)
       );
-      this.upsertSetting("reminderTime", DEFAULT_REMINDER_TIME);
-      this.upsertSetting("themeMode", "system");
-      this.upsertSetting("timezone", timezone);
+      this.upsertSetting("reminderTime", defaults.reminderTime);
+      this.upsertSetting("themeMode", defaults.themeMode);
+      this.upsertSetting("timezone", defaults.timezone);
     });
   }
 
