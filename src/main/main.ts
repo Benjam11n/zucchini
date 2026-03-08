@@ -152,7 +152,7 @@ void app.whenReady().then(() => {
     Effect.sync(() => {
       service.initialize();
 
-      if (process.platform === "darwin") {
+      if (process.platform === "darwin" && app.dock) {
         const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
         if (!icon.isEmpty()) {
           app.dock.setIcon(icon);
