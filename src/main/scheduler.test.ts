@@ -1,6 +1,6 @@
+import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { TodayState } from "@/shared/types/ipc";
 
 import type * as Notifications from "./notifications";
 import { createReminderScheduler } from "./scheduler";

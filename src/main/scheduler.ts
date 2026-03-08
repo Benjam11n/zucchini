@@ -1,6 +1,6 @@
+import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { TodayState } from "@/shared/types/ipc";
 
 import { showIncompleteReminder, showMidnightWarning } from "./notifications";
 

@@ -7,6 +7,20 @@ import type { HistoryDay } from "../domain/history";
 import type { AppSettings } from "../domain/settings";
 import type { StreakState } from "../domain/streak";
 
+export const HABITS_IPC_CHANNELS = {
+  archiveHabit: "habits:archiveHabit",
+  createHabit: "habits:createHabit",
+  getHistory: "habits:getHistory",
+  getTodayState: "habits:getTodayState",
+  renameHabit: "habits:renameHabit",
+  reorderHabits: "habits:reorderHabits",
+  showNotification: "habits:showNotification",
+  toggleHabit: "habits:toggleHabit",
+  updateHabitCategory: "habits:updateHabitCategory",
+  updateHabitFrequency: "habits:updateHabitFrequency",
+  updateSettings: "habits:updateSettings",
+} as const;
+
 export interface TodayState {
   date: string;
   habits: HabitWithStatus[];
