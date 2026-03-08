@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 import { RING_COLORS } from "@/renderer/lib/ring-colors";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
+import { formatDateKey } from "@/shared/utils/date";
 
 interface StreakCardProps {
   currentStreak: number;
@@ -27,11 +28,11 @@ export function StreakCard({
   categoryProgress,
   dateLabel,
 }: StreakCardProps) {
-  const formattedDate = new Intl.DateTimeFormat(undefined, {
+  const formattedDate = formatDateKey(dateLabel, {
     day: "numeric",
     month: "short",
     weekday: "short",
-  }).format(new Date(`${dateLabel}T00:00:00`));
+  });
 
   const stats: StatConfig[] = [
     {
