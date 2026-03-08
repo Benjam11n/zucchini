@@ -1,13 +1,17 @@
+import path from "node:path";
+
 import type * as ElectronModule from "electron";
 
 describe("main asset helpers", () => {
   it("resolves mascot assets from the public folder in development", async () => {
+    const appPath = "/Users/tester/Zucchini";
+
     vi.resetModules();
     vi.doMock(
       import("electron"),
       (): Partial<typeof ElectronModule> => ({
         app: {
-          getAppPath: () => "/Users/tester/Zucchini",
+          getAppPath: () => appPath,
           isPackaged: false,
         } as ElectronModule.App,
       })
@@ -17,21 +21,22 @@ describe("main asset helpers", () => {
       await import("./assets");
 
     expect(resolveMascotAssetPath("mascot-reminder.png")).toBe(
-      "/Users/tester/Zucchini/public/mascot/mascot-reminder.png"
+      path.join(appPath, "public", "mascot", "mascot-reminder.png")
     );
     expect(resolveRuntimeIconPath()).toBe(
-      "/Users/tester/Zucchini/build/icon.png"
+      path.join(appPath, "build", "icon.png")
     );
   });
 
   it("resolves mascot assets from the packaged app bundle", async () => {
+    const appPath = "/Applications/Zucchini.app/Contents/Resources/app.asar";
+
     vi.resetModules();
     vi.doMock(
       import("electron"),
       (): Partial<typeof ElectronModule> => ({
         app: {
-          getAppPath: () =>
-            "/Applications/Zucchini.app/Contents/Resources/app.asar",
+          getAppPath: () => appPath,
           isPackaged: true,
         } as ElectronModule.App,
       })
@@ -41,10 +46,10 @@ describe("main asset helpers", () => {
       await import("./assets");
 
     expect(resolveMascotAssetPath("mascot-sleepy.png")).toBe(
-      "/Applications/Zucchini.app/Contents/Resources/app.asar/dist/mascot/mascot-sleepy.png"
+      path.join(appPath, "dist", "mascot", "mascot-sleepy.png")
     );
     expect(resolveRuntimeIconPath()).toBe(
-      "/Applications/Zucchini.app/Contents/Resources/app.asar/build/icon.png"
+      path.join(appPath, "build", "icon.png")
     );
   });
 });
