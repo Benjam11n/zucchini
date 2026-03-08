@@ -32,7 +32,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
     "effect": "^3.19.19",
-    "framer-motion": "^12.35.0",
+    "framer-motion": "^12.35.1",
     "lucide-react": "^0.577.0",
     "radix-ui": "^1.4.3",
     "react": "^19.1.1",
