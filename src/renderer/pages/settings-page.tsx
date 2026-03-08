@@ -248,7 +248,8 @@ function ReminderSettingsCard({
   onChange,
   settings,
 }: Pick<SettingsPageProps, "onChange" | "settings">) {
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<NotificationPermission>("default");
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -286,7 +287,7 @@ function ReminderSettingsCard({
               }
             />
           </div>
-          
+
           {settings.reminderEnabled && permission !== "granted" && (
             <div className="flex items-center justify-between rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               <span>Notifications are currently disabled.</span>
@@ -294,7 +295,9 @@ function ReminderSettingsCard({
                 size="sm"
                 variant="outline"
                 className="h-7 border-destructive/50 text-xs hover:bg-destructive/20"
-                onClick={() => { void requestPermission(); }}
+                onClick={() => {
+                  void requestPermission();
+                }}
               >
                 Request
               </Button>

@@ -13,11 +13,20 @@ import {
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { TodayState } from "@/shared/types/ipc";
 
+const LAST_STATE_STORAGE_KEY = "zucchini_last_state";
+const POPUP_TIMEOUT_MS = 5000;
+
 interface PopupEvent {
-  id: number;
+  id: string;
   mascot: string;
   message: string;
   title: string;
+}
+
+interface PersistedTodayUiState {
+  completedCount: number;
+  date: string;
+  streak: TodayState["streak"];
 }
 
 interface TodayPageProps {
@@ -25,34 +34,83 @@ interface TodayPageProps {
   onToggleHabit: (habitId: number) => void;
 }
 
+function isPersistedTodayUiState(
+  value: unknown
+): value is PersistedTodayUiState {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<PersistedTodayUiState>;
+  return (
+    typeof candidate.completedCount === "number" &&
+    typeof candidate.date === "string" &&
+    !!candidate.streak &&
+    typeof candidate.streak.currentStreak === "number" &&
+    typeof candidate.streak.availableFreezes === "number"
+  );
+}
+
+function readLastUiState(): PersistedTodayUiState | null {
+  try {
+    const rawValue = localStorage.getItem(LAST_STATE_STORAGE_KEY);
+    if (!rawValue) {
+      return null;
+    }
+
+    const parsedValue = JSON.parse(rawValue) as unknown;
+    return isPersistedTodayUiState(parsedValue) ? parsedValue : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLastUiState(value: PersistedTodayUiState): void {
+  try {
+    localStorage.setItem(LAST_STATE_STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // Ignore storage failures; popup history is only best-effort UI memory.
+  }
+}
+
 export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
   const dailyHabits = state.habits.filter(isDailyHabit);
   const periodicHabits = state.habits.filter((habit) => !isDailyHabit(habit));
   const categoryProgress = getHabitCategoryProgress(dailyHabits);
   const completedCount = dailyHabits.filter((habit) => habit.completed).length;
+  const halfwayThreshold = Math.ceil(dailyHabits.length / 2);
 
   const [popups, setPopups] = useState<PopupEvent[]>([]);
   const initializedRef = useRef(false);
-  const prevCompletedCountRef = useRef(completedCount);
+  const popupTimeoutIdsRef = useRef<number[]>([]);
+  const previousDailyProgressRef = useRef({
+    completedCount,
+    date: state.date,
+  });
 
   const addPopup = (mascot: string, title: string, message: string) => {
-    const id = Date.now() + Math.random();
+    const id = crypto.randomUUID();
     setPopups((prev) => [...prev, { id, mascot, message, title }]);
 
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       setPopups((prev) => prev.filter((p) => p.id !== id));
-    }, 5000);
+      popupTimeoutIdsRef.current = popupTimeoutIdsRef.current.filter(
+        (existingId) => existingId !== timeoutId
+      );
+    }, POPUP_TIMEOUT_MS);
+    popupTimeoutIdsRef.current.push(timeoutId);
 
-    const iconFilename = mascot.startsWith("/mascot/") ? mascot.replace("/mascot/", "") : undefined;
+    const iconFilename = mascot.startsWith("/mascot/")
+      ? mascot.replace("/mascot/", "")
+      : undefined;
     void window.habits.showNotification(title, message, iconFilename);
   };
 
   useEffect(() => {
-    const rawLastState = localStorage.getItem("zucchini_last_state");
-    const lastState = rawLastState ? JSON.parse(rawLastState) : null;
-
     if (!initializedRef.current) {
       initializedRef.current = true;
+      const lastState = readLastUiState();
+
       if (lastState) {
         if (
           state.streak.currentStreak === 0 &&
@@ -73,10 +131,24 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
           );
         }
       }
-    } else if (
+    }
+  }, [state.streak.availableFreezes, state.streak.currentStreak]);
+
+  useEffect(() => {
+    const previousDailyProgress = previousDailyProgressRef.current;
+
+    if (previousDailyProgress.date !== state.date) {
+      previousDailyProgressRef.current = {
+        completedCount,
+        date: state.date,
+      };
+      return;
+    }
+
+    if (
       completedCount === dailyHabits.length &&
       dailyHabits.length > 0 &&
-      prevCompletedCountRef.current < dailyHabits.length
+      previousDailyProgress.completedCount < dailyHabits.length
     ) {
       addPopup(
         MASCOTS.flame,
@@ -85,8 +157,8 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
       );
     } else if (
       dailyHabits.length > 1 &&
-      completedCount >= Math.floor(dailyHabits.length / 2) &&
-      prevCompletedCountRef.current < Math.floor(dailyHabits.length / 2)
+      completedCount >= halfwayThreshold &&
+      previousDailyProgress.completedCount < halfwayThreshold
     ) {
       addPopup(
         MASCOTS.determined,
@@ -95,16 +167,29 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
       );
     }
 
-    prevCompletedCountRef.current = completedCount;
-    localStorage.setItem(
-      "zucchini_last_state",
-      JSON.stringify({
-        completedCount,
-        date: state.date,
-        streak: state.streak,
-      })
-    );
-  }, [state.date, state.streak, completedCount, dailyHabits.length]);
+    previousDailyProgressRef.current = {
+      completedCount,
+      date: state.date,
+    };
+  }, [completedCount, dailyHabits.length, halfwayThreshold, state.date]);
+
+  useEffect(() => {
+    writeLastUiState({
+      completedCount,
+      date: state.date,
+      streak: state.streak,
+    });
+  }, [completedCount, state.date, state.streak]);
+
+  useEffect(
+    () => () => {
+      for (const timeoutId of popupTimeoutIdsRef.current) {
+        clearTimeout(timeoutId);
+      }
+      popupTimeoutIdsRef.current = [];
+    },
+    []
+  );
 
   return (
     <>
