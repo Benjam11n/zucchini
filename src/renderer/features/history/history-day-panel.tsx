@@ -3,6 +3,8 @@ import { CheckCircle2, Snowflake, XCircle } from "lucide-react";
 
 import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
 import { HISTORY_STATUS_UI } from "@/renderer/lib/history-status";
@@ -76,64 +78,65 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
         </div>
 
         <div className="grid gap-4">
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/85 px-4 py-5">
-            <HabitActivityRingGlyph
-              categoryProgress={selectedDay.categoryProgress}
-              size={132}
-            />
-            <p className="text-xs text-muted-foreground">
-              Streak after day: {selectedDay.summary.streakCountAfterDay}
-            </p>
-            {selectedDay.summary.freezeUsed ? (
-              <motion.div
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-2 rounded-full border border-secondary/60 bg-secondary/12 px-3 py-1 text-xs text-secondary-foreground"
-                initial={{ opacity: 0, scale: 0.94 }}
-                transition={microTransition}
-              >
-                <Snowflake className="size-3.5" />
-                Freeze preserved the streak for this day
-              </motion.div>
-            ) : null}
-          </div>
+          <Card className="border-border/60 bg-card/85">
+            <CardContent className="flex flex-col items-center gap-3 px-4 py-5">
+              <HabitActivityRingGlyph
+                categoryProgress={selectedDay.categoryProgress}
+                size={132}
+              />
+              <p className="text-xs text-muted-foreground">
+                Streak after day: {selectedDay.summary.streakCountAfterDay}
+              </p>
+              {selectedDay.summary.freezeUsed ? (
+                <motion.div
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-2 rounded-full border border-secondary/60 bg-secondary/12 px-3 py-1 text-xs text-secondary-foreground"
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  transition={microTransition}
+                >
+                  <Snowflake className="size-3.5" />
+                  Freeze preserved the streak for this day
+                </motion.div>
+              ) : null}
+            </CardContent>
+          </Card>
 
           <div className="grid gap-2">
             {selectedDay.categoryProgress.map((progress) => {
               const categoryUi = HABIT_CATEGORY_UI[progress.category];
 
               return (
-                <motion.div
+                <Card
                   key={progress.category}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl border border-border/60 bg-card/85 p-3"
-                  initial={{ opacity: 0, y: 8 }}
-                  transition={microTransition}
+                  className="border-border/60 bg-card/85"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span
-                      className={cn(
-                        "text-xs font-semibold tracking-[0.18em] uppercase",
-                        categoryUi.textClassName
-                      )}
-                    >
-                      {progress.category}
-                    </span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {progress.completed}/{progress.total}
-                    </span>
-                  </div>
-                  <div className="mt-2 h-2 rounded-full bg-muted/60">
-                    <motion.div
-                      animate={{ width: `${progress.progress}%` }}
-                      className={cn(
-                        "h-full rounded-full",
-                        categoryUi.progressClassName
-                      )}
-                      initial={{ width: 0 }}
-                      transition={microTransition}
-                    />
-                  </div>
-                </motion.div>
+                  <motion.div
+                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    transition={microTransition}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span
+                          className={cn(
+                            "text-xs font-semibold tracking-[0.18em] uppercase",
+                            categoryUi.textClassName
+                          )}
+                        >
+                          {progress.category}
+                        </span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {progress.completed}/{progress.total}
+                        </span>
+                      </div>
+                      <Progress
+                        className="mt-2 h-2 bg-muted/60"
+                        indicatorClassName={categoryUi.progressClassName}
+                        value={progress.progress}
+                      />
+                    </CardContent>
+                  </motion.div>
+                </Card>
               );
             })}
           </div>

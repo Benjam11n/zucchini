@@ -9,6 +9,12 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
+import { HistoryCalendarCard } from "@/renderer/features/history/history-calendar-card";
+import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
+import type {
+  HistoryCalendarContextValue,
+  HistoryPageProps,
+} from "@/renderer/features/history/types";
 import { HISTORY_METRIC_BADGE_CLASSNAMES } from "@/renderer/lib/history-status";
 import {
   hoverLift,
@@ -16,20 +22,13 @@ import {
   staggerItemVariants,
   tapPress,
 } from "@/renderer/lib/motion";
-
-import { HistoryCalendarCard } from "../features/history/history-calendar-card";
-import { HistoryDayPanel } from "../features/history/history-day-panel";
-import type {
-  HistoryCalendarContextValue,
-  HistoryPageProps,
-} from "../features/history/types";
 import {
   buildContributionWeeks,
   formatContributionLabel,
   getHistoryDayLookup,
   getHistoryStats,
   parseDateKey,
-} from "./history-page.utils";
+} from "@/renderer/pages/history-page.utils";
 
 export function HistoryPage({ history }: HistoryPageProps) {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(

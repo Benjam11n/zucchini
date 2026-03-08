@@ -4,15 +4,14 @@ import { ListChecks } from "lucide-react";
 import { HabitChecklist } from "@/components/habit-checklist";
 import { LongerHabitChecklist } from "@/components/longer-habit-checklist";
 import { StreakCard } from "@/components/streak-card";
+import { TodayPopupStack } from "@/renderer/features/today/today-popup-stack";
+import { useTodayPopups } from "@/renderer/features/today/use-today-popups";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/lib/motion";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
-
-import { TodayPopupStack } from "../features/today/today-popup-stack";
-import { useTodayPopups } from "../features/today/use-today-popups";
 
 interface TodayPageProps {
   state: TodayState;

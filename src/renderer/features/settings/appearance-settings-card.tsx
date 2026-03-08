@@ -1,35 +1,12 @@
 import { motion } from "framer-motion";
-import { Monitor, MoonStar, Palette, SunMedium } from "lucide-react";
-import type { ElementType } from "react";
+import { Palette } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { THEME_OPTIONS } from "@/renderer/features/settings/constants";
 import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
-import type { ThemeMode } from "@/shared/domain/settings";
 
 import type { SettingsPageProps } from "./types";
-
-const THEME_OPTIONS: {
-  icon: ElementType;
-  label: string;
-  value: ThemeMode;
-}[] = [
-  {
-    icon: SunMedium,
-    label: "Light",
-    value: "light",
-  },
-  {
-    icon: MoonStar,
-    label: "Dark",
-    value: "dark",
-  },
-  {
-    icon: Monitor,
-    label: "System",
-    value: "system",
-  },
-];
 
 export function AppearanceSettingsCard({
   onChange,

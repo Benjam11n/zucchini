@@ -3,13 +3,13 @@ import path from "node:path";
 import { Effect } from "effect";
 import { app, BrowserWindow, nativeImage, nativeTheme } from "electron";
 
-import type { ThemeMode } from "../shared/domain/settings";
-import { resolveRuntimeIconPath } from "./assets";
-import { systemClock } from "./clock";
-import { registerIpcHandlers } from "./ipc";
-import { SqliteHabitRepository } from "./repository";
-import { createReminderScheduler } from "./scheduler";
-import { HabitService } from "./service";
+import { resolveRuntimeIconPath } from "@/main/assets";
+import { systemClock } from "@/main/clock";
+import { registerIpcHandlers } from "@/main/ipc";
+import { SqliteHabitRepository } from "@/main/repository";
+import { createReminderScheduler } from "@/main/scheduler";
+import { HabitService } from "@/main/service";
+import type { ThemeMode } from "@/shared/domain/settings";
 
 function getWindowBackgroundColor(): string {
   return nativeTheme.shouldUseDarkColors ? "#18231e" : "#f7f3e8";

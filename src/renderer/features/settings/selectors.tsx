@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import {
+  SETTINGS_CATEGORY_COLORS,
+  SETTINGS_CATEGORY_TEXT_ON_SELECTED,
+} from "@/renderer/features/settings/constants";
 import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
-import { RING_COLORS } from "@/renderer/lib/ring-colors";
 import {
   HABIT_CATEGORY_DEFINITIONS,
   HABIT_FREQUENCY_DEFINITIONS,
@@ -10,18 +13,6 @@ import {
   normalizeHabitFrequency,
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
-
-const CATEGORY_COLORS: Record<HabitCategory, string> = {
-  fitness: RING_COLORS.fitness.base,
-  nutrition: RING_COLORS.nutrition.base,
-  productivity: RING_COLORS.productivity.base,
-};
-
-const CATEGORY_TEXT_ON_SELECTED: Record<HabitCategory, string> = {
-  fitness: "#fff",
-  nutrition: "#1a2e00",
-  productivity: "#fff",
-};
 
 interface HabitCategorySelectorProps {
   name: string;
@@ -44,7 +35,7 @@ export function HabitCategorySelector({
     <div className="flex gap-2">
       {HABIT_CATEGORY_DEFINITIONS.map((category) => {
         const isSelected = selectedCategory === category.value;
-        const color = CATEGORY_COLORS[category.value];
+        const color = SETTINGS_CATEGORY_COLORS[category.value];
 
         return (
           <motion.button
@@ -65,7 +56,7 @@ export function HabitCategorySelector({
                 ? {
                     backgroundColor: color,
                     borderColor: color,
-                    color: CATEGORY_TEXT_ON_SELECTED[category.value],
+                    color: SETTINGS_CATEGORY_TEXT_ON_SELECTED[category.value],
                   }
                 : undefined
             }
@@ -77,7 +68,7 @@ export function HabitCategorySelector({
               className="size-2 shrink-0 rounded-full"
               style={{
                 backgroundColor: isSelected
-                  ? `color-mix(in srgb, ${CATEGORY_TEXT_ON_SELECTED[category.value]} 55%, transparent)`
+                  ? `color-mix(in srgb, ${SETTINGS_CATEGORY_TEXT_ON_SELECTED[category.value]} 55%, transparent)`
                   : color,
               }}
             />

@@ -1,4 +1,4 @@
-import type { HabitApi } from "../shared/contracts/habits-ipc";
+import type { HabitApi } from "@/shared/contracts/habits-ipc";
 
 declare global {
   interface Window {

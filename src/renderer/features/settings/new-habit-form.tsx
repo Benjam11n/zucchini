@@ -41,23 +41,23 @@ export function NewHabitForm({
       layout
       transition={microTransition}
     >
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <form
+        className="flex flex-col gap-3 sm:flex-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleCreate();
+        }}
+      >
         <Input
           id="new-habit"
           onChange={(event) => setNewHabitName(event.target.value)}
           placeholder="New habit name..."
+          required
           type="text"
           value={newHabitName}
         />
-        <Button
-          onClick={() => {
-            void handleCreate();
-          }}
-          type="button"
-        >
-          Add
-        </Button>
-      </div>
+        <Button type="submit">Add</Button>
+      </form>
       <HabitCategorySelector
         name="new-habit-category"
         onChange={setNewHabitCategory}

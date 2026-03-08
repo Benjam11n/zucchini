@@ -1,14 +1,13 @@
 import { motion } from "framer-motion";
 
+import { AppearanceSettingsCard } from "@/renderer/features/settings/appearance-settings-card";
+import { HabitManagementCard } from "@/renderer/features/settings/habit-management-card";
+import { ReminderSettingsCard } from "@/renderer/features/settings/reminder-settings-card";
+import type { SettingsPageProps } from "@/renderer/features/settings/types";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/lib/motion";
-
-import { AppearanceSettingsCard } from "../features/settings/appearance-settings-card";
-import { HabitManagementCard } from "../features/settings/habit-management-card";
-import { ReminderSettingsCard } from "../features/settings/reminder-settings-card";
-import type { SettingsPageProps } from "../features/settings/types";
 
 export function SettingsPage(props: SettingsPageProps) {
   return (

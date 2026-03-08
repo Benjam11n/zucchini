@@ -5,13 +5,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AppShell } from "@/renderer/features/app/app-shell";
+import { useAppController } from "@/renderer/features/app/use-app-controller";
 import { MASCOTS } from "@/renderer/lib/mascots";
-
-import { AppShell } from "./features/app/app-shell";
-import { useAppController } from "./features/app/use-app-controller";
-import { HistoryPage } from "./pages/history-page";
-import { SettingsPage } from "./pages/settings-page";
-import { TodayPage } from "./pages/today-page";
+import { HistoryPage } from "@/renderer/pages/history-page";
+import { SettingsPage } from "@/renderer/pages/settings-page";
+import { TodayPage } from "@/renderer/pages/today-page";
 
 export default function App() {
   const { actions, state, tab } = useAppController();

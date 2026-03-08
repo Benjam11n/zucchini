@@ -1,10 +1,10 @@
 import { ipcMain } from "electron";
 
-import { HABITS_IPC_CHANNELS } from "../shared/contracts/habits-ipc";
-import type { HabitCategory, HabitFrequency } from "../shared/domain/habit";
-import type { AppSettings } from "../shared/domain/settings";
-import { showDesktopNotification } from "./notifications";
-import type { HabitsService } from "./service";
+import { showDesktopNotification } from "@/main/notifications";
+import type { HabitsService } from "@/main/service";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
   service: HabitsService;

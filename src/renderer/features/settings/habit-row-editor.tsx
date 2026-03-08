@@ -51,6 +51,7 @@ export function HabitRowEditor({
           onBlur={(event) => {
             void onRenameHabit(habit.id, event.target.value);
           }}
+          required
           type="text"
         />
         <span className="shrink-0 text-xs text-muted-foreground">
@@ -76,50 +77,49 @@ export function HabitRowEditor({
           <Label className="text-xs font-medium text-muted-foreground">
             Frequency
           </Label>
-          <HabitFrequencySelector
-            name={`habit-frequency-${habit.id}`}
-            onChange={(frequency) => {
-              void onUpdateHabitFrequency(habit.id, frequency);
-            }}
-            selectedFrequency={habit.frequency}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-3">
-        <div className="flex gap-1.5">
-          <Button
-            className="h-7 px-2 text-xs"
-            disabled={index === 0}
-            onClick={() => {
-              void onReorderHabits(reorderHabitList(habits, habit.id, -1));
-            }}
-            type="button"
-            variant="outline"
-          >
-            ↑
-          </Button>
-          <Button
-            className="h-7 px-2 text-xs"
-            disabled={index === habits.length - 1}
-            onClick={() => {
-              void onReorderHabits(reorderHabitList(habits, habit.id, 1));
-            }}
-            type="button"
-            variant="outline"
-          >
-            ↓
-          </Button>
-          <Button
-            className="h-7 px-2 text-xs"
-            onClick={() => {
-              void onArchiveHabit(habit.id);
-            }}
-            type="button"
-            variant="destructive"
-          >
-            Archive
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <HabitFrequencySelector
+              name={`habit-frequency-${habit.id}`}
+              onChange={(frequency) => {
+                void onUpdateHabitFrequency(habit.id, frequency);
+              }}
+              selectedFrequency={habit.frequency}
+            />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                className="h-7 px-2 text-xs"
+                disabled={index === 0}
+                onClick={() => {
+                  void onReorderHabits(reorderHabitList(habits, habit.id, -1));
+                }}
+                type="button"
+                variant="outline"
+              >
+                ↑
+              </Button>
+              <Button
+                className="h-7 px-2 text-xs"
+                disabled={index === habits.length - 1}
+                onClick={() => {
+                  void onReorderHabits(reorderHabitList(habits, habit.id, 1));
+                }}
+                type="button"
+                variant="outline"
+              >
+                ↓
+              </Button>
+              <Button
+                className="h-7 px-2 text-xs"
+                onClick={() => {
+                  void onArchiveHabit(habit.id);
+                }}
+                type="button"
+                variant="destructive"
+              >
+                Archive
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
