@@ -1,7 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
-import { parseDateKey, toDateKey } from "@/shared/utils/date";
 import type { HistoryDay } from "@/shared/domain/history";
+import { parseDateKey, toDateKey } from "@/shared/utils/date";
 
 import {
   HistoryCalendarContext,

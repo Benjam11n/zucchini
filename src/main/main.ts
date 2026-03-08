@@ -23,6 +23,26 @@ function applyThemeMode(themeMode: ThemeMode): void {
   }
 }
 
+function isTrustedAppUrl(url: string): boolean {
+  if (process.env.VITE_DEV_SERVER_URL) {
+    return url.startsWith(process.env.VITE_DEV_SERVER_URL);
+  }
+
+  return url.startsWith("file://");
+}
+
+function configureWindowSecurity(win: BrowserWindow): void {
+  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+
+  win.webContents.on("will-navigate", (event, url) => {
+    if (isTrustedAppUrl(url)) {
+      return;
+    }
+
+    event.preventDefault();
+  });
+}
+
 function createWindow(): void {
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
@@ -38,10 +58,17 @@ function createWindow(): void {
     show: !shouldShowInactive,
     title: "Zucchini",
     webPreferences: {
+      contextIsolation: true,
+      navigateOnDragDrop: false,
+      nodeIntegration: false,
       preload: path.join(__dirname, "preload.js"),
+      sandbox: true,
+      webSecurity: true,
     },
     width: 1100,
   });
+
+  configureWindowSecurity(win);
 
   if (shouldShowInactive) {
     win.once("ready-to-show", () => {

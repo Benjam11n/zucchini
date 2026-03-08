@@ -6,7 +6,6 @@ import type {
 import type { HistoryStatus } from "@/renderer/lib/history-status";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
-
 import {
   addDays,
   endOfWeek,

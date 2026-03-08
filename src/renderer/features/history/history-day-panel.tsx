@@ -14,8 +14,8 @@ import {
   getActivityStatus,
   getActivitySummary,
 } from "@/renderer/pages/history-page.utils";
-import { formatDateKey } from "@/shared/utils/date";
 import type { HistoryDay } from "@/shared/domain/history";
+import { formatDateKey } from "@/shared/utils/date";
 
 import { HistoryHabitColumn } from "./history-habit-column";
 

@@ -1,11 +1,11 @@
 import type { HistoryDay } from "@/shared/domain/history";
+import { toDateKey } from "@/shared/utils/date";
 
 import {
   buildContributionWeeks,
   getHistoryDayLookup,
   getHistoryStats,
 } from "./history-page.utils";
-import { toDateKey } from "@/shared/utils/date";
 
 function createHistoryDay(
   date: string,
