@@ -21,5 +21,10 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "vite.config.ts", "drizzle.config.ts"]
+  "include": [
+    "src",
+    "vite.config.ts",
+    "drizzle.config.ts",
+    "electron-builder.config.ts"
+  ]
 }

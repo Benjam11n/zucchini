@@ -1,4 +1,4 @@
-import type { Configuration, Publish } from "electron-builder";
+import type { Configuration } from "electron-builder";
 
 function isPublishRequested(argv: string[]): boolean {
   const publishFlagIndex = argv.findIndex(
@@ -12,7 +12,9 @@ function isPublishRequested(argv: string[]): boolean {
   return publishMode !== undefined && publishMode !== "never";
 }
 
-function getGitHubPublishConfig(argv: string[]): Publish[] | undefined {
+function getGitHubPublishConfig(
+  argv: string[]
+): Exclude<Configuration["publish"], null> | undefined {
   const owner = process.env.GH_RELEASE_OWNER;
   const repo = process.env.GH_RELEASE_REPO;
   const token = process.env.GH_TOKEN;
