@@ -12,6 +12,11 @@ import {
 import { resolveRuntimeIconPath } from "@/main/assets";
 import { systemClock } from "@/main/clock";
 import { registerIpcHandlers } from "@/main/ipc";
+import {
+  buildLoginItemSettings,
+  shouldHideOnWindowClose,
+  shouldQuitWhenAllWindowsClosed,
+} from "@/main/lifecycle";
 import { SqliteHabitRepository } from "@/main/repository";
 import { createReminderScheduler } from "@/main/scheduler";
 import { HabitService } from "@/main/service";
@@ -51,10 +56,7 @@ function configureWindowSecurity(win: BrowserWindow): void {
 }
 
 function applyLoginItemSettings(settings: AppSettings): void {
-  app.setLoginItemSettings({
-    openAsHidden: settings.minimizeToTray,
-    openAtLogin: settings.launchAtLogin,
-  });
+  app.setLoginItemSettings(buildLoginItemSettings(settings));
 }
 
 let isQuitting = false;
@@ -87,7 +89,12 @@ function createWindow(): void {
 
   configureWindowSecurity(win);
   win.on("close", (event) => {
-    if (!trayEnabled || isQuitting) {
+    if (
+      !shouldHideOnWindowClose({
+        isQuitting,
+        trayEnabled,
+      })
+    ) {
       return;
     }
 
@@ -194,11 +201,12 @@ app.on("before-quit", () => {
 });
 
 app.on("window-all-closed", () => {
-  if (trayEnabled) {
-    return;
-  }
-
-  if (process.platform !== "darwin") {
+  if (
+    shouldQuitWhenAllWindowsClosed({
+      platform: process.platform,
+      trayEnabled,
+    })
+  ) {
     app.quit();
   }
 });

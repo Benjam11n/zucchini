@@ -16,6 +16,7 @@ const notificationState = vi.hoisted(() => ({
     title: string;
   },
   supported: true,
+  throwOnShow: false,
 }));
 
 vi.mock<typeof ElectronModule>(import("electron"), () => ({
@@ -39,6 +40,10 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
     }
 
     show(): void {
+      if (notificationState.throwOnShow) {
+        throw new Error("notification denied");
+      }
+
       notificationState.lastNotification = {
         body: this.options.body,
         icon: this.options.icon,
@@ -60,6 +65,10 @@ vi.mock<typeof AssetsModule>(import("./assets"), () => ({
 }));
 
 describe("notifications", () => {
+  beforeEach(() => {
+    notificationState.throwOnShow = false;
+  });
+
   it("uses the reminder mascot for incomplete reminders", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
@@ -141,6 +150,15 @@ describe("notifications", () => {
 
     showIncompleteReminder();
 
+    expect(notificationState.lastNotification).toBeNull();
+  });
+
+  it("swallows notification show failures", () => {
+    notificationState.lastNotification = null;
+    notificationState.supported = true;
+    notificationState.throwOnShow = true;
+
+    expect(() => showIncompleteReminder()).not.toThrow();
     expect(notificationState.lastNotification).toBeNull();
   });
 });

@@ -11,15 +11,17 @@ function showNotification(
     return;
   }
 
-  const icon = iconFilename
-    ? nativeImage.createFromPath(resolveMascotAssetPath(iconFilename))
-    : undefined;
+  try {
+    const icon = iconFilename
+      ? nativeImage.createFromPath(resolveMascotAssetPath(iconFilename))
+      : undefined;
 
-  new Notification({
-    body,
-    icon: icon && !icon.isEmpty() ? icon : undefined,
-    title,
-  }).show();
+    new Notification({
+      body,
+      icon: icon && !icon.isEmpty() ? icon : undefined,
+      title,
+    }).show();
+  } catch {}
 }
 
 export function showDesktopNotification(
