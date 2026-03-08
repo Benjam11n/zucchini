@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import {
+  copyFileSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -16,7 +17,8 @@ import { fileURLToPath } from "node:url";
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
 const APP_DISPLAY_NAME = isDevelopment ? "Zucchini (Dev)" : "Zucchini";
 const APP_BUNDLE_ID = "com.zucchini.habittracker";
-const LAUNCHER_VERSION = 1;
+const APP_ICON_NAME = "icon.icns";
+const LAUNCHER_VERSION = 2;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const desktopDir = resolve(__dirname, "..");
@@ -52,11 +54,29 @@ function setPlistString(plistPath, key, value) {
   );
 }
 
-function patchMainBundleInfoPlist(appBundlePath) {
+function patchMainBundleInfoPlist(appBundlePath, hasCustomIcon) {
   const infoPlistPath = join(appBundlePath, "Contents", "Info.plist");
   setPlistString(infoPlistPath, "CFBundleDisplayName", APP_DISPLAY_NAME);
   setPlistString(infoPlistPath, "CFBundleName", APP_DISPLAY_NAME);
   setPlistString(infoPlistPath, "CFBundleIdentifier", APP_BUNDLE_ID);
+  if (hasCustomIcon) {
+    setPlistString(infoPlistPath, "CFBundleIconFile", APP_ICON_NAME);
+  }
+}
+
+function patchMainBundleIcon(appBundlePath) {
+  const sourceIconPath = join(desktopDir, "build", APP_ICON_NAME);
+  if (!existsSync(sourceIconPath)) {
+    return;
+  }
+
+  const targetIconPath = join(
+    appBundlePath,
+    "Contents",
+    "Resources",
+    APP_ICON_NAME
+  );
+  copyFileSync(sourceIconPath, targetIconPath);
 }
 
 function patchHelperBundleInfoPlists(appBundlePath) {
@@ -117,6 +137,8 @@ function buildMacLauncher(electronBinaryPath) {
   const sourceAppBundlePath = resolve(electronBinaryPath, "../../..");
   const runtimeDir = join(desktopDir, ".electron-runtime");
   const targetAppBundlePath = join(runtimeDir, `${APP_DISPLAY_NAME}.app`);
+  const sourceIconPath = join(desktopDir, "build", APP_ICON_NAME);
+  const hasCustomIcon = existsSync(sourceIconPath);
   const targetBinaryPath = join(
     targetAppBundlePath,
     "Contents",
@@ -128,6 +150,7 @@ function buildMacLauncher(electronBinaryPath) {
   mkdirSync(runtimeDir, { recursive: true });
 
   const expectedMetadata = {
+    iconMtimeMs: hasCustomIcon ? statSync(sourceIconPath).mtimeMs : 0,
     launcherVersion: LAUNCHER_VERSION,
     sourceAppBundlePath,
     sourceAppMtimeMs: statSync(sourceAppBundlePath).mtimeMs,
@@ -144,7 +167,8 @@ function buildMacLauncher(electronBinaryPath) {
 
   rmSync(targetAppBundlePath, { force: true, recursive: true });
   cpSync(sourceAppBundlePath, targetAppBundlePath, { recursive: true });
-  patchMainBundleInfoPlist(targetAppBundlePath);
+  patchMainBundleInfoPlist(targetAppBundlePath, hasCustomIcon);
+  patchMainBundleIcon(targetAppBundlePath);
   patchHelperBundleInfoPlists(targetAppBundlePath);
   writeFileSync(metadataPath, `${JSON.stringify(expectedMetadata, null, 2)}\n`);
 

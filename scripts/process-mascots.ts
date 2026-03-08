@@ -1,4 +1,4 @@
-import { mkdir, readdir, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { Icns, IcnsImage } from "@fiahfy/icns";
@@ -9,6 +9,12 @@ import sharp from "sharp";
 const rootDir = path.resolve(import.meta.dir, "..");
 const mascotDir = path.join(rootDir, "public", "mascot");
 const buildDir = path.join(rootDir, "build");
+const iconSourceCandidates = [
+  path.join(rootDir, "public", "mascot-icon.png"),
+  path.join(rootDir, "public", "mascot-icon.jpeg"),
+  path.join(mascotDir, "mascot-icon.png"),
+  path.join(mascotDir, "mascot-icon.jpeg"),
+] as const;
 const runtimeIconSizes = [16, 24, 32, 48, 64, 128, 256] as const;
 const icnsSizes = [
   { osType: "icp4" as OSType, size: 16 },
@@ -24,13 +30,12 @@ const icnsSizes = [
   { osType: "ic10" as OSType, size: 1024 },
 ];
 
-async function cropMascotSquare(filename: string): Promise<Buffer> {
-  const filePath = path.join(mascotDir, filename);
+async function createSquareBuffer(filePath: string): Promise<Buffer> {
   const image = sharp(filePath, { animated: false });
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height) {
-    throw new Error(`Unable to read dimensions for ${filename}`);
+    throw new Error(`Unable to read dimensions for ${path.basename(filePath)}`);
   }
 
   const size = Math.min(metadata.width, metadata.height);
@@ -41,8 +46,29 @@ async function cropMascotSquare(filename: string): Promise<Buffer> {
     .png()
     .toBuffer();
 
-  await writeFile(filePath, squareBuffer);
   return squareBuffer;
+}
+
+async function cropMascotSquare(filename: string): Promise<void> {
+  const filePath = path.join(mascotDir, filename);
+  const squareBuffer = await createSquareBuffer(filePath);
+
+  await writeFile(filePath, squareBuffer);
+}
+
+async function resolveIconSourcePath(): Promise<string> {
+  for (const candidate of iconSourceCandidates) {
+    try {
+      await access(candidate);
+      return candidate;
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error(
+    "A mascot icon source is required at public/mascot-icon.(png|jpeg) or public/mascot/mascot-icon.(png|jpeg)"
+  );
 }
 
 async function generateRuntimeIcons(sourceBuffer: Buffer): Promise<void> {
@@ -88,20 +114,14 @@ async function main(): Promise<void> {
   const mascotFiles = mascotDirectoryEntries
     .filter((filename) => filename.endsWith(".png"))
     .toSorted();
-  let baseBuffer: Buffer | null = null;
 
   for (const filename of mascotFiles) {
-    const squareBuffer = await cropMascotSquare(filename);
-    if (filename === "mascot-base.png") {
-      baseBuffer = squareBuffer;
-    }
+    await cropMascotSquare(filename);
   }
 
-  if (!baseBuffer) {
-    throw new Error("mascot-base.png is required to generate app icons");
-  }
-
-  await generateRuntimeIcons(baseBuffer);
+  const iconSourcePath = await resolveIconSourcePath();
+  const iconBuffer = await createSquareBuffer(iconSourcePath);
+  await generateRuntimeIcons(iconBuffer);
 }
 
 await main();
