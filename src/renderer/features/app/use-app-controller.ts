@@ -12,6 +12,9 @@ import { useAppStore } from "./store";
 
 export function useAppController() {
   const {
+    bootApp,
+    bootError,
+    bootPhase,
     clearSettingsFeedback,
     handleArchiveHabit,
     handleCreateHabit,
@@ -24,7 +27,7 @@ export function useAppController() {
     handleUpdateHabitFrequency,
     handleUpdateSettings,
     history,
-    reloadAll,
+    retryBoot,
     setSettingsSaveErrorMessage,
     setSettingsSavePhase,
     setSettingsValidationErrors,
@@ -38,6 +41,9 @@ export function useAppController() {
     todayState,
   } = useAppStore(
     useShallow((state) => ({
+      bootApp: state.bootApp,
+      bootError: state.bootError,
+      bootPhase: state.bootPhase,
       clearSettingsFeedback: state.clearSettingsFeedback,
       handleArchiveHabit: state.handleArchiveHabit,
       handleCreateHabit: state.handleCreateHabit,
@@ -50,7 +56,7 @@ export function useAppController() {
       handleUpdateHabitFrequency: state.handleUpdateHabitFrequency,
       handleUpdateSettings: state.handleUpdateSettings,
       history: state.history,
-      reloadAll: state.reloadAll,
+      retryBoot: state.retryBoot,
       setSettingsSaveErrorMessage: state.setSettingsSaveErrorMessage,
       setSettingsSavePhase: state.setSettingsSavePhase,
       setSettingsValidationErrors: state.setSettingsValidationErrors,
@@ -137,8 +143,8 @@ export function useAppController() {
   ]);
 
   useEffect(() => {
-    void reloadAll();
-  }, [reloadAll]);
+    void bootApp();
+  }, [bootApp]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -169,6 +175,7 @@ export function useAppController() {
       handleCreateHabit,
       handleRenameHabit,
       handleReorderHabits,
+      handleRetryBoot: retryBoot,
       handleSettingsDraftChange,
       handleTabChange,
       handleToggleHabit,
@@ -176,6 +183,8 @@ export function useAppController() {
       handleUpdateHabitFrequency,
     },
     state: {
+      bootError,
+      bootPhase,
       history,
       settingsDraft,
       settingsFieldErrors,

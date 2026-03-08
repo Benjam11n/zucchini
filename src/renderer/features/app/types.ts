@@ -1,4 +1,4 @@
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -13,6 +13,8 @@ export type SettingsSavePhase =
 export type SettingsFieldErrors = Partial<Record<keyof AppSettings, string>>;
 
 export interface AppState {
+  bootError: HabitsIpcError | null;
+  bootPhase: "error" | "loading" | "ready";
   todayState: TodayState | null;
   history: HistoryDay[];
   settingsDraft: AppSettings | null;

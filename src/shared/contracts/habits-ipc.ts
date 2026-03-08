@@ -48,6 +48,35 @@ export class HabitsIpcError extends Error {
   }
 }
 
+export function toHabitsIpcError(error: unknown): HabitsIpcError {
+  if (error instanceof HabitsIpcError) {
+    return error;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as Partial<SerializedHabitsIpcError>;
+    if (
+      typeof candidate.code === "string" &&
+      typeof candidate.message === "string"
+    ) {
+      return new HabitsIpcError({
+        code: candidate.code as HabitsIpcErrorCode,
+        details: Array.isArray(candidate.details)
+          ? candidate.details.filter(
+              (detail): detail is string => typeof detail === "string"
+            )
+          : undefined,
+        message: candidate.message,
+      });
+    }
+  }
+
+  return new HabitsIpcError({
+    code: "INTERNAL_ERROR",
+    message: "Something went wrong while processing your request.",
+  });
+}
+
 export interface TodayState {
   date: string;
   habits: HabitWithStatus[];

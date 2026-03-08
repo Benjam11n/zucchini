@@ -1,6 +1,10 @@
 import { create } from "zustand";
 
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import {
+  toHabitsIpcError,
+  type HabitsIpcError,
+  type TodayState,
+} from "@/shared/contracts/habits-ipc";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -20,6 +24,8 @@ interface UseAppStoreState extends AppState {
   tab: Tab;
 
   // State Setters
+  setBootError: (error: HabitsIpcError | null) => void;
+  setBootPhase: (phase: AppState["bootPhase"]) => void;
   setHistory: (history: AppState["history"]) => void;
   setSettingsDraft: (settingsDraft: AppSettings | null) => void;
   setSettingsSaveErrorMessage: (message: string | null) => void;
@@ -30,6 +36,7 @@ interface UseAppStoreState extends AppState {
   setTodayState: (todayState: TodayState | null) => void;
 
   // Actions
+  bootApp: () => Promise<void>;
   clearSettingsFeedback: () => void;
   handleArchiveHabit: (habitId: number) => Promise<void>;
   handleCreateHabit: (
@@ -54,6 +61,7 @@ interface UseAppStoreState extends AppState {
 
   refreshToday: (mutator: Promise<TodayState>) => Promise<void>;
   reloadAll: (nextTodayState?: TodayState) => Promise<void>;
+  retryBoot: () => Promise<void>;
 }
 
 function getSystemTheme(): ThemeMode {
@@ -63,6 +71,28 @@ function getSystemTheme(): ThemeMode {
 }
 
 export const useAppStore = create<UseAppStoreState>()((set, get) => ({
+  bootApp: async () => {
+    set({
+      bootError: null,
+      bootPhase: "loading",
+    });
+
+    try {
+      await get().reloadAll();
+      set({
+        bootPhase: "ready",
+      });
+    } catch (error: unknown) {
+      set({
+        bootError: toHabitsIpcError(error),
+        bootPhase: "error",
+        history: [],
+        settingsDraft: null,
+        todayState: null,
+      });
+    }
+  },
+
   clearSettingsFeedback: () =>
     set({
       settingsFieldErrors: {},
@@ -169,6 +199,14 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     }));
   },
 
+  retryBoot: async () => {
+    await get().bootApp();
+  },
+
+  bootError: null,
+  bootPhase: "loading",
+  setBootError: (bootError: HabitsIpcError | null) => set({ bootError }),
+  setBootPhase: (bootPhase: AppState["bootPhase"]) => set({ bootPhase }),
   setHistory: (history: AppState["history"]) => set({ history }),
   setSettingsDraft: (settingsDraft: AppSettings | null) =>
     set({ settingsDraft }),
