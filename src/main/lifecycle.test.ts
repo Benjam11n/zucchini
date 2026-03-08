@@ -47,7 +47,7 @@ describe("shouldHideOnWindowClose()", () => {
         isQuitting: false,
         trayEnabled: false,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   it("returns false while the app is quitting", () => {
@@ -56,7 +56,7 @@ describe("shouldHideOnWindowClose()", () => {
         isQuitting: true,
         trayEnabled: true,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   it("returns true when tray mode is enabled and the app is not quitting", () => {
@@ -65,7 +65,7 @@ describe("shouldHideOnWindowClose()", () => {
         isQuitting: false,
         trayEnabled: true,
       })
-    ).toBe(true);
+    ).toBeTruthy();
   });
 });
 
@@ -76,7 +76,7 @@ describe("shouldQuitWhenAllWindowsClosed()", () => {
         platform: "linux",
         trayEnabled: true,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   it("returns false on macOS when tray mode is disabled", () => {
@@ -85,7 +85,7 @@ describe("shouldQuitWhenAllWindowsClosed()", () => {
         platform: "darwin",
         trayEnabled: false,
       })
-    ).toBe(false);
+    ).toBeFalsy();
   });
 
   it("returns true on non-macOS when tray mode is disabled", () => {
@@ -94,6 +94,6 @@ describe("shouldQuitWhenAllWindowsClosed()", () => {
         platform: "win32",
         trayEnabled: false,
       })
-    ).toBe(true);
+    ).toBeTruthy();
   });
 });

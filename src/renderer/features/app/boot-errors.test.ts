@@ -33,7 +33,8 @@ describe("getBootErrorDisplay()", () => {
 
   it("falls back to a generic startup error message", () => {
     expect(getBootErrorDisplay(null)).toStrictEqual({
-      description: "Something went wrong while loading your dashboard. Try again.",
+      description:
+        "Something went wrong while loading your dashboard. Try again.",
       title: "Could not start Zucchini",
     });
   });

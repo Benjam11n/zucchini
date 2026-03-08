@@ -1,4 +1,5 @@
-import type { IpcMainInvokeEvent } from "electron";
+import type * as ElectronModule from "electron";
+import type { IpcMain, IpcMainInvokeEvent } from "electron";
 
 import { DatabaseError } from "@/main/db/sqlite-client";
 import { registerIpcHandlers } from "@/main/ipc";
@@ -10,18 +11,20 @@ const handlers = new Map<
   (_event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<unknown>
 >();
 
-vi.mock("electron", () => ({
+vi.mock<typeof ElectronModule>(import("electron"), () => ({
   ipcMain: {
-    handle: vi.fn((channel: string, handler: (...args: unknown[]) => unknown) => {
-      handlers.set(
-        channel,
-        handler as (
-          _event: IpcMainInvokeEvent,
-          ...args: unknown[]
-        ) => Promise<unknown>
-      );
-    }),
-  },
+    handle: vi.fn(
+      (channel: string, handler: (...args: unknown[]) => unknown) => {
+        handlers.set(
+          channel,
+          handler as (
+            _event: IpcMainInvokeEvent,
+            ...args: unknown[]
+          ) => Promise<unknown>
+        );
+      }
+    ),
+  } as unknown as IpcMain,
 }));
 
 const defaultSettings: AppSettings = {
@@ -44,8 +47,8 @@ function createService() {
       throw new Error("boom");
     }),
     initialize: vi.fn(),
-    reorderHabits: vi.fn(),
     renameHabit: vi.fn(),
+    reorderHabits: vi.fn(),
     saveReminderRuntimeState: vi.fn(),
     toggleHabit: vi.fn(),
     updateHabitCategory: vi.fn(),
@@ -55,11 +58,12 @@ function createService() {
 }
 
 describe("registerIpcHandlers()", () => {
-  beforeEach(() => {
+  function resetHandlers(): void {
     handlers.clear();
-  });
+  }
 
   it("serializes validation errors with details", async () => {
+    resetHandlers();
     registerIpcHandlers({
       onSettingsChanged: vi.fn(),
       service: createService(),
@@ -67,7 +71,9 @@ describe("registerIpcHandlers()", () => {
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.toggleHabit);
 
-    await expect(handler?.({} as IpcMainInvokeEvent, "bad-id")).resolves.toEqual(
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, "bad-id")
+    ).resolves.toStrictEqual(
       expect.objectContaining({
         error: expect.objectContaining({
           code: "VALIDATION_ERROR",
@@ -79,6 +85,7 @@ describe("registerIpcHandlers()", () => {
   });
 
   it("serializes database errors with a safe message", async () => {
+    resetHandlers();
     const service = createService();
     service.getTodayState.mockImplementation(() => {
       throw new DatabaseError("getTodayState", new Error("sqlite locked"));
@@ -91,7 +98,7 @@ describe("registerIpcHandlers()", () => {
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
 
-    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toEqual({
+    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
       error: {
         code: "DATABASE_ERROR",
         message: "Zucchini could not access its local data.",
@@ -101,6 +108,7 @@ describe("registerIpcHandlers()", () => {
   });
 
   it("serializes unknown errors as internal errors", async () => {
+    resetHandlers();
     registerIpcHandlers({
       onSettingsChanged: vi.fn(),
       service: createService(),
@@ -108,7 +116,7 @@ describe("registerIpcHandlers()", () => {
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
 
-    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toEqual({
+    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
       error: {
         code: "INTERNAL_ERROR",
         message: "Something went wrong while processing your request.",

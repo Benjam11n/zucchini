@@ -3,8 +3,10 @@ import { contextBridge, ipcRenderer } from "electron";
 import {
   HABITS_IPC_CHANNELS,
   HabitsIpcError,
-  type HabitApi,
-  type HabitsIpcResponse,
+} from "@/shared/contracts/habits-ipc";
+import type {
+  HabitApi,
+  HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -32,13 +34,7 @@ const habitsApi: HabitApi = {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency
-  ) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.createHabit,
-      name,
-      category,
-      frequency
-    ),
+  ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
   getHistory: () => invokeHabits(HABITS_IPC_CHANNELS.getHistory),
   getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),
   renameHabit: (habitId: number, name: string) =>
@@ -55,17 +51,9 @@ const habitsApi: HabitApi = {
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.updateHabitCategory,
-      habitId,
-      category
-    ),
+    invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
   updateHabitFrequency: (habitId: number, frequency: HabitFrequency) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.updateHabitFrequency,
-      habitId,
-      frequency
-    ),
+    invokeHabits(HABITS_IPC_CHANNELS.updateHabitFrequency, habitId, frequency),
   updateSettings: (settings: AppSettings) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateSettings, settings),
 };

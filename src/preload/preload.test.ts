@@ -1,32 +1,36 @@
+import type * as ElectronModule from "electron";
+import type { ContextBridge, IpcRenderer } from "electron";
+
 import type { HabitApi, TodayState } from "@/shared/contracts/habits-ipc";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();
 
-vi.mock("electron", () => ({
+vi.mock<typeof ElectronModule>(import("electron"), () => ({
   contextBridge: {
     exposeInMainWorld: vi.fn((key: string, value: unknown) => {
       exposed.set(key, value);
     }),
-  },
+  } as unknown as ContextBridge,
   ipcRenderer: {
     invoke,
-  },
+  } as unknown as IpcRenderer,
 }));
 
 describe("preload habits API", () => {
-  beforeEach(async () => {
+  async function loadPreloadModule(): Promise<void> {
     exposed.clear();
     invoke.mockReset();
     vi.resetModules();
     await import("./preload");
-  });
+  }
 
   function getHabitsApi(): HabitApi {
     return exposed.get("habits") as HabitApi;
   }
 
   it("returns data for successful IPC responses", async () => {
+    await loadPreloadModule();
     const todayState = {
       date: "2026-03-08",
       habits: [],
@@ -52,10 +56,13 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().getTodayState()).resolves.toEqual(todayState);
+    await expect(getHabitsApi().getTodayState()).resolves.toStrictEqual(
+      todayState
+    );
   });
 
   it("throws HabitsIpcError instances for error responses", async () => {
+    await loadPreloadModule();
     invoke.mockResolvedValue({
       error: {
         code: "VALIDATION_ERROR",

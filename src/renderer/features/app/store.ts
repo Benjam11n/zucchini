@@ -1,10 +1,7 @@
 import { create } from "zustand";
 
-import {
-  toHabitsIpcError,
-  type HabitsIpcError,
-  type TodayState,
-} from "@/shared/contracts/habits-ipc";
+import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -92,6 +89,10 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       });
     }
   },
+
+  bootError: null,
+
+  bootPhase: "loading",
 
   clearSettingsFeedback: () =>
     set({
@@ -198,13 +199,9 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       todayState,
     }));
   },
-
   retryBoot: async () => {
     await get().bootApp();
   },
-
-  bootError: null,
-  bootPhase: "loading",
   setBootError: (bootError: HabitsIpcError | null) => set({ bootError }),
   setBootPhase: (bootPhase: AppState["bootPhase"]) => set({ bootPhase }),
   setHistory: (history: AppState["history"]) => set({ history }),

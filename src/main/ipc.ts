@@ -14,10 +14,8 @@ import {
 } from "@/main/ipc-validation";
 import { showDesktopNotification } from "@/main/notifications";
 import type { HabitsService } from "@/main/service";
-import {
-  HABITS_IPC_CHANNELS,
-  type HabitsIpcResponse,
-} from "@/shared/contracts/habits-ipc";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
@@ -58,16 +56,11 @@ export function registerIpcHandlers({
     service.toggleHabit(validateHabitId(habitId))
   );
   registerHandler(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
-  registerHandler(
-    HABITS_IPC_CHANNELS.updateSettings,
-    (settings: unknown) => {
-      const nextSettings = service.updateSettings(
-        validateAppSettings(settings)
-      );
-      onSettingsChanged(nextSettings);
-      return nextSettings;
-    }
-  );
+  registerHandler(HABITS_IPC_CHANNELS.updateSettings, (settings: unknown) => {
+    const nextSettings = service.updateSettings(validateAppSettings(settings));
+    onSettingsChanged(nextSettings);
+    return nextSettings;
+  });
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
     (name: unknown, category: unknown, frequency: unknown) =>
@@ -101,10 +94,8 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.archiveHabit, (habitId: unknown) =>
     service.archiveHabit(validateHabitId(habitId))
   );
-  registerHandler(
-    HABITS_IPC_CHANNELS.reorderHabits,
-    (habitIds: unknown) =>
-      service.reorderHabits(validateReorderHabitIds(habitIds))
+  registerHandler(HABITS_IPC_CHANNELS.reorderHabits, (habitIds: unknown) =>
+    service.reorderHabits(validateReorderHabitIds(habitIds))
   );
   registerHandler(
     HABITS_IPC_CHANNELS.showNotification,

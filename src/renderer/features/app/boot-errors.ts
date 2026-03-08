@@ -19,7 +19,8 @@ export function getBootErrorDisplay(error: HabitsIpcError | null): {
   }
 
   return {
-    description: "Something went wrong while loading your dashboard. Try again.",
+    description:
+      "Something went wrong while loading your dashboard. Try again.",
     title: "Could not start Zucchini",
   };
 }

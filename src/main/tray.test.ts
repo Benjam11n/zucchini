@@ -12,12 +12,10 @@ const trayState = vi.hoisted(() => ({
 }));
 
 vi.mock<typeof ElectronModule>(import("electron"), () => ({
-  app: {
-    getAppPath: () => "/mocked/app",
-  } as unknown as typeof ElectronModule.app,
   Menu: {
-    buildFromTemplate: (template: ElectronModule.MenuItemConstructorOptions[]) =>
-      template,
+    buildFromTemplate: (
+      template: ElectronModule.MenuItemConstructorOptions[]
+    ) => template,
   } as unknown as typeof ElectronModule.Menu,
   Tray: class {
     constructor() {
@@ -34,14 +32,15 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
       }
     }
 
-    setContextMenu(
-      menu: ElectronModule.MenuItemConstructorOptions[]
-    ): void {
+    setContextMenu(menu: ElectronModule.MenuItemConstructorOptions[]): void {
       trayState.lastMenu = menu;
     }
 
     setToolTip(): void {}
   } as unknown as typeof ElectronModule.Tray,
+  app: {
+    getAppPath: () => "/mocked/app",
+  } as unknown as typeof ElectronModule.app,
   nativeImage: {
     createFromPath: () => ({
       resize: () => ({}),
@@ -60,14 +59,15 @@ const baseSettings: AppSettings = {
 };
 
 describe("createAppTray()", () => {
-  beforeEach(() => {
+  function resetTrayState(): void {
     trayState.clickHandler = null;
     trayState.destroyCount = 0;
     trayState.lastMenu = null;
     trayState.trayCount = 0;
-  });
+  }
 
   it("creates a tray when minimize-to-tray is enabled", () => {
+    resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
       onQuit: vi.fn(),
@@ -83,6 +83,7 @@ describe("createAppTray()", () => {
   });
 
   it("destroys the tray when minimize-to-tray is disabled", () => {
+    resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
       onQuit: vi.fn(),
@@ -99,6 +100,7 @@ describe("createAppTray()", () => {
   });
 
   it("enables the snooze menu item when reminders are enabled", () => {
+    resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
       onQuit: vi.fn(),
@@ -117,6 +119,7 @@ describe("createAppTray()", () => {
   });
 
   it("disables the snooze menu item when reminders are disabled", () => {
+    resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
       onQuit: vi.fn(),
@@ -135,6 +138,7 @@ describe("createAppTray()", () => {
   });
 
   it("opens the main window when the tray icon is clicked", () => {
+    resetTrayState();
     const onOpen = vi.fn();
     const tray = createAppTray({
       onOpen,
@@ -148,6 +152,6 @@ describe("createAppTray()", () => {
     });
     trayState.clickHandler?.();
 
-    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onOpen.mock.calls).toStrictEqual([[]]);
   });
 });

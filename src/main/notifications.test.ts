@@ -65,13 +65,10 @@ vi.mock<typeof AssetsModule>(import("./assets"), () => ({
 }));
 
 describe("notifications", () => {
-  beforeEach(() => {
-    notificationState.throwOnShow = false;
-  });
-
   it("uses the reminder mascot for incomplete reminders", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
+    notificationState.throwOnShow = false;
     showIncompleteReminder();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -87,6 +84,7 @@ describe("notifications", () => {
   it("uses the sleepy mascot for midnight warnings", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
+    notificationState.throwOnShow = false;
     showMidnightWarning();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -102,6 +100,7 @@ describe("notifications", () => {
   it("shows a catch-up reminder when the scheduled reminder was missed", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
+    notificationState.throwOnShow = false;
     showCatchUpReminder();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -117,6 +116,7 @@ describe("notifications", () => {
   it("shows the missed reminder warning with the sleepy mascot", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
+    notificationState.throwOnShow = false;
     showMissedReminderWarning();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -132,6 +132,7 @@ describe("notifications", () => {
   it("includes the snooze duration in snoozed reminders", () => {
     notificationState.lastNotification = null;
     notificationState.supported = true;
+    notificationState.throwOnShow = false;
     showSnoozedReminder(15);
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -147,6 +148,7 @@ describe("notifications", () => {
   it("does not show notifications when the platform does not support them", () => {
     notificationState.lastNotification = null;
     notificationState.supported = false;
+    notificationState.throwOnShow = false;
 
     showIncompleteReminder();
 

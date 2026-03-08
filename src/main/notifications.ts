@@ -21,7 +21,9 @@ function showNotification(
       icon: icon && !icon.isEmpty() ? icon : undefined,
       title,
     }).show();
-  } catch {}
+  } catch {
+    // Ignore notification failures so reminder flows keep running.
+  }
 }
 
 export function showDesktopNotification(
