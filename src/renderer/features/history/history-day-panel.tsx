@@ -33,10 +33,11 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
     );
   }
 
-  const completedHabits = selectedDay.habits.filter((habit) => habit.completed);
-  const remainingHabits = selectedDay.habits.filter(
-    (habit) => !habit.completed
-  );
+  const dailyHabits = selectedDay.habits.filter((h) => h.frequency === "daily");
+  const longTermHabits = selectedDay.habits.filter((h) => h.frequency !== "daily");
+
+  const completedDaily = dailyHabits.filter((habit) => habit.completed);
+  const remainingDaily = dailyHabits.filter((habit) => !habit.completed);
 
   return (
     <AnimatePresence initial={false} mode="wait">
@@ -141,7 +142,7 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           <HistoryHabitColumn
             emptyLabel="Nothing was completed on this day."
-            habits={completedHabits}
+            habits={completedDaily}
             icon={CheckCircle2}
             iconClassName="size-4 text-primary"
             initialX={-8}
@@ -149,13 +150,44 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
           />
           <HistoryHabitColumn
             emptyLabel="Everything was completed on this day."
-            habits={remainingHabits}
+            habits={remainingDaily}
             icon={XCircle}
             iconClassName="size-4 text-muted-foreground"
             initialX={8}
             title="Not completed"
           />
         </div>
+
+        {longTermHabits.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+              Long-term Goals
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {longTermHabits.map((habit) => (
+                <div
+                  key={habit.id}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium",
+                    habit.completed
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-border/60 bg-background/50 text-muted-foreground"
+                  )}
+                >
+                  {habit.completed ? (
+                    <CheckCircle2 className="size-3.5" />
+                  ) : (
+                    <div className="size-3.5 rounded-full border border-current" />
+                  )}
+                  {habit.name}
+                  <Badge variant="secondary" className="ml-1 text-[0.65rem] h-4 px-1 capitalize">
+                    {habit.frequency}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   );

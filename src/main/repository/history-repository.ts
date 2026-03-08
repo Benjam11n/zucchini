@@ -68,7 +68,12 @@ export class SqliteHistoryRepository {
           sortOrder: habitPeriodStatus.habitSortOrder,
         })
         .from(habitPeriodStatus)
-        .where(eq(habitPeriodStatus.periodEnd, date))
+        .where(
+          and(
+            lte(habitPeriodStatus.periodStart, date),
+            gte(habitPeriodStatus.periodEnd, date)
+          )
+        )
         .orderBy(
           asc(habitPeriodStatus.habitSortOrder),
           asc(habitPeriodStatus.habitId)
