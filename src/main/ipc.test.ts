@@ -46,6 +46,12 @@ function createService() {
     getTodayState: vi.fn(() => {
       throw new Error("boom");
     }),
+    getWeeklyReview: vi.fn(),
+    getWeeklyReviewOverview: vi.fn(() => ({
+      availableWeeks: [],
+      latestReview: null,
+      trend: [],
+    })),
     initialize: vi.fn(),
     renameHabit: vi.fn(),
     reorderHabits: vi.fn(),

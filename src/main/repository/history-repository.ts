@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
 import {
   normalizeHabitCategory,
@@ -11,8 +11,8 @@ import type { DailySummary } from "@/shared/domain/streak";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { dailySummary, habitPeriodStatus } from "../schema";
 import type { SqliteHabitsRepository } from "./habit-repository";
-import { mapDailySummary } from "./mappers";
-import type { HabitPeriodStatusRow } from "./types";
+import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";
+import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
 
 export class SqliteHistoryRepository {
   private readonly client: SqliteDatabaseClient;
@@ -179,6 +179,44 @@ export class SqliteHistoryRepository {
     });
   }
 
+  getDailySummariesInRange(start: string, end: string): DailySummary[] {
+    return this.client.run("getDailySummariesInRange", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(dailySummary)
+        .where(and(gte(dailySummary.date, start), lte(dailySummary.date, end)))
+        .orderBy(asc(dailySummary.date))
+        .all()
+        .map((row) => mapDailySummary(row))
+    );
+  }
+
+  getHabitPeriodStatusesEndingInRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
+    return this.client.run("getHabitPeriodStatusesEndingInRange", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(habitPeriodStatus)
+        .where(
+          and(
+            gte(habitPeriodStatus.periodEnd, start),
+            lte(habitPeriodStatus.periodEnd, end)
+          )
+        )
+        .orderBy(
+          asc(habitPeriodStatus.periodEnd),
+          asc(habitPeriodStatus.habitSortOrder),
+          asc(habitPeriodStatus.habitId)
+        )
+        .all()
+        .map((row) => mapHabitPeriodStatusSnapshot(row))
+    );
+  }
+
   getFirstTrackedDate(): string | null {
     return this.client.run("getFirstTrackedDate", () => {
       const statusRow = this.client
@@ -187,7 +225,6 @@ export class SqliteHistoryRepository {
           firstDate: sql<string | null>`min(${habitPeriodStatus.periodStart})`,
         })
         .from(habitPeriodStatus)
-        .where(eq(habitPeriodStatus.frequency, "daily"))
         .get();
       const summaryRow = this.client
         .getDrizzle()
@@ -205,6 +242,34 @@ export class SqliteHistoryRepository {
       }
 
       return candidates.toSorted((left, right) => left.localeCompare(right))[0];
+    });
+  }
+
+  getLatestTrackedDate(): string | null {
+    return this.client.run("getLatestTrackedDate", () => {
+      const statusRow = this.client
+        .getDrizzle()
+        .select({
+          latestDate: sql<string | null>`max(${habitPeriodStatus.periodEnd})`,
+        })
+        .from(habitPeriodStatus)
+        .get();
+      const summaryRow = this.client
+        .getDrizzle()
+        .select({
+          latestDate: sql<string | null>`max(${dailySummary.date})`,
+        })
+        .from(dailySummary)
+        .get();
+      const candidates = [statusRow?.latestDate, summaryRow?.latestDate].filter(
+        (value): value is string => value !== null && value !== undefined
+      );
+
+      if (candidates.length === 0) {
+        return null;
+      }
+
+      return candidates.toSorted((left, right) => right.localeCompare(left))[0];
     });
   }
 

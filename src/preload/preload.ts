@@ -37,6 +37,10 @@ const habitsApi: HabitApi = {
   ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
   getHistory: () => invokeHabits(HABITS_IPC_CHANNELS.getHistory),
   getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),
+  getWeeklyReview: (weekStart: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
+  getWeeklyReviewOverview: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
   renameHabit: (habitId: number, name: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
   reorderHabits: (habitIds: number[]) =>

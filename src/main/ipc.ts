@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import { serializeIpcError } from "@/main/ipc-errors";
 import {
   validateAppSettings,
+  validateDateKey,
   validateHabitCategory,
   validateHabitFrequency,
   validateHabitId,
@@ -56,6 +57,12 @@ export function registerIpcHandlers({
     service.toggleHabit(validateHabitId(habitId))
   );
   registerHandler(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
+  registerHandler(HABITS_IPC_CHANNELS.getWeeklyReviewOverview, () =>
+    service.getWeeklyReviewOverview()
+  );
+  registerHandler(HABITS_IPC_CHANNELS.getWeeklyReview, (weekStart: unknown) =>
+    service.getWeeklyReview(validateDateKey("review week", weekStart))
+  );
   registerHandler(HABITS_IPC_CHANNELS.updateSettings, (settings: unknown) => {
     const nextSettings = service.updateSettings(validateAppSettings(settings));
     onSettingsChanged(nextSettings);

@@ -48,6 +48,38 @@ export function endOfWeek(dateKey: string): string {
   return toDateKey(date);
 }
 
+function getIsoDayOfWeek(date: Date): number {
+  return (date.getDay() + 6) % 7;
+}
+
+export function startOfIsoWeek(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+  date.setDate(date.getDate() - getIsoDayOfWeek(date));
+  return toDateKey(date);
+}
+
+export function endOfIsoWeek(dateKey: string): string {
+  const date = parseDateKey(startOfIsoWeek(dateKey));
+  date.setDate(date.getDate() + 6);
+  return toDateKey(date);
+}
+
+export function isMonday(dateKey: string): boolean {
+  return getIsoDayOfWeek(parseDateKey(dateKey)) === 0;
+}
+
+export function getPreviousCompletedIsoWeek(todayKey: string): {
+  weekEnd: string;
+  weekStart: string;
+} {
+  const previousDay = addDays(startOfIsoWeek(todayKey), -1);
+
+  return {
+    weekEnd: endOfIsoWeek(previousDay),
+    weekStart: startOfIsoWeek(previousDay),
+  };
+}
+
 /**
  * Formats a given date key using the Intl API options
  */

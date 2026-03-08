@@ -7,7 +7,13 @@ import { isThemeMode } from "@/shared/domain/settings";
 import type { ThemeMode } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
-import type { DailySummaryRow, HabitRow, StreakStateRow } from "./types";
+import type {
+  DailySummaryRow,
+  HabitPeriodStatusRow,
+  HabitPeriodStatusSnapshot,
+  HabitRow,
+  StreakStateRow,
+} from "./types";
 
 export function mapHabit(row: HabitRow): Habit {
   return {
@@ -28,6 +34,21 @@ export function mapDailySummary(row: DailySummaryRow): DailySummary {
     date: row.date,
     freezeUsed: row.freezeUsed,
     streakCountAfterDay: row.streakCountAfterDay,
+  };
+}
+
+export function mapHabitPeriodStatusSnapshot(
+  row: HabitPeriodStatusRow
+): HabitPeriodStatusSnapshot {
+  return {
+    category: normalizeHabitCategory(row.habitCategory),
+    completed: row.completed,
+    frequency: normalizeHabitFrequency(row.frequency),
+    habitId: row.habitId,
+    name: row.habitName,
+    periodEnd: row.periodEnd,
+    periodStart: row.periodStart,
+    sortOrder: row.habitSortOrder,
   };
 }
 

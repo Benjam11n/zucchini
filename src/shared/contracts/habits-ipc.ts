@@ -6,12 +6,18 @@ import type {
 import type { HistoryDay } from "../domain/history";
 import type { AppSettings } from "../domain/settings";
 import type { StreakState } from "../domain/streak";
+import type {
+  WeeklyReview,
+  WeeklyReviewOverview,
+} from "../domain/weekly-review";
 
 export const HABITS_IPC_CHANNELS = {
   archiveHabit: "habits:archiveHabit",
   createHabit: "habits:createHabit",
   getHistory: "habits:getHistory",
   getTodayState: "habits:getTodayState",
+  getWeeklyReview: "habits:getWeeklyReview",
+  getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
   showNotification: "habits:showNotification",
@@ -88,6 +94,8 @@ export interface HabitApi {
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
   getHistory: () => Promise<HistoryDay[]>;
+  getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
+  getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;
   createHabit: (
     name: string,

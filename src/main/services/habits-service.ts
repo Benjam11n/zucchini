@@ -6,6 +6,15 @@ import {
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
+import type {
+  WeeklyReview,
+  WeeklyReviewOverview,
+} from "@/shared/domain/weekly-review";
+import {
+  endOfIsoWeek,
+  getPreviousCompletedIsoWeek,
+  startOfIsoWeek,
+} from "@/shared/utils/date";
 
 import type { Clock } from "../clock";
 import type { ReminderRuntimeState } from "../reminder-runtime-state";
@@ -16,12 +25,18 @@ import {
   buildTodayPreviewSummary,
   buildTodayState,
 } from "./today-state-builder";
+import {
+  buildWeeklyReview,
+  buildWeeklyReviewOverview,
+} from "./weekly-review-builder";
 
 export interface HabitsService {
   initialize(): void;
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getHistory(): HistoryDay[];
+  getWeeklyReviewOverview(): WeeklyReviewOverview;
+  getWeeklyReview(weekStart: string): WeeklyReview;
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
@@ -91,6 +106,67 @@ export class HabitService implements HabitsService {
             )
           ),
       ];
+    });
+  }
+
+  getWeeklyReviewOverview(): WeeklyReviewOverview {
+    return this.repository.runInTransaction("getWeeklyReviewOverview", () => {
+      this.syncRollingState();
+      const firstTrackedDate = this.repository.getFirstTrackedDate();
+      const latestTrackedDate = this.repository.getLatestTrackedDate();
+
+      if (!firstTrackedDate || !latestTrackedDate) {
+        return {
+          availableWeeks: [],
+          latestReview: null,
+          trend: [],
+        };
+      }
+
+      const latestCompletedWeek = getPreviousCompletedIsoWeek(
+        this.clock.todayKey()
+      );
+      if (latestTrackedDate < latestCompletedWeek.weekStart) {
+        return {
+          availableWeeks: [],
+          latestReview: null,
+          trend: [],
+        };
+      }
+
+      const rangeStart = startOfIsoWeek(firstTrackedDate);
+      const rangeEnd = latestCompletedWeek.weekEnd;
+
+      return buildWeeklyReviewOverview({
+        dailySummaries: this.repository.getDailySummariesInRange(
+          rangeStart,
+          rangeEnd
+        ),
+        habitStatuses: this.repository.getHabitPeriodStatusesEndingInRange(
+          rangeStart,
+          rangeEnd
+        ),
+      });
+    });
+  }
+
+  getWeeklyReview(weekStart: string): WeeklyReview {
+    return this.repository.runInTransaction("getWeeklyReview", () => {
+      this.syncRollingState();
+      const normalizedWeekStart = startOfIsoWeek(weekStart);
+      const weekEnd = endOfIsoWeek(normalizedWeekStart);
+
+      return buildWeeklyReview({
+        dailySummaries: this.repository.getDailySummariesInRange(
+          normalizedWeekStart,
+          weekEnd
+        ),
+        habitStatuses: this.repository.getHabitPeriodStatusesEndingInRange(
+          normalizedWeekStart,
+          weekEnd
+        ),
+        weekStart: normalizedWeekStart,
+      });
     });
   }
 

@@ -55,6 +55,10 @@ interface UseAppStoreState extends AppState {
     frequency: HabitFrequency
   ) => Promise<void>;
   handleUpdateSettings: (settings: AppSettings) => Promise<AppSettings>;
+  loadWeeklyReviewOverview: () => Promise<void>;
+  selectWeeklyReview: (weekStart: string) => Promise<void>;
+  openWeeklyReviewSpotlight: () => void;
+  dismissWeeklyReviewSpotlight: () => void;
 
   refreshToday: (mutator: Promise<TodayState>) => Promise<void>;
   reloadAll: (nextTodayState?: TodayState) => Promise<void>;
@@ -84,8 +88,13 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
         bootError: toHabitsIpcError(error),
         bootPhase: "error",
         history: [],
+        isWeeklyReviewSpotlightOpen: false,
+        selectedWeeklyReview: null,
         settingsDraft: null,
         todayState: null,
+        weeklyReviewError: null,
+        weeklyReviewOverview: null,
+        weeklyReviewPhase: "idle",
       });
     }
   },
@@ -99,6 +108,11 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       settingsFieldErrors: {},
       settingsSaveErrorMessage: null,
       settingsSavePhase: "idle",
+    }),
+
+  dismissWeeklyReviewSpotlight: () =>
+    set({
+      isWeeklyReviewSpotlightOpen: false,
     }),
 
   handleArchiveHabit: async (habitId: number) => {
@@ -185,6 +199,43 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
 
   history: [],
 
+  isWeeklyReviewSpotlightOpen: false,
+
+  loadWeeklyReviewOverview: async () => {
+    set({
+      weeklyReviewError: null,
+      weeklyReviewPhase: "loading",
+    });
+
+    try {
+      const overview = await window.habits.getWeeklyReviewOverview();
+      set((state: UseAppStoreState) => ({
+        selectedWeeklyReview:
+          state.selectedWeeklyReview &&
+          overview.availableWeeks.some(
+            (week) => week.weekStart === state.selectedWeeklyReview?.weekStart
+          )
+            ? state.selectedWeeklyReview
+            : overview.latestReview,
+        weeklyReviewError: null,
+        weeklyReviewOverview: overview,
+        weeklyReviewPhase: "ready",
+      }));
+    } catch (error) {
+      set({
+        selectedWeeklyReview: null,
+        weeklyReviewError: toHabitsIpcError(error),
+        weeklyReviewOverview: null,
+        weeklyReviewPhase: "error",
+      });
+    }
+  },
+
+  openWeeklyReviewSpotlight: () =>
+    set({
+      isWeeklyReviewSpotlightOpen: true,
+    }),
+
   refreshToday: async (mutator: Promise<TodayState>) => {
     const nextTodayState = await mutator;
     await get().reloadAll(nextTodayState);
@@ -202,6 +253,33 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   retryBoot: async () => {
     await get().bootApp();
   },
+  selectWeeklyReview: async (weekStart: string) => {
+    const currentReview = get().selectedWeeklyReview;
+    if (currentReview?.weekStart === weekStart) {
+      return;
+    }
+
+    set({
+      weeklyReviewError: null,
+      weeklyReviewPhase: "loading",
+    });
+
+    try {
+      const selectedWeeklyReview =
+        await window.habits.getWeeklyReview(weekStart);
+      set({
+        selectedWeeklyReview,
+        weeklyReviewError: null,
+        weeklyReviewPhase: "ready",
+      });
+    } catch (error) {
+      set({
+        weeklyReviewError: toHabitsIpcError(error),
+        weeklyReviewPhase: "error",
+      });
+    }
+  },
+  selectedWeeklyReview: null,
   setBootError: (bootError: HabitsIpcError | null) => set({ bootError }),
   setBootPhase: (bootPhase: AppState["bootPhase"]) => set({ bootPhase }),
   setHistory: (history: AppState["history"]) => set({ history }),
@@ -215,8 +293,8 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     set({ settingsFieldErrors }),
   setSystemTheme: (systemTheme: ThemeMode) => set({ systemTheme }),
   setTab: (tab: Tab) => set({ tab }),
-  setTodayState: (todayState: TodayState | null) => set({ todayState }),
 
+  setTodayState: (todayState: TodayState | null) => set({ todayState }),
   settingsDraft: null,
   settingsFieldErrors: {},
   settingsSaveErrorMessage: null,
@@ -224,4 +302,7 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   systemTheme: getSystemTheme(),
   tab: "today",
   todayState: null,
+  weeklyReviewError: null,
+  weeklyReviewOverview: null,
+  weeklyReviewPhase: "idle",
 }));

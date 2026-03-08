@@ -15,6 +15,7 @@ import { SqliteHistoryRepository } from "./history-repository";
 import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-repository";
 import { SqliteSettingsRepository } from "./settings-repository";
 import { SqliteStreakRepository } from "./streak-repository";
+import type { HabitPeriodStatusSnapshot } from "./types";
 
 export interface HabitRepository {
   initializeSchema(): void;
@@ -27,6 +28,11 @@ export interface HabitRepository {
   ensureStatusRow(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
   getSettledHistory(limit?: number): DailySummary[];
+  getDailySummariesInRange(start: string, end: string): DailySummary[];
+  getHabitPeriodStatusesEndingInRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[];
   getPersistedStreakState(): StreakState;
   savePersistedStreakState(state: StreakState): void;
   getReminderRuntimeState(): ReminderRuntimeState;
@@ -34,6 +40,7 @@ export interface HabitRepository {
   getSettings(defaultTimezone: string): AppSettings;
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
   getFirstTrackedDate(): string | null;
+  getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
   saveDailySummary(summary: DailySummary): void;
   getMaxSortOrder(): number;
@@ -131,6 +138,20 @@ export class SqliteHabitRepository implements HabitRepository {
     return this.historyRepository.getSettledHistory(limit);
   }
 
+  getDailySummariesInRange(start: string, end: string): DailySummary[] {
+    return this.historyRepository.getDailySummariesInRange(start, end);
+  }
+
+  getHabitPeriodStatusesEndingInRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
+    return this.historyRepository.getHabitPeriodStatusesEndingInRange(
+      start,
+      end
+    );
+  }
+
   getPersistedStreakState(): StreakState {
     return this.streakRepository.getPersistedStreakState();
   }
@@ -157,6 +178,10 @@ export class SqliteHabitRepository implements HabitRepository {
 
   getFirstTrackedDate(): string | null {
     return this.historyRepository.getFirstTrackedDate();
+  }
+
+  getLatestTrackedDate(): string | null {
+    return this.historyRepository.getLatestTrackedDate();
   }
 
   getExistingCompletedAt(date: string): string | null {

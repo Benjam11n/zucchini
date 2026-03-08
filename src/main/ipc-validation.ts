@@ -2,6 +2,7 @@ import type { ZodType } from "zod";
 
 import {
   appSettingsSchema,
+  dateKeySchema,
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
@@ -46,6 +47,10 @@ function parseWithSchema<T>(
 
 export function validateHabitId(value: unknown): number {
   return parseWithSchema("habit id", habitIdSchema, value);
+}
+
+export function validateDateKey(label: string, value: unknown): string {
+  return parseWithSchema(label, dateKeySchema, value);
 }
 
 export function validateHabitName(value: unknown): string {

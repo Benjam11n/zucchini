@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { AppShell } from "@/renderer/features/app/app-shell";
 import { getBootErrorDisplay } from "@/renderer/features/app/boot-errors";
 import { useAppController } from "@/renderer/features/app/use-app-controller";
+import { WeeklyReviewSpotlightDialog } from "@/renderer/features/history/weekly-review-spotlight-dialog";
 import { MASCOTS } from "@/renderer/lib/mascots";
 import { HistoryPage } from "@/renderer/pages/history-page";
 import { SettingsPage } from "@/renderer/pages/settings-page";
@@ -85,7 +86,18 @@ export default function App() {
   );
 
   if (tab === "history") {
-    renderedPage = <HistoryPage history={state.history} />;
+    renderedPage = (
+      <HistoryPage
+        history={state.history}
+        onSelectWeeklyReview={(weekStart) => {
+          void actions.handleWeeklyReviewSelect(weekStart);
+        }}
+        selectedWeeklyReview={state.selectedWeeklyReview}
+        weeklyReviewError={state.weeklyReviewError}
+        weeklyReviewOverview={state.weeklyReviewOverview}
+        weeklyReviewPhase={state.weeklyReviewPhase}
+      />
+    );
   }
 
   if (tab === "settings") {
@@ -108,8 +120,22 @@ export default function App() {
   }
 
   return (
-    <AppShell tab={tab} onTabChange={actions.handleTabChange}>
-      {renderedPage}
-    </AppShell>
+    <>
+      <AppShell tab={tab} onTabChange={actions.handleTabChange}>
+        {renderedPage}
+      </AppShell>
+      {state.isWeeklyReviewSpotlightOpen &&
+      state.weeklyReviewOverview?.latestReview ? (
+        <WeeklyReviewSpotlightDialog
+          onDismiss={actions.handleDismissWeeklyReviewSpotlight}
+          onOpenReview={() => {
+            void actions.handleWeeklyReviewOpen();
+          }}
+          open={state.isWeeklyReviewSpotlightOpen}
+          review={state.weeklyReviewOverview.latestReview}
+          trend={state.weeklyReviewOverview.trend}
+        />
+      ) : null}
+    </>
   );
 }

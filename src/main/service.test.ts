@@ -185,6 +185,44 @@ class FakeRepository implements HabitRepository {
     return limit === undefined ? history : history.slice(0, limit);
   }
 
+  getDailySummariesInRange(start: string, end: string): DailySummary[] {
+    return [...this.dailySummaries.values()]
+      .filter((summary) => summary.date >= start && summary.date <= end)
+      .toSorted((left, right) => left.date.localeCompare(right.date));
+  }
+
+  getHabitPeriodStatusesEndingInRange(start: string, end: string) {
+    return [...this.statusByPeriod.values()]
+      .filter((entry) => entry.end >= start && entry.end <= end)
+      .flatMap((entry) =>
+        [...entry.values.entries()].map(([habitId, completed]) => {
+          const habit = this.habits.find((item) => item.id === habitId);
+
+          if (!habit) {
+            throw new Error(`Unknown habit ${habitId}`);
+          }
+
+          return {
+            category: habit.category,
+            completed,
+            frequency: entry.frequency,
+            habitId,
+            name: habit.name,
+            periodEnd: entry.end,
+            periodStart: entry.start,
+            sortOrder: habit.sortOrder,
+          };
+        })
+      )
+      .toSorted((left, right) => {
+        if (left.periodEnd !== right.periodEnd) {
+          return left.periodEnd.localeCompare(right.periodEnd);
+        }
+
+        return left.sortOrder - right.sortOrder;
+      });
+  }
+
   getPersistedStreakState(): StreakState {
     return { ...this.streak };
   }
@@ -212,14 +250,22 @@ class FakeRepository implements HabitRepository {
 
   getFirstTrackedDate(): string | null {
     const keys = new Set<string>([
-      ...[...this.statusByPeriod.values()]
-        .filter((entry) => entry.frequency === "daily")
-        .map((entry) => entry.start),
+      ...[...this.statusByPeriod.values()].map((entry) => entry.start),
       ...this.dailySummaries.keys(),
       this.streak.lastEvaluatedDate ?? "",
     ]);
     const values = [...keys].filter(Boolean).toSorted();
     return values[0] ?? null;
+  }
+
+  getLatestTrackedDate(): string | null {
+    const keys = new Set<string>([
+      ...[...this.statusByPeriod.values()].map((entry) => entry.end),
+      ...this.dailySummaries.keys(),
+      this.streak.lastEvaluatedDate ?? "",
+    ]);
+    const values = [...keys].filter(Boolean).toSorted();
+    return values.at(-1) ?? null;
   }
 
   getExistingCompletedAt(date: string): string | null {
@@ -507,6 +553,70 @@ describe("history retrieval", () => {
     ]);
     expect(history[1]?.summary.freezeUsed).toBeFalsy();
     expect(history[0]?.categoryProgress).toHaveLength(3);
+  });
+});
+
+describe("weekly review retrieval", () => {
+  it("builds a weekly review overview for completed weeks", () => {
+    const repository = new FakeRepository();
+    repository.streak.lastEvaluatedDate = "2026-03-08";
+    repository.dailySummaries.set("2026-03-02", {
+      allCompleted: true,
+      completedAt: "2026-03-02T21:00:00.000Z",
+      date: "2026-03-02",
+      freezeUsed: false,
+      streakCountAfterDay: 4,
+    });
+    repository.dailySummaries.set("2026-03-03", {
+      allCompleted: false,
+      completedAt: null,
+      date: "2026-03-03",
+      freezeUsed: true,
+      streakCountAfterDay: 4,
+    });
+    repository.setStatusForDate("2026-03-02", new Map([[1, true]]));
+    repository.setStatusForDate(
+      "2026-03-07",
+      new Map([
+        [1, true],
+        [2, false],
+      ]),
+      "weekly"
+    );
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "weekly",
+      id: 2,
+      isArchived: false,
+      name: "Weekly stretch",
+      sortOrder: 1,
+    });
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const overview = service.getWeeklyReviewOverview();
+
+    expect(overview.latestReview).not.toBeNull();
+    expect(overview.latestReview?.weekStart).toBe("2026-03-02");
+    expect(
+      overview.latestReview?.habitMetrics.map((metric) => metric.name)
+    ).toContain("Weekly stretch");
+  });
+
+  it("wraps weekly review overview reads in a repository transaction", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    service.getWeeklyReviewOverview();
+
+    expect(repository.transactionLabels).toContain("getWeeklyReviewOverview");
   });
 });
 

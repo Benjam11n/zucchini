@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { GitHubCalendar } from "@/components/custom/github-calendar";
@@ -8,13 +8,21 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { HistoryCalendarCard } from "@/renderer/features/history/history-calendar-card";
 import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
 import type {
   HistoryCalendarContextValue,
   HistoryPageProps,
 } from "@/renderer/features/history/types";
+import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/history/weekly-review-daily-cadence-chart";
+import { WeeklyReviewHabitChart } from "@/renderer/features/history/weekly-review-habit-chart";
+import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review-hero-card";
+import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review-most-missed-card";
+import { WeeklyReviewStats } from "@/renderer/features/history/weekly-review-stats";
+import { WeeklyReviewTrendChart } from "@/renderer/features/history/weekly-review-trend-chart";
 import { HISTORY_METRIC_BADGE_CLASSNAMES } from "@/renderer/lib/history-status";
 import {
   hoverLift,
@@ -30,7 +38,96 @@ import {
 } from "@/renderer/pages/history-page.utils";
 import { parseDateKey } from "@/shared/utils/date";
 
-export function HistoryPage({ history }: HistoryPageProps) {
+function WeeklyReviewSection({
+  onSelectWeeklyReview,
+  selectedWeeklyReview,
+  weeklyReviewError,
+  weeklyReviewOverview,
+  weeklyReviewPhase,
+}: Omit<HistoryPageProps, "history">) {
+  const review =
+    selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
+
+  if (
+    (weeklyReviewPhase === "idle" || weeklyReviewPhase === "loading") &&
+    !review
+  ) {
+    return (
+      <Card className="border-border/60 bg-card/95">
+        <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+          <Spinner className="size-4 text-primary/70" />
+          Building weekly review...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!review) {
+    if (weeklyReviewError) {
+      return (
+        <Card className="border-border/60 bg-card/95">
+          <CardHeader>
+            <CardDescription>Weekly Review</CardDescription>
+            <CardTitle>Could not load weekly review</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {weeklyReviewError.message}
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="border-border/60 bg-card/95">
+        <CardHeader>
+          <CardDescription>Weekly Review</CardDescription>
+          <CardTitle>Not enough history yet</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Finish a full Monday-Sunday cycle to unlock weekly review cards and
+          charts.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid gap-4">
+      {weeklyReviewError ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+          {weeklyReviewError.message}
+        </div>
+      ) : null}
+
+      <WeeklyReviewHeroCard
+        availableWeeks={weeklyReviewOverview?.availableWeeks ?? []}
+        isLoading={weeklyReviewPhase === "loading"}
+        onSelectWeek={onSelectWeeklyReview}
+        review={review}
+      />
+      <WeeklyReviewStats review={review} />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <WeeklyReviewDailyCadenceChart review={review} />
+        <WeeklyReviewTrendChart trend={weeklyReviewOverview?.trend ?? []} />
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
+        <WeeklyReviewHabitChart habitMetrics={review.habitMetrics} />
+        <WeeklyReviewMostMissedCard habits={review.mostMissedHabits} />
+      </div>
+    </div>
+  );
+}
+
+export function HistoryPage({
+  history,
+  onSelectWeeklyReview,
+  selectedWeeklyReview,
+  weeklyReviewError,
+  weeklyReviewOverview,
+  weeklyReviewPhase,
+}: HistoryPageProps) {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(
     history[0]?.date ?? null
   );
@@ -85,75 +182,87 @@ export function HistoryPage({ history }: HistoryPageProps) {
   );
 
   return (
-    <motion.div
-      animate="animate"
-      className="grid gap-6"
-      initial="initial"
-      variants={staggerContainerVariants}
-    >
-      <motion.div variants={staggerItemVariants}>
-        <Card>
-          <CardHeader className="gap-3 sm:flex sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-1">
-              <CardDescription>History</CardDescription>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {[
-                {
-                  className: HISTORY_METRIC_BADGE_CLASSNAMES.completionRate,
-                  label: `${stats.completionRate}% completion`,
-                },
-                {
-                  className: HISTORY_METRIC_BADGE_CLASSNAMES.completedDays,
-                  label: `${stats.completedDays} complete`,
-                },
-                {
-                  className: HISTORY_METRIC_BADGE_CLASSNAMES.freezeDays,
-                  label: `${stats.freezeDays} freeze saves`,
-                },
-                {
-                  className: HISTORY_METRIC_BADGE_CLASSNAMES.missedDays,
-                  label: `${stats.missedDays} missed`,
-                },
-              ].map((statBadge) => (
-                <motion.div
-                  key={statBadge.label}
-                  whileHover={hoverLift}
-                  whileTap={tapPress}
-                >
-                  <Badge className={statBadge.className} variant="outline">
-                    {statBadge.label}
-                  </Badge>
-                </motion.div>
-              ))}
-            </div>
-          </CardHeader>
-        </Card>
-      </motion.div>
-
-      <motion.div
-        className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]"
-        variants={staggerItemVariants}
+    <LazyMotion features={domAnimation}>
+      <m.div
+        animate="animate"
+        className="grid gap-6"
+        initial="initial"
+        variants={staggerContainerVariants}
       >
-        <Card>
-          <CardContent className="space-y-5">
-            <GitHubCalendar weeks={calendarWeeks} />
-          </CardContent>
-        </Card>
+        <m.section variants={staggerItemVariants}>
+          <Card>
+            <CardHeader className="gap-3 sm:flex sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-1">
+                <CardDescription>History</CardDescription>
+              </div>
 
-        <div className="grid gap-4">
-          <HistoryCalendarCard
-            historyByDate={historyByDate}
-            historyCalendarContextValue={historyCalendarContextValue}
-            onSelectDateKey={setSelectedDateKey}
-            selectedDay={selectedDay}
-            setVisibleMonth={setVisibleMonth}
-            visibleMonth={visibleMonth}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  {
+                    className: HISTORY_METRIC_BADGE_CLASSNAMES.completionRate,
+                    label: `${stats.completionRate}% completion`,
+                  },
+                  {
+                    className: HISTORY_METRIC_BADGE_CLASSNAMES.completedDays,
+                    label: `${stats.completedDays} complete`,
+                  },
+                  {
+                    className: HISTORY_METRIC_BADGE_CLASSNAMES.freezeDays,
+                    label: `${stats.freezeDays} freeze saves`,
+                  },
+                  {
+                    className: HISTORY_METRIC_BADGE_CLASSNAMES.missedDays,
+                    label: `${stats.missedDays} missed`,
+                  },
+                ].map((statBadge) => (
+                  <m.div
+                    key={statBadge.label}
+                    whileHover={hoverLift}
+                    whileTap={tapPress}
+                  >
+                    <Badge className={statBadge.className} variant="outline">
+                      {statBadge.label}
+                    </Badge>
+                  </m.div>
+                ))}
+              </div>
+            </CardHeader>
+          </Card>
+        </m.section>
+
+        <m.section variants={staggerItemVariants}>
+          <WeeklyReviewSection
+            onSelectWeeklyReview={onSelectWeeklyReview}
+            selectedWeeklyReview={selectedWeeklyReview}
+            weeklyReviewError={weeklyReviewError}
+            weeklyReviewOverview={weeklyReviewOverview}
+            weeklyReviewPhase={weeklyReviewPhase}
           />
-          <HistoryDayPanel selectedDay={selectedDay} />
-        </div>
-      </motion.div>
-    </motion.div>
+        </m.section>
+
+        <m.div
+          className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]"
+          variants={staggerItemVariants}
+        >
+          <Card>
+            <CardContent className="space-y-5">
+              <GitHubCalendar weeks={calendarWeeks} />
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4">
+            <HistoryCalendarCard
+              historyByDate={historyByDate}
+              historyCalendarContextValue={historyCalendarContextValue}
+              onSelectDateKey={setSelectedDateKey}
+              selectedDay={selectedDay}
+              setVisibleMonth={setVisibleMonth}
+              visibleMonth={visibleMonth}
+            />
+            <HistoryDayPanel selectedDay={selectedDay} />
+          </div>
+        </m.div>
+      </m.div>
+    </LazyMotion>
   );
 }

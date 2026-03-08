@@ -1,0 +1,116 @@
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type {
+  WeeklyReview,
+  WeeklyReviewListItem,
+} from "@/shared/domain/weekly-review";
+
+interface WeeklyReviewHeroCardProps {
+  availableWeeks: WeeklyReviewListItem[];
+  isLoading: boolean;
+  onSelectWeek: (weekStart: string) => void;
+  review: WeeklyReview;
+}
+
+export function WeeklyReviewHeroCard({
+  availableWeeks,
+  isLoading,
+  onSelectWeek,
+  review,
+}: WeeklyReviewHeroCardProps) {
+  const currentIndex = availableWeeks.findIndex(
+    (week) => week.weekStart === review.weekStart
+  );
+  const newerWeek =
+    currentIndex > 0 ? availableWeeks[currentIndex - 1] : undefined;
+  const olderWeek =
+    currentIndex === -1 ? undefined : availableWeeks[currentIndex + 1];
+
+  return (
+    <Card className="overflow-hidden border-border/60 bg-card">
+      <CardContent className="relative overflow-hidden px-6 py-6 sm:px-7">
+        <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(145,201,150,0.24),transparent_55%),radial-gradient(circle_at_top_right,rgba(229,191,108,0.22),transparent_48%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_45%)]" />
+
+        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)] lg:items-end">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary">Weekly Review</Badge>
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                <Sparkles className="size-3.5" />
+                Monday reset
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{review.label}</p>
+              <h2 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
+                {review.completionRate}%
+              </h2>
+              <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
+                {review.completedDays} fully completed days, {review.freezeDays}{" "}
+                freeze saves, and a {review.longestCleanRun}-day clean run.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 rounded-[24px] border border-border/60 bg-background/70 p-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-border/50 bg-card/70 p-3">
+                <p className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                  Tracked days
+                </p>
+                <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
+                  {review.trackedDays}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border/50 bg-card/70 p-3">
+                <p className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                  Habit chances
+                </p>
+                <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
+                  {review.habitMetrics.reduce(
+                    (total, habit) => total + habit.opportunities,
+                    0
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                disabled={!olderWeek || isLoading}
+                onClick={() => {
+                  if (olderWeek) {
+                    onSelectWeek(olderWeek.weekStart);
+                  }
+                }}
+                size="sm"
+                variant="outline"
+              >
+                <ChevronLeft className="size-3.5" />
+                Older week
+              </Button>
+              <Button
+                disabled={!newerWeek || isLoading}
+                onClick={() => {
+                  if (newerWeek) {
+                    onSelectWeek(newerWeek.weekStart);
+                  }
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                Newer week
+                <ChevronRight className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

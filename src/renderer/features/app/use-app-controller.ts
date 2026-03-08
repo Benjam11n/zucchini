@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
+import {
+  readLastSeenWeeklyReviewStart,
+  writeLastSeenWeeklyReviewStart,
+} from "@/renderer/features/history/weekly-review-storage";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -16,6 +21,7 @@ export function useAppController() {
     bootError,
     bootPhase,
     clearSettingsFeedback,
+    dismissWeeklyReviewSpotlight,
     handleArchiveHabit,
     handleCreateHabit,
     handleRenameHabit,
@@ -27,7 +33,11 @@ export function useAppController() {
     handleUpdateHabitFrequency,
     handleUpdateSettings,
     history,
+    isWeeklyReviewSpotlightOpen,
+    loadWeeklyReviewOverview,
+    openWeeklyReviewSpotlight,
     retryBoot,
+    selectWeeklyReview,
     setSettingsSaveErrorMessage,
     setSettingsSavePhase,
     setSettingsValidationErrors,
@@ -36,15 +46,20 @@ export function useAppController() {
     settingsDraft,
     settingsSaveErrorMessage,
     settingsSavePhase,
+    selectedWeeklyReview,
     systemTheme,
     tab,
     todayState,
+    weeklyReviewError,
+    weeklyReviewOverview,
+    weeklyReviewPhase,
   } = useAppStore(
     useShallow((state) => ({
       bootApp: state.bootApp,
       bootError: state.bootError,
       bootPhase: state.bootPhase,
       clearSettingsFeedback: state.clearSettingsFeedback,
+      dismissWeeklyReviewSpotlight: state.dismissWeeklyReviewSpotlight,
       handleArchiveHabit: state.handleArchiveHabit,
       handleCreateHabit: state.handleCreateHabit,
       handleRenameHabit: state.handleRenameHabit,
@@ -56,7 +71,12 @@ export function useAppController() {
       handleUpdateHabitFrequency: state.handleUpdateHabitFrequency,
       handleUpdateSettings: state.handleUpdateSettings,
       history: state.history,
+      isWeeklyReviewSpotlightOpen: state.isWeeklyReviewSpotlightOpen,
+      loadWeeklyReviewOverview: state.loadWeeklyReviewOverview,
+      openWeeklyReviewSpotlight: state.openWeeklyReviewSpotlight,
       retryBoot: state.retryBoot,
+      selectWeeklyReview: state.selectWeeklyReview,
+      selectedWeeklyReview: state.selectedWeeklyReview,
       setSettingsSaveErrorMessage: state.setSettingsSaveErrorMessage,
       setSettingsSavePhase: state.setSettingsSavePhase,
       setSettingsValidationErrors: state.setSettingsValidationErrors,
@@ -68,6 +88,9 @@ export function useAppController() {
       systemTheme: state.systemTheme,
       tab: state.tab,
       todayState: state.todayState,
+      weeklyReviewError: state.weeklyReviewError,
+      weeklyReviewOverview: state.weeklyReviewOverview,
+      weeklyReviewPhase: state.weeklyReviewPhase,
     }))
   );
 
@@ -147,6 +170,37 @@ export function useAppController() {
   }, [bootApp]);
 
   useEffect(() => {
+    if (bootPhase !== "ready" || weeklyReviewPhase !== "idle") {
+      return;
+    }
+
+    void loadWeeklyReviewOverview();
+  }, [bootPhase, loadWeeklyReviewOverview, weeklyReviewPhase]);
+
+  useEffect(() => {
+    const latestReview = weeklyReviewOverview?.latestReview ?? null;
+    if (
+      !shouldOpenWeeklyReviewSpotlight({
+        bootPhase,
+        lastSeenWeeklyReviewStart: readLastSeenWeeklyReviewStart(),
+        latestReview,
+        todayKey: todayState?.date ?? null,
+        weeklyReviewPhase,
+      })
+    ) {
+      return;
+    }
+
+    openWeeklyReviewSpotlight();
+  }, [
+    bootPhase,
+    openWeeklyReviewSpotlight,
+    todayState?.date,
+    weeklyReviewOverview?.latestReview,
+    weeklyReviewPhase,
+  ]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const syncSystemTheme = () => {
       setSystemTheme(mediaQuery.matches ? "dark" : "light");
@@ -173,6 +227,13 @@ export function useAppController() {
     actions: {
       handleArchiveHabit,
       handleCreateHabit,
+      handleDismissWeeklyReviewSpotlight: () => {
+        const latestReview = weeklyReviewOverview?.latestReview;
+        if (latestReview) {
+          writeLastSeenWeeklyReviewStart(latestReview.weekStart);
+        }
+        dismissWeeklyReviewSpotlight();
+      },
       handleRenameHabit,
       handleReorderHabits,
       handleRetryBoot: retryBoot,
@@ -181,16 +242,36 @@ export function useAppController() {
       handleToggleHabit,
       handleUpdateHabitCategory,
       handleUpdateHabitFrequency,
+      handleWeeklyReviewOpen: async () => {
+        const latestReview = weeklyReviewOverview?.latestReview;
+        if (!latestReview) {
+          dismissWeeklyReviewSpotlight();
+          return;
+        }
+
+        writeLastSeenWeeklyReviewStart(latestReview.weekStart);
+        dismissWeeklyReviewSpotlight();
+        handleTabChange("history");
+        await selectWeeklyReview(latestReview.weekStart);
+      },
+      handleWeeklyReviewSelect: async (weekStart: string) => {
+        await selectWeeklyReview(weekStart);
+      },
     },
     state: {
       bootError,
       bootPhase,
       history,
+      isWeeklyReviewSpotlightOpen,
+      selectedWeeklyReview,
       settingsDraft,
       settingsFieldErrors,
       settingsSaveErrorMessage,
       settingsSavePhase,
       todayState,
+      weeklyReviewError,
+      weeklyReviewOverview,
+      weeklyReviewPhase,
     },
     tab,
   };

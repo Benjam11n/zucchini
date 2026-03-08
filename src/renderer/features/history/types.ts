@@ -1,9 +1,19 @@
 import type { HistoryStatus } from "@/renderer/lib/history-status";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
+import type {
+  WeeklyReview,
+  WeeklyReviewOverview,
+} from "@/shared/domain/weekly-review";
 
 export interface HistoryPageProps {
   history: HistoryDay[];
+  selectedWeeklyReview: WeeklyReview | null;
+  weeklyReviewError: HabitsIpcError | null;
+  weeklyReviewOverview: WeeklyReviewOverview | null;
+  weeklyReviewPhase: "error" | "idle" | "loading" | "ready";
+  onSelectWeeklyReview: (weekStart: string) => void;
 }
 
 export interface HistoryCalendarContextValue {
