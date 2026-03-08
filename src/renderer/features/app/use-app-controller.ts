@@ -4,10 +4,15 @@ import { useShallow } from "zustand/react/shallow";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";
 
+import {
+  areAppSettingsEqual,
+  mapSettingsValidationErrors,
+} from "./settings-save";
 import { useAppStore } from "./store";
 
 export function useAppController() {
   const {
+    clearSettingsFeedback,
     handleArchiveHabit,
     handleCreateHabit,
     handleRenameHabit,
@@ -20,13 +25,20 @@ export function useAppController() {
     handleUpdateSettings,
     history,
     reloadAll,
+    setSettingsSaveErrorMessage,
+    setSettingsSavePhase,
+    setSettingsValidationErrors,
     setSystemTheme,
+    settingsFieldErrors,
     settingsDraft,
+    settingsSaveErrorMessage,
+    settingsSavePhase,
     systemTheme,
     tab,
     todayState,
   } = useAppStore(
     useShallow((state) => ({
+      clearSettingsFeedback: state.clearSettingsFeedback,
       handleArchiveHabit: state.handleArchiveHabit,
       handleCreateHabit: state.handleCreateHabit,
       handleRenameHabit: state.handleRenameHabit,
@@ -39,8 +51,14 @@ export function useAppController() {
       handleUpdateSettings: state.handleUpdateSettings,
       history: state.history,
       reloadAll: state.reloadAll,
+      setSettingsSaveErrorMessage: state.setSettingsSaveErrorMessage,
+      setSettingsSavePhase: state.setSettingsSavePhase,
+      setSettingsValidationErrors: state.setSettingsValidationErrors,
       setSystemTheme: state.setSystemTheme,
       settingsDraft: state.settingsDraft,
+      settingsFieldErrors: state.settingsFieldErrors,
+      settingsSaveErrorMessage: state.settingsSaveErrorMessage,
+      settingsSavePhase: state.settingsSavePhase,
       systemTheme: state.systemTheme,
       tab: state.tab,
       todayState: state.todayState,
@@ -48,9 +66,15 @@ export function useAppController() {
   );
 
   const lastSavedDraft = useRef<AppSettings | null>(null);
+  const settingsSavePhaseRef = useRef(settingsSavePhase);
+
+  useEffect(() => {
+    settingsSavePhaseRef.current = settingsSavePhase;
+  }, [settingsSavePhase]);
 
   useEffect(() => {
     const draft = settingsDraft;
+    const currentSavePhase = settingsSavePhaseRef.current;
     if (!draft) {
       return;
     }
@@ -59,26 +83,58 @@ export function useAppController() {
       lastSavedDraft.current = draft;
       return;
     }
-    if (draft === lastSavedDraft.current) {
-      return;
-    }
 
-    const timer = setTimeout(async () => {
-      const validationResult = appSettingsSchema.safeParse(draft);
-      if (!validationResult.success) {
+    if (areAppSettingsEqual(draft, lastSavedDraft.current)) {
+      if (currentSavePhase === "saved") {
         return;
       }
 
+      if (currentSavePhase !== "idle") {
+        clearSettingsFeedback();
+      }
+      return;
+    }
+
+    const validationResult = appSettingsSchema.safeParse(draft);
+    if (!validationResult.success) {
+      setSettingsValidationErrors(
+        mapSettingsValidationErrors(validationResult.error.issues)
+      );
+      setSettingsSaveErrorMessage(null);
+      setSettingsSavePhase("invalid");
+      return;
+    }
+
+    setSettingsValidationErrors({});
+    setSettingsSaveErrorMessage(null);
+    if (currentSavePhase !== "pending") {
+      setSettingsSavePhase("pending");
+    }
+
+    const timer = setTimeout(async () => {
       try {
+        setSettingsSavePhase("saving");
         const savedSettings = await handleUpdateSettings(validationResult.data);
         lastSavedDraft.current = savedSettings;
-      } catch (error: unknown) {
-        console.error("Failed to save app settings", error);
+        setSettingsSavePhase("saved");
+        setSettingsSaveErrorMessage(null);
+      } catch {
+        setSettingsSavePhase("error");
+        setSettingsSaveErrorMessage(
+          "Could not save settings. Your changes are still on screen."
+        );
       }
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [handleUpdateSettings, settingsDraft]);
+  }, [
+    clearSettingsFeedback,
+    handleUpdateSettings,
+    setSettingsSaveErrorMessage,
+    setSettingsSavePhase,
+    setSettingsValidationErrors,
+    settingsDraft,
+  ]);
 
   useEffect(() => {
     void reloadAll();
@@ -122,6 +178,9 @@ export function useAppController() {
     state: {
       history,
       settingsDraft,
+      settingsFieldErrors,
+      settingsSaveErrorMessage,
+      settingsSavePhase,
       todayState,
     },
     tab,

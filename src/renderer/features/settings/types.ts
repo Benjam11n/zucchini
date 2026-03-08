@@ -1,4 +1,8 @@
 import type {
+  SettingsFieldErrors,
+  SettingsSavePhase,
+} from "@/renderer/features/app/types";
+import type {
   HabitCategory,
   HabitFrequency,
   HabitWithStatus,
@@ -6,8 +10,11 @@ import type {
 import type { AppSettings } from "@/shared/domain/settings";
 
 export interface SettingsPageProps {
+  fieldErrors: SettingsFieldErrors;
   habits: HabitWithStatus[];
   settings: AppSettings;
+  saveErrorMessage: string | null;
+  savePhase: SettingsSavePhase;
   onChange: (settings: AppSettings) => void;
   onCreateHabit: (
     name: string,

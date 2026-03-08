@@ -52,6 +52,7 @@ class FakeClock implements Clock {
 }
 
 class FakeRepository implements HabitRepository {
+  failTransactionForLabel: string | null = null;
   habits: Habit[] = [
     {
       category: "productivity",
@@ -95,8 +96,17 @@ class FakeRepository implements HabitRepository {
     lastReminderSentAt: null,
     snoozedUntil: null,
   };
+  transactionLabels: string[] = [];
 
   initializeSchema(): void {}
+  runInTransaction<A>(label: string, execute: () => A): A {
+    this.transactionLabels.push(label);
+    if (this.failTransactionForLabel === label) {
+      throw new Error(`transaction failed: ${label}`);
+    }
+
+    return execute();
+  }
   seedDefaults(): void {}
 
   getHabits(): Habit[] {
@@ -497,5 +507,89 @@ describe("history retrieval", () => {
     ]);
     expect(history[1]?.summary.freezeUsed).toBeFalsy();
     expect(history[0]?.categoryProgress).toHaveLength(3);
+  });
+});
+
+describe("habitService transactions", () => {
+  it("wraps getTodayState in a repository transaction", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.transactionLabels).toContain("getTodayState");
+  });
+
+  it("wraps createHabit in a repository transaction", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.createHabit("Read", "productivity", "daily");
+
+    expect(repository.transactionLabels).toContain("createHabit");
+  });
+
+  it("wraps updateHabitFrequency in a repository transaction", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.updateHabitFrequency(1, "weekly");
+
+    expect(repository.transactionLabels).toContain("updateHabitFrequency");
+  });
+
+  it("wraps archiveHabit in a repository transaction", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.archiveHabit(1);
+
+    expect(repository.transactionLabels).toContain("archiveHabit");
+  });
+
+  it("wraps reorderHabits in a repository transaction", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Habit 2",
+      sortOrder: 1,
+    });
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.reorderHabits([2, 1]);
+
+    expect(repository.transactionLabels).toContain("reorderHabits");
+  });
+
+  it("propagates transaction failures", () => {
+    const repository = new FakeRepository();
+    repository.failTransactionForLabel = "createHabit";
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    expect(() => service.createHabit("Read", "productivity", "daily")).toThrow(
+      "transaction failed: createHabit"
+    );
   });
 });

@@ -8,7 +8,12 @@ import type {
 } from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
-import type { AppState, Tab } from "./types";
+import type {
+  AppState,
+  SettingsFieldErrors,
+  SettingsSavePhase,
+  Tab,
+} from "./types";
 
 interface UseAppStoreState extends AppState {
   systemTheme: ThemeMode;
@@ -17,11 +22,15 @@ interface UseAppStoreState extends AppState {
   // State Setters
   setHistory: (history: AppState["history"]) => void;
   setSettingsDraft: (settingsDraft: AppSettings | null) => void;
+  setSettingsSaveErrorMessage: (message: string | null) => void;
+  setSettingsSavePhase: (phase: SettingsSavePhase) => void;
+  setSettingsValidationErrors: (errors: SettingsFieldErrors) => void;
   setSystemTheme: (systemTheme: ThemeMode) => void;
   setTab: (tab: Tab) => void;
   setTodayState: (todayState: TodayState | null) => void;
 
   // Actions
+  clearSettingsFeedback: () => void;
   handleArchiveHabit: (habitId: number) => Promise<void>;
   handleCreateHabit: (
     name: string,
@@ -54,6 +63,13 @@ function getSystemTheme(): ThemeMode {
 }
 
 export const useAppStore = create<UseAppStoreState>()((set, get) => ({
+  clearSettingsFeedback: () =>
+    set({
+      settingsFieldErrors: {},
+      settingsSaveErrorMessage: null,
+      settingsSavePhase: "idle",
+    }),
+
   handleArchiveHabit: async (habitId: number) => {
     await get().refreshToday(window.habits.archiveHabit(habitId));
   },
@@ -82,7 +98,10 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   },
 
   handleSettingsDraftChange: (settingsDraft: AppSettings) => {
-    set({ settingsDraft });
+    set({
+      settingsDraft,
+      settingsSaveErrorMessage: null,
+    });
   },
 
   handleTabChange: (nextTab: Tab) => {
@@ -120,6 +139,8 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     const nextSettings = await window.habits.updateSettings(settings);
     set((state: UseAppStoreState) => ({
       settingsDraft: nextSettings,
+      settingsFieldErrors: {},
+      settingsSaveErrorMessage: null,
       todayState: state.todayState
         ? {
             ...state.todayState,
@@ -151,11 +172,20 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   setHistory: (history: AppState["history"]) => set({ history }),
   setSettingsDraft: (settingsDraft: AppSettings | null) =>
     set({ settingsDraft }),
+  setSettingsSaveErrorMessage: (settingsSaveErrorMessage: string | null) =>
+    set({ settingsSaveErrorMessage }),
+  setSettingsSavePhase: (settingsSavePhase: SettingsSavePhase) =>
+    set({ settingsSavePhase }),
+  setSettingsValidationErrors: (settingsFieldErrors: SettingsFieldErrors) =>
+    set({ settingsFieldErrors }),
   setSystemTheme: (systemTheme: ThemeMode) => set({ systemTheme }),
   setTab: (tab: Tab) => set({ tab }),
   setTodayState: (todayState: TodayState | null) => set({ todayState }),
 
   settingsDraft: null,
+  settingsFieldErrors: {},
+  settingsSaveErrorMessage: null,
+  settingsSavePhase: "idle",
   systemTheme: getSystemTheme(),
   tab: "today",
   todayState: null,

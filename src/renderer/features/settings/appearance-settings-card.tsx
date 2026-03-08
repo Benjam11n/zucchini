@@ -9,9 +9,10 @@ import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 import type { SettingsPageProps } from "./types";
 
 export function AppearanceSettingsCard({
+  fieldErrors,
   onChange,
   settings,
-}: Pick<SettingsPageProps, "onChange" | "settings">) {
+}: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   return (
     <Card>
       <CardHeader>
@@ -33,6 +34,7 @@ export function AppearanceSettingsCard({
                 id={`theme-mode-${option.value}`}
                 initial={{ opacity: 0, scale: 0.96, y: 8 }}
                 type="button"
+                aria-invalid={fieldErrors.themeMode ? true : undefined}
                 onClick={() =>
                   onChange({ ...settings, themeMode: option.value })
                 }

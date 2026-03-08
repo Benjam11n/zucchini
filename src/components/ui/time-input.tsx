@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 // value is "HH:MM" in 24-hour format
 interface TimeInputProps {
+  "aria-invalid"?: boolean;
   id?: string;
   value: string;
   onChange: (value: string) => void;
@@ -23,7 +24,13 @@ const selectClass = cn(
   "focus:outline-none cursor-pointer text-foreground"
 );
 
-export function TimeInput({ id, value, onChange, className }: TimeInputProps) {
+export function TimeInput({
+  id,
+  value,
+  onChange,
+  className,
+  "aria-invalid": ariaInvalid,
+}: TimeInputProps) {
   const uid = useId();
   const inputId = id ?? uid;
 
@@ -42,11 +49,12 @@ export function TimeInput({ id, value, onChange, className }: TimeInputProps) {
 
   return (
     <div
+      aria-invalid={ariaInvalid}
       id={inputId}
       className={cn(
         "flex h-9 w-full items-center gap-1 rounded-md border border-input bg-background px-3",
         "text-sm shadow-sm ring-offset-background transition-colors",
-        "focus-within:outline-none focus-within:ring-1 focus-within:ring-ring",
+        "focus-within:outline-none focus-within:ring-1 focus-within:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20",
         className
       )}
     >

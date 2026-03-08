@@ -263,4 +263,161 @@ describe("reminder scheduler", () => {
       expect(notificationState.midnightWarningCount).toBe(0);
     });
   });
+
+  it("fires at the intended local wall-clock time across DST spring-forward", () => {
+    withFakeTime("2026-03-08T06:29:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)], "2026-03-08"),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule({
+        ...DEFAULT_SETTINGS,
+        reminderTime: "03:30",
+        timezone: "America/New_York",
+      });
+
+      vi.advanceTimersByTime(60 * 60 * 1000 + 59 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(0);
+
+      vi.advanceTimersByTime(1000);
+      expect(notificationState.incompleteReminderCount).toBe(1);
+    });
+  });
+
+  it("does not deliver the same reminder twice across DST fall-back", () => {
+    withFakeTime("2026-11-01T05:29:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)], "2026-11-01"),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule({
+        ...DEFAULT_SETTINGS,
+        reminderTime: "01:30",
+        timezone: "America/New_York",
+      });
+
+      vi.advanceTimersByTime(60 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(1);
+
+      vi.advanceTimersByTime(61 * 60 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(1);
+    });
+  });
+
+  it("does not redeliver when schedule() runs again after a same-day reminder fired", () => {
+    withFakeTime("2026-01-15T20:29:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        reminderTime: "20:30",
+      };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(settings);
+
+      vi.advanceTimersByTime(60 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(1);
+
+      scheduler.schedule(settings);
+      expect(notificationState.incompleteReminderCount).toBe(1);
+      expect(notificationState.catchUpReminderCount).toBe(0);
+    });
+  });
+
+  it("clears an expired snooze when habits become complete before it fires", () => {
+    withFakeTime("2026-01-15T20:00:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      let todayState = buildTodayState([buildHabit(false)]);
+      const settings = {
+        ...DEFAULT_SETTINGS,
+        reminderSnoozeMinutes: 10,
+      };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => todayState,
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(settings);
+      expect(scheduler.snooze(settings)).toBeTruthy();
+
+      todayState = buildTodayState([buildHabit(true)]);
+      vi.advanceTimersByTime(10 * 60 * 1000);
+
+      expect(notificationState.snoozedReminderCount).toBe(0);
+      expect(runtimeState.snoozedUntil).toBeNull();
+    });
+  });
+
+  it("preserves snoozes across timezone and reminder-time changes", () => {
+    withFakeTime("2026-01-15T20:00:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+      const firstSettings = {
+        ...DEFAULT_SETTINGS,
+        reminderSnoozeMinutes: 10,
+        reminderTime: "20:30",
+        timezone: "UTC",
+      };
+
+      scheduler.schedule(firstSettings);
+      expect(scheduler.snooze(firstSettings)).toBeTruthy();
+
+      scheduler.schedule({
+        ...DEFAULT_SETTINGS,
+        reminderTime: "23:59",
+        timezone: "America/New_York",
+      });
+
+      vi.advanceTimersByTime(9 * 60 * 1000);
+      expect(notificationState.snoozedReminderCount).toBe(0);
+
+      vi.advanceTimersByTime(60 * 1000);
+      expect(notificationState.snoozedReminderCount).toBe(1);
+      expect(runtimeState.snoozedUntil).toBeNull();
+    });
+  });
+
+  it("deduplicates late-night warnings on repeated schedule() calls", () => {
+    withFakeTime("2026-01-15T23:05:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createReminderScheduler({
+        getTodayState: () => buildTodayState([buildHabit(false)]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(DEFAULT_SETTINGS);
+      scheduler.schedule(DEFAULT_SETTINGS);
+
+      expect(notificationState.missedReminderCount).toBe(1);
+      expect(notificationState.midnightWarningCount).toBe(0);
+    });
+  });
 });

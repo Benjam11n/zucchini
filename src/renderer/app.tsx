@@ -53,8 +53,11 @@ export default function App() {
   if (tab === "settings") {
     renderedPage = (
       <SettingsPage
+        fieldErrors={state.settingsFieldErrors}
         habits={state.todayState.habits}
         settings={state.settingsDraft ?? state.todayState.settings}
+        saveErrorMessage={state.settingsSaveErrorMessage}
+        savePhase={state.settingsSavePhase}
         onArchiveHabit={actions.handleArchiveHabit}
         onChange={actions.handleSettingsDraftChange}
         onCreateHabit={actions.handleCreateHabit}

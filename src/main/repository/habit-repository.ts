@@ -148,26 +148,26 @@ export class SqliteHabitsRepository {
     this.client.run("normalizeHabitOrder", () => {
       const activeHabits = this.getHabits();
 
-      this.client.getDrizzle().transaction((tx) => {
-        activeHabits.forEach((habit, index) => {
-          tx.update(habits)
-            .set({ sortOrder: index })
-            .where(eq(habits.id, habit.id))
-            .run();
-        });
+      activeHabits.forEach((habit, index) => {
+        this.client
+          .getDrizzle()
+          .update(habits)
+          .set({ sortOrder: index })
+          .where(eq(habits.id, habit.id))
+          .run();
       });
     });
   }
 
   reorderHabits(habitIds: number[]): void {
     this.client.run("reorderHabits", () => {
-      this.client.getDrizzle().transaction((tx) => {
-        habitIds.forEach((habitId, index) => {
-          tx.update(habits)
-            .set({ sortOrder: index })
-            .where(eq(habits.id, habitId))
-            .run();
-        });
+      habitIds.forEach((habitId, index) => {
+        this.client
+          .getDrizzle()
+          .update(habits)
+          .set({ sortOrder: index })
+          .where(eq(habits.id, habitId))
+          .run();
       });
     });
   }

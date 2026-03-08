@@ -56,36 +56,42 @@ export class HabitService implements HabitsService {
   }
 
   getTodayState(): TodayState {
-    this.syncRollingState();
-    return buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("getTodayState", () => {
+      this.syncRollingState();
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   toggleHabit(habitId: number): TodayState {
-    const today = this.clock.todayKey();
-    this.syncRollingState();
-    this.repository.ensureStatusRowsForDate(today);
-    this.repository.toggleHabit(today, habitId);
-    return buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("toggleHabit", () => {
+      const today = this.clock.todayKey();
+      this.syncRollingState();
+      this.repository.ensureStatusRowsForDate(today);
+      this.repository.toggleHabit(today, habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   getHistory(): HistoryDay[] {
-    this.syncRollingState();
-    const todayState = buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("getHistory", () => {
+      this.syncRollingState();
+      const todayState = buildTodayState(this.repository, this.clock);
 
-    return [
-      buildHistoryDay(
-        buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
-        this.repository.getHabitsWithStatus(this.clock.todayKey())
-      ),
-      ...this.repository
-        .getSettledHistory()
-        .map((summary) =>
-          buildHistoryDay(
-            summary,
-            this.repository.getHistoricalHabitsWithStatus(summary.date)
-          )
+      return [
+        buildHistoryDay(
+          buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
+          this.repository.getHabitsWithStatus(this.clock.todayKey())
         ),
-    ];
+        ...this.repository
+          .getSettledHistory()
+          .map((summary) =>
+            buildHistoryDay(
+              summary,
+              this.repository.getHistoricalHabitsWithStatus(summary.date)
+            )
+          ),
+      ];
+    });
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
@@ -110,17 +116,19 @@ export class HabitService implements HabitsService {
       return this.getTodayState();
     }
 
-    const today = this.clock.todayKey();
-    this.syncRollingState();
-    const habitId = this.repository.insertHabit(
-      trimmedName,
-      normalizeHabitCategory(category),
-      normalizeHabitFrequency(frequency),
-      this.repository.getMaxSortOrder() + 1,
-      this.clock.now().toISOString()
-    );
-    this.repository.ensureStatusRow(today, habitId);
-    return buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("createHabit", () => {
+      const today = this.clock.todayKey();
+      this.syncRollingState();
+      const habitId = this.repository.insertHabit(
+        trimmedName,
+        normalizeHabitCategory(category),
+        normalizeHabitFrequency(frequency),
+        this.repository.getMaxSortOrder() + 1,
+        this.clock.now().toISOString()
+      );
+      this.repository.ensureStatusRow(today, habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   renameHabit(habitId: number, name: string): TodayState {
@@ -142,34 +150,40 @@ export class HabitService implements HabitsService {
   }
 
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState {
-    this.repository.updateHabitFrequency(
-      habitId,
-      normalizeHabitFrequency(frequency)
-    );
-    this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
-    return buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("updateHabitFrequency", () => {
+      this.repository.updateHabitFrequency(
+        habitId,
+        normalizeHabitFrequency(frequency)
+      );
+      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   archiveHabit(habitId: number): TodayState {
-    this.repository.archiveHabit(habitId);
-    this.repository.normalizeHabitOrder();
-    this.syncRollingState();
-    return buildTodayState(this.repository, this.clock);
+    return this.repository.runInTransaction("archiveHabit", () => {
+      this.repository.archiveHabit(habitId);
+      this.repository.normalizeHabitOrder();
+      this.syncRollingState();
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   reorderHabits(habitIds: number[]): TodayState {
-    const activeHabits = this.repository.getHabits();
-    const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
+    return this.repository.runInTransaction("reorderHabits", () => {
+      const activeHabits = this.repository.getHabits();
+      const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
 
-    if (
-      habitIds.length !== activeHabits.length ||
-      habitIds.some((habitId) => !activeHabitIds.has(habitId))
-    ) {
+      if (
+        habitIds.length !== activeHabits.length ||
+        habitIds.some((habitId) => !activeHabitIds.has(habitId))
+      ) {
+        return buildTodayState(this.repository, this.clock);
+      }
+
+      this.repository.reorderHabits(habitIds);
       return buildTodayState(this.repository, this.clock);
-    }
-
-    this.repository.reorderHabits(habitIds);
-    return buildTodayState(this.repository, this.clock);
+    });
   }
 
   private syncRollingState(): void {

@@ -18,6 +18,7 @@ import { SqliteStreakRepository } from "./streak-repository";
 
 export interface HabitRepository {
   initializeSchema(): void;
+  runInTransaction<A>(label: string, execute: () => A): A;
   seedDefaults(nowIso: string, timezone: string): void;
   getHabits(): Habit[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
@@ -67,6 +68,10 @@ export class SqliteHabitRepository implements HabitRepository {
 
   initializeSchema(): void {
     runMigrations(this.client);
+  }
+
+  runInTransaction<A>(label: string, execute: () => A): A {
+    return this.client.transaction(label, execute);
   }
 
   seedDefaults(nowIso: string, timezone: string): void {

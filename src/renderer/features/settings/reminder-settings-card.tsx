@@ -25,9 +25,10 @@ import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 import type { SettingsPageProps } from "./types";
 
 export function ReminderSettingsCard({
+  fieldErrors,
   onChange,
   settings,
-}: Pick<SettingsPageProps, "onChange" | "settings">) {
+}: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   const [permission, setPermission] =
     useState<NotificationPermission>("default");
   const timezoneOptions = useMemo(() => {
@@ -119,12 +120,19 @@ export function ReminderSettingsCard({
             </ItemContent>
             <ItemActions>
               <TimeInput
+                aria-invalid={fieldErrors.reminderTime ? true : undefined}
                 id="reminder-time"
                 onChange={(val) => onChange({ ...settings, reminderTime: val })}
                 value={settings.reminderTime}
               />
             </ItemActions>
           </Item>
+
+          {fieldErrors.reminderTime ? (
+            <p className="px-0 text-xs text-destructive">
+              {fieldErrors.reminderTime}
+            </p>
+          ) : null}
 
           <Item className="py-2">
             <ItemContent>
@@ -143,6 +151,7 @@ export function ReminderSettingsCard({
                 <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
                 <select
                   aria-label="Timezone"
+                  aria-invalid={fieldErrors.timezone ? true : undefined}
                   id="reminder-timezone"
                   className="w-full cursor-pointer appearance-none bg-transparent text-sm text-foreground outline-none"
                   onChange={(event) =>
@@ -159,6 +168,12 @@ export function ReminderSettingsCard({
               </div>
             </ItemActions>
           </Item>
+
+          {fieldErrors.timezone ? (
+            <p className="px-0 text-xs text-destructive">
+              {fieldErrors.timezone}
+            </p>
+          ) : null}
         </ItemGroup>
 
         <ItemSeparator />
@@ -233,6 +248,9 @@ export function ReminderSettingsCard({
               </ItemContent>
               <ItemActions className="max-w-[140px]">
                 <input
+                  aria-invalid={
+                    fieldErrors.reminderSnoozeMinutes ? true : undefined
+                  }
                   id="reminder-snooze"
                   className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   min={1}
@@ -250,6 +268,12 @@ export function ReminderSettingsCard({
                 />
               </ItemActions>
             </Item>
+
+            {fieldErrors.reminderSnoozeMinutes ? (
+              <p className="text-xs text-destructive">
+                {fieldErrors.reminderSnoozeMinutes}
+              </p>
+            ) : null}
           </ItemGroup>
         </div>
       </CardContent>

@@ -38,6 +38,15 @@ export class SqliteDatabaseClient {
     );
   }
 
+  transaction<A>(label: string, execute: () => A): A {
+    return Effect.runSync(
+      Effect.try({
+        catch: (cause) => new DatabaseError(label, cause),
+        try: () => this.getDrizzle().transaction(() => execute()),
+      })
+    );
+  }
+
   getSqlite(): Database.Database {
     if (!this.database) {
       const userData = app.getPath("userData");
