@@ -5,7 +5,7 @@ import type { DayButtonProps } from "react-day-picker";
 import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
 import { cn } from "@/lib/utils";
 import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
-import { toDateKey } from "@/renderer/pages/history-page.utils";
+import { toDateKey } from "@/shared/utils/date";
 
 import type { HistoryCalendarContextValue } from "./types";
 

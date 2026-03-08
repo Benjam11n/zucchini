@@ -7,38 +7,14 @@ import type { HistoryStatus } from "@/renderer/lib/history-status";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 
+import {
+  addDays,
+  endOfWeek,
+  formatDateKey,
+  startOfWeek,
+} from "@/shared/utils/date";
+
 const DAY_IN_WEEK = 7;
-
-export function parseDateKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-export function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function addDays(dateKey: string, days: number): string {
-  const next = parseDateKey(dateKey);
-  next.setDate(next.getDate() + days);
-  return toDateKey(next);
-}
-
-function startOfWeek(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(date.getDate() - date.getDay());
-  return toDateKey(date);
-}
-
-function endOfWeek(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(date.getDate() + (6 - date.getDay()));
-  return toDateKey(date);
-}
 
 function getContributionStatus(summary: DailySummary | null): HistoryStatus {
   if (!summary) {
@@ -170,15 +146,6 @@ export function getHistoryDayLookup(
   history: HistoryDay[]
 ): Map<string, HistoryDay> {
   return new Map(history.map((day) => [day.date, day]));
-}
-
-export function formatDateKey(
-  dateKey: string,
-  options: Intl.DateTimeFormatOptions
-): string {
-  return new Intl.DateTimeFormat(undefined, options).format(
-    parseDateKey(dateKey)
-  );
 }
 
 export function formatContributionLabel(cell: ContributionCell): string {

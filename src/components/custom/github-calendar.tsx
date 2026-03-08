@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { HISTORY_STATUS_UI } from "@/renderer/lib/history-status";
 import type { HistoryStatus } from "@/renderer/lib/history-status";
 import { hoverLift, tapPress } from "@/renderer/lib/motion";
+import { formatDateKey } from "@/shared/utils/date";
 
 interface GitHubCalendarCell {
   date: string;
@@ -29,15 +30,8 @@ const LEGEND_STATUSES: HistoryStatus[] = [
   "complete",
 ];
 
-function parseDateKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
 function formatMonth(dateKey: string): string {
-  return new Intl.DateTimeFormat(undefined, { month: "short" }).format(
-    parseDateKey(dateKey)
-  );
+  return formatDateKey(dateKey, { month: "short" });
 }
 
 function getMonthLabel(

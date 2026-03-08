@@ -27,8 +27,8 @@ import {
   formatContributionLabel,
   getHistoryDayLookup,
   getHistoryStats,
-  parseDateKey,
 } from "@/renderer/pages/history-page.utils";
+import { parseDateKey } from "@/shared/utils/date";
 
 export function HistoryPage({ history }: HistoryPageProps) {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(

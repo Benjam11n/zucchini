@@ -1,33 +1,15 @@
+import {
+  endOfWeek,
+  parseDateKey,
+  startOfWeek,
+  toDateKey,
+} from "@/shared/utils/date";
 import type { HabitFrequency } from "./habit";
 
 export interface HabitPeriod {
   end: string;
   frequency: HabitFrequency;
   start: string;
-}
-
-export function parseDateKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getWeekStart(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(date.getDate() - date.getDay());
-  return toDateKey(date);
-}
-
-function getWeekEnd(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(date.getDate() + (6 - date.getDay()));
-  return toDateKey(date);
 }
 
 function getMonthStart(dateKey: string): string {
@@ -48,9 +30,9 @@ export function getHabitPeriod(
 ): HabitPeriod {
   if (frequency === "weekly") {
     return {
-      end: getWeekEnd(dateKey),
+      end: endOfWeek(dateKey),
       frequency,
-      start: getWeekStart(dateKey),
+      start: startOfWeek(dateKey),
     };
   }
 

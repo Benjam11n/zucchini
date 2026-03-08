@@ -10,11 +10,11 @@ import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
 import { HISTORY_STATUS_UI } from "@/renderer/lib/history-status";
 import { microTransition } from "@/renderer/lib/motion";
 import {
-  formatDateKey,
   getActivityBadgeLabel,
   getActivityStatus,
   getActivitySummary,
 } from "@/renderer/pages/history-page.utils";
+import { formatDateKey } from "@/shared/utils/date";
 import type { HistoryDay } from "@/shared/domain/history";
 
 import { HistoryHabitColumn } from "./history-habit-column";

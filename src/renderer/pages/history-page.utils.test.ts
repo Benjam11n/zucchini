@@ -4,8 +4,8 @@ import {
   buildContributionWeeks,
   getHistoryDayLookup,
   getHistoryStats,
-  toDateKey,
 } from "./history-page.utils";
+import { toDateKey } from "@/shared/utils/date";
 
 function createHistoryDay(
   date: string,

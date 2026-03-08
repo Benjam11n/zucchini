@@ -3,7 +3,8 @@ import { CalendarRange } from "lucide-react";
 
 import { staggerItemVariants } from "@/renderer/lib/motion";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
-import { getHabitPeriod, parseDateKey } from "@/shared/domain/habit-period";
+import { getHabitPeriod } from "@/shared/domain/habit-period";
+import { parseDateKey } from "@/shared/utils/date";
 
 import { HabitListCard, HabitListItem } from "./ui/habit-list";
 
