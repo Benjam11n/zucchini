@@ -112,35 +112,6 @@ export function ReminderSettingsCard({
 
           <Item>
             <ItemContent>
-              <Label htmlFor="reminder-snooze" className="text-sm font-medium">
-                Snooze length
-              </Label>
-              <ItemDescription>
-                Delay the next reminder from the tray/menu bar.
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions className="max-w-[140px]">
-              <Input
-                id="reminder-snooze"
-                className="text-center"
-                min={1}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-                  onChange({
-                    ...settings,
-                    reminderSnoozeMinutes: Number.isFinite(value)
-                      ? value
-                      : DEFAULT_REMINDER_SNOOZE_MINUTES,
-                  });
-                }}
-                type="number"
-                value={settings.reminderSnoozeMinutes}
-              />
-            </ItemActions>
-          </Item>
-
-          <Item>
-            <ItemContent>
               <Label
                 htmlFor="reminder-timezone"
                 className="text-sm font-medium"
@@ -164,46 +135,95 @@ export function ReminderSettingsCard({
 
           <ItemSeparator />
 
-          <Item>
-            <ItemContent>
-              <Label htmlFor="launch-at-login" className="text-sm font-medium">
-                Launch at login
-              </Label>
-              <ItemDescription>
-                Start Zucchini automatically when you sign in.
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-              <Switch
-                checked={settings.launchAtLogin}
-                id="launch-at-login"
-                onCheckedChange={(checked) =>
-                  onChange({ ...settings, launchAtLogin: checked })
-                }
-              />
-            </ItemActions>
-          </Item>
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+            <div className="mb-4 space-y-1">
+              <p className="text-sm font-medium">Background reminders</p>
+              <p className="text-sm text-muted-foreground">
+                Only turn these on if you want reminders to keep working after
+                you close the window.
+              </p>
+            </div>
 
-          <Item>
-            <ItemContent>
-              <Label htmlFor="minimize-to-tray" className="text-sm font-medium">
-                Keep running in tray
-              </Label>
-              <ItemDescription>
-                Hide the window to the menu bar/tray so reminders can keep
-                running.
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-              <Switch
-                checked={settings.minimizeToTray}
-                id="minimize-to-tray"
-                onCheckedChange={(checked) =>
-                  onChange({ ...settings, minimizeToTray: checked })
-                }
-              />
-            </ItemActions>
-          </Item>
+            <ItemGroup className="gap-3">
+              <Item className="px-0 py-0">
+                <ItemContent>
+                  <Label
+                    htmlFor="launch-at-login"
+                    className="text-sm font-medium"
+                  >
+                    Launch at login
+                  </Label>
+                  <ItemDescription>
+                    Start Zucchini automatically when you sign in.
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Switch
+                    checked={settings.launchAtLogin}
+                    id="launch-at-login"
+                    onCheckedChange={(checked) =>
+                      onChange({ ...settings, launchAtLogin: checked })
+                    }
+                  />
+                </ItemActions>
+              </Item>
+
+              <Item className="px-0 py-0">
+                <ItemContent>
+                  <Label
+                    htmlFor="minimize-to-tray"
+                    className="text-sm font-medium"
+                  >
+                    Keep running in tray
+                  </Label>
+                  <ItemDescription>
+                    Closing the window keeps Zucchini alive for reminders.
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Switch
+                    checked={settings.minimizeToTray}
+                    id="minimize-to-tray"
+                    onCheckedChange={(checked) =>
+                      onChange({ ...settings, minimizeToTray: checked })
+                    }
+                  />
+                </ItemActions>
+              </Item>
+
+              <Item className="px-0 py-0">
+                <ItemContent>
+                  <Label
+                    htmlFor="reminder-snooze"
+                    className="text-sm font-medium"
+                  >
+                    Snooze length
+                  </Label>
+                  <ItemDescription>
+                    How long tray snooze waits before reminding again.
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions className="max-w-[140px]">
+                  <Input
+                    id="reminder-snooze"
+                    className="text-center"
+                    min={1}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      onChange({
+                        ...settings,
+                        reminderSnoozeMinutes: Number.isFinite(value)
+                          ? value
+                          : DEFAULT_REMINDER_SNOOZE_MINUTES,
+                      });
+                    }}
+                    type="number"
+                    value={settings.reminderSnoozeMinutes}
+                  />
+                </ItemActions>
+              </Item>
+            </ItemGroup>
+          </div>
         </ItemGroup>
       </CardContent>
     </Card>

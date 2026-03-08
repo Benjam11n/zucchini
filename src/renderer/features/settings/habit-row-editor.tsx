@@ -66,9 +66,9 @@ export function HabitRowEditor({
             </span>
           </div>
 
-          <ItemDescription className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <Label className="text-xs font-medium text-muted-foreground mr-2">
+          <ItemDescription className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <Label className="mr-2 text-xs font-medium text-muted-foreground">
                 Category
               </Label>
               <HabitCategorySelector
@@ -80,8 +80,8 @@ export function HabitRowEditor({
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <Label className="text-xs font-medium text-muted-foreground mr-2">
+            <div className="flex flex-col gap-2">
+              <Label className="mr-2 text-xs font-medium text-muted-foreground">
                 Frequency
               </Label>
               <HabitFrequencySelector
