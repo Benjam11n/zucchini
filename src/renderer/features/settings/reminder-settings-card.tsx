@@ -1,5 +1,5 @@
-import { Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Bell, Globe2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -31,6 +30,25 @@ export function ReminderSettingsCard({
 }: Pick<SettingsPageProps, "onChange" | "settings">) {
   const [permission, setPermission] =
     useState<NotificationPermission>("default");
+  const timezoneOptions = useMemo(() => {
+    const supportedTimezones =
+      typeof Intl.supportedValuesOf === "function"
+        ? Intl.supportedValuesOf("timeZone")
+        : [
+            "UTC",
+            "Asia/Singapore",
+            "Asia/Tokyo",
+            "Australia/Sydney",
+            "Europe/London",
+            "Europe/Paris",
+            "America/New_York",
+            "America/Chicago",
+            "America/Denver",
+            "America/Los_Angeles",
+          ];
+
+    return [...new Set([settings.timezone, ...supportedTimezones])];
+  }, [settings.timezone]);
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -54,14 +72,14 @@ export function ReminderSettingsCard({
           <CardTitle>Reminders</CardTitle>
         </div>
       </CardHeader>
-      <CardContent>
-        <ItemGroup>
-          <Item>
+      <CardContent className="space-y-3">
+        <ItemGroup className="gap-0">
+          <Item className="py-2">
             <ItemContent>
               <Label htmlFor="reminder-enabled" className="text-sm font-medium">
                 Enable reminder
               </Label>
-              <ItemDescription>
+              <ItemDescription className="text-xs leading-snug">
                 Receive daily notifications for incomplete habits.
               </ItemDescription>
             </ItemContent>
@@ -90,14 +108,14 @@ export function ReminderSettingsCard({
             </ItemActions>
           </Item>
 
-          <ItemSeparator />
-
-          <Item>
+          <Item className="py-2">
             <ItemContent>
               <Label htmlFor="reminder-time" className="text-sm font-medium">
                 Time
               </Label>
-              <ItemDescription>When should we remind you?</ItemDescription>
+              <ItemDescription className="text-xs leading-snug">
+                When should we remind you?
+              </ItemDescription>
             </ItemContent>
             <ItemActions>
               <TimeInput
@@ -108,9 +126,7 @@ export function ReminderSettingsCard({
             </ItemActions>
           </Item>
 
-          <ItemSeparator />
-
-          <Item>
+          <Item className="py-2">
             <ItemContent>
               <Label
                 htmlFor="reminder-timezone"
@@ -118,113 +134,124 @@ export function ReminderSettingsCard({
               >
                 Timezone
               </Label>
-              <ItemDescription>Your local timezone.</ItemDescription>
+              <ItemDescription className="text-xs leading-snug">
+                Choose the timezone used for reminder timing.
+              </ItemDescription>
             </ItemContent>
-            <ItemActions className="max-w-[140px]">
-              <Input
-                id="reminder-timezone"
-                className="text-center"
-                onChange={(event) =>
-                  onChange({ ...settings, timezone: event.target.value })
-                }
-                type="text"
-                value={settings.timezone}
-              />
+            <ItemActions className="max-w-[220px]">
+              <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
+                <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
+                <select
+                  aria-label="Timezone"
+                  id="reminder-timezone"
+                  className="w-full cursor-pointer appearance-none bg-transparent text-sm text-foreground outline-none"
+                  onChange={(event) =>
+                    onChange({ ...settings, timezone: event.target.value })
+                  }
+                  value={settings.timezone}
+                >
+                  {timezoneOptions.map((timezone) => (
+                    <option key={timezone} value={timezone}>
+                      {timezone.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </ItemActions>
           </Item>
-
-          <ItemSeparator />
-
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-            <div className="mb-4 space-y-1">
-              <p className="text-sm font-medium">Background reminders</p>
-              <p className="text-sm text-muted-foreground">
-                Only turn these on if you want reminders to keep working after
-                you close the window.
-              </p>
-            </div>
-
-            <ItemGroup className="gap-3">
-              <Item className="px-0 py-0">
-                <ItemContent>
-                  <Label
-                    htmlFor="launch-at-login"
-                    className="text-sm font-medium"
-                  >
-                    Launch at login
-                  </Label>
-                  <ItemDescription>
-                    Start Zucchini automatically when you sign in.
-                  </ItemDescription>
-                </ItemContent>
-                <ItemActions>
-                  <Switch
-                    checked={settings.launchAtLogin}
-                    id="launch-at-login"
-                    onCheckedChange={(checked) =>
-                      onChange({ ...settings, launchAtLogin: checked })
-                    }
-                  />
-                </ItemActions>
-              </Item>
-
-              <Item className="px-0 py-0">
-                <ItemContent>
-                  <Label
-                    htmlFor="minimize-to-tray"
-                    className="text-sm font-medium"
-                  >
-                    Keep running in tray
-                  </Label>
-                  <ItemDescription>
-                    Closing the window keeps Zucchini alive for reminders.
-                  </ItemDescription>
-                </ItemContent>
-                <ItemActions>
-                  <Switch
-                    checked={settings.minimizeToTray}
-                    id="minimize-to-tray"
-                    onCheckedChange={(checked) =>
-                      onChange({ ...settings, minimizeToTray: checked })
-                    }
-                  />
-                </ItemActions>
-              </Item>
-
-              <Item className="px-0 py-0">
-                <ItemContent>
-                  <Label
-                    htmlFor="reminder-snooze"
-                    className="text-sm font-medium"
-                  >
-                    Snooze length
-                  </Label>
-                  <ItemDescription>
-                    How long tray snooze waits before reminding again.
-                  </ItemDescription>
-                </ItemContent>
-                <ItemActions className="max-w-[140px]">
-                  <Input
-                    id="reminder-snooze"
-                    className="text-center"
-                    min={1}
-                    onChange={(event) => {
-                      const value = Number(event.target.value);
-                      onChange({
-                        ...settings,
-                        reminderSnoozeMinutes: Number.isFinite(value)
-                          ? value
-                          : DEFAULT_REMINDER_SNOOZE_MINUTES,
-                      });
-                    }}
-                    type="number"
-                    value={settings.reminderSnoozeMinutes}
-                  />
-                </ItemActions>
-              </Item>
-            </ItemGroup>
-          </div>
         </ItemGroup>
+
+        <ItemSeparator />
+
+        <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+          <div className="mb-4 space-y-1">
+            <p className="text-sm font-medium">Background reminders</p>
+            <p className="text-sm text-muted-foreground">
+              Only turn these on if you want reminders to keep working after you
+              close the window.
+            </p>
+          </div>
+
+          <ItemGroup className="gap-3">
+            <Item className="px-0 py-0">
+              <ItemContent>
+                <Label
+                  htmlFor="launch-at-login"
+                  className="text-sm font-medium"
+                >
+                  Launch at login
+                </Label>
+                <ItemDescription>
+                  Start Zucchini automatically when you sign in.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Switch
+                  checked={settings.launchAtLogin}
+                  id="launch-at-login"
+                  onCheckedChange={(checked) =>
+                    onChange({ ...settings, launchAtLogin: checked })
+                  }
+                />
+              </ItemActions>
+            </Item>
+
+            <Item className="px-0 py-0">
+              <ItemContent>
+                <Label
+                  htmlFor="minimize-to-tray"
+                  className="text-sm font-medium"
+                >
+                  Keep running in tray
+                </Label>
+                <ItemDescription>
+                  Closing the window keeps Zucchini alive for reminders.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Switch
+                  checked={settings.minimizeToTray}
+                  id="minimize-to-tray"
+                  onCheckedChange={(checked) =>
+                    onChange({ ...settings, minimizeToTray: checked })
+                  }
+                />
+              </ItemActions>
+            </Item>
+
+            <Item className="px-0 py-0">
+              <ItemContent>
+                <Label
+                  htmlFor="reminder-snooze"
+                  className="text-sm font-medium"
+                >
+                  Snooze length
+                </Label>
+                <ItemDescription>
+                  How long tray snooze waits before reminding again.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions className="max-w-[140px]">
+                <input
+                  id="reminder-snooze"
+                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  min={1}
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    onChange({
+                      ...settings,
+                      reminderSnoozeMinutes: Number.isFinite(value)
+                        ? value
+                        : DEFAULT_REMINDER_SNOOZE_MINUTES,
+                    });
+                  }}
+                  type="number"
+                  value={settings.reminderSnoozeMinutes}
+                />
+              </ItemActions>
+            </Item>
+          </ItemGroup>
+        </div>
       </CardContent>
     </Card>
   );
