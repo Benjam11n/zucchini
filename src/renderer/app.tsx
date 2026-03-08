@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MASCOTS } from "@/renderer/lib/mascots";
 import { pageVariants } from "@/renderer/lib/motion";
 
 import type {
@@ -195,8 +197,15 @@ export default function App() {
   if (!state.todayState) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-        <Card className="w-full max-w-sm">
-          <CardHeader>
+        <Card className="w-full max-w-md">
+          <CardContent className="flex justify-center px-6 pt-6 pb-0">
+            <img
+              alt="Loading Zucchini mascot"
+              className="size-28 object-contain"
+              src={MASCOTS.loading}
+            />
+          </CardContent>
+          <CardHeader className="items-center text-center">
             <CardTitle>Loading</CardTitle>
             <CardDescription>
               Preparing your local habit dashboard.
@@ -246,11 +255,13 @@ export default function App() {
         >
           <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-3 lg:py-6">
             <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
-              <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-3">
-                <div className="flex size-12 items-center justify-center bg-primary text-lg font-black text-primary-foreground shadow-sm">
-                  Z
-                </div>
-                <span className="text-[0.68rem] font-bold tracking-[0.24em] uppercase text-foreground/55">
+              <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-1 lg:text-center">
+                <img
+                  alt="Zucchini logo"
+                  className="size-12 object-contain"
+                  src={MASCOTS.base}
+                />
+                <span className="text-sm font-black tracking-tight text-foreground">
                   Zucchini
                 </span>
               </div>
@@ -300,9 +311,6 @@ export default function App() {
                     <CardTitle className="text-base font-black tracking-tight text-foreground">
                       Zucchini
                     </CardTitle>
-                    <CardDescription className="text-xs text-muted-foreground">
-                      Keep the streak alive
-                    </CardDescription>
                   </CardHeader>
                 </Card>
               </div>

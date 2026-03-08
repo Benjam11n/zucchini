@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 
 import type { HabitCategory, HabitFrequency } from "../shared/domain/habit";
 import type { AppSettings } from "../shared/domain/settings";
+import { showDesktopNotification } from "./notifications";
 import type { HabitsService } from "./service";
 
 interface RegisterIpcHandlersOptions {
@@ -52,5 +53,10 @@ export function registerIpcHandlers({
   );
   ipcMain.handle("habits:reorderHabits", (_event, habitIds: number[]) =>
     service.reorderHabits(habitIds)
+  );
+  ipcMain.handle(
+    "habits:showNotification",
+    (_event, title: string, body: string, iconFilename?: string) =>
+      showDesktopNotification(title, body, iconFilename)
   );
 }

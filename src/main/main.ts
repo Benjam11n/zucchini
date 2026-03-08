@@ -1,9 +1,10 @@
 import path from "node:path";
 
 import { Effect } from "effect";
-import { app, BrowserWindow, nativeTheme } from "electron";
+import { app, BrowserWindow, nativeImage, nativeTheme } from "electron";
 
 import type { ThemeMode } from "../shared/domain/settings";
+import { resolveRuntimeIconPath } from "./assets";
 import { systemClock } from "./clock";
 import { registerIpcHandlers } from "./ipc";
 import { SqliteHabitRepository } from "./repository";
@@ -26,9 +27,12 @@ function createWindow(): void {
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
     process.platform === "darwin";
+  const icon =
+    process.platform === "darwin" ? undefined : resolveRuntimeIconPath();
   const win = new BrowserWindow({
     backgroundColor: getWindowBackgroundColor(),
     height: 760,
+    icon,
     minHeight: 640,
     minWidth: 900,
     show: !shouldShowInactive,
@@ -59,6 +63,13 @@ void app.whenReady().then(() => {
   Effect.runSync(
     Effect.sync(() => {
       service.initialize();
+
+      if (process.platform === "darwin") {
+        const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
+        if (!icon.isEmpty()) {
+          app.dock.setIcon(icon);
+        }
+      }
 
       registerIpcHandlers({
         onSettingsChanged: (settings) => {

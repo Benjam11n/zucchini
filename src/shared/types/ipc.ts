@@ -35,4 +35,9 @@ export interface HabitApi {
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
+  showNotification: (
+    title: string,
+    body: string,
+    iconFilename?: string
+  ) => Promise<void>;
 }

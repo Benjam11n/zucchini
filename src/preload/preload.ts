@@ -18,6 +18,8 @@ const habitsApi: HabitApi = {
     ipcRenderer.invoke("habits:renameHabit", habitId, name),
   reorderHabits: (habitIds: number[]) =>
     ipcRenderer.invoke("habits:reorderHabits", habitIds),
+  showNotification: (title: string, body: string, iconFilename?: string) =>
+    ipcRenderer.invoke("habits:showNotification", title, body, iconFilename),
   toggleHabit: (habitId: number) =>
     ipcRenderer.invoke("habits:toggleHabit", habitId),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>

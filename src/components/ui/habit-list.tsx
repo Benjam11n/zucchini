@@ -3,7 +3,13 @@ import { CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -38,7 +44,9 @@ export function HabitListCard({
               <CardTitle className="text-base font-medium">{title}</CardTitle>
             </div>
             {description && (
-              <CardDescription className="text-sm">{description}</CardDescription>
+              <CardDescription className="text-sm">
+                {description}
+              </CardDescription>
             )}
           </div>
           {progressLabel && (
@@ -71,7 +79,11 @@ interface HabitListItemProps {
   showCategory?: boolean;
 }
 
-export function HabitListItem({ habit, onToggle, showCategory }: HabitListItemProps) {
+export function HabitListItem({
+  habit,
+  onToggle,
+  showCategory,
+}: HabitListItemProps) {
   const ui = HABIT_CATEGORY_UI[habit.category];
 
   return (

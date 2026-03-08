@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
-import {
-  staggerItemVariants,
-} from "@/renderer/lib/motion";
+import { staggerItemVariants } from "@/renderer/lib/motion";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod, parseDateKey } from "@/shared/domain/habit-period";
+
 import { HabitListCard, HabitListItem } from "./ui/habit-list";
 
 interface LongerHabitChecklistProps {
@@ -72,8 +71,16 @@ export function LongerHabitChecklist({
       title="Longer Cycles"
       icon={CalendarRange}
       description="Weekly and monthly habits stay out of the rings and daily streak."
-      progressLabel={totalHabitsCount > 0 ? `${totalCompletedCount}/${totalHabitsCount}` : undefined}
-      progressValue={totalHabitsCount > 0 ? Math.round((totalCompletedCount / totalHabitsCount) * 100) : undefined}
+      progressLabel={
+        totalHabitsCount > 0
+          ? `${totalCompletedCount}/${totalHabitsCount}`
+          : undefined
+      }
+      progressValue={
+        totalHabitsCount > 0
+          ? Math.round((totalCompletedCount / totalHabitsCount) * 100)
+          : undefined
+      }
     >
       {sections.map((section) => {
         const completedCount = section.habits.filter(

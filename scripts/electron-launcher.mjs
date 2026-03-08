@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
-const APP_DISPLAY_NAME = isDevelopment ? "Zucchini (Dev)" : "Zucchini (Alpha)";
+const APP_DISPLAY_NAME = isDevelopment ? "Zucchini (Dev)" : "Zucchini";
 const APP_BUNDLE_ID = "com.zucchini.habittracker";
 const LAUNCHER_VERSION = 1;
 

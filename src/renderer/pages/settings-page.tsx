@@ -1,6 +1,13 @@
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { Bell, ListTodo, Monitor, MoonStar, Palette, SunMedium } from "lucide-react";
-import { useState } from "react";
+import {
+  Bell,
+  ListTodo,
+  Monitor,
+  MoonStar,
+  Palette,
+  SunMedium,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -241,6 +248,21 @@ function ReminderSettingsCard({
   onChange,
   settings,
 }: Pick<SettingsPageProps, "onChange" | "settings">) {
+  const [permission, setPermission] = useState<NotificationPermission>("default");
+
+  useEffect(() => {
+    if (typeof Notification !== "undefined") {
+      setPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestPermission = async () => {
+    if (typeof Notification !== "undefined") {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -251,17 +273,33 @@ function ReminderSettingsCard({
         </div>
       </CardHeader>
       <CardContent className="grid gap-5">
-        <div className="flex items-center justify-between gap-4">
-          <Label htmlFor="reminder-enabled" className="font-normal">
-            Enable reminder
-          </Label>
-          <Switch
-            checked={settings.reminderEnabled}
-            id="reminder-enabled"
-            onCheckedChange={(checked) =>
-              onChange({ ...settings, reminderEnabled: checked })
-            }
-          />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="reminder-enabled" className="font-normal">
+              Enable reminder
+            </Label>
+            <Switch
+              checked={settings.reminderEnabled}
+              id="reminder-enabled"
+              onCheckedChange={(checked) =>
+                onChange({ ...settings, reminderEnabled: checked })
+              }
+            />
+          </div>
+          
+          {settings.reminderEnabled && permission !== "granted" && (
+            <div className="flex items-center justify-between rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <span>Notifications are currently disabled.</span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 border-destructive/50 text-xs hover:bg-destructive/20"
+                onClick={() => { void requestPermission(); }}
+              >
+                Request
+              </Button>
+            </div>
+          )}
         </div>
 
         <Separator />

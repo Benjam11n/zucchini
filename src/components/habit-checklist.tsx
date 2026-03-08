@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { Dumbbell, Utensils, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import {
-  staggerItemVariants,
-} from "@/renderer/lib/motion";
+
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
+import { staggerItemVariants } from "@/renderer/lib/motion";
 import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+
 import { HabitListCard, HabitListItem } from "./ui/habit-list";
 
 const CATEGORY_ICONS: Record<HabitCategory, React.ElementType> = {
@@ -42,8 +42,14 @@ export function HabitChecklist({
     <HabitListCard
       title={title}
       icon={Icon as LucideIcon}
-      progressLabel={totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined}
-      progressValue={totalHabits > 0 ? Math.round((completedCount / totalHabits) * 100) : undefined}
+      progressLabel={
+        totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined
+      }
+      progressValue={
+        totalHabits > 0
+          ? Math.round((completedCount / totalHabits) * 100)
+          : undefined
+      }
     >
       {totalHabits === 0 ? (
         <motion.div
