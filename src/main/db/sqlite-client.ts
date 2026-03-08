@@ -9,7 +9,7 @@ import { app } from "electron";
 
 import { schema } from "../schema";
 
-class DatabaseError extends Error {
+export class DatabaseError extends Error {
   override cause: unknown;
 
   constructor(message: string, cause: unknown) {

@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 
+import { serializeIpcError } from "@/main/ipc-errors";
 import {
   validateAppSettings,
   validateHabitCategory,
@@ -13,7 +14,10 @@ import {
 } from "@/main/ipc-validation";
 import { showDesktopNotification } from "@/main/notifications";
 import type { HabitsService } from "@/main/service";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import {
+  HABITS_IPC_CHANNELS,
+  type HabitsIpcResponse,
+} from "@/shared/contracts/habits-ipc";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
@@ -21,20 +25,42 @@ interface RegisterIpcHandlersOptions {
   onSettingsChanged: (settings: AppSettings) => void;
 }
 
+function registerHandler<TArgs extends unknown[], TResult>(
+  channel: string,
+  handler: (...args: TArgs) => TResult | Promise<TResult>
+): void {
+  ipcMain.handle(
+    channel,
+    async (_event, ...args: TArgs): Promise<HabitsIpcResponse<TResult>> => {
+      try {
+        return {
+          data: await handler(...args),
+          ok: true,
+        };
+      } catch (error) {
+        return {
+          error: serializeIpcError(error),
+          ok: false,
+        };
+      }
+    }
+  );
+}
+
 export function registerIpcHandlers({
   service,
   onSettingsChanged,
 }: RegisterIpcHandlersOptions): void {
-  ipcMain.handle(HABITS_IPC_CHANNELS.getTodayState, () =>
+  registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
   );
-  ipcMain.handle(HABITS_IPC_CHANNELS.toggleHabit, (_event, habitId: unknown) =>
+  registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
   );
-  ipcMain.handle(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
-  ipcMain.handle(
+  registerHandler(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
+  registerHandler(
     HABITS_IPC_CHANNELS.updateSettings,
-    (_event, settings: unknown) => {
+    (settings: unknown) => {
       const nextSettings = service.updateSettings(
         validateAppSettings(settings)
       );
@@ -42,47 +68,47 @@ export function registerIpcHandlers({
       return nextSettings;
     }
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
-    (_event, name: unknown, category: unknown, frequency: unknown) =>
+    (name: unknown, category: unknown, frequency: unknown) =>
       service.createHabit(
         validateHabitName(name),
         validateHabitCategory(category),
         validateHabitFrequency(frequency)
       )
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.renameHabit,
-    (_event, habitId: unknown, name: unknown) =>
+    (habitId: unknown, name: unknown) =>
       service.renameHabit(validateHabitId(habitId), validateHabitName(name))
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.updateHabitCategory,
-    (_event, habitId: unknown, category: unknown) =>
+    (habitId: unknown, category: unknown) =>
       service.updateHabitCategory(
         validateHabitId(habitId),
         validateHabitCategory(category)
       )
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.updateHabitFrequency,
-    (_event, habitId: unknown, frequency: unknown) =>
+    (habitId: unknown, frequency: unknown) =>
       service.updateHabitFrequency(
         validateHabitId(habitId),
         validateHabitFrequency(frequency)
       )
   );
-  ipcMain.handle(HABITS_IPC_CHANNELS.archiveHabit, (_event, habitId: unknown) =>
+  registerHandler(HABITS_IPC_CHANNELS.archiveHabit, (habitId: unknown) =>
     service.archiveHabit(validateHabitId(habitId))
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.reorderHabits,
-    (_event, habitIds: unknown) =>
+    (habitIds: unknown) =>
       service.reorderHabits(validateReorderHabitIds(habitIds))
   );
-  ipcMain.handle(
+  registerHandler(
     HABITS_IPC_CHANNELS.showNotification,
-    (_event, title: unknown, body: unknown, iconFilename?: unknown) =>
+    (title: unknown, body: unknown, iconFilename?: unknown) =>
       showDesktopNotification(
         validateNotificationTitle(title),
         validateNotificationBody(body),

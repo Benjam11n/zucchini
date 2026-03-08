@@ -21,6 +21,33 @@ export const HABITS_IPC_CHANNELS = {
   updateSettings: "habits:updateSettings",
 } as const;
 
+export type HabitsIpcErrorCode =
+  | "VALIDATION_ERROR"
+  | "DATABASE_ERROR"
+  | "INTERNAL_ERROR";
+
+export interface SerializedHabitsIpcError {
+  code: HabitsIpcErrorCode;
+  details?: string[];
+  message: string;
+}
+
+export type HabitsIpcResponse<T> =
+  | { data: T; ok: true }
+  | { error: SerializedHabitsIpcError; ok: false };
+
+export class HabitsIpcError extends Error {
+  readonly code: HabitsIpcErrorCode;
+  readonly details?: string[];
+
+  constructor({ code, details, message }: SerializedHabitsIpcError) {
+    super(message);
+    this.code = code;
+    this.details = details;
+    this.name = "HabitsIpcError";
+  }
+}
+
 export interface TodayState {
   date: string;
   habits: HabitWithStatus[];
