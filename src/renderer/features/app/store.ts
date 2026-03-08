@@ -41,7 +41,7 @@ interface UseAppStoreState extends AppState {
     habitId: number,
     frequency: HabitFrequency
   ) => Promise<void>;
-  handleUpdateSettings: (settings: AppSettings) => Promise<void>;
+  handleUpdateSettings: (settings: AppSettings) => Promise<AppSettings>;
 
   refreshToday: (mutator: Promise<TodayState>) => Promise<void>;
   reloadAll: (nextTodayState?: TodayState) => Promise<void>;
@@ -127,6 +127,8 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
           }
         : state.todayState,
     }));
+
+    return nextSettings;
   },
 
   history: [],

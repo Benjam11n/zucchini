@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -6,12 +7,50 @@ import type { AppSettings } from "@/shared/domain/settings";
 import { useAppStore } from "./store";
 
 export function useAppController() {
-  const store = useAppStore();
+  const {
+    handleArchiveHabit,
+    handleCreateHabit,
+    handleRenameHabit,
+    handleReorderHabits,
+    handleSettingsDraftChange,
+    handleTabChange,
+    handleToggleHabit,
+    handleUpdateHabitCategory,
+    handleUpdateHabitFrequency,
+    handleUpdateSettings,
+    history,
+    reloadAll,
+    setSystemTheme,
+    settingsDraft,
+    systemTheme,
+    tab,
+    todayState,
+  } = useAppStore(
+    useShallow((state) => ({
+      handleArchiveHabit: state.handleArchiveHabit,
+      handleCreateHabit: state.handleCreateHabit,
+      handleRenameHabit: state.handleRenameHabit,
+      handleReorderHabits: state.handleReorderHabits,
+      handleSettingsDraftChange: state.handleSettingsDraftChange,
+      handleTabChange: state.handleTabChange,
+      handleToggleHabit: state.handleToggleHabit,
+      handleUpdateHabitCategory: state.handleUpdateHabitCategory,
+      handleUpdateHabitFrequency: state.handleUpdateHabitFrequency,
+      handleUpdateSettings: state.handleUpdateSettings,
+      history: state.history,
+      reloadAll: state.reloadAll,
+      setSystemTheme: state.setSystemTheme,
+      settingsDraft: state.settingsDraft,
+      systemTheme: state.systemTheme,
+      tab: state.tab,
+      todayState: state.todayState,
+    }))
+  );
 
   const lastSavedDraft = useRef<AppSettings | null>(null);
 
   useEffect(() => {
-    const draft = store.settingsDraft;
+    const draft = settingsDraft;
     if (!draft) {
       return;
     }
@@ -31,24 +70,24 @@ export function useAppController() {
       }
 
       try {
-        await store.handleUpdateSettings(validationResult.data);
-        lastSavedDraft.current = draft;
+        const savedSettings = await handleUpdateSettings(validationResult.data);
+        lastSavedDraft.current = savedSettings;
       } catch (error: unknown) {
         console.error("Failed to save app settings", error);
       }
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [store]);
+  }, [handleUpdateSettings, settingsDraft]);
 
   useEffect(() => {
-    void store.reloadAll();
-  }, [store]);
+    void reloadAll();
+  }, [reloadAll]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const syncSystemTheme = () => {
-      store.setSystemTheme(mediaQuery.matches ? "dark" : "light");
+      setSystemTheme(mediaQuery.matches ? "dark" : "light");
     };
 
     syncSystemTheme();
@@ -57,35 +96,34 @@ export function useAppController() {
     return () => {
       mediaQuery.removeEventListener("change", syncSystemTheme);
     };
-  }, [store]);
+  }, [setSystemTheme]);
 
   useEffect(() => {
     const preferredTheme =
-      (store.settingsDraft ?? store.todayState?.settings)?.themeMode ??
-      "system";
+      (settingsDraft ?? todayState?.settings)?.themeMode ?? "system";
     const resolvedTheme =
-      preferredTheme === "system" ? store.systemTheme : preferredTheme;
+      preferredTheme === "system" ? systemTheme : preferredTheme;
 
     document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  }, [store.settingsDraft, store.todayState, store.systemTheme]);
+  }, [settingsDraft, systemTheme, todayState]);
 
   return {
     actions: {
-      handleArchiveHabit: store.handleArchiveHabit,
-      handleCreateHabit: store.handleCreateHabit,
-      handleRenameHabit: store.handleRenameHabit,
-      handleReorderHabits: store.handleReorderHabits,
-      handleSettingsDraftChange: store.handleSettingsDraftChange,
-      handleTabChange: store.handleTabChange,
-      handleToggleHabit: store.handleToggleHabit,
-      handleUpdateHabitCategory: store.handleUpdateHabitCategory,
-      handleUpdateHabitFrequency: store.handleUpdateHabitFrequency,
+      handleArchiveHabit,
+      handleCreateHabit,
+      handleRenameHabit,
+      handleReorderHabits,
+      handleSettingsDraftChange,
+      handleTabChange,
+      handleToggleHabit,
+      handleUpdateHabitCategory,
+      handleUpdateHabitFrequency,
     },
     state: {
-      history: store.history,
-      settingsDraft: store.settingsDraft,
-      todayState: store.todayState,
+      history,
+      settingsDraft,
+      todayState,
     },
-    tab: store.tab,
+    tab,
   };
 }
