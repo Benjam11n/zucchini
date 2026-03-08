@@ -107,6 +107,17 @@ function withFakeTime(nowIso: string, run: () => void): void {
 }
 
 describe("reminder scheduler", () => {
+  it("does not load persisted reminder state until the scheduler is used", () => {
+    const loadState = vi.fn(() => ({ ...DEFAULT_RUNTIME_STATE }));
+
+    createReminderScheduler({
+      getTodayState: () => buildTodayState([buildHabit(false)]),
+      loadState,
+    });
+
+    expect(loadState).not.toHaveBeenCalled();
+  });
+
   it("fires the user reminder at the configured local time instead of system time", () => {
     withFakeTime("2026-01-15T13:30:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };

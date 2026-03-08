@@ -269,9 +269,20 @@ export function createReminderScheduler({
   let reminderTimeout: TimerHandle | null = null;
   let midnightWarningTimeout: TimerHandle | null = null;
   let snoozeTimeout: TimerHandle | null = null;
-  let state = loadState();
+  let state = { ...DEFAULT_REMINDER_RUNTIME_STATE };
+  let stateLoaded = false;
+
+  function ensureStateLoaded(): void {
+    if (stateLoaded) {
+      return;
+    }
+
+    state = loadState();
+    stateLoaded = true;
+  }
 
   function persistState(nextState: ReminderRuntimeState): void {
+    ensureStateLoaded();
     state = nextState;
     saveState(state);
   }
@@ -299,10 +310,12 @@ export function createReminderScheduler({
   }
 
   function hasActiveSnooze(now = getCurrentNow()): boolean {
+    ensureStateLoaded();
     return state.snoozedUntil !== null && new Date(state.snoozedUntil) > now;
   }
 
   function clearSnooze(): void {
+    ensureStateLoaded();
     if (state.snoozedUntil === null) {
       return;
     }
@@ -521,6 +534,7 @@ export function createReminderScheduler({
   }
 
   function schedule(settings: AppSettings): void {
+    ensureStateLoaded();
     cancel();
     runCatchUpChecks(settings);
 
@@ -562,6 +576,7 @@ export function createReminderScheduler({
   }
 
   function snooze(settings: AppSettings): boolean {
+    ensureStateLoaded();
     if (!settings.reminderEnabled) {
       return false;
     }
