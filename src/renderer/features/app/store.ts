@@ -15,6 +15,7 @@ import type {
   SettingsSavePhase,
   Tab,
 } from "./types";
+import { loadWeeklyReviewState } from "./weekly-review-state";
 
 interface UseAppStoreState extends AppState {
   systemTheme: ThemeMode;
@@ -208,19 +209,16 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     });
 
     try {
-      const overview = await window.habits.getWeeklyReviewOverview();
-      set((state: UseAppStoreState) => ({
-        selectedWeeklyReview:
-          state.selectedWeeklyReview &&
-          overview.availableWeeks.some(
-            (week) => week.weekStart === state.selectedWeeklyReview?.weekStart
-          )
-            ? state.selectedWeeklyReview
-            : overview.latestReview,
+      const weeklyReviewState = await loadWeeklyReviewState(
+        window.habits,
+        get().selectedWeeklyReview
+      );
+      set({
+        selectedWeeklyReview: weeklyReviewState.selectedWeeklyReview,
         weeklyReviewError: null,
-        weeklyReviewOverview: overview,
+        weeklyReviewOverview: weeklyReviewState.overview,
         weeklyReviewPhase: "ready",
-      }));
+      });
     } catch (error) {
       set({
         selectedWeeklyReview: null,
@@ -239,6 +237,9 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   refreshToday: async (mutator: Promise<TodayState>) => {
     const nextTodayState = await mutator;
     await get().reloadAll(nextTodayState);
+    if (get().weeklyReviewPhase !== "idle") {
+      await get().loadWeeklyReviewOverview();
+    }
   },
 
   reloadAll: async (nextTodayState?: TodayState) => {

@@ -98,6 +98,7 @@ function buildHabitMetrics(
   for (const status of habitStatuses) {
     const existing = metricsByHabit.get(status.habitId);
     if (existing) {
+      existing.category = status.category;
       existing.opportunities += 1;
       existing.completedOpportunities += status.completed ? 1 : 0;
       existing.missedOpportunities += status.completed ? 0 : 1;
@@ -105,6 +106,9 @@ function buildHabitMetrics(
         existing.completedOpportunities,
         existing.opportunities
       );
+      existing.frequency = status.frequency;
+      existing.name = status.name;
+      existing.sortOrder = status.sortOrder;
       continue;
     }
 

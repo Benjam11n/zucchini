@@ -220,6 +220,30 @@ describe("buildWeeklyReview()", () => {
       opportunities: 1,
     });
   });
+
+  it("uses the latest habit snapshot when a habit is renamed mid-week", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [
+        createSummary("2026-03-02", {
+          allCompleted: true,
+        }),
+        createSummary("2026-03-03", {
+          allCompleted: true,
+        }),
+      ],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", true, {
+          name: "Make buried chapters videp hasbit",
+        }),
+        createStatus(1, "2026-03-03", true, {
+          name: "Make buried chapters video",
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.habitMetrics[0]?.name).toBe("Make buried chapters video");
+  });
 });
 
 describe("buildWeeklyReviewOverview()", () => {

@@ -87,10 +87,7 @@ export function WeeklyReviewHabitChart({
                 radius={[0, 12, 12, 0]}
               >
                 {chartData.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={entry.color}
-                  />
+                  <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
