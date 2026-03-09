@@ -49,7 +49,6 @@ export interface HabitRepository {
   getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
   saveDailySummary(summary: DailySummary): void;
-  countHabits(): number;
   getMaxSortOrder(): number;
   insertHabit(
     name: string,
@@ -96,12 +95,6 @@ export class SqliteHabitRepository implements HabitRepository {
   seedDefaults(_nowIso: string, timezone: string): void {
     this.streakRepository.ensureInitialized();
     this.settingsRepository.seedDefaults(timezone);
-    if (
-      !this.settingsRepository.getOnboardingStatus().isComplete &&
-      this.habitsRepository.countHabits() > 0
-    ) {
-      this.settingsRepository.markOnboardingComplete(_nowIso);
-    }
   }
 
   getOnboardingStatus(): OnboardingStatus {
@@ -192,10 +185,6 @@ export class SqliteHabitRepository implements HabitRepository {
 
   saveDailySummary(summary: DailySummary): void {
     this.historyRepository.saveDailySummary(summary);
-  }
-
-  countHabits(): number {
-    return this.habitsRepository.countHabits();
   }
 
   getMaxSortOrder(): number {

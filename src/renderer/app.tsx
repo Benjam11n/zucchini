@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,12 +12,56 @@ import { Spinner } from "@/components/ui/spinner";
 import { AppShell } from "@/renderer/features/app/app-shell";
 import { getBootErrorDisplay } from "@/renderer/features/app/boot-errors";
 import { useAppController } from "@/renderer/features/app/use-app-controller";
-import { WeeklyReviewSpotlightDialog } from "@/renderer/features/history/weekly-review-spotlight-dialog";
-import { OnboardingTakeover } from "@/renderer/features/onboarding/onboarding-takeover";
 import { MASCOTS } from "@/renderer/lib/mascots";
-import { HistoryPage } from "@/renderer/pages/history-page";
-import { SettingsPage } from "@/renderer/pages/settings-page";
 import { TodayPage } from "@/renderer/pages/today-page";
+
+const HistoryPage = lazy(async () => {
+  const module = await import("@/renderer/pages/history-page");
+
+  return { default: module.HistoryPage };
+});
+const SettingsPage = lazy(async () => {
+  const module = await import("@/renderer/pages/settings-page");
+
+  return { default: module.SettingsPage };
+});
+const OnboardingTakeover = lazy(async () => {
+  const module =
+    await import("@/renderer/features/onboarding/onboarding-takeover");
+
+  return { default: module.OnboardingTakeover };
+});
+const WeeklyReviewSpotlightDialog = lazy(async () => {
+  const module =
+    await import("@/renderer/features/history/weekly-review-spotlight-dialog");
+
+  return { default: module.WeeklyReviewSpotlightDialog };
+});
+
+function DeferredPageFallback({
+  description,
+  title,
+}: {
+  description: string;
+  title: string;
+}) {
+  return (
+    <div
+      aria-busy="true"
+      className="flex min-h-[320px] items-center justify-center px-6 py-10 text-foreground"
+    >
+      <Card className="w-full max-w-md">
+        <CardContent className="flex flex-col items-center justify-center gap-4 px-6 pt-8 pb-0">
+          <Spinner className="size-8 text-primary/60" />
+        </CardContent>
+        <CardHeader className="items-center text-center">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+}
 
 export default function App() {
   const { actions, state, tab } = useAppController();
@@ -81,13 +127,22 @@ export default function App() {
 
   if (state.isOnboardingOpen) {
     return (
-      <OnboardingTakeover
-        baseSettings={state.todayState.settings}
-        error={state.onboardingError}
-        phase={state.onboardingPhase}
-        onComplete={actions.handleCompleteOnboarding}
-        onSkip={actions.handleSkipOnboarding}
-      />
+      <Suspense
+        fallback={
+          <DeferredPageFallback
+            description="Preparing your onboarding flow."
+            title="Loading setup"
+          />
+        }
+      >
+        <OnboardingTakeover
+          baseSettings={state.todayState.settings}
+          error={state.onboardingError}
+          phase={state.onboardingPhase}
+          onComplete={actions.handleCompleteOnboarding}
+          onSkip={actions.handleSkipOnboarding}
+        />
+      </Suspense>
     );
   }
 
@@ -101,37 +156,55 @@ export default function App() {
 
   if (tab === "history") {
     renderedPage = (
-      <HistoryPage
-        history={state.history}
-        todayDate={state.todayState.date}
-        onSelectWeeklyReview={(weekStart) => {
-          void actions.handleWeeklyReviewSelect(weekStart);
-        }}
-        selectedWeeklyReview={state.selectedWeeklyReview}
-        weeklyReviewError={state.weeklyReviewError}
-        weeklyReviewOverview={state.weeklyReviewOverview}
-        weeklyReviewPhase={state.weeklyReviewPhase}
-      />
+      <Suspense
+        fallback={
+          <DeferredPageFallback
+            description="Loading history and weekly review charts."
+            title="Loading history"
+          />
+        }
+      >
+        <HistoryPage
+          history={state.history}
+          todayDate={state.todayState.date}
+          onSelectWeeklyReview={(weekStart) => {
+            void actions.handleWeeklyReviewSelect(weekStart);
+          }}
+          selectedWeeklyReview={state.selectedWeeklyReview}
+          weeklyReviewError={state.weeklyReviewError}
+          weeklyReviewOverview={state.weeklyReviewOverview}
+          weeklyReviewPhase={state.weeklyReviewPhase}
+        />
+      </Suspense>
     );
   }
 
   if (tab === "settings") {
     renderedPage = (
-      <SettingsPage
-        fieldErrors={state.settingsFieldErrors}
-        habits={state.todayState.habits}
-        settings={state.settingsDraft ?? state.todayState.settings}
-        saveErrorMessage={state.settingsSaveErrorMessage}
-        savePhase={state.settingsSavePhase}
-        onArchiveHabit={actions.handleArchiveHabit}
-        onApplyStarterPack={actions.handleApplyStarterPack}
-        onChange={actions.handleSettingsDraftChange}
-        onCreateHabit={actions.handleCreateHabit}
-        onRenameHabit={actions.handleRenameHabit}
-        onReorderHabits={actions.handleReorderHabits}
-        onUpdateHabitCategory={actions.handleUpdateHabitCategory}
-        onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
-      />
+      <Suspense
+        fallback={
+          <DeferredPageFallback
+            description="Loading settings and habit management tools."
+            title="Loading settings"
+          />
+        }
+      >
+        <SettingsPage
+          fieldErrors={state.settingsFieldErrors}
+          habits={state.todayState.habits}
+          settings={state.settingsDraft ?? state.todayState.settings}
+          saveErrorMessage={state.settingsSaveErrorMessage}
+          savePhase={state.settingsSavePhase}
+          onArchiveHabit={actions.handleArchiveHabit}
+          onApplyStarterPack={actions.handleApplyStarterPack}
+          onChange={actions.handleSettingsDraftChange}
+          onCreateHabit={actions.handleCreateHabit}
+          onRenameHabit={actions.handleRenameHabit}
+          onReorderHabits={actions.handleReorderHabits}
+          onUpdateHabitCategory={actions.handleUpdateHabitCategory}
+          onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
+        />
+      </Suspense>
     );
   }
 
@@ -142,15 +215,17 @@ export default function App() {
       </AppShell>
       {state.isWeeklyReviewSpotlightOpen &&
       state.weeklyReviewOverview?.latestReview ? (
-        <WeeklyReviewSpotlightDialog
-          onDismiss={actions.handleDismissWeeklyReviewSpotlight}
-          onOpenReview={() => {
-            void actions.handleWeeklyReviewOpen();
-          }}
-          open={state.isWeeklyReviewSpotlightOpen}
-          review={state.weeklyReviewOverview.latestReview}
-          trend={state.weeklyReviewOverview.trend}
-        />
+        <Suspense fallback={null}>
+          <WeeklyReviewSpotlightDialog
+            onDismiss={actions.handleDismissWeeklyReviewSpotlight}
+            onOpenReview={() => {
+              void actions.handleWeeklyReviewOpen();
+            }}
+            open={state.isWeeklyReviewSpotlightOpen}
+            review={state.weeklyReviewOverview.latestReview}
+            trend={state.weeklyReviewOverview.trend}
+          />
+        </Suspense>
       ) : null}
     </>
   );

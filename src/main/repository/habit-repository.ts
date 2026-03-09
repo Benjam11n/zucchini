@@ -33,20 +33,6 @@ export class SqliteHabitsRepository {
     });
   }
 
-  countHabits(): number {
-    return this.client.run("countHabits", () => {
-      const row = this.client
-        .getDrizzle()
-        .select({
-          count: sql<number>`count(*)`,
-        })
-        .from(habits)
-        .get();
-
-      return row?.count ?? 0;
-    });
-  }
-
   getHabits(): Habit[] {
     return this.client.run("getHabits", () =>
       this.client

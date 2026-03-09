@@ -298,10 +298,6 @@ class FakeRepository implements HabitRepository {
     this.dailySummaries.set(summary.date, summary);
   }
 
-  countHabits(): number {
-    return this.habits.length;
-  }
-
   getMaxSortOrder(): number {
     return Math.max(...this.getHabits().map((habit) => habit.sortOrder), -1);
   }

@@ -319,9 +319,11 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     }
   },
   reloadAll: async (nextTodayState?: TodayState) => {
-    const todayState = nextTodayState ?? (await window.habits.getTodayState());
-    const history = await window.habits.getHistory();
-    const onboardingStatus = await window.habits.getOnboardingStatus();
+    const [todayState, history, onboardingStatus] = await Promise.all([
+      Promise.resolve(nextTodayState ?? window.habits.getTodayState()),
+      window.habits.getHistory(),
+      window.habits.getOnboardingStatus(),
+    ]);
     set((state: UseAppStoreState) => ({
       history,
       isOnboardingOpen:
