@@ -40,7 +40,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
               <TabsList className="hidden flex-col gap-2 rounded-none bg-transparent p-0 lg:flex">
                 <TabsTrigger
                   aria-label="Today"
-                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   value="today"
                 >
                   <span className="sr-only">Today</span>
@@ -48,7 +48,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                 </TabsTrigger>
                 <TabsTrigger
                   aria-label="History"
-                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   value="history"
                 >
                   <span className="sr-only">History</span>
@@ -56,7 +56,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                 </TabsTrigger>
                 <TabsTrigger
                   aria-label="Settings"
-                  className="size-14 rounded-xl border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   value="settings"
                 >
                   <span className="sr-only">Settings</span>
@@ -89,7 +89,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
           </aside>
 
           <section className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <div className="mx-auto w-full max-w-6xl overflow-hidden">
+            <div className="mx-auto w-full max-w-6xl">
               <TabsContent className="mt-0" forceMount value={tab}>
                 <AnimatePresence initial={false} mode="wait">
                   <motion.div
