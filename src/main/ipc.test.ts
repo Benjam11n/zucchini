@@ -39,9 +39,15 @@ const defaultSettings: AppSettings = {
 
 function createService() {
   return {
+    applyStarterPack: vi.fn(),
     archiveHabit: vi.fn(),
+    completeOnboarding: vi.fn(),
     createHabit: vi.fn(),
     getHistory: vi.fn(() => []),
+    getOnboardingStatus: vi.fn(() => ({
+      completedAt: null,
+      isComplete: false,
+    })),
     getReminderRuntimeState: vi.fn(),
     getTodayState: vi.fn(() => {
       throw new Error("boom");
@@ -56,6 +62,7 @@ function createService() {
     renameHabit: vi.fn(),
     reorderHabits: vi.fn(),
     saveReminderRuntimeState: vi.fn(),
+    skipOnboarding: vi.fn(),
     toggleHabit: vi.fn(),
     updateHabitCategory: vi.fn(),
     updateHabitFrequency: vi.fn(),

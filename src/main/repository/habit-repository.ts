@@ -5,6 +5,7 @@ import type {
   HabitCategory,
   HabitFrequency,
 } from "@/shared/domain/habit";
+import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
 
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { habits } from "../schema";
@@ -26,6 +27,20 @@ export class SqliteHabitsRepository {
         })
         .from(habits)
         .where(eq(habits.isArchived, false))
+        .get();
+
+      return row?.count ?? 0;
+    });
+  }
+
+  countHabits(): number {
+    return this.client.run("countHabits", () => {
+      const row = this.client
+        .getDrizzle()
+        .select({
+          count: sql<number>`count(*)`,
+        })
+        .from(habits)
         .get();
 
       return row?.count ?? 0;
@@ -98,6 +113,33 @@ export class SqliteHabitsRepository {
 
       return result.id;
     });
+  }
+
+  insertHabits(
+    habitDrafts: readonly StarterPackHabitDraft[],
+    createdAt: string,
+    startingSortOrder: number
+  ): number[] {
+    return this.client.run("insertHabits", () =>
+      habitDrafts.map((habit, index) => {
+        const result = this.client
+          .getDrizzle()
+          .insert(habits)
+          .values({
+            category: habit.category,
+            createdAt,
+            frequency: habit.frequency,
+            name: habit.name,
+            sortOrder: startingSortOrder + index,
+          })
+          .returning({
+            id: habits.id,
+          })
+          .get();
+
+        return result.id;
+      })
+    );
   }
 
   renameHabit(habitId: number, name: string): void {

@@ -6,6 +6,11 @@ import type {
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import type {
+  CompleteOnboardingInput,
+  OnboardingStatus,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
@@ -96,6 +101,10 @@ class FakeRepository implements HabitRepository {
     lastReminderSentAt: null,
     snoozedUntil: null,
   };
+  onboardingStatus: OnboardingStatus = {
+    completedAt: null,
+    isComplete: false,
+  };
   transactionLabels: string[] = [];
 
   initializeSchema(): void {}
@@ -108,6 +117,19 @@ class FakeRepository implements HabitRepository {
     return execute();
   }
   seedDefaults(): void {}
+
+  getOnboardingStatus(): OnboardingStatus {
+    return { ...this.onboardingStatus };
+  }
+
+  markOnboardingComplete(completedAt: string): OnboardingStatus {
+    this.onboardingStatus = {
+      completedAt,
+      isComplete: true,
+    };
+
+    return this.getOnboardingStatus();
+  }
 
   getHabits(): Habit[] {
     return this.habits
@@ -276,6 +298,10 @@ class FakeRepository implements HabitRepository {
     this.dailySummaries.set(summary.date, summary);
   }
 
+  countHabits(): number {
+    return this.habits.length;
+  }
+
   getMaxSortOrder(): number {
     return Math.max(...this.getHabits().map((habit) => habit.sortOrder), -1);
   }
@@ -298,6 +324,26 @@ class FakeRepository implements HabitRepository {
       sortOrder,
     });
     return id;
+  }
+
+  appendHabits(
+    habitDrafts: readonly StarterPackHabitDraft[],
+    createdAt: string,
+    date: string
+  ): number[] {
+    const startingSortOrder = this.getMaxSortOrder() + 1;
+
+    return habitDrafts.map((habit, index) => {
+      const habitId = this.insertHabit(
+        habit.name,
+        habit.category,
+        habit.frequency,
+        startingSortOrder + index,
+        createdAt
+      );
+      this.ensureStatusRow(date, habitId);
+      return habitId;
+    });
   }
 
   renameHabit(habitId: number, name: string): void {
@@ -382,6 +428,32 @@ class FakeRepository implements HabitRepository {
   private getPeriodKey(frequency: HabitFrequency, periodStart: string): string {
     return `${frequency}:${periodStart}`;
   }
+}
+
+function createCompleteOnboardingInput(): CompleteOnboardingInput {
+  return {
+    habits: [
+      {
+        category: "productivity",
+        frequency: "daily",
+        name: "Plan top 3 tasks",
+      },
+      {
+        category: "fitness",
+        frequency: "weekly",
+        name: "Workout session",
+      },
+    ],
+    settings: {
+      launchAtLogin: false,
+      minimizeToTray: false,
+      reminderEnabled: true,
+      reminderSnoozeMinutes: 15,
+      reminderTime: "21:15",
+      themeMode: "system",
+      timezone: "America/New_York",
+    },
+  };
 }
 
 describe("habitService rollover", () => {
@@ -482,6 +554,119 @@ describe("habit categories", () => {
     const todayState = service.reorderHabits([1, 999]);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
+  });
+});
+
+describe("onboarding setup", () => {
+  it("completes onboarding by saving settings, creating habits, and marking onboarding complete", () => {
+    const repository = new FakeRepository();
+    repository.habits = [];
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.completeOnboarding(
+      createCompleteOnboardingInput()
+    );
+
+    expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
+      "Plan top 3 tasks",
+      "Workout session",
+    ]);
+    expect(todayState.settings.reminderTime).toBe("21:15");
+    expect(repository.onboardingStatus.isComplete).toBeTruthy();
+  });
+
+  it("supports a start-blank completion path", () => {
+    const repository = new FakeRepository();
+    repository.habits = [];
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.completeOnboarding({
+      habits: [],
+      settings: {
+        ...repository.settings,
+        reminderEnabled: false,
+      },
+    });
+
+    expect(todayState.habits).toStrictEqual([]);
+    expect(todayState.settings.reminderEnabled).toBeFalsy();
+    expect(repository.onboardingStatus.completedAt).toBe(
+      "2026-03-08T09:00:00.000Z"
+    );
+  });
+
+  it("marks onboarding complete when skipped", () => {
+    const repository = new FakeRepository();
+    repository.habits = [];
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.skipOnboarding();
+
+    expect(repository.onboardingStatus).toStrictEqual({
+      completedAt: "2026-03-08T09:00:00.000Z",
+      isComplete: true,
+    });
+    expect(repository.habits).toHaveLength(0);
+  });
+
+  it("applies a starter pack without marking onboarding complete", () => {
+    const repository = new FakeRepository();
+    repository.habits = [
+      {
+        category: "productivity",
+        createdAt: "2026-03-01T00:00:00.000Z",
+        frequency: "daily",
+        id: 1,
+        isArchived: false,
+        name: "Existing habit",
+        sortOrder: 0,
+      },
+      {
+        category: "fitness",
+        createdAt: "2026-03-01T00:00:00.000Z",
+        frequency: "daily",
+        id: 2,
+        isArchived: true,
+        name: "Archived habit",
+        sortOrder: 1,
+      },
+    ];
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.applyStarterPack([
+      {
+        category: "nutrition",
+        frequency: "daily",
+        name: "Protein-forward meal",
+      },
+      {
+        category: "productivity",
+        frequency: "weekly",
+        name: "Review upcoming week",
+      },
+    ]);
+
+    expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
+      "Existing habit",
+      "Protein-forward meal",
+      "Review upcoming week",
+    ]);
+    expect(todayState.habits.map((habit) => habit.sortOrder)).toStrictEqual([
+      0, 1, 2,
+    ]);
+    expect(repository.onboardingStatus.isComplete).toBeFalsy();
   });
 });
 

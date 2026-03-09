@@ -7,6 +7,11 @@ import type {
   HabitFrequency,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type {
+  CompleteOnboardingInput,
+  OnboardingStatus,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import type {
@@ -25,6 +30,9 @@ interface UseAppStoreState extends AppState {
   setBootError: (error: HabitsIpcError | null) => void;
   setBootPhase: (phase: AppState["bootPhase"]) => void;
   setHistory: (history: AppState["history"]) => void;
+  setOnboardingError: (error: HabitsIpcError | null) => void;
+  setOnboardingPhase: (phase: AppState["onboardingPhase"]) => void;
+  setOnboardingStatus: (status: OnboardingStatus | null) => void;
   setSettingsDraft: (settingsDraft: AppSettings | null) => void;
   setSettingsSaveErrorMessage: (message: string | null) => void;
   setSettingsSavePhase: (phase: SettingsSavePhase) => void;
@@ -35,8 +43,11 @@ interface UseAppStoreState extends AppState {
 
   // Actions
   bootApp: () => Promise<void>;
+  clearOnboardingError: () => void;
   clearSettingsFeedback: () => void;
   handleArchiveHabit: (habitId: number) => Promise<void>;
+  handleApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
+  handleCompleteOnboarding: (input: CompleteOnboardingInput) => Promise<void>;
   handleCreateHabit: (
     name: string,
     category: HabitCategory,
@@ -56,6 +67,7 @@ interface UseAppStoreState extends AppState {
     frequency: HabitFrequency
   ) => Promise<void>;
   handleUpdateSettings: (settings: AppSettings) => Promise<AppSettings>;
+  handleSkipOnboarding: () => Promise<void>;
   loadWeeklyReviewOverview: () => Promise<void>;
   selectWeeklyReview: (weekStart: string) => Promise<void>;
   openWeeklyReviewSpotlight: () => void;
@@ -89,7 +101,11 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
         bootError: toHabitsIpcError(error),
         bootPhase: "error",
         history: [],
+        isOnboardingOpen: false,
         isWeeklyReviewSpotlightOpen: false,
+        onboardingError: null,
+        onboardingPhase: "idle",
+        onboardingStatus: null,
         selectedWeeklyReview: null,
         settingsDraft: null,
         todayState: null,
@@ -104,6 +120,12 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
 
   bootPhase: "loading",
 
+  clearOnboardingError: () =>
+    set({
+      onboardingError: null,
+      onboardingPhase: "idle",
+    }),
+
   clearSettingsFeedback: () =>
     set({
       settingsFieldErrors: {},
@@ -116,8 +138,35 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       isWeeklyReviewSpotlightOpen: false,
     }),
 
+  handleApplyStarterPack: async (habits: StarterPackHabitDraft[]) => {
+    await get().refreshToday(window.habits.applyStarterPack(habits));
+  },
+
   handleArchiveHabit: async (habitId: number) => {
     await get().refreshToday(window.habits.archiveHabit(habitId));
+  },
+
+  handleCompleteOnboarding: async (input: CompleteOnboardingInput) => {
+    set({
+      onboardingError: null,
+      onboardingPhase: "submitting",
+    });
+
+    try {
+      const nextTodayState = await window.habits.completeOnboarding(input);
+      await get().reloadAll(nextTodayState);
+      set({
+        onboardingError: null,
+        onboardingPhase: "idle",
+        settingsDraft: nextTodayState.settings,
+      });
+    } catch (error) {
+      set({
+        onboardingError: toHabitsIpcError(error),
+        onboardingPhase: "idle",
+      });
+      throw error;
+    }
   },
 
   handleCreateHabit: async (
@@ -148,6 +197,28 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       settingsDraft,
       settingsSaveErrorMessage: null,
     });
+  },
+
+  handleSkipOnboarding: async () => {
+    set({
+      onboardingError: null,
+      onboardingPhase: "submitting",
+    });
+
+    try {
+      await window.habits.skipOnboarding();
+      await get().reloadAll();
+      set({
+        onboardingError: null,
+        onboardingPhase: "idle",
+      });
+    } catch (error) {
+      set({
+        onboardingError: toHabitsIpcError(error),
+        onboardingPhase: "idle",
+      });
+      throw error;
+    }
   },
 
   handleTabChange: (nextTab: Tab) => {
@@ -200,6 +271,8 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
 
   history: [],
 
+  isOnboardingOpen: false,
+
   isWeeklyReviewSpotlightOpen: false,
 
   loadWeeklyReviewOverview: async () => {
@@ -229,11 +302,15 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     }
   },
 
+  onboardingError: null,
+
+  onboardingPhase: "idle",
+
+  onboardingStatus: null,
   openWeeklyReviewSpotlight: () =>
     set({
       isWeeklyReviewSpotlightOpen: true,
     }),
-
   refreshToday: async (mutator: Promise<TodayState>) => {
     const nextTodayState = await mutator;
     await get().reloadAll(nextTodayState);
@@ -241,12 +318,15 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
       await get().loadWeeklyReviewOverview();
     }
   },
-
   reloadAll: async (nextTodayState?: TodayState) => {
     const todayState = nextTodayState ?? (await window.habits.getTodayState());
     const history = await window.habits.getHistory();
+    const onboardingStatus = await window.habits.getOnboardingStatus();
     set((state: UseAppStoreState) => ({
       history,
+      isOnboardingOpen:
+        todayState.habits.length === 0 && !onboardingStatus.isComplete,
+      onboardingStatus,
       settingsDraft: state.settingsDraft ?? todayState.settings,
       todayState,
     }));
@@ -284,6 +364,12 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
   setBootError: (bootError: HabitsIpcError | null) => set({ bootError }),
   setBootPhase: (bootPhase: AppState["bootPhase"]) => set({ bootPhase }),
   setHistory: (history: AppState["history"]) => set({ history }),
+  setOnboardingError: (onboardingError: HabitsIpcError | null) =>
+    set({ onboardingError }),
+  setOnboardingPhase: (onboardingPhase: AppState["onboardingPhase"]) =>
+    set({ onboardingPhase }),
+  setOnboardingStatus: (onboardingStatus: OnboardingStatus | null) =>
+    set({ onboardingStatus }),
   setSettingsDraft: (settingsDraft: AppSettings | null) =>
     set({ settingsDraft }),
   setSettingsSaveErrorMessage: (settingsSaveErrorMessage: string | null) =>

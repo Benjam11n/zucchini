@@ -11,6 +11,7 @@ import { AppShell } from "@/renderer/features/app/app-shell";
 import { getBootErrorDisplay } from "@/renderer/features/app/boot-errors";
 import { useAppController } from "@/renderer/features/app/use-app-controller";
 import { WeeklyReviewSpotlightDialog } from "@/renderer/features/history/weekly-review-spotlight-dialog";
+import { OnboardingTakeover } from "@/renderer/features/onboarding/onboarding-takeover";
 import { MASCOTS } from "@/renderer/lib/mascots";
 import { HistoryPage } from "@/renderer/pages/history-page";
 import { SettingsPage } from "@/renderer/pages/settings-page";
@@ -78,6 +79,18 @@ export default function App() {
     return null;
   }
 
+  if (state.isOnboardingOpen) {
+    return (
+      <OnboardingTakeover
+        baseSettings={state.todayState.settings}
+        error={state.onboardingError}
+        phase={state.onboardingPhase}
+        onComplete={actions.handleCompleteOnboarding}
+        onSkip={actions.handleSkipOnboarding}
+      />
+    );
+  }
+
   let renderedPage = (
     <TodayPage
       history={state.history}
@@ -111,6 +124,7 @@ export default function App() {
         saveErrorMessage={state.settingsSaveErrorMessage}
         savePhase={state.settingsSavePhase}
         onArchiveHabit={actions.handleArchiveHabit}
+        onApplyStarterPack={actions.handleApplyStarterPack}
         onChange={actions.handleSettingsDraftChange}
         onCreateHabit={actions.handleCreateHabit}
         onRenameHabit={actions.handleRenameHabit}

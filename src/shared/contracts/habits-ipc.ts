@@ -4,6 +4,11 @@ import type {
   HabitWithStatus,
 } from "../domain/habit";
 import type { HistoryDay } from "../domain/history";
+import type {
+  CompleteOnboardingInput,
+  OnboardingStatus,
+  StarterPackHabitDraft,
+} from "../domain/onboarding";
 import type { AppSettings } from "../domain/settings";
 import type { StreakState } from "../domain/streak";
 import type {
@@ -12,15 +17,19 @@ import type {
 } from "../domain/weekly-review";
 
 export const HABITS_IPC_CHANNELS = {
+  applyStarterPack: "habits:applyStarterPack",
   archiveHabit: "habits:archiveHabit",
+  completeOnboarding: "habits:completeOnboarding",
   createHabit: "habits:createHabit",
   getHistory: "habits:getHistory",
+  getOnboardingStatus: "habits:getOnboardingStatus",
   getTodayState: "habits:getTodayState",
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
   showNotification: "habits:showNotification",
+  skipOnboarding: "habits:skipOnboarding",
   toggleHabit: "habits:toggleHabit",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
@@ -91,6 +100,7 @@ export interface TodayState {
 }
 
 export interface HabitApi {
+  getOnboardingStatus: () => Promise<OnboardingStatus>;
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
   getHistory: () => Promise<HistoryDay[]>;
@@ -113,6 +123,9 @@ export interface HabitApi {
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
+  applyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<TodayState>;
+  completeOnboarding: (input: CompleteOnboardingInput) => Promise<TodayState>;
+  skipOnboarding: () => Promise<void>;
   showNotification: (
     title: string,
     body: string,

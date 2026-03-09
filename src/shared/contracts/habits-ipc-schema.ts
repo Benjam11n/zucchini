@@ -21,6 +21,20 @@ export const habitCategorySchema = z.enum([
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
 
+const starterPackHabitDraftSchema = z
+  .object({
+    category: habitCategorySchema,
+    frequency: habitFrequencySchema,
+    name: habitNameSchema,
+  })
+  .strict();
+
+export const starterPackApplySchema = z
+  .array(starterPackHabitDraftSchema)
+  .max(12, {
+    message: "Starter packs can contain at most 12 habits.",
+  });
+
 const themeModeSchema = z.enum(["system", "light", "dark"]);
 
 export const appSettingsSchema = z
@@ -41,6 +55,13 @@ export const appSettingsSchema = z
     timezone: z.string().trim().min(1).refine(isValidTimeZone, {
       message: "Timezone must be a valid IANA timezone.",
     }),
+  })
+  .strict();
+
+export const completeOnboardingInputSchema = z
+  .object({
+    habits: starterPackApplySchema,
+    settings: appSettingsSchema,
   })
   .strict();
 

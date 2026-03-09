@@ -9,6 +9,10 @@ import type {
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  CompleteOnboardingInput,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 
 async function invokeHabits<T>(
@@ -28,14 +32,20 @@ async function invokeHabits<T>(
 }
 
 const habitsApi: HabitApi = {
+  applyStarterPack: (habits: StarterPackHabitDraft[]) =>
+    invokeHabits(HABITS_IPC_CHANNELS.applyStarterPack, habits),
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
+  completeOnboarding: (input: CompleteOnboardingInput) =>
+    invokeHabits(HABITS_IPC_CHANNELS.completeOnboarding, input),
   createHabit: (
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency
   ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
   getHistory: () => invokeHabits(HABITS_IPC_CHANNELS.getHistory),
+  getOnboardingStatus: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.getOnboardingStatus),
   getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),
   getWeeklyReview: (weekStart: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
@@ -52,6 +62,7 @@ const habitsApi: HabitApi = {
       body,
       iconFilename
     ),
+  skipOnboarding: () => invokeHabits(HABITS_IPC_CHANNELS.skipOnboarding),
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>

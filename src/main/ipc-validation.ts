@@ -2,6 +2,7 @@ import type { ZodType } from "zod";
 
 import {
   appSettingsSchema,
+  completeOnboardingInputSchema,
   dateKeySchema,
   habitCategorySchema,
   habitFrequencySchema,
@@ -11,8 +12,13 @@ import {
   notificationIconFilenameSchema,
   notificationTitleSchema,
   reorderHabitIdsSchema,
+  starterPackApplySchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  CompleteOnboardingInput,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export class IpcValidationError extends Error {
@@ -71,6 +77,22 @@ export function validateAppSettings(value: unknown): AppSettings {
 
 export function validateReorderHabitIds(value: unknown): number[] {
   return parseWithSchema("habit order", reorderHabitIdsSchema, value);
+}
+
+export function validateStarterPackApply(
+  value: unknown
+): StarterPackHabitDraft[] {
+  return parseWithSchema("starter pack habits", starterPackApplySchema, value);
+}
+
+export function validateCompleteOnboardingInput(
+  value: unknown
+): CompleteOnboardingInput {
+  return parseWithSchema(
+    "complete onboarding",
+    completeOnboardingInputSchema,
+    value
+  );
 }
 
 export function validateNotificationTitle(value: unknown): string {

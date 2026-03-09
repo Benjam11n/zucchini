@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import { serializeIpcError } from "@/main/ipc-errors";
 import {
   validateAppSettings,
+  validateCompleteOnboardingInput,
   validateDateKey,
   validateHabitCategory,
   validateHabitFrequency,
@@ -12,6 +13,7 @@ import {
   validateNotificationIconFilename,
   validateNotificationTitle,
   validateReorderHabitIds,
+  validateStarterPackApply,
 } from "@/main/ipc-validation";
 import { showDesktopNotification } from "@/main/notifications";
 import type { HabitsService } from "@/main/service";
@@ -50,6 +52,9 @@ export function registerIpcHandlers({
   service,
   onSettingsChanged,
 }: RegisterIpcHandlersOptions): void {
+  registerHandler(HABITS_IPC_CHANNELS.getOnboardingStatus, () =>
+    service.getOnboardingStatus()
+  );
   registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
   );
@@ -68,6 +73,19 @@ export function registerIpcHandlers({
     onSettingsChanged(nextSettings);
     return nextSettings;
   });
+  registerHandler(HABITS_IPC_CHANNELS.completeOnboarding, (input: unknown) => {
+    const todayState = service.completeOnboarding(
+      validateCompleteOnboardingInput(input)
+    );
+    onSettingsChanged(todayState.settings);
+    return todayState;
+  });
+  registerHandler(HABITS_IPC_CHANNELS.skipOnboarding, () =>
+    service.skipOnboarding()
+  );
+  registerHandler(HABITS_IPC_CHANNELS.applyStarterPack, (habits: unknown) =>
+    service.applyStarterPack(validateStarterPackApply(habits))
+  );
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
     (name: unknown, category: unknown, frequency: unknown) =>

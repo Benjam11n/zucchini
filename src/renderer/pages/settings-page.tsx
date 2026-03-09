@@ -81,6 +81,7 @@ export function SettingsPage(props: SettingsPageProps) {
           <HabitManagementCard
             habits={props.habits}
             onArchiveHabit={props.onArchiveHabit}
+            onApplyStarterPack={props.onApplyStarterPack}
             onCreateHabit={props.onCreateHabit}
             onRenameHabit={props.onRenameHabit}
             onReorderHabits={props.onReorderHabits}

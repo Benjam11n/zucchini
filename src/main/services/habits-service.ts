@@ -5,6 +5,12 @@ import {
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
+import { cloneStarterPackHabits } from "@/shared/domain/onboarding";
+import type {
+  CompleteOnboardingInput,
+  OnboardingStatus,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -30,8 +36,17 @@ import {
   buildWeeklyReviewOverview,
 } from "./weekly-review-builder";
 
+function normalizeStarterPackHabits(
+  habits: readonly StarterPackHabitDraft[]
+): StarterPackHabitDraft[] {
+  return cloneStarterPackHabits(habits).filter(
+    (habit) => habit.name.length > 0
+  );
+}
+
 export interface HabitsService {
   initialize(): void;
+  getOnboardingStatus(): OnboardingStatus;
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getHistory(): HistoryDay[];
@@ -40,6 +55,9 @@ export interface HabitsService {
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
+  completeOnboarding(input: CompleteOnboardingInput): TodayState;
+  skipOnboarding(): void;
+  applyStarterPack(habits: StarterPackHabitDraft[]): TodayState;
   createHabit(
     name: string,
     category: HabitCategory,
@@ -68,6 +86,12 @@ export class HabitService implements HabitsService {
       this.clock.timezone()
     );
     this.syncRollingState();
+  }
+
+  getOnboardingStatus(): OnboardingStatus {
+    return this.repository.runInTransaction("getOnboardingStatus", () =>
+      this.repository.getOnboardingStatus()
+    );
   }
 
   getTodayState(): TodayState {
@@ -180,6 +204,56 @@ export class HabitService implements HabitsService {
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
     this.repository.saveReminderRuntimeState(state);
+  }
+
+  completeOnboarding(input: CompleteOnboardingInput): TodayState {
+    return this.repository.runInTransaction("completeOnboarding", () => {
+      this.syncRollingState();
+      const settings = this.repository.saveSettings(
+        input.settings,
+        this.clock.timezone()
+      );
+      const normalizedHabits = normalizeStarterPackHabits(input.habits);
+      const nowIso = this.clock.now().toISOString();
+
+      if (normalizedHabits.length > 0) {
+        this.repository.appendHabits(
+          normalizedHabits,
+          nowIso,
+          this.clock.todayKey()
+        );
+      }
+
+      this.repository.markOnboardingComplete(nowIso);
+      const todayState = buildTodayState(this.repository, this.clock);
+
+      return {
+        ...todayState,
+        settings,
+      };
+    });
+  }
+
+  skipOnboarding(): void {
+    this.repository.runInTransaction("skipOnboarding", () => {
+      this.repository.markOnboardingComplete(this.clock.now().toISOString());
+    });
+  }
+
+  applyStarterPack(habits: StarterPackHabitDraft[]): TodayState {
+    return this.repository.runInTransaction("applyStarterPack", () => {
+      this.syncRollingState();
+      const normalizedHabits = normalizeStarterPackHabits(habits);
+      if (normalizedHabits.length > 0) {
+        this.repository.appendHabits(
+          normalizedHabits,
+          this.clock.now().toISOString(),
+          this.clock.todayKey()
+        );
+      }
+
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   createHabit(

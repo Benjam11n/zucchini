@@ -5,6 +5,10 @@ import type {
   HabitFrequency,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type {
+  OnboardingStatus,
+  StarterPackHabitDraft,
+} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
@@ -21,6 +25,8 @@ export interface HabitRepository {
   initializeSchema(): void;
   runInTransaction<A>(label: string, execute: () => A): A;
   seedDefaults(nowIso: string, timezone: string): void;
+  getOnboardingStatus(): OnboardingStatus;
+  markOnboardingComplete(completedAt: string): OnboardingStatus;
   getHabits(): Habit[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
@@ -43,6 +49,7 @@ export interface HabitRepository {
   getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
   saveDailySummary(summary: DailySummary): void;
+  countHabits(): number;
   getMaxSortOrder(): number;
   insertHabit(
     name: string,
@@ -51,6 +58,11 @@ export interface HabitRepository {
     sortOrder: number,
     createdAt: string
   ): number;
+  appendHabits(
+    habitDrafts: readonly StarterPackHabitDraft[],
+    createdAt: string,
+    date: string
+  ): number[];
   renameHabit(habitId: number, name: string): void;
   updateHabitCategory(habitId: number, category: HabitCategory): void;
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): void;
@@ -81,33 +93,23 @@ export class SqliteHabitRepository implements HabitRepository {
     return this.client.transaction(label, execute);
   }
 
-  seedDefaults(nowIso: string, timezone: string): void {
-    if (this.habitsRepository.countActiveHabits() === 0) {
-      this.habitsRepository.insertHabit(
-        "Eat a whole food meal",
-        "nutrition",
-        "daily",
-        0,
-        nowIso
-      );
-      this.habitsRepository.insertHabit(
-        "Deep work block",
-        "productivity",
-        "daily",
-        1,
-        nowIso
-      );
-      this.habitsRepository.insertHabit(
-        "Move for 20 minutes",
-        "fitness",
-        "daily",
-        2,
-        nowIso
-      );
-    }
-
+  seedDefaults(_nowIso: string, timezone: string): void {
     this.streakRepository.ensureInitialized();
     this.settingsRepository.seedDefaults(timezone);
+    if (
+      !this.settingsRepository.getOnboardingStatus().isComplete &&
+      this.habitsRepository.countHabits() > 0
+    ) {
+      this.settingsRepository.markOnboardingComplete(_nowIso);
+    }
+  }
+
+  getOnboardingStatus(): OnboardingStatus {
+    return this.settingsRepository.getOnboardingStatus();
+  }
+
+  markOnboardingComplete(completedAt: string): OnboardingStatus {
+    return this.settingsRepository.markOnboardingComplete(completedAt);
   }
 
   getHabits(): Habit[] {
@@ -192,6 +194,10 @@ export class SqliteHabitRepository implements HabitRepository {
     this.historyRepository.saveDailySummary(summary);
   }
 
+  countHabits(): number {
+    return this.habitsRepository.countHabits();
+  }
+
   getMaxSortOrder(): number {
     return this.habitsRepository.getMaxSortOrder();
   }
@@ -210,6 +216,24 @@ export class SqliteHabitRepository implements HabitRepository {
       sortOrder,
       createdAt
     );
+  }
+
+  appendHabits(
+    habitDrafts: readonly StarterPackHabitDraft[],
+    createdAt: string,
+    date: string
+  ): number[] {
+    const habitIds = this.habitsRepository.insertHabits(
+      habitDrafts,
+      createdAt,
+      this.habitsRepository.getMaxSortOrder() + 1
+    );
+
+    habitIds.forEach((habitId) => {
+      this.historyRepository.ensureStatusRow(date, habitId);
+    });
+
+    return habitIds;
   }
 
   renameHabit(habitId: number, name: string): void {

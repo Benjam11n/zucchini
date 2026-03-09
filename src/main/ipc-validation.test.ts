@@ -1,8 +1,10 @@
 import {
   IpcValidationError,
   validateAppSettings,
+  validateCompleteOnboardingInput,
   validateNotificationIconFilename,
   validateReorderHabitIds,
+  validateStarterPackApply,
 } from "./ipc-validation";
 
 describe("ipc validation", () => {
@@ -42,6 +44,47 @@ describe("ipc validation", () => {
     expect(() => validateReorderHabitIds([1, 1, 2])).toThrow(
       IpcValidationError
     );
+  });
+
+  it("accepts valid starter pack payloads", () => {
+    expect(
+      validateStarterPackApply([
+        {
+          category: "productivity",
+          frequency: "daily",
+          name: "Plan top 3 tasks",
+        },
+      ])
+    ).toStrictEqual([
+      {
+        category: "productivity",
+        frequency: "daily",
+        name: "Plan top 3 tasks",
+      },
+    ]);
+  });
+
+  it("rejects invalid onboarding payloads", () => {
+    expect(() =>
+      validateCompleteOnboardingInput({
+        habits: [
+          {
+            category: "productivity",
+            frequency: "daily",
+            name: "",
+          },
+        ],
+        settings: {
+          launchAtLogin: false,
+          minimizeToTray: false,
+          reminderEnabled: true,
+          reminderSnoozeMinutes: 15,
+          reminderTime: "20:30",
+          themeMode: "system",
+          timezone: "Asia/Singapore",
+        },
+      })
+    ).toThrow(IpcValidationError);
   });
 
   it("rejects unsafe notification icon filenames", () => {

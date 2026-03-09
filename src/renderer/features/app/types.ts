@@ -1,5 +1,6 @@
 import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
+import type { OnboardingStatus } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -22,7 +23,11 @@ export interface AppState {
   bootPhase: "error" | "loading" | "ready";
   todayState: TodayState | null;
   history: HistoryDay[];
+  isOnboardingOpen: boolean;
   isWeeklyReviewSpotlightOpen: boolean;
+  onboardingError: HabitsIpcError | null;
+  onboardingPhase: "idle" | "submitting";
+  onboardingStatus: OnboardingStatus | null;
   settingsDraft: AppSettings | null;
   settingsFieldErrors: SettingsFieldErrors;
   settingsSaveErrorMessage: string | null;

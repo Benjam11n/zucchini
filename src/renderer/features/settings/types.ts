@@ -7,6 +7,7 @@ import type {
   HabitFrequency,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export interface SettingsPageProps {
@@ -32,6 +33,7 @@ export interface SettingsPageProps {
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
+  onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
 }
 
 export interface HabitManagementCardProps {
@@ -52,4 +54,5 @@ export interface HabitManagementCardProps {
     habitId: number,
     frequency: HabitFrequency
   ) => Promise<void>;
+  onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
 }

@@ -1,5 +1,9 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
+import type {
+  CompleteOnboardingInput,
+  OnboardingStatus,
+} from "@/shared/domain/onboarding";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 function createTodayState(): TodayState {
@@ -69,21 +73,73 @@ function createWeeklyReview(name: string): WeeklyReview {
   };
 }
 
+function createOnboardingStatus(
+  overrides: Partial<OnboardingStatus> = {}
+): OnboardingStatus {
+  return {
+    completedAt: null,
+    isComplete: false,
+    ...overrides,
+  };
+}
+
 describe("useAppStore weekly review refresh", () => {
-  async function setup() {
+  async function setup(onboardingStatus = createOnboardingStatus()) {
     vi.resetModules();
     vi.unstubAllGlobals();
     const getHistoryMock = vi.fn().mockResolvedValue([createHistoryDay()]);
+    const getOnboardingStatusMock = vi.fn().mockResolvedValue(onboardingStatus);
+    const getTodayStateMock = vi.fn().mockResolvedValue(createTodayState());
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
     const renameHabitMock = vi.fn().mockResolvedValue(createTodayState());
+    const completeOnboardingMock = vi.fn().mockResolvedValue({
+      ...createTodayState(),
+      habits: [
+        {
+          category: "productivity",
+          completed: false,
+          createdAt: "2026-03-10T00:00:00.000Z",
+          frequency: "daily",
+          id: 1,
+          isArchived: false,
+          name: "Plan top 3 tasks",
+          sortOrder: 0,
+        },
+      ],
+      settings: {
+        ...createTodayState().settings,
+        reminderTime: "21:15",
+      },
+    });
+    const skipOnboardingMock = vi.fn().mockImplementation(async () => {});
+    const applyStarterPackMock = vi.fn().mockResolvedValue({
+      ...createTodayState(),
+      habits: [
+        {
+          category: "fitness",
+          completed: false,
+          createdAt: "2026-03-10T00:00:00.000Z",
+          frequency: "daily",
+          id: 1,
+          isArchived: false,
+          name: "20-minute walk",
+          sortOrder: 0,
+        },
+      ],
+    });
 
     vi.stubGlobal("window", {
       habits: {
+        applyStarterPack: applyStarterPackMock,
+        completeOnboarding: completeOnboardingMock,
         getHistory: getHistoryMock,
+        getOnboardingStatus: getOnboardingStatusMock,
+        getTodayState: getTodayStateMock,
         getWeeklyReview: getWeeklyReviewMock,
         getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
         renameHabit: renameHabitMock,
+        skipOnboarding: skipOnboardingMock,
       },
       matchMedia: vi.fn().mockReturnValue({
         addEventListener: vi.fn(),
@@ -94,7 +150,11 @@ describe("useAppStore weekly review refresh", () => {
     const { useAppStore } = await import("./store");
 
     return {
+      applyStarterPackMock,
+      completeOnboardingMock,
+      getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
+      skipOnboardingMock,
       useAppStore,
     };
   }
@@ -130,5 +190,100 @@ describe("useAppStore weekly review refresh", () => {
     expect(
       useAppStore.getState().selectedWeeklyReview?.habitMetrics[0]?.name
     ).toBe("Make buried chapters video");
+  });
+
+  it("opens onboarding after boot when there are zero habits and onboarding is incomplete", async () => {
+    const { useAppStore } = await setup(createOnboardingStatus());
+
+    await useAppStore.getState().bootApp();
+
+    expect(useAppStore.getState().isOnboardingOpen).toBeTruthy();
+  });
+
+  it("does not open onboarding after boot when onboarding was already completed", async () => {
+    const { useAppStore } = await setup(
+      createOnboardingStatus({
+        completedAt: "2026-03-09T08:00:00.000Z",
+        isComplete: true,
+      })
+    );
+
+    await useAppStore.getState().bootApp();
+
+    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+  });
+
+  it("completes onboarding and refreshes today state", async () => {
+    const { completeOnboardingMock, useAppStore } = await setup(
+      createOnboardingStatus()
+    );
+    await useAppStore.getState().bootApp();
+
+    const input: CompleteOnboardingInput = {
+      habits: [
+        {
+          category: "productivity",
+          frequency: "daily",
+          name: "Plan top 3 tasks",
+        },
+      ],
+      settings: {
+        ...createTodayState().settings,
+        reminderTime: "21:15",
+      },
+    };
+
+    await useAppStore.getState().handleCompleteOnboarding(input);
+
+    expect(completeOnboardingMock).toHaveBeenCalledWith(input);
+    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+    expect(useAppStore.getState().todayState?.settings.reminderTime).toBe(
+      "21:15"
+    );
+  });
+
+  it("skips onboarding and prevents it from reappearing on reload", async () => {
+    const completedStatus = createOnboardingStatus({
+      completedAt: "2026-03-10T08:00:00.000Z",
+      isComplete: true,
+    });
+    const { getOnboardingStatusMock, skipOnboardingMock, useAppStore } =
+      await setup(createOnboardingStatus());
+    await useAppStore.getState().bootApp();
+    getOnboardingStatusMock.mockResolvedValue(completedStatus);
+
+    await useAppStore.getState().handleSkipOnboarding();
+
+    expect(skipOnboardingMock).toHaveBeenCalledWith();
+    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+  });
+
+  it("applies a starter pack from settings and refreshes today state without reopening onboarding", async () => {
+    const completedStatus = createOnboardingStatus({
+      completedAt: "2026-03-09T08:00:00.000Z",
+      isComplete: true,
+    });
+    const { applyStarterPackMock, useAppStore } = await setup(completedStatus);
+    await useAppStore.getState().bootApp();
+
+    await useAppStore.getState().handleApplyStarterPack([
+      {
+        category: "fitness",
+        frequency: "daily",
+        name: "20-minute walk",
+      },
+    ]);
+
+    expect(applyStarterPackMock).toHaveBeenCalledWith([
+      {
+        category: "fitness",
+        frequency: "daily",
+        name: "20-minute walk",
+      },
+    ]);
+    expect(useAppStore.getState().todayState?.habits[0]?.name).toBe(
+      "20-minute walk"
+    );
+    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
   });
 });

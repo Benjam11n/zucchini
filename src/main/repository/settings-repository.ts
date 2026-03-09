@@ -1,10 +1,15 @@
+import { eq } from "drizzle-orm";
+
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import type { OnboardingStatus } from "@/shared/domain/onboarding";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { settings } from "../schema";
 import { normalizeThemeMode } from "./mappers";
+
+const ONBOARDING_COMPLETED_AT_KEY = "onboarding_completed_at";
 
 export class SqliteSettingsRepository {
   private readonly client: SqliteDatabaseClient;
@@ -30,6 +35,23 @@ export class SqliteSettingsRepository {
 
       const validationResult = appSettingsSchema.safeParse(candidateSettings);
       return validationResult.success ? validationResult.data : defaults;
+    });
+  }
+
+  getOnboardingStatus(): OnboardingStatus {
+    return this.client.run("getOnboardingStatus", () => {
+      const row = this.client
+        .getDrizzle()
+        .select()
+        .from(settings)
+        .where(eq(settings.key, ONBOARDING_COMPLETED_AT_KEY))
+        .get();
+      const completedAt = row?.value?.trim() ? row.value : null;
+
+      return {
+        completedAt,
+        isComplete: completedAt !== null,
+      };
     });
   }
 
@@ -70,6 +92,14 @@ export class SqliteSettingsRepository {
       this.upsertSetting("themeMode", defaults.themeMode);
       this.upsertSetting("timezone", defaults.timezone);
     });
+  }
+
+  markOnboardingComplete(completedAt: string): OnboardingStatus {
+    this.client.run("markOnboardingComplete", () => {
+      this.upsertSetting(ONBOARDING_COMPLETED_AT_KEY, completedAt);
+    });
+
+    return this.getOnboardingStatus();
   }
 
   private upsertSetting(key: string, value: string): void {
