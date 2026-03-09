@@ -63,7 +63,7 @@ describe("buildContributionWeeks()", () => {
       "empty",
       "complete",
       "freeze",
-      "missed",
+      "in-progress",
       "empty",
       "empty",
       "empty",

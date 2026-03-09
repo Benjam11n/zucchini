@@ -33,7 +33,7 @@ export function settleClosedDay(
     };
   }
 
-  if (state.availableFreezes > 0) {
+  if (state.availableFreezes > 0 && state.currentStreak > 0) {
     return {
       allCompleted: false,
       availableFreezes: state.availableFreezes - 1,
