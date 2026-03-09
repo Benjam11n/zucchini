@@ -28,15 +28,15 @@ function createTodayState(): TodayState {
   };
 }
 
-function createHistoryDay(): HistoryDay {
+function createHistoryDay(date = "2026-03-10"): HistoryDay {
   return {
     categoryProgress: [],
-    date: "2026-03-10",
+    date,
     habits: [],
     summary: {
       allCompleted: false,
       completedAt: null,
-      date: "2026-03-10",
+      date,
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
@@ -87,7 +87,13 @@ describe("useAppStore weekly review refresh", () => {
   async function setup(onboardingStatus = createOnboardingStatus()) {
     vi.resetModules();
     vi.unstubAllGlobals();
-    const getHistoryMock = vi.fn().mockResolvedValue([createHistoryDay()]);
+    const getHistoryMock = vi.fn((limit?: number) =>
+      Promise.resolve(
+        limit === 14
+          ? [createHistoryDay("2026-03-10")]
+          : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
+      )
+    );
     const getOnboardingStatusMock = vi.fn().mockResolvedValue(onboardingStatus);
     const getTodayStateMock = vi.fn().mockResolvedValue(createTodayState());
     const getWeeklyReviewMock = vi.fn();
@@ -152,6 +158,7 @@ describe("useAppStore weekly review refresh", () => {
     return {
       applyStarterPackMock,
       completeOnboardingMock,
+      getHistoryMock,
       getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
       skipOnboardingMock,
@@ -193,10 +200,13 @@ describe("useAppStore weekly review refresh", () => {
   });
 
   it("opens onboarding after boot when there are zero habits and onboarding is incomplete", async () => {
-    const { useAppStore } = await setup(createOnboardingStatus());
+    const { getHistoryMock, useAppStore } = await setup(
+      createOnboardingStatus()
+    );
 
     await useAppStore.getState().bootApp();
 
+    expect(getHistoryMock).toHaveBeenCalledWith(14);
     expect(useAppStore.getState().isOnboardingOpen).toBeTruthy();
   });
 
@@ -285,5 +295,38 @@ describe("useAppStore weekly review refresh", () => {
       "20-minute walk"
     );
     expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+  });
+
+  it("loads full history after switching to the history tab", async () => {
+    const { getHistoryMock, useAppStore } = await setup(
+      createOnboardingStatus()
+    );
+    await useAppStore.getState().bootApp();
+
+    useAppStore.getState().handleTabChange("history");
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 14);
+    expect(getHistoryMock).toHaveBeenNthCalledWith(2);
+    expect(useAppStore.getState().historyScope).toBe("full");
+    expect(useAppStore.getState().history.map((day) => day.date)).toStrictEqual(
+      ["2026-03-10", "2026-03-09"]
+    );
+  });
+
+  it("keeps using full history after a mutation once the history tab has been opened", async () => {
+    const { getHistoryMock, useAppStore } = await setup(
+      createOnboardingStatus()
+    );
+    await useAppStore.getState().bootApp();
+
+    useAppStore.getState().handleTabChange("history");
+    await Promise.resolve();
+    await Promise.resolve();
+
+    await useAppStore.getState().handleRenameHabit(1, "Make buried chapters");
+
+    expect(getHistoryMock).toHaveBeenLastCalledWith(undefined);
   });
 });

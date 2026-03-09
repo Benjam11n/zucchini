@@ -7,6 +7,7 @@ import {
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
+  historyLimitSchema,
   habitNameSchema,
   notificationBodySchema,
   notificationIconFilenameSchema,
@@ -57,6 +58,10 @@ export function validateHabitId(value: unknown): number {
 
 export function validateDateKey(label: string, value: unknown): string {
   return parseWithSchema(label, dateKeySchema, value);
+}
+
+export function validateHistoryLimit(value: unknown): number | undefined {
+  return parseWithSchema("history limit", historyLimitSchema, value);
 }
 
 export function validateHabitName(value: unknown): string {

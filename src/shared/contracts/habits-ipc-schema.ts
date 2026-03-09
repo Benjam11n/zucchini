@@ -10,6 +10,7 @@ export const habitIdSchema = z.number().int().positive();
 export const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: "Date keys must use YYYY-MM-DD format.",
 });
+export const historyLimitSchema = z.number().int().min(1).max(365).optional();
 
 export const habitNameSchema = z.string().trim().min(1).max(120);
 

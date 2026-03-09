@@ -8,6 +8,7 @@ import {
   validateHabitCategory,
   validateHabitFrequency,
   validateHabitId,
+  validateHistoryLimit,
   validateHabitName,
   validateNotificationBody,
   validateNotificationIconFilename,
@@ -61,7 +62,9 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
   );
-  registerHandler(HABITS_IPC_CHANNELS.getHistory, () => service.getHistory());
+  registerHandler(HABITS_IPC_CHANNELS.getHistory, (limit?: unknown) =>
+    service.getHistory(validateHistoryLimit(limit))
+  );
   registerHandler(HABITS_IPC_CHANNELS.getWeeklyReviewOverview, () =>
     service.getWeeklyReviewOverview()
   );

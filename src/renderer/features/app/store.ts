@@ -22,6 +22,8 @@ import type {
 } from "./types";
 import { loadWeeklyReviewState } from "./weekly-review-state";
 
+const RECENT_HISTORY_LIMIT = 14;
+
 interface UseAppStoreState extends AppState {
   systemTheme: ThemeMode;
   tab: Tab;
@@ -68,13 +70,17 @@ interface UseAppStoreState extends AppState {
   ) => Promise<void>;
   handleUpdateSettings: (settings: AppSettings) => Promise<AppSettings>;
   handleSkipOnboarding: () => Promise<void>;
+  loadFullHistory: () => Promise<void>;
   loadWeeklyReviewOverview: () => Promise<void>;
   selectWeeklyReview: (weekStart: string) => Promise<void>;
   openWeeklyReviewSpotlight: () => void;
   dismissWeeklyReviewSpotlight: () => void;
 
   refreshToday: (mutator: Promise<TodayState>) => Promise<void>;
-  reloadAll: (nextTodayState?: TodayState) => Promise<void>;
+  reloadAll: (
+    nextTodayState?: TodayState,
+    historyScope?: AppState["historyScope"]
+  ) => Promise<void>;
   retryBoot: () => Promise<void>;
 }
 
@@ -92,7 +98,7 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     });
 
     try {
-      await get().reloadAll();
+      await get().reloadAll(undefined, "recent");
       set({
         bootPhase: "ready",
       });
@@ -101,6 +107,9 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
         bootError: toHabitsIpcError(error),
         bootPhase: "error",
         history: [],
+        historyLoadError: null,
+        historyScope: "recent",
+        isHistoryLoading: false,
         isOnboardingOpen: false,
         isWeeklyReviewSpotlightOpen: false,
         onboardingError: null,
@@ -228,6 +237,10 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
         settingsDraft: state.todayState?.settings ?? state.settingsDraft,
       }));
     }
+
+    if (nextTab === "history") {
+      void get().loadFullHistory();
+    }
   },
 
   handleToggleHabit: async (habitId: number) => {
@@ -271,9 +284,41 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
 
   history: [],
 
+  historyLoadError: null,
+
+  historyScope: "recent",
+
+  isHistoryLoading: false,
+
   isOnboardingOpen: false,
 
   isWeeklyReviewSpotlightOpen: false,
+
+  loadFullHistory: async () => {
+    if (get().historyScope === "full" || get().isHistoryLoading) {
+      return;
+    }
+
+    set({
+      historyLoadError: null,
+      isHistoryLoading: true,
+    });
+
+    try {
+      const history = await window.habits.getHistory();
+      set({
+        history,
+        historyLoadError: null,
+        historyScope: "full",
+        isHistoryLoading: false,
+      });
+    } catch (error) {
+      set({
+        historyLoadError: toHabitsIpcError(error),
+        isHistoryLoading: false,
+      });
+    }
+  },
 
   loadWeeklyReviewOverview: async () => {
     set({
@@ -313,19 +358,27 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     }),
   refreshToday: async (mutator: Promise<TodayState>) => {
     const nextTodayState = await mutator;
-    await get().reloadAll(nextTodayState);
+    await get().reloadAll(nextTodayState, get().historyScope);
     if (get().weeklyReviewPhase !== "idle") {
       await get().loadWeeklyReviewOverview();
     }
   },
-  reloadAll: async (nextTodayState?: TodayState) => {
+  reloadAll: async (
+    nextTodayState?: TodayState,
+    historyScope = get().historyScope
+  ) => {
+    const historyLimit =
+      historyScope === "recent" ? RECENT_HISTORY_LIMIT : undefined;
     const [todayState, history, onboardingStatus] = await Promise.all([
       Promise.resolve(nextTodayState ?? window.habits.getTodayState()),
-      window.habits.getHistory(),
+      window.habits.getHistory(historyLimit),
       window.habits.getOnboardingStatus(),
     ]);
     set((state: UseAppStoreState) => ({
       history,
+      historyLoadError: null,
+      historyScope,
+      isHistoryLoading: false,
       isOnboardingOpen:
         todayState.habits.length === 0 && !onboardingStatus.isComplete,
       onboardingStatus,

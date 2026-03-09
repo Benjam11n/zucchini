@@ -155,28 +155,60 @@ export default function App() {
   );
 
   if (tab === "history") {
-    renderedPage = (
-      <Suspense
-        fallback={
-          <DeferredPageFallback
-            description="Loading history and weekly review charts."
-            title="Loading history"
-          />
-        }
-      >
-        <HistoryPage
-          history={state.history}
-          todayDate={state.todayState.date}
-          onSelectWeeklyReview={(weekStart) => {
-            void actions.handleWeeklyReviewSelect(weekStart);
-          }}
-          selectedWeeklyReview={state.selectedWeeklyReview}
-          weeklyReviewError={state.weeklyReviewError}
-          weeklyReviewOverview={state.weeklyReviewOverview}
-          weeklyReviewPhase={state.weeklyReviewPhase}
+    if (state.isHistoryLoading && state.historyScope !== "full") {
+      renderedPage = (
+        <DeferredPageFallback
+          description="Loading your full history timeline."
+          title="Loading history"
         />
-      </Suspense>
-    );
+      );
+    } else if (state.historyLoadError && state.historyScope !== "full") {
+      renderedPage = (
+        <div className="flex min-h-[320px] items-center justify-center bg-background px-6 text-foreground">
+          <Card className="w-full max-w-md">
+            <CardHeader className="items-center text-center">
+              <CardTitle>Could not load history</CardTitle>
+              <CardDescription>
+                {state.historyLoadError.message}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-6 pt-0 pb-6">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  void actions.handleRetryHistoryLoad();
+                }}
+              >
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    } else {
+      renderedPage = (
+        <Suspense
+          fallback={
+            <DeferredPageFallback
+              description="Loading history and weekly review charts."
+              title="Loading history"
+            />
+          }
+        >
+          <HistoryPage
+            history={state.history}
+            todayDate={state.todayState.date}
+            onSelectWeeklyReview={(weekStart) => {
+              void actions.handleWeeklyReviewSelect(weekStart);
+            }}
+            selectedWeeklyReview={state.selectedWeeklyReview}
+            weeklyReviewError={state.weeklyReviewError}
+            weeklyReviewOverview={state.weeklyReviewOverview}
+            weeklyReviewPhase={state.weeklyReviewPhase}
+          />
+        </Suspense>
+      );
+    }
   }
 
   if (tab === "settings") {

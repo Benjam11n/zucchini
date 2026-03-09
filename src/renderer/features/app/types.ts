@@ -21,6 +21,9 @@ export type WeeklyReviewPhase = "error" | "idle" | "loading" | "ready";
 export interface AppState {
   bootError: HabitsIpcError | null;
   bootPhase: "error" | "loading" | "ready";
+  historyLoadError: HabitsIpcError | null;
+  historyScope: "full" | "recent";
+  isHistoryLoading: boolean;
   todayState: TodayState | null;
   history: HistoryDay[];
   isOnboardingOpen: boolean;

@@ -137,4 +137,24 @@ describe("registerIpcHandlers()", () => {
       ok: false,
     });
   });
+
+  it("passes validated history limits through to the service", async () => {
+    resetHandlers();
+    const service = createService();
+
+    registerIpcHandlers({
+      onSettingsChanged: vi.fn(),
+      service,
+    });
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.getHistory);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, 14)
+    ).resolves.toStrictEqual({
+      data: [],
+      ok: true,
+    });
+    expect(service.getHistory).toHaveBeenCalledWith(14);
+  });
 });

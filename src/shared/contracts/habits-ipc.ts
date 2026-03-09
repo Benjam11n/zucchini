@@ -103,7 +103,7 @@ export interface HabitApi {
   getOnboardingStatus: () => Promise<OnboardingStatus>;
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
-  getHistory: () => Promise<HistoryDay[]>;
+  getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;

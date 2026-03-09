@@ -43,7 +43,8 @@ const habitsApi: HabitApi = {
     category: HabitCategory,
     frequency: HabitFrequency
   ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
-  getHistory: () => invokeHabits(HABITS_IPC_CHANNELS.getHistory),
+  getHistory: (limit?: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.getHistory, limit),
   getOnboardingStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getOnboardingStatus),
   getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),

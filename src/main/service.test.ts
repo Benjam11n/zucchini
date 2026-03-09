@@ -58,6 +58,7 @@ class FakeClock implements Clock {
 
 class FakeRepository implements HabitRepository {
   failTransactionForLabel: string | null = null;
+  initializeCalls = 0;
   habits: Habit[] = [
     {
       category: "productivity",
@@ -105,9 +106,12 @@ class FakeRepository implements HabitRepository {
     completedAt: null,
     isComplete: false,
   };
+  seedDefaultsCalls = 0;
   transactionLabels: string[] = [];
 
-  initializeSchema(): void {}
+  initializeSchema(): void {
+    this.initializeCalls += 1;
+  }
   runInTransaction<A>(label: string, execute: () => A): A {
     this.transactionLabels.push(label);
     if (this.failTransactionForLabel === label) {
@@ -116,7 +120,9 @@ class FakeRepository implements HabitRepository {
 
     return execute();
   }
-  seedDefaults(): void {}
+  seedDefaults(): void {
+    this.seedDefaultsCalls += 1;
+  }
 
   getOnboardingStatus(): OnboardingStatus {
     return { ...this.onboardingStatus };
@@ -734,6 +740,50 @@ describe("history retrieval", () => {
     ]);
     expect(history[1]?.summary.freezeUsed).toBeFalsy();
     expect(history[0]?.categoryProgress).toHaveLength(3);
+  });
+
+  it("limits history responses without dropping today's preview", () => {
+    const repository = new FakeRepository();
+    repository.dailySummaries.set("2026-03-07", {
+      allCompleted: true,
+      completedAt: "2026-03-07T21:00:00.000Z",
+      date: "2026-03-07",
+      freezeUsed: false,
+      streakCountAfterDay: 4,
+    });
+    repository.dailySummaries.set("2026-03-06", {
+      allCompleted: false,
+      completedAt: null,
+      date: "2026-03-06",
+      freezeUsed: false,
+      streakCountAfterDay: 3,
+    });
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const history = service.getHistory(2);
+
+    expect(history.map((day) => day.date)).toStrictEqual([
+      "2026-03-08",
+      "2026-03-07",
+    ]);
+  });
+
+  it("initializes storage only once across repeated reads", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+    service.getHistory();
+
+    expect(repository.initializeCalls).toBe(1);
+    expect(repository.seedDefaultsCalls).toBe(1);
   });
 });
 

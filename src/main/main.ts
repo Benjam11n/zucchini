@@ -147,11 +147,28 @@ const tray = createAppTray({
   onSnooze: (settings) => reminders.snooze(settings),
 });
 
+function applyRuntimeSettings(settings: AppSettings): void {
+  applyLoginItemSettings(settings);
+  reminders.schedule(settings);
+  applyThemeMode(settings.themeMode);
+  tray.applySettings(settings);
+  trayEnabled = settings.minimizeToTray;
+}
+
+function warmAppRuntime(): void {
+  setTimeout(() => {
+    try {
+      const today = service.getTodayState();
+      applyRuntimeSettings(today.settings);
+    } catch (error) {
+      console.error("Failed to warm app runtime.", error);
+    }
+  }, 0);
+}
+
 void app.whenReady().then(() => {
   Effect.runSync(
     Effect.sync(() => {
-      service.initialize();
-
       if (process.platform === "darwin" && app.dock) {
         const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
         if (!icon.isEmpty()) {
@@ -160,23 +177,12 @@ void app.whenReady().then(() => {
       }
 
       registerIpcHandlers({
-        onSettingsChanged: (settings) => {
-          applyLoginItemSettings(settings);
-          reminders.schedule(settings);
-          applyThemeMode(settings.themeMode);
-          tray.applySettings(settings);
-          trayEnabled = settings.minimizeToTray;
-        },
+        onSettingsChanged: applyRuntimeSettings,
         service,
       });
 
-      const today = service.getTodayState();
-      applyLoginItemSettings(today.settings);
-      applyThemeMode(today.settings.themeMode);
-      reminders.schedule(today.settings);
-      tray.applySettings(today.settings);
-      trayEnabled = today.settings.minimizeToTray;
       createWindow();
+      warmAppRuntime();
     })
   );
 
