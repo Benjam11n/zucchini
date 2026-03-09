@@ -15,19 +15,14 @@ import {
 
 const DAY_IN_WEEK = 7;
 
-function getContributionStatus(summary: DailySummary | null): HistoryStatus {
+function getContributionStatus(
+  summary: DailySummary | null,
+  isToday?: boolean
+): HistoryStatus {
   if (!summary) {
-    return "empty";
+    return isToday ? "in-progress" : "empty";
   }
 
-  if (summary.freezeUsed) {
-    return "freeze";
-  }
-
-  return summary.allCompleted ? "complete" : "missed";
-}
-
-export function getActivityStatus(summary: DailySummary): HistoryStatus {
   if (summary.freezeUsed) {
     return "freeze";
   }
@@ -36,10 +31,28 @@ export function getActivityStatus(summary: DailySummary): HistoryStatus {
     return "complete";
   }
 
-  return "missed";
+  return isToday ? "in-progress" : "missed";
 }
 
-export function getActivitySummary(summary: DailySummary): string {
+export function getActivityStatus(
+  summary: DailySummary,
+  isToday?: boolean
+): HistoryStatus {
+  if (summary.freezeUsed) {
+    return "freeze";
+  }
+
+  if (summary.allCompleted) {
+    return "complete";
+  }
+
+  return isToday ? "in-progress" : "missed";
+}
+
+export function getActivitySummary(
+  summary: DailySummary,
+  isToday?: boolean
+): string {
   if (summary.freezeUsed) {
     return "Missed day covered by a freeze";
   }
@@ -48,11 +61,14 @@ export function getActivitySummary(summary: DailySummary): string {
     return "All habits completed";
   }
 
-  return "Incomplete day";
+  return isToday ? "In progress" : "Incomplete day";
 }
 
-export function getActivityBadgeLabel(summary: DailySummary): string {
-  const status = getActivityStatus(summary);
+export function getActivityBadgeLabel(
+  summary: DailySummary,
+  isToday?: boolean
+): string {
+  const status = getActivityStatus(summary, isToday);
 
   if (status === "complete") {
     return "Complete";
@@ -60,6 +76,10 @@ export function getActivityBadgeLabel(summary: DailySummary): string {
 
   if (status === "freeze") {
     return "Freeze";
+  }
+
+  if (status === "in-progress") {
+    return "In Progress";
   }
 
   return "Missed";
@@ -94,10 +114,11 @@ export function buildContributionWeeks(
   while (cursor.localeCompare(lastCellDate) <= 0) {
     const summary = summaryByDate.get(cursor) ?? null;
 
+    const isToday = cursor === lastDate;
     cells.push({
       date: cursor,
-      isToday: cursor === lastDate,
-      status: getContributionStatus(summary),
+      isToday,
+      status: getContributionStatus(summary, isToday),
       summary,
     });
 
@@ -165,6 +186,10 @@ export function formatContributionLabel(cell: ContributionCell): string {
 
   if (cell.summary.allCompleted) {
     return `${dateLabel}: all habits complete`;
+  }
+
+  if (cell.isToday && !cell.summary?.allCompleted) {
+    return `${dateLabel}: in progress`;
   }
 
   return `${dateLabel}: incomplete`;

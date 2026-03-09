@@ -80,6 +80,7 @@ export default function App() {
 
   let renderedPage = (
     <TodayPage
+      history={state.history}
       state={state.todayState}
       onToggleHabit={actions.handleToggleHabit}
     />
@@ -89,6 +90,7 @@ export default function App() {
     renderedPage = (
       <HistoryPage
         history={state.history}
+        todayDate={state.todayState.date}
         onSelectWeeklyReview={(weekStart) => {
           void actions.handleWeeklyReviewSelect(weekStart);
         }}

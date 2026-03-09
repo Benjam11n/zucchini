@@ -9,6 +9,7 @@ import type {
 
 export interface HistoryPageProps {
   history: HistoryDay[];
+  todayDate: string;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: HabitsIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;

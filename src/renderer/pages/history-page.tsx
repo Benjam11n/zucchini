@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryCalendarCard } from "@/renderer/features/history/history-calendar-card";
 import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
 import type {
@@ -122,6 +123,7 @@ function WeeklyReviewSection({
 
 export function HistoryPage({
   history,
+  todayDate,
   onSelectWeeklyReview,
   selectedWeeklyReview,
   weeklyReviewError,
@@ -230,38 +232,55 @@ export function HistoryPage({
           </Card>
         </m.section>
 
-        <m.section variants={staggerItemVariants}>
-          <WeeklyReviewSection
-            onSelectWeeklyReview={onSelectWeeklyReview}
-            selectedWeeklyReview={selectedWeeklyReview}
-            weeklyReviewError={weeklyReviewError}
-            weeklyReviewOverview={weeklyReviewOverview}
-            weeklyReviewPhase={weeklyReviewPhase}
-          />
-        </m.section>
+        <Tabs defaultValue="daily" className="w-full">
+          <m.section variants={staggerItemVariants}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="daily">Daily View</TabsTrigger>
+              <TabsTrigger value="weekly">Weekly View</TabsTrigger>
+            </TabsList>
+          </m.section>
 
-        <m.div
-          className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]"
-          variants={staggerItemVariants}
-        >
-          <Card>
-            <CardContent className="space-y-5">
-              <GitHubCalendar weeks={calendarWeeks} />
-            </CardContent>
-          </Card>
+          <TabsContent value="daily">
+            <m.div
+              className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]"
+              variants={staggerItemVariants}
+            >
+              <Card>
+                <CardContent className="space-y-5">
+                  <GitHubCalendar weeks={calendarWeeks} />
+                </CardContent>
+              </Card>
 
-          <div className="grid gap-4">
-            <HistoryCalendarCard
-              historyByDate={historyByDate}
-              historyCalendarContextValue={historyCalendarContextValue}
-              onSelectDateKey={setSelectedDateKey}
-              selectedDay={selectedDay}
-              setVisibleMonth={setVisibleMonth}
-              visibleMonth={visibleMonth}
-            />
-            <HistoryDayPanel selectedDay={selectedDay} />
-          </div>
-        </m.div>
+              <div className="grid gap-4">
+                <HistoryCalendarCard
+                  historyByDate={historyByDate}
+                  historyCalendarContextValue={historyCalendarContextValue}
+                  onSelectDateKey={setSelectedDateKey}
+                  selectedDay={selectedDay}
+                  setVisibleMonth={setVisibleMonth}
+                  visibleMonth={visibleMonth}
+                />
+                <HistoryDayPanel
+                  selectedDay={selectedDay}
+                  isToday={selectedDay?.date === todayDate}
+                />
+              </div>
+            </m.div>
+          </TabsContent>
+
+          <TabsContent value="weekly">
+            <m.section variants={staggerItemVariants}>
+              <WeeklyReviewSection
+                todayDate={todayDate}
+                onSelectWeeklyReview={onSelectWeeklyReview}
+                selectedWeeklyReview={selectedWeeklyReview}
+                weeklyReviewError={weeklyReviewError}
+                weeklyReviewOverview={weeklyReviewOverview}
+                weeklyReviewPhase={weeklyReviewPhase}
+              />
+            </m.section>
+          </TabsContent>
+        </Tabs>
       </m.div>
     </LazyMotion>
   );

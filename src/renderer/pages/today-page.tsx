@@ -4,6 +4,7 @@ import { ListChecks } from "lucide-react";
 import { HabitChecklist } from "@/components/habit-checklist";
 import { LongerHabitChecklist } from "@/components/longer-habit-checklist";
 import { StreakCard } from "@/components/streak-card";
+import { TodayHistoryCarousel } from "@/renderer/features/today/today-history-carousel";
 import { TodayPopupStack } from "@/renderer/features/today/today-popup-stack";
 import { useTodayPopups } from "@/renderer/features/today/use-today-popups";
 import {
@@ -12,13 +13,15 @@ import {
 } from "@/renderer/lib/motion";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
+import type { HistoryDay } from "@/shared/domain/history";
 
 interface TodayPageProps {
+  history: HistoryDay[];
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
 }
 
-export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
+export function TodayPage({ history, state, onToggleHabit }: TodayPageProps) {
   const dailyHabits = state.habits.filter(isDailyHabit);
   const periodicHabits = state.habits.filter((habit) => !isDailyHabit(habit));
   const categoryProgress = getHabitCategoryProgress(dailyHabits);
@@ -33,6 +36,10 @@ export function TodayPage({ state, onToggleHabit }: TodayPageProps) {
         initial="initial"
         variants={staggerContainerVariants}
       >
+        <motion.section variants={staggerItemVariants}>
+          <TodayHistoryCarousel history={history} todayDate={state.date} />
+        </motion.section>
+
         <motion.section variants={staggerItemVariants}>
           <StreakCard
             availableFreezes={state.streak.availableFreezes}

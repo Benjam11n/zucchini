@@ -21,9 +21,13 @@ import { HistoryHabitColumn } from "./history-habit-column";
 
 interface HistoryDayPanelProps {
   selectedDay: HistoryDay | null;
+  isToday?: boolean;
 }
 
-export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
+export function HistoryDayPanel({
+  selectedDay,
+  isToday,
+}: HistoryDayPanelProps) {
   if (!selectedDay) {
     return (
       <div className="rounded-2xl border border-dashed border-border/60 bg-background/20 p-4 text-sm text-muted-foreground">
@@ -33,10 +37,12 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
     );
   }
 
-  const dailyHabits = selectedDay.habits.filter((h) => h.frequency === "daily");
-  const longTermHabits = selectedDay.habits.filter(
-    (h) => h.frequency !== "daily"
-  );
+  const uniqueHabits = [
+    ...new Map(selectedDay.habits.map((h) => [h.id, h])).values(),
+  ];
+
+  const dailyHabits = uniqueHabits.filter((h) => h.frequency === "daily");
+  const longTermHabits = uniqueHabits.filter((h) => h.frequency !== "daily");
 
   const completedDaily = dailyHabits.filter((habit) => habit.completed);
   const remainingDaily = dailyHabits.filter((habit) => !habit.completed);
@@ -65,18 +71,18 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
               })}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {getActivitySummary(selectedDay.summary)}
+              {getActivitySummary(selectedDay.summary, isToday)}
             </p>
           </div>
 
           <Badge
             className={
-              HISTORY_STATUS_UI[getActivityStatus(selectedDay.summary)]
+              HISTORY_STATUS_UI[getActivityStatus(selectedDay.summary, isToday)]
                 .badgeClassName
             }
             variant="outline"
           >
-            {getActivityBadgeLabel(selectedDay.summary)}
+            {getActivityBadgeLabel(selectedDay.summary, isToday)}
           </Badge>
         </div>
 
@@ -93,7 +99,7 @@ export function HistoryDayPanel({ selectedDay }: HistoryDayPanelProps) {
               {selectedDay.summary.freezeUsed ? (
                 <motion.div
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-2 rounded-full border border-secondary/60 bg-secondary/12 px-3 py-1 text-xs text-secondary-foreground"
+                  className="flex items-center gap-2 rounded-full border border-secondary/60 bg-secondary/12 px-3 py-1 text-xs text-secondary-foreground dark:text-secondary"
                   initial={{ opacity: 0, scale: 0.94 }}
                   transition={microTransition}
                 >

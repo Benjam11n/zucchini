@@ -1,4 +1,9 @@
-export type HistoryStatus = "complete" | "empty" | "freeze" | "missed";
+export type HistoryStatus =
+  | "complete"
+  | "empty"
+  | "freeze"
+  | "missed"
+  | "in-progress";
 
 export const HISTORY_STATUS_UI: Record<
   HistoryStatus,
@@ -21,6 +26,11 @@ export const HISTORY_STATUS_UI: Record<
     badgeClassName:
       "border-secondary/65 bg-secondary text-secondary-foreground dark:border-secondary/70 dark:bg-secondary/90 dark:text-secondary-foreground",
     squareClassName: "border-secondary/80 bg-secondary/75",
+  },
+  "in-progress": {
+    badgeClassName:
+      "border-orange-500/35 bg-orange-500/8 text-orange-600 dark:border-orange-500/45 dark:bg-orange-500/14 dark:text-orange-400",
+    squareClassName: "border-orange-500/80 bg-orange-500/50",
   },
   missed: {
     badgeClassName:
