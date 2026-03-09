@@ -29,8 +29,8 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
               <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-1 lg:text-center">
                 <img
                   alt="Zucchini logo"
-                  className="size-12 object-contain"
-                  src={MASCOTS.base}
+                  className="size-12 object-contain rounded"
+                  src={MASCOTS.icon}
                 />
                 <span className="text-sm font-black tracking-tight text-foreground">
                   Zucchini
