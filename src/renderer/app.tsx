@@ -38,21 +38,32 @@ const WeeklyReviewSpotlightDialog = lazy(async () => {
   return { default: module.WeeklyReviewSpotlightDialog };
 });
 
-function DeferredPageFallback({
+function LoadingStateCard({
   description,
+  fullscreen = false,
   title,
 }: {
   description: string;
+  fullscreen?: boolean;
   title: string;
 }) {
   return (
     <div
       aria-busy="true"
-      className="flex min-h-[320px] items-center justify-center px-6 py-10 text-foreground"
+      className={
+        fullscreen
+          ? "flex min-h-screen items-center justify-center bg-background px-6 text-foreground"
+          : "flex min-h-[320px] items-center justify-center px-6 py-10 text-foreground"
+      }
     >
       <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col items-center justify-center gap-4 px-6 pt-8 pb-0">
+        <CardContent className="flex flex-col items-center justify-center gap-6 px-6 pt-10 pb-0">
           <Spinner className="size-8 text-primary/60" />
+          <img
+            alt="Loading Zucchini mascot"
+            className="size-28 object-contain"
+            src={MASCOTS.loading}
+          />
         </CardContent>
         <CardHeader className="items-center text-center">
           <CardTitle>{title}</CardTitle>
@@ -68,24 +79,11 @@ export default function App() {
 
   if (state.bootPhase === "loading") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center gap-6 px-6 pt-10 pb-0">
-            <Spinner className="size-8 text-primary/60" />
-            <img
-              alt="Loading Zucchini mascot"
-              className="size-28 object-contain"
-              src={MASCOTS.loading}
-            />
-          </CardContent>
-          <CardHeader className="items-center text-center">
-            <CardTitle>Loading</CardTitle>
-            <CardDescription>
-              Preparing your local habit dashboard.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </main>
+      <LoadingStateCard
+        description="Preparing your local habit dashboard."
+        fullscreen
+        title="Loading"
+      />
     );
   }
 
@@ -129,7 +127,7 @@ export default function App() {
     return (
       <Suspense
         fallback={
-          <DeferredPageFallback
+          <LoadingStateCard
             description="Preparing your onboarding flow."
             title="Loading setup"
           />
@@ -157,7 +155,7 @@ export default function App() {
   if (tab === "history") {
     if (state.isHistoryLoading && state.historyScope !== "full") {
       renderedPage = (
-        <DeferredPageFallback
+        <LoadingStateCard
           description="Loading your full history timeline."
           title="Loading history"
         />
@@ -189,7 +187,7 @@ export default function App() {
       renderedPage = (
         <Suspense
           fallback={
-            <DeferredPageFallback
+            <LoadingStateCard
               description="Loading history and weekly review charts."
               title="Loading history"
             />
@@ -215,7 +213,7 @@ export default function App() {
     renderedPage = (
       <Suspense
         fallback={
-          <DeferredPageFallback
+          <LoadingStateCard
             description="Loading settings and habit management tools."
             title="Loading settings"
           />

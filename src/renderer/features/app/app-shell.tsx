@@ -8,6 +8,7 @@ import { MASCOTS } from "@/renderer/lib/mascots";
 import { pageVariants } from "@/renderer/lib/motion";
 
 import type { Tab } from "./types";
+import { UpdateButton } from "./update-button";
 
 interface AppShellProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
   return (
     <MotionConfig reducedMotion="user">
       <main className="min-h-screen bg-background text-foreground">
+        <UpdateButton />
         <Tabs
           className="grid min-h-screen lg:grid-cols-[96px_1fr]"
           onValueChange={(value) => onTabChange(value as Tab)}

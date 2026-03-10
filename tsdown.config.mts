@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 const shared = {
-  external: ["better-sqlite3", "electron"],
+  external: ["better-sqlite3", "electron", "electron-updater"],
   format: "cjs" as const,
   outDir: "dist-electron",
   outExtensions: () => ({ js: ".js" }),

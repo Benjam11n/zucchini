@@ -327,6 +327,6 @@ describe("useAppStore weekly review refresh", () => {
 
     await useAppStore.getState().handleRenameHabit(1, "Make buried chapters");
 
-    expect(getHistoryMock).toHaveBeenLastCalledWith(undefined);
+    expect(getHistoryMock).toHaveBeenLastCalledWith();
   });
 });

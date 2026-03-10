@@ -367,11 +367,13 @@ export const useAppStore = create<UseAppStoreState>()((set, get) => ({
     nextTodayState?: TodayState,
     historyScope = get().historyScope
   ) => {
-    const historyLimit =
-      historyScope === "recent" ? RECENT_HISTORY_LIMIT : undefined;
+    const historyPromise =
+      historyScope === "recent"
+        ? window.habits.getHistory(RECENT_HISTORY_LIMIT)
+        : window.habits.getHistory();
     const [todayState, history, onboardingStatus] = await Promise.all([
       Promise.resolve(nextTodayState ?? window.habits.getTodayState()),
-      window.habits.getHistory(historyLimit),
+      historyPromise,
       window.habits.getOnboardingStatus(),
     ]);
     set((state: UseAppStoreState) => ({

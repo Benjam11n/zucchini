@@ -1,0 +1,206 @@
+/* eslint-disable vitest/prefer-called-once */
+
+import {
+  registerAppUpdater,
+  resolveAppUpdateSupportMode,
+} from "@/main/app-updater";
+import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
+import type { AppUpdateState } from "@/shared/contracts/app-updater";
+
+class FakeAutoUpdater {
+  autoDownload = true;
+  autoInstallOnAppQuit = true;
+  forceDevUpdateConfig = false;
+  logger:
+    | {
+        error: (...args: unknown[]) => void;
+        info: (...args: unknown[]) => void;
+        warn: (...args: unknown[]) => void;
+      }
+    | undefined;
+  downloadUpdate = vi.fn(async () => {});
+  checkForUpdates = vi.fn(async () => {});
+  quitAndInstall = vi.fn();
+
+  private readonly listeners = new Map<
+    string,
+    ((...args: unknown[]) => void)[]
+  >();
+
+  on(event: string, listener: (...args: unknown[]) => void): void {
+    const nextListeners = this.listeners.get(event) ?? [];
+    nextListeners.push(listener);
+    this.listeners.set(event, nextListeners);
+  }
+
+  emit(event: string, ...args: unknown[]): void {
+    for (const listener of this.listeners.get(event) ?? []) {
+      listener(...args);
+    }
+  }
+}
+
+describe("registerAppUpdater()", () => {
+  function createController({
+    supportsAutoUpdates = true,
+  }: {
+    supportsAutoUpdates?: boolean;
+  } = {}) {
+    const updater = new FakeAutoUpdater();
+    const handlers = new Map<string, () => unknown | Promise<unknown>>();
+    const broadcastState = vi.fn<(state: AppUpdateState) => void>();
+    const scheduleInterval = vi.fn();
+    const scheduleTimeout = vi.fn();
+    const log = {
+      error: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+    };
+
+    const controller = registerAppUpdater({
+      broadcastState,
+      currentVersion: "0.1.0",
+      handleIpc: (channel, handler) => {
+        handlers.set(channel, handler);
+      },
+      log,
+      scheduleInterval,
+      scheduleTimeout,
+      supportMode: supportsAutoUpdates ? "production" : "disabled",
+      updater,
+    });
+
+    return {
+      broadcastState,
+      controller,
+      handlers,
+      log,
+      scheduleInterval,
+      scheduleTimeout,
+      updater,
+    };
+  }
+
+  it("registers manual download and install handlers", async () => {
+    const { handlers, updater } = createController();
+
+    updater.emit("update-available", {
+      version: "0.2.0",
+    });
+
+    await handlers.get(APP_UPDATER_CHANNELS.downloadUpdate)?.();
+
+    expect(updater.downloadUpdate).toHaveBeenCalledTimes(1);
+
+    updater.emit("update-downloaded", {
+      version: "0.2.0",
+    });
+
+    await handlers.get(APP_UPDATER_CHANNELS.installUpdate)?.();
+
+    expect(updater.quitAndInstall).toHaveBeenCalledTimes(1);
+  });
+
+  it("broadcasts state changes from updater events", () => {
+    const { broadcastState, updater } = createController();
+
+    updater.emit("update-available", {
+      version: "0.2.0",
+    });
+    updater.emit("download-progress", {
+      percent: 48.6,
+    });
+
+    expect(broadcastState).toHaveBeenLastCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: null,
+      progressPercent: 49,
+      status: "downloading",
+    });
+  });
+
+  it("keeps update errors visible after a version is found", () => {
+    const { broadcastState, updater } = createController();
+
+    updater.emit("update-available", {
+      version: "0.2.0",
+    });
+    updater.emit("error", new Error("network down"));
+
+    expect(broadcastState).toHaveBeenLastCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: "Zucchini could not complete the update action.",
+      progressPercent: null,
+      status: "error",
+    });
+  });
+
+  it("stays unavailable when auto-updates are disabled", async () => {
+    const { controller, handlers, scheduleInterval, scheduleTimeout, updater } =
+      createController({
+        supportsAutoUpdates: false,
+      });
+
+    controller.start();
+
+    expect(controller.getState()).toStrictEqual({
+      availableVersion: null,
+      currentVersion: "0.1.0",
+      errorMessage: null,
+      progressPercent: null,
+      status: "unavailable",
+    });
+    expect(scheduleTimeout).not.toHaveBeenCalled();
+    expect(scheduleInterval).not.toHaveBeenCalled();
+
+    await handlers.get(APP_UPDATER_CHANNELS.downloadUpdate)?.();
+
+    expect(updater.downloadUpdate).not.toHaveBeenCalled();
+  });
+
+  it("schedules startup and periodic update checks", () => {
+    const { controller, scheduleInterval, scheduleTimeout } =
+      createController();
+
+    controller.start();
+
+    expect(scheduleTimeout).toHaveBeenCalledTimes(1);
+    expect(scheduleInterval).toHaveBeenCalledTimes(1);
+  });
+
+  it("enables the documented dev updater flow when dev-app-update.yml exists", () => {
+    const updater = new FakeAutoUpdater();
+
+    registerAppUpdater({
+      broadcastState: vi.fn(),
+      currentVersion: "0.1.0",
+      handleIpc: vi.fn(),
+      log: {
+        error: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      scheduleInterval: vi.fn(),
+      scheduleTimeout: vi.fn(),
+      supportMode: "development",
+      updater,
+    });
+
+    expect(updater.forceDevUpdateConfig).toBeTruthy();
+  });
+});
+
+describe("resolveAppUpdateSupportMode()", () => {
+  it("returns development when an unpackaged app has dev-app-update.yml", () => {
+    expect(
+      resolveAppUpdateSupportMode({
+        appIsPackaged: false,
+        hasConfigFile: false,
+        hasDevConfigFile: true,
+        platform: "darwin",
+      })
+    ).toBe("development");
+  });
+});

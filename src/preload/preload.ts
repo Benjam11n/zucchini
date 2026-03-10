@@ -1,5 +1,15 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type { IpcRendererEvent } from "electron";
 
+import {
+  APP_UPDATER_CHANNELS,
+  AppUpdaterIpcError,
+} from "@/shared/contracts/app-updater";
+import type {
+  AppUpdateState,
+  AppUpdaterApi,
+  AppUpdaterIpcResponse,
+} from "@/shared/contracts/app-updater";
 import {
   HABITS_IPC_CHANNELS,
   HabitsIpcError,
@@ -29,6 +39,18 @@ async function invokeHabits<T>(
   }
 
   throw new HabitsIpcError(response.error);
+}
+
+async function invokeUpdater<T>(channel: string): Promise<T> {
+  const response = (await ipcRenderer.invoke(
+    channel
+  )) as AppUpdaterIpcResponse<T>;
+
+  if (response.ok) {
+    return response.data;
+  }
+
+  throw new AppUpdaterIpcError(response.error);
 }
 
 const habitsApi: HabitApi = {
@@ -74,4 +96,28 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.updateSettings, settings),
 };
 
+const updaterApi: AppUpdaterApi = {
+  downloadUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.downloadUpdate),
+  getState: () => invokeUpdater<AppUpdateState>(APP_UPDATER_CHANNELS.getState),
+  installUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.installUpdate),
+  onStateChange: (listener) => {
+    const handleStateChange = (
+      _event: IpcRendererEvent,
+      state: AppUpdateState
+    ) => {
+      listener(state);
+    };
+
+    ipcRenderer.on(APP_UPDATER_CHANNELS.stateChanged, handleStateChange);
+
+    return () => {
+      ipcRenderer.removeListener(
+        APP_UPDATER_CHANNELS.stateChanged,
+        handleStateChange
+      );
+    };
+  },
+};
+
 contextBridge.exposeInMainWorld("habits", habitsApi);
+contextBridge.exposeInMainWorld("updater", updaterApi);

@@ -1,14 +1,22 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 import { Effect } from "effect";
 import {
   app,
   BrowserWindow,
+  ipcMain,
   nativeImage,
   nativeTheme,
   powerMonitor,
 } from "electron";
+import { autoUpdater } from "electron-updater";
 
+import {
+  registerAppUpdater,
+  resolveAppUpdateSupportMode,
+  serializeAppUpdaterIpcError,
+} from "@/main/app-updater";
 import { resolveRuntimeIconPath } from "@/main/assets";
 import { systemClock } from "@/main/clock";
 import { registerIpcHandlers } from "@/main/ipc";
@@ -21,6 +29,8 @@ import { SqliteHabitRepository } from "@/main/repository";
 import { createReminderScheduler } from "@/main/scheduler";
 import { HabitService } from "@/main/service";
 import { createAppTray } from "@/main/tray";
+import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
+import type { AppUpdateState } from "@/shared/contracts/app-updater";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 function getWindowBackgroundColor(): string {
@@ -129,6 +139,12 @@ function showMainWindow(): void {
   createWindow();
 }
 
+function broadcastUpdateState(state: AppUpdateState): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(APP_UPDATER_CHANNELS.stateChanged, state);
+  }
+}
+
 const service = new HabitService(new SqliteHabitRepository(), systemClock);
 const reminders = createReminderScheduler({
   clock: systemClock,
@@ -181,8 +197,45 @@ void app.whenReady().then(() => {
         service,
       });
 
+      const appUpdater = registerAppUpdater({
+        broadcastState: broadcastUpdateState,
+        currentVersion: app.getVersion(),
+        handleIpc: (channel, handler) => {
+          ipcMain.handle(channel, async () => {
+            try {
+              return {
+                data: await handler(),
+                ok: true,
+              };
+            } catch (error) {
+              console.error("App updater IPC failed.", error);
+
+              return {
+                error: serializeAppUpdaterIpcError(),
+                ok: false,
+              };
+            }
+          });
+        },
+        log: console,
+        scheduleInterval: globalThis.setInterval,
+        scheduleTimeout: globalThis.setTimeout,
+        supportMode: resolveAppUpdateSupportMode({
+          appIsPackaged: app.isPackaged,
+          hasConfigFile: existsSync(
+            path.join(process.resourcesPath, "app-update.yml")
+          ),
+          hasDevConfigFile: existsSync(
+            path.join(app.getAppPath(), "dev-app-update.yml")
+          ),
+          platform: process.platform,
+        }),
+        updater: autoUpdater,
+      });
+
       createWindow();
       warmAppRuntime();
+      appUpdater.start();
     })
   );
 

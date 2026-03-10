@@ -1,10 +1,15 @@
+/* eslint-disable vitest/prefer-called-once */
+
 import type * as ElectronModule from "electron";
 import type { ContextBridge, IpcRenderer } from "electron";
 
+import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type { HabitApi, TodayState } from "@/shared/contracts/habits-ipc";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();
+const on = vi.fn();
+const removeListener = vi.fn();
 
 vi.mock<typeof ElectronModule>(import("electron"), () => ({
   contextBridge: {
@@ -14,6 +19,8 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
   } as unknown as ContextBridge,
   ipcRenderer: {
     invoke,
+    on,
+    removeListener,
   } as unknown as IpcRenderer,
 }));
 
@@ -21,12 +28,18 @@ describe("preload habits API", () => {
   async function loadPreloadModule(): Promise<void> {
     exposed.clear();
     invoke.mockReset();
+    on.mockReset();
+    removeListener.mockReset();
     vi.resetModules();
     await import("./preload");
   }
 
   function getHabitsApi(): HabitApi {
     return exposed.get("habits") as HabitApi;
+  }
+
+  function getUpdaterApi(): AppUpdaterApi {
+    return exposed.get("updater") as AppUpdaterApi;
   }
 
   it("returns data for successful IPC responses", async () => {
@@ -77,6 +90,61 @@ describe("preload habits API", () => {
       details: ["habitId: Invalid input"],
       message: "Invalid payload for habit id.",
       name: "HabitsIpcError",
+    });
+  });
+
+  it("exposes update status subscriptions through the preload bridge", async () => {
+    await loadPreloadModule();
+
+    const listener = vi.fn();
+    const unsubscribe = getUpdaterApi().onStateChange(listener);
+
+    expect(on).toHaveBeenCalledTimes(1);
+
+    const [, handler] = on.mock.calls[0] as [
+      string,
+      (_event: unknown, state: unknown) => void,
+    ];
+
+    handler(
+      {},
+      {
+        availableVersion: "0.2.0",
+        currentVersion: "0.1.0",
+        errorMessage: null,
+        progressPercent: null,
+        status: "available",
+      }
+    );
+
+    expect(listener).toHaveBeenCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: null,
+      progressPercent: null,
+      status: "available",
+    });
+
+    unsubscribe();
+
+    expect(removeListener).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws AppUpdaterIpcError instances for updater error responses", async () => {
+    await loadPreloadModule();
+
+    invoke.mockResolvedValue({
+      error: {
+        code: "UPDATE_ERROR",
+        message: "Zucchini could not complete the update action.",
+      },
+      ok: false,
+    });
+
+    await expect(getUpdaterApi().getState()).rejects.toMatchObject({
+      code: "UPDATE_ERROR",
+      message: "Zucchini could not complete the update action.",
+      name: "AppUpdaterIpcError",
     });
   });
 });
