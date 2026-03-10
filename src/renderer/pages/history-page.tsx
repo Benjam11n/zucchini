@@ -1,4 +1,5 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
+import { BarChart3, CalendarDays } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { GitHubCalendar } from "@/components/custom/github-calendar";
@@ -237,9 +238,15 @@ export function HistoryPage({
 
         <Tabs defaultValue="daily" className="w-full">
           <m.section variants={staggerItemVariants}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="daily">Daily View</TabsTrigger>
-              <TabsTrigger value="weekly">Weekly View</TabsTrigger>
+            <TabsList className="mb-6 w-full rounded-2xl bg-muted/80 p-1">
+              <TabsTrigger className="flex-1" value="daily">
+                <CalendarDays className="size-4" />
+                Daily View
+              </TabsTrigger>
+              <TabsTrigger className="flex-1" value="weekly">
+                <BarChart3 className="size-4" />
+                Weekly View
+              </TabsTrigger>
             </TabsList>
           </m.section>
 

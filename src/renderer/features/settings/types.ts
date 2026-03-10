@@ -54,5 +54,4 @@ export interface HabitManagementCardProps {
     habitId: number,
     frequency: HabitFrequency
   ) => Promise<void>;
-  onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
 }

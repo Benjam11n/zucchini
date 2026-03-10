@@ -11,7 +11,6 @@ import {
 
 import { HabitRowEditor } from "./habit-row-editor";
 import { NewHabitForm } from "./new-habit-form";
-import { StarterPacksCard } from "./starter-packs-card";
 import type { HabitManagementCardProps } from "./types";
 
 export function HabitManagementCard({
@@ -22,42 +21,37 @@ export function HabitManagementCard({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
-  onApplyStarterPack,
 }: HabitManagementCardProps) {
   return (
-    <div className="grid gap-6">
-      <StarterPacksCard onApplyStarterPack={onApplyStarterPack} />
+    <Card>
+      <CardHeader>
+        <CardDescription>Habits</CardDescription>
+        <div className="flex items-center gap-2">
+          <ListTodo className="size-4 text-primary" />
+          <CardTitle>Manage</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        <LayoutGroup>
+          <AnimatePresence initial={false}>
+            {habits.map((habit, index) => (
+              <HabitRowEditor
+                key={habit.id}
+                habit={habit}
+                habits={habits}
+                index={index}
+                onArchiveHabit={onArchiveHabit}
+                onRenameHabit={onRenameHabit}
+                onReorderHabits={onReorderHabits}
+                onUpdateHabitCategory={onUpdateHabitCategory}
+                onUpdateHabitFrequency={onUpdateHabitFrequency}
+              />
+            ))}
+          </AnimatePresence>
+        </LayoutGroup>
 
-      <Card>
-        <CardHeader>
-          <CardDescription>Habits</CardDescription>
-          <div className="flex items-center gap-2">
-            <ListTodo className="size-4 text-primary" />
-            <CardTitle>Manage</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <LayoutGroup>
-            <AnimatePresence initial={false}>
-              {habits.map((habit, index) => (
-                <HabitRowEditor
-                  key={habit.id}
-                  habit={habit}
-                  habits={habits}
-                  index={index}
-                  onArchiveHabit={onArchiveHabit}
-                  onRenameHabit={onRenameHabit}
-                  onReorderHabits={onReorderHabits}
-                  onUpdateHabitCategory={onUpdateHabitCategory}
-                  onUpdateHabitFrequency={onUpdateHabitFrequency}
-                />
-              ))}
-            </AnimatePresence>
-          </LayoutGroup>
-
-          <NewHabitForm onCreateHabit={onCreateHabit} />
-        </CardContent>
-      </Card>
-    </div>
+        <NewHabitForm onCreateHabit={onCreateHabit} />
+      </CardContent>
+    </Card>
   );
 }
