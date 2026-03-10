@@ -1,9 +1,11 @@
 import type {
   ContributionCell,
+  ContributionIntensity,
   ContributionWeek,
   HistoryStats,
 } from "@/renderer/features/history/types";
 import type { HistoryStatus } from "@/renderer/lib/history-status";
+import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import {
@@ -14,6 +16,50 @@ import {
 } from "@/shared/utils/date";
 
 const DAY_IN_WEEK = 7;
+const MAX_CONTRIBUTION_INTENSITY = 4;
+
+function getUniqueDailyHabits(habits: HabitWithStatus[]): HabitWithStatus[] {
+  return [
+    ...new Map(
+      habits
+        .filter((habit) => habit.frequency === "daily")
+        .map((habit) => [habit.id, habit])
+    ).values(),
+  ];
+}
+
+function getCompletionCounts(day: HistoryDay | null): {
+  completedCount: number;
+  totalCount: number;
+} {
+  if (!day) {
+    return {
+      completedCount: 0,
+      totalCount: 0,
+    };
+  }
+
+  const dailyHabits = getUniqueDailyHabits(day.habits);
+
+  return {
+    completedCount: dailyHabits.filter((habit) => habit.completed).length,
+    totalCount: dailyHabits.length,
+  };
+}
+
+function getContributionIntensity(
+  completedCount: number,
+  maxCompletedCount: number
+): ContributionIntensity {
+  if (completedCount === 0 || maxCompletedCount === 0) {
+    return 0;
+  }
+
+  return Math.min(
+    MAX_CONTRIBUTION_INTENSITY,
+    Math.ceil((completedCount / maxCompletedCount) * MAX_CONTRIBUTION_INTENSITY)
+  ) as ContributionIntensity;
+}
 
 function getContributionStatus(
   summary: DailySummary | null,
@@ -104,22 +150,31 @@ export function buildContributionWeeks(
 
   const firstCellDate = startOfWeek(firstDate);
   const lastCellDate = endOfWeek(lastDate);
-  const summaryByDate = new Map(
-    sortedHistory.map((day) => [day.date, day.summary])
-  );
+  const historyDayByDate = new Map(sortedHistory.map((day) => [day.date, day]));
+  let maxCompletedCount = 0;
+
+  for (const day of sortedHistory) {
+    const { completedCount } = getCompletionCounts(day);
+    maxCompletedCount = Math.max(maxCompletedCount, completedCount);
+  }
   const cells: ContributionCell[] = [];
 
   let cursor = firstCellDate;
 
   while (cursor.localeCompare(lastCellDate) <= 0) {
-    const summary = summaryByDate.get(cursor) ?? null;
+    const day = historyDayByDate.get(cursor) ?? null;
+    const summary = day?.summary ?? null;
+    const { completedCount, totalCount } = getCompletionCounts(day);
 
     const isToday = cursor === lastDate;
     cells.push({
+      completedCount,
       date: cursor,
+      intensity: getContributionIntensity(completedCount, maxCompletedCount),
       isToday,
       status: getContributionStatus(summary, isToday),
       summary,
+      totalCount,
     });
 
     cursor = addDays(cursor, 1);
@@ -180,17 +235,23 @@ export function formatContributionLabel(cell: ContributionCell): string {
     return `${dateLabel}: no tracked data`;
   }
 
+  if (cell.totalCount === 0) {
+    return `${dateLabel}: no daily habits tracked`;
+  }
+
+  const completionLabel = `${cell.completedCount} of ${cell.totalCount} daily habits completed`;
+
   if (cell.summary.freezeUsed) {
-    return `${dateLabel}: missed day covered by a freeze`;
+    return `${dateLabel}: ${completionLabel}, freeze used to preserve streak`;
   }
 
   if (cell.summary.allCompleted) {
-    return `${dateLabel}: all habits complete`;
+    return `${dateLabel}: ${completionLabel}`;
   }
 
-  if (cell.isToday && !cell.summary?.allCompleted) {
-    return `${dateLabel}: in progress`;
+  if (cell.isToday) {
+    return `${dateLabel}: ${completionLabel} so far`;
   }
 
-  return `${dateLabel}: incomplete`;
+  return `${dateLabel}: ${completionLabel}`;
 }

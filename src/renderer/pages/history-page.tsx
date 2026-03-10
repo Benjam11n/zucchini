@@ -145,10 +145,13 @@ export function HistoryPage({
   const calendarWeeks = buildContributionWeeks(history).map((week) => ({
     ...week,
     cells: week.cells.map((cell) => ({
+      completedCount: cell.completedCount,
       date: cell.date,
+      intensity: cell.intensity,
       isToday: cell.isToday,
       label: formatContributionLabel(cell),
       status: cell.status,
+      totalCount: cell.totalCount,
     })),
   }));
 

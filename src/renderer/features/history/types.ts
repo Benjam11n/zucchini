@@ -23,11 +23,16 @@ export interface HistoryCalendarContextValue {
   selectedDateKey: string | null;
 }
 
+export type ContributionIntensity = 0 | 1 | 2 | 3 | 4;
+
 export interface ContributionCell {
+  completedCount: number;
   date: string;
+  intensity: ContributionIntensity;
   isToday: boolean;
   status: HistoryStatus;
   summary: DailySummary | null;
+  totalCount: number;
 }
 
 export interface ContributionWeek {
