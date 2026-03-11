@@ -1,8 +1,6 @@
-import { motion } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
 import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
-import { staggerItemVariants } from "@/renderer/lib/motion";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
@@ -92,11 +90,7 @@ export function LongerHabitChecklist({
         ).length;
 
         return (
-          <motion.div
-            key={section.value}
-            className="grid gap-3"
-            variants={staggerItemVariants}
-          >
+          <div key={section.value} className="grid gap-3">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div className="grid gap-1">
                 <div className="flex items-center gap-2">
@@ -132,7 +126,7 @@ export function LongerHabitChecklist({
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         );
       })}
     </HabitListCard>

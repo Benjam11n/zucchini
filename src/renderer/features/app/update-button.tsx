@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { Download, Rocket, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -147,44 +146,37 @@ export function UpdateButton() {
   const isRestartReady = state.status === "downloaded";
 
   return (
-    <AnimatePresence>
-      <motion.div
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
-        exit={{ opacity: 0, x: -16, y: 16 }}
-        initial={{ opacity: 0, x: -16, y: 16 }}
+    <div className="pointer-events-none fixed bottom-4 left-4 z-50 animate-in fade-in-0 slide-in-from-bottom-4 slide-in-from-left-4 duration-200 sm:bottom-6 sm:left-6">
+      <Button
+        className={cn(
+          "pointer-events-auto h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 px-4 py-3 text-left shadow-lg backdrop-blur-sm",
+          isRestartReady
+            ? "bg-secondary text-secondary-foreground"
+            : "bg-card text-card-foreground hover:bg-card/90"
+        )}
+        disabled={isPending || isDownloading}
+        onClick={() => {
+          void handleClick();
+        }}
+        variant={isRestartReady ? "secondary" : "outline"}
       >
-        <Button
-          className={cn(
-            "pointer-events-auto h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 px-4 py-3 text-left shadow-lg backdrop-blur-sm",
-            isRestartReady
-              ? "bg-secondary text-secondary-foreground"
-              : "bg-card text-card-foreground hover:bg-card/90"
-          )}
-          disabled={isPending || isDownloading}
-          onClick={() => {
-            void handleClick();
-          }}
-          variant={isRestartReady ? "secondary" : "outline"}
-        >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-            {getButtonIcon({
-              isDownloading,
-              isPending,
-              status: state.status,
-            })}
-          </span>
+        <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+          {getButtonIcon({
+            isDownloading,
+            isPending,
+            status: state.status,
+          })}
+        </span>
 
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-semibold tracking-tight">
-              {actionLabel}
-            </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {actionError ?? detailLabel}
-            </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-semibold tracking-tight">
+            {actionLabel}
           </span>
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+          <span className="truncate text-xs text-muted-foreground">
+            {actionError ?? detailLabel}
+          </span>
+        </span>
+      </Button>
+    </div>
   );
 }

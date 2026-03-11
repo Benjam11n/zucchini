@@ -1,4 +1,3 @@
-import { AnimatePresence, LayoutGroup } from "framer-motion";
 import { ListTodo } from "lucide-react";
 
 import {
@@ -32,23 +31,19 @@ export function HabitManagementCard({
         </div>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <LayoutGroup>
-          <AnimatePresence initial={false}>
-            {habits.map((habit, index) => (
-              <HabitRowEditor
-                key={habit.id}
-                habit={habit}
-                habits={habits}
-                index={index}
-                onArchiveHabit={onArchiveHabit}
-                onRenameHabit={onRenameHabit}
-                onReorderHabits={onReorderHabits}
-                onUpdateHabitCategory={onUpdateHabitCategory}
-                onUpdateHabitFrequency={onUpdateHabitFrequency}
-              />
-            ))}
-          </AnimatePresence>
-        </LayoutGroup>
+        {habits.map((habit, index) => (
+          <HabitRowEditor
+            key={habit.id}
+            habit={habit}
+            habits={habits}
+            index={index}
+            onArchiveHabit={onArchiveHabit}
+            onRenameHabit={onRenameHabit}
+            onReorderHabits={onReorderHabits}
+            onUpdateHabitCategory={onUpdateHabitCategory}
+            onUpdateHabitFrequency={onUpdateHabitFrequency}
+          />
+        ))}
 
         <NewHabitForm onCreateHabit={onCreateHabit} />
       </CardContent>

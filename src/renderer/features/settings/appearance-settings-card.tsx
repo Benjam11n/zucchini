@@ -1,15 +1,12 @@
-import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { THEME_OPTIONS } from "@/renderer/features/settings/constants";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 
 import type { SettingsPageProps } from "./types";
 
 export function AppearanceSettingsCard({
-  fieldErrors,
   onChange,
   settings,
 }: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
@@ -28,13 +25,10 @@ export function AppearanceSettingsCard({
             const Icon = option.icon;
 
             return (
-              <m.button
+              <button
                 key={option.value}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
                 id={`theme-mode-${option.value}`}
-                initial={{ opacity: 0, scale: 0.96, y: 8 }}
                 type="button"
-                aria-invalid={fieldErrors.themeMode ? true : undefined}
                 onClick={() =>
                   onChange({ ...settings, themeMode: option.value })
                 }
@@ -44,13 +38,10 @@ export function AppearanceSettingsCard({
                     ? "border-primary bg-primary/8 text-foreground"
                     : "border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground"
                 )}
-                transition={microTransition}
-                whileHover={hoverLift}
-                whileTap={tapPress}
               >
                 <Icon className="size-5 opacity-70" />
                 {option.label}
-              </m.button>
+              </button>
             );
           })}
         </div>
