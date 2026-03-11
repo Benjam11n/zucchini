@@ -3,7 +3,9 @@ import type { ZodType } from "zod";
 import {
   appSettingsSchema,
   completeOnboardingInputSchema,
+  createFocusSessionInputSchema,
   dateKeySchema,
+  focusSessionLimitSchema,
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
@@ -15,6 +17,7 @@ import {
   reorderHabitIdsSchema,
   starterPackApplySchema,
 } from "@/shared/contracts/habits-ipc-schema";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type {
   CompleteOnboardingInput,
@@ -62,6 +65,10 @@ export function validateDateKey(label: string, value: unknown): string {
 
 export function validateHistoryLimit(value: unknown): number | undefined {
   return parseWithSchema("history limit", historyLimitSchema, value);
+}
+
+export function validateFocusSessionLimit(value: unknown): number | undefined {
+  return parseWithSchema("focus session limit", focusSessionLimitSchema, value);
 }
 
 export function validateHabitName(value: unknown): string {
@@ -116,4 +123,10 @@ export function validateNotificationIconFilename(
     notificationIconFilenameSchema,
     value
   );
+}
+
+export function validateCreateFocusSessionInput(
+  value: unknown
+): CreateFocusSessionInput {
+  return parseWithSchema("focus session", createFocusSessionInputSchema, value);
 }

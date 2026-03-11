@@ -20,6 +20,11 @@ const HistoryPage = lazy(async () => {
 
   return { default: module.HistoryPage };
 });
+const FocusTab = lazy(async () => {
+  const module = await import("@/renderer/features/focus/focus-tab");
+
+  return { default: module.FocusTab };
+});
 const SettingsPage = lazy(async () => {
   const module = await import("@/renderer/pages/settings-page");
 
@@ -207,6 +212,29 @@ export default function App() {
         </Suspense>
       );
     }
+  }
+
+  if (tab === "focus") {
+    renderedPage = (
+      <Suspense
+        fallback={
+          <LoadingStateCard
+            description="Loading your focus timer and recent sessions."
+            title="Loading focus"
+          />
+        }
+      >
+        <FocusTab
+          focusSaveErrorMessage={state.focusSaveErrorMessage}
+          phase={state.focusSessionsPhase}
+          sessions={state.focusSessions}
+          sessionsLoadError={state.focusSessionsLoadError}
+          timerState={state.timerState}
+          todayDate={state.todayState.date}
+          onRetryLoad={actions.handleRetryFocusLoad}
+        />
+      </Suspense>
+    );
   }
 
   if (tab === "settings") {

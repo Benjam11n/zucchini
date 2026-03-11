@@ -2,6 +2,7 @@ import { unstable_batchedUpdates } from "react-dom";
 
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -15,6 +16,7 @@ import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import {
   useBootStore,
+  useFocusStore,
   useHistoryStore,
   useOnboardingStore,
   useSettingsStore,
@@ -142,6 +144,10 @@ function clearSettingsFeedback() {
   useSettingsStore.getState().clearSettingsFeedback();
 }
 
+function clearFocusSaveError() {
+  useFocusStore.getState().clearFocusSaveError();
+}
+
 function dismissWeeklyReviewSpotlight() {
   useWeeklyReviewStore.getState().dismissWeeklyReviewSpotlight();
 }
@@ -231,6 +237,10 @@ function handleTabChange(nextTab: Tab) {
     updateSettingsDraftFromToday();
   }
 
+  if (nextTab === "focus") {
+    void useFocusStore.getState().loadFocusSessions();
+  }
+
   if (nextTab === "history") {
     void useHistoryStore.getState().loadFullHistory();
   }
@@ -273,6 +283,10 @@ async function loadFullHistory() {
   await useHistoryStore.getState().loadFullHistory();
 }
 
+async function loadFocusSessions(force = false) {
+  await useFocusStore.getState().loadFocusSessions(force);
+}
+
 async function loadWeeklyReviewOverview() {
   await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
 }
@@ -287,6 +301,21 @@ async function retryBoot() {
 
 async function selectWeeklyReview(weekStart: string) {
   await useWeeklyReviewStore.getState().selectWeeklyReview(weekStart);
+}
+
+async function recordFocusSession(input: CreateFocusSessionInput) {
+  const focusSession = await window.habits.recordFocusSession(input);
+
+  unstable_batchedUpdates(() => {
+    useFocusStore.getState().prependFocusSession(focusSession);
+    useFocusStore.getState().setFocusSaveErrorMessage(null);
+  });
+
+  return focusSession;
+}
+
+function setFocusSaveErrorMessage(message: string | null) {
+  useFocusStore.getState().setFocusSaveErrorMessage(message);
 }
 
 function setSettingsSaveErrorMessage(message: string | null) {
@@ -307,6 +336,7 @@ function setSystemTheme(systemTheme: ThemeMode) {
 
 export const appActions = {
   bootApp,
+  clearFocusSaveError,
   clearOnboardingError,
   clearSettingsFeedback,
   dismissWeeklyReviewSpotlight,
@@ -323,11 +353,14 @@ export const appActions = {
   handleUpdateHabitCategory,
   handleUpdateHabitFrequency,
   handleUpdateSettings,
+  loadFocusSessions,
   loadFullHistory,
   loadWeeklyReviewOverview,
   openWeeklyReviewSpotlight,
+  recordFocusSession,
   retryBoot,
   selectWeeklyReview,
+  setFocusSaveErrorMessage,
   setSettingsSaveErrorMessage,
   setSettingsSavePhase,
   setSettingsValidationErrors,

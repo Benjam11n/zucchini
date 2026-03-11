@@ -1,4 +1,6 @@
+import type { PersistedFocusTimerState } from "@/renderer/features/focus/types";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { FocusSession } from "@/shared/domain/focus-session";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import type {
@@ -46,6 +48,20 @@ export interface HistoryStoreState {
   isHistoryLoading: AppState["isHistoryLoading"];
   loadFullHistory: () => Promise<void>;
   setHistory: (history: AppState["history"]) => void;
+}
+
+export interface FocusStoreState {
+  focusSaveErrorMessage: AppState["focusSaveErrorMessage"];
+  focusSessions: AppState["focusSessions"];
+  focusSessionsLoadError: AppState["focusSessionsLoadError"];
+  focusSessionsPhase: AppState["focusSessionsPhase"];
+  hasLoadedFocusSessions: AppState["hasLoadedFocusSessions"];
+  timerState: AppState["timerState"];
+  clearFocusSaveError: () => void;
+  loadFocusSessions: (force?: boolean) => Promise<void>;
+  prependFocusSession: (focusSession: FocusSession) => void;
+  setFocusSaveErrorMessage: (message: string | null) => void;
+  setTimerState: (timerState: PersistedFocusTimerState) => void;
 }
 
 export interface WeeklyReviewStoreState {

@@ -43,6 +43,7 @@ function createService() {
     archiveHabit: vi.fn(),
     completeOnboarding: vi.fn(),
     createHabit: vi.fn(),
+    getFocusSessions: vi.fn(() => []),
     getHistory: vi.fn(() => []),
     getOnboardingStatus: vi.fn(() => ({
       completedAt: null,
@@ -59,6 +60,7 @@ function createService() {
       trend: [],
     })),
     initialize: vi.fn(),
+    recordFocusSession: vi.fn(),
     renameHabit: vi.fn(),
     reorderHabits: vi.fn(),
     saveReminderRuntimeState: vi.fn(),
@@ -156,5 +158,41 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(service.getHistory).toHaveBeenCalledWith(14);
+  });
+
+  it("passes validated focus session payloads through to the service", async () => {
+    resetHandlers();
+    const service = createService();
+    service.recordFocusSession.mockReturnValue({
+      completedAt: "2026-03-08T09:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      id: 1,
+      startedAt: "2026-03-08T09:00:00.000Z",
+    });
+
+    registerIpcHandlers({
+      onSettingsChanged: vi.fn(),
+      service,
+    });
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.recordFocusSession);
+    const payload = {
+      completedAt: "2026-03-08T09:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      startedAt: "2026-03-08T09:00:00.000Z",
+    };
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, payload)
+    ).resolves.toStrictEqual({
+      data: {
+        ...payload,
+        id: 1,
+      },
+      ok: true,
+    });
+    expect(service.recordFocusSession).toHaveBeenCalledWith(payload);
   });
 });

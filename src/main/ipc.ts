@@ -3,8 +3,10 @@ import { ipcMain } from "electron";
 import { serializeIpcError } from "@/main/ipc-errors";
 import {
   validateAppSettings,
+  validateCreateFocusSessionInput,
   validateCompleteOnboardingInput,
   validateDateKey,
+  validateFocusSessionLimit,
   validateHabitCategory,
   validateHabitFrequency,
   validateHabitId,
@@ -61,6 +63,12 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
+  );
+  registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
+    service.getFocusSessions(validateFocusSessionLimit(limit))
+  );
+  registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) =>
+    service.recordFocusSession(validateCreateFocusSessionInput(input))
   );
   registerHandler(HABITS_IPC_CHANNELS.getHistory, (limit?: unknown) =>
     service.getHistory(validateHistoryLimit(limit))

@@ -1,7 +1,9 @@
 import {
   IpcValidationError,
   validateAppSettings,
+  validateCreateFocusSessionInput,
   validateCompleteOnboardingInput,
+  validateFocusSessionLimit,
   validateNotificationIconFilename,
   validateReorderHabitIds,
   validateStarterPackApply,
@@ -91,5 +93,23 @@ describe("ipc validation", () => {
     expect(() => validateNotificationIconFilename("../secrets.png")).toThrow(
       IpcValidationError
     );
+  });
+
+  it("accepts valid focus session payloads", () => {
+    expect(
+      validateCreateFocusSessionInput({
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      })
+    ).toMatchObject({
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+    });
+  });
+
+  it("rejects invalid focus session limits", () => {
+    expect(() => validateFocusSessionLimit(0)).toThrow(IpcValidationError);
   });
 });

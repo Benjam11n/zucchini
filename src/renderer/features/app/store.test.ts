@@ -1,4 +1,5 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { FocusSession } from "@/shared/domain/focus-session";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
   CompleteOnboardingInput,
@@ -73,6 +74,19 @@ function createWeeklyReview(name: string): WeeklyReview {
   };
 }
 
+function createFocusSession(
+  id: number,
+  completedAt = "2026-03-10T09:25:00.000Z"
+): FocusSession {
+  return {
+    completedAt,
+    completedDate: "2026-03-10",
+    durationSeconds: 1500,
+    id,
+    startedAt: "2026-03-10T09:00:00.000Z",
+  };
+}
+
 function createOnboardingStatus(
   overrides: Partial<OnboardingStatus> = {}
 ): OnboardingStatus {
@@ -95,6 +109,9 @@ describe("app store actions", () => {
       )
     );
     const getOnboardingStatusMock = vi.fn().mockResolvedValue(onboardingStatus);
+    const getFocusSessionsMock = vi
+      .fn()
+      .mockResolvedValue([createFocusSession(1)]);
     const getTodayStateMock = vi.fn().mockResolvedValue(createTodayState());
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
@@ -139,11 +156,13 @@ describe("app store actions", () => {
       habits: {
         applyStarterPack: applyStarterPackMock,
         completeOnboarding: completeOnboardingMock,
+        getFocusSessions: getFocusSessionsMock,
         getHistory: getHistoryMock,
         getOnboardingStatus: getOnboardingStatusMock,
         getTodayState: getTodayStateMock,
         getWeeklyReview: getWeeklyReviewMock,
         getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
+        recordFocusSession: vi.fn().mockResolvedValue(createFocusSession(2)),
         renameHabit: renameHabitMock,
         skipOnboarding: skipOnboardingMock,
       },
@@ -161,6 +180,7 @@ describe("app store actions", () => {
       actions: appActions,
       applyStarterPackMock,
       completeOnboardingMock,
+      getFocusSessionsMock,
       getHistoryMock,
       getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
@@ -199,6 +219,18 @@ describe("app store actions", () => {
       stores.useWeeklyReviewStore.getState().selectedWeeklyReview
         ?.habitMetrics[0]?.name
     ).toBe("Make buried chapters video");
+  });
+
+  it("loads focus sessions once after switching to the focus tab", async () => {
+    const { actions, getFocusSessionsMock } = await setup();
+
+    actions.handleTabChange("focus");
+    actions.handleTabChange("focus");
+
+    await vi.waitFor(() => {
+      // oxlint-disable-next-line vitest/prefer-called-once
+      expect(getFocusSessionsMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("opens onboarding after boot when there are zero habits and onboarding is incomplete", async () => {

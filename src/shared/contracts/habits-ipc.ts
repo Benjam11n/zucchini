@@ -1,4 +1,8 @@
 import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "../domain/focus-session";
+import type {
   HabitCategory,
   HabitFrequency,
   HabitWithStatus,
@@ -21,11 +25,13 @@ export const HABITS_IPC_CHANNELS = {
   archiveHabit: "habits:archiveHabit",
   completeOnboarding: "habits:completeOnboarding",
   createHabit: "habits:createHabit",
+  getFocusSessions: "habits:getFocusSessions",
   getHistory: "habits:getHistory",
   getOnboardingStatus: "habits:getOnboardingStatus",
   getTodayState: "habits:getTodayState",
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
+  recordFocusSession: "habits:recordFocusSession",
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
   showNotification: "habits:showNotification",
@@ -103,6 +109,8 @@ export interface HabitApi {
   getOnboardingStatus: () => Promise<OnboardingStatus>;
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
+  getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
+  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;

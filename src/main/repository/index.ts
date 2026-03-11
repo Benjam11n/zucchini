@@ -1,5 +1,9 @@
 import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
 import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -14,6 +18,7 @@ import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import { runMigrations } from "../db/migrations";
 import { SqliteDatabaseClient } from "../db/sqlite-client";
+import { SqliteFocusSessionRepository } from "./focus-session-repository";
 import { SqliteHabitsRepository } from "./habit-repository";
 import { SqliteHistoryRepository } from "./history-repository";
 import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-repository";
@@ -37,6 +42,8 @@ export interface HabitRepository {
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
+  getFocusSessions(limit?: number): FocusSession[];
+  saveFocusSession(input: CreateFocusSessionInput): FocusSession;
   getSettledHistory(
     limit?: number,
     options?: SettledHistoryOptions
@@ -83,6 +90,9 @@ export class SqliteHabitRepository implements HabitRepository {
   private readonly historyRepository = new SqliteHistoryRepository(
     this.client,
     this.habitsRepository
+  );
+  private readonly focusSessionRepository = new SqliteFocusSessionRepository(
+    this.client
   );
   private readonly settingsRepository = new SqliteSettingsRepository(
     this.client
@@ -134,6 +144,14 @@ export class SqliteHabitRepository implements HabitRepository {
 
   toggleHabit(date: string, habitId: number): void {
     this.historyRepository.toggleHabit(date, habitId);
+  }
+
+  getFocusSessions(limit?: number): FocusSession[] {
+    return this.focusSessionRepository.listRecentSessions(limit);
+  }
+
+  saveFocusSession(input: CreateFocusSessionInput): FocusSession {
+    return this.focusSessionRepository.insertSession(input);
   }
 
   getSettledHistory(

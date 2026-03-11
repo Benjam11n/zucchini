@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { BarChart3, CalendarDays, Settings2 } from "lucide-react";
+import { BarChart3, CalendarDays, Settings2, Timer } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,14 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                   <CalendarDays className="size-5" />
                 </TabsTrigger>
                 <TabsTrigger
+                  aria-label="Focus"
+                  className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  value="focus"
+                >
+                  <span className="sr-only">Focus</span>
+                  <Timer className="size-5" />
+                </TabsTrigger>
+                <TabsTrigger
                   aria-label="History"
                   className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   value="history"
@@ -67,9 +75,12 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
               </TabsList>
 
               <div className="flex flex-1 items-center gap-3 lg:hidden">
-                <TabsList className="grid flex-1 grid-cols-3 rounded-2xl bg-muted/80 p-1">
+                <TabsList className="grid flex-1 grid-cols-4 rounded-2xl bg-muted/80 p-1">
                   <TabsTrigger className="px-4" value="today">
                     Today
+                  </TabsTrigger>
+                  <TabsTrigger className="px-4" value="focus">
+                    Focus
                   </TabsTrigger>
                   <TabsTrigger className="px-4" value="history">
                     History

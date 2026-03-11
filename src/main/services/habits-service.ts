@@ -1,4 +1,8 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
@@ -49,6 +53,8 @@ export interface HabitsService {
   getOnboardingStatus(): OnboardingStatus;
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
+  getFocusSessions(limit?: number): FocusSession[];
+  recordFocusSession(input: CreateFocusSessionInput): FocusSession;
   getHistory(limit?: number): HistoryDay[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
@@ -68,6 +74,31 @@ export interface HabitsService {
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState;
   archiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
+}
+
+function isValidIsoTimestamp(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(Date.parse(value));
+}
+
+function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
+  if (
+    !isValidIsoTimestamp(input.startedAt) ||
+    !isValidIsoTimestamp(input.completedAt)
+  ) {
+    throw new Error("Focus session timestamps must use ISO 8601 format.");
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.completedDate)) {
+    throw new Error("Focus session dates must use YYYY-MM-DD format.");
+  }
+
+  if (
+    !Number.isInteger(input.durationSeconds) ||
+    input.durationSeconds <= 0 ||
+    input.durationSeconds > 60 * 60 * 8
+  ) {
+    throw new Error("Focus session durations must be positive integers.");
+  }
 }
 
 export class HabitService implements HabitsService {
@@ -118,6 +149,22 @@ export class HabitService implements HabitsService {
       this.repository.toggleHabit(today, habitId);
       return buildTodayState(this.repository, this.clock);
     });
+  }
+
+  getFocusSessions(limit?: number): FocusSession[] {
+    this.initialize();
+    return this.repository.runInTransaction("getFocusSessions", () =>
+      this.repository.getFocusSessions(limit)
+    );
+  }
+
+  recordFocusSession(input: CreateFocusSessionInput): FocusSession {
+    this.initialize();
+    assertValidFocusSessionInput(input);
+
+    return this.repository.runInTransaction("recordFocusSession", () =>
+      this.repository.saveFocusSession(input)
+    );
   }
 
   getHistory(limit?: number): HistoryDay[] {

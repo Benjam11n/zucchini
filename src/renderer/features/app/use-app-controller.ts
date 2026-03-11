@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { useFocusTimer } from "@/renderer/features/focus/use-focus-timer";
 import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
 import {
   readLastSeenWeeklyReviewStart,
@@ -16,6 +17,7 @@ import {
 } from "./settings-save";
 import {
   useBootStore,
+  useFocusStore,
   useHistoryStore,
   useOnboardingStore,
   useSettingsStore,
@@ -26,6 +28,7 @@ import {
 import type { AppState, SettingsFieldErrors } from "./types";
 
 const EMPTY_HISTORY: AppState["history"] = [];
+const EMPTY_FOCUS_SESSIONS: AppState["focusSessions"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
 function useAppControllerActions() {
@@ -107,6 +110,24 @@ function useHistoryPageState() {
   );
 }
 
+function useFocusPageState() {
+  const tab = useUiStore((state) => state.tab);
+
+  return useFocusStore(
+    useShallow((state) =>
+      tab === "focus"
+        ? {
+            focusSaveErrorMessage: state.focusSaveErrorMessage,
+            focusSessions: state.focusSessions,
+            focusSessionsLoadError: state.focusSessionsLoadError,
+            focusSessionsPhase: state.focusSessionsPhase,
+            timerState: state.timerState,
+          }
+        : null
+    )
+  );
+}
+
 function useSettingsPageState() {
   const tab = useUiStore((state) => state.tab);
 
@@ -121,6 +142,139 @@ function useSettingsPageState() {
         : null
     )
   );
+}
+
+function getResolvedFocusState(
+  focusPageState: ReturnType<typeof useFocusPageState>
+) {
+  return {
+    focusSaveErrorMessage: focusPageState?.focusSaveErrorMessage ?? null,
+    focusSessions: focusPageState?.focusSessions ?? EMPTY_FOCUS_SESSIONS,
+    focusSessionsLoadError: focusPageState?.focusSessionsLoadError ?? null,
+    focusSessionsPhase: focusPageState?.focusSessionsPhase ?? "idle",
+    timerState:
+      focusPageState?.timerState ?? useFocusStore.getState().timerState,
+  };
+}
+
+function getResolvedHistoryState(
+  historyState: ReturnType<typeof useHistoryState>
+) {
+  return {
+    history: historyState?.history ?? EMPTY_HISTORY,
+    historyLoadError: historyState?.historyLoadError ?? null,
+    historyScope: historyState?.historyScope ?? "recent",
+    isHistoryLoading: historyState?.isHistoryLoading ?? false,
+  };
+}
+
+function getResolvedSettingsState(
+  coreState: ReturnType<typeof useAppControllerCoreState>,
+  settingsPageState: ReturnType<typeof useSettingsPageState>
+) {
+  return {
+    settingsFieldErrors:
+      settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS,
+    settingsSaveErrorMessage:
+      settingsPageState?.settingsSaveErrorMessage ?? null,
+    settingsSavePhase:
+      settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase,
+  };
+}
+
+function createControllerActions({
+  actions,
+  weeklyReviewState,
+}: {
+  actions: ReturnType<typeof useAppControllerActions>;
+  weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
+}) {
+  return {
+    handleApplyStarterPack: actions.handleApplyStarterPack,
+    handleArchiveHabit: actions.handleArchiveHabit,
+    handleClearOnboardingError: actions.clearOnboardingError,
+    handleCompleteOnboarding: actions.handleCompleteOnboarding,
+    handleCreateHabit: actions.handleCreateHabit,
+    handleDismissWeeklyReviewSpotlight: () => {
+      const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
+      if (latestReview) {
+        writeLastSeenWeeklyReviewStart(latestReview.weekStart);
+      }
+      actions.dismissWeeklyReviewSpotlight();
+    },
+    handleRenameHabit: actions.handleRenameHabit,
+    handleReorderHabits: actions.handleReorderHabits,
+    handleRetryBoot: actions.retryBoot,
+    handleRetryFocusLoad: async () => {
+      await actions.loadFocusSessions(true);
+    },
+    handleRetryHistoryLoad: actions.loadFullHistory,
+    handleSettingsDraftChange: actions.handleSettingsDraftChange,
+    handleSkipOnboarding: actions.handleSkipOnboarding,
+    handleTabChange: actions.handleTabChange,
+    handleToggleHabit: actions.handleToggleHabit,
+    handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
+    handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
+    handleWeeklyReviewOpen: async () => {
+      const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
+      if (!latestReview) {
+        actions.dismissWeeklyReviewSpotlight();
+        return;
+      }
+
+      writeLastSeenWeeklyReviewStart(latestReview.weekStart);
+      actions.dismissWeeklyReviewSpotlight();
+      actions.handleTabChange("history");
+      await actions.selectWeeklyReview(latestReview.weekStart);
+    },
+    handleWeeklyReviewSelect: async (weekStart: string) => {
+      await actions.selectWeeklyReview(weekStart);
+    },
+  };
+}
+
+function createControllerState({
+  coreState,
+  focusState,
+  historyPageState,
+  historyState,
+  settingsState,
+  weeklyReviewState,
+}: {
+  coreState: ReturnType<typeof useAppControllerCoreState>;
+  focusState: ReturnType<typeof getResolvedFocusState>;
+  historyPageState: ReturnType<typeof useHistoryPageState>;
+  historyState: ReturnType<typeof getResolvedHistoryState>;
+  settingsState: ReturnType<typeof getResolvedSettingsState>;
+  weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
+}) {
+  return {
+    bootError: coreState.bootError,
+    bootPhase: coreState.bootPhase,
+    focusSaveErrorMessage: focusState.focusSaveErrorMessage,
+    focusSessions: focusState.focusSessions,
+    focusSessionsLoadError: focusState.focusSessionsLoadError,
+    focusSessionsPhase: focusState.focusSessionsPhase,
+    history: historyState.history,
+    historyLoadError: historyState.historyLoadError,
+    historyScope: historyState.historyScope,
+    isHistoryLoading: historyState.isHistoryLoading,
+    isOnboardingOpen: coreState.isOnboardingOpen,
+    isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
+    onboardingError: coreState.onboardingError,
+    onboardingPhase: coreState.onboardingPhase,
+    onboardingStatus: coreState.onboardingStatus,
+    selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
+    settingsDraft: coreState.settingsDraft,
+    settingsFieldErrors: settingsState.settingsFieldErrors,
+    settingsSaveErrorMessage: settingsState.settingsSaveErrorMessage,
+    settingsSavePhase: settingsState.settingsSavePhase,
+    timerState: focusState.timerState,
+    todayState: coreState.todayState,
+    weeklyReviewError: historyPageState?.weeklyReviewError ?? null,
+    weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
+    weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
+  };
 }
 
 function useSettingsAutosave({
@@ -314,21 +468,15 @@ export function useAppController() {
   const coreState = useAppControllerCoreState();
   const weeklyReviewState = useWeeklyReviewState();
   const historyState = useHistoryState();
+  const focusPageState = useFocusPageState();
   const historyPageState = useHistoryPageState();
   const settingsPageState = useSettingsPageState();
-
-  const history = historyState?.history ?? EMPTY_HISTORY;
-  const historyLoadError = historyState?.historyLoadError ?? null;
-  const historyScope = historyState?.historyScope ?? "recent";
-  const isHistoryLoading = historyState?.isHistoryLoading ?? false;
-  const selectedWeeklyReview = historyPageState?.selectedWeeklyReview ?? null;
-  const weeklyReviewError = historyPageState?.weeklyReviewError ?? null;
-  const settingsFieldErrors =
-    settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS;
-  const settingsSaveErrorMessage =
-    settingsPageState?.settingsSaveErrorMessage ?? null;
-  const activeSettingsSavePhase =
-    settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase;
+  const focusState = getResolvedFocusState(focusPageState);
+  const resolvedHistoryState = getResolvedHistoryState(historyState);
+  const resolvedSettingsState = getResolvedSettingsState(
+    coreState,
+    settingsPageState
+  );
 
   useSettingsAutosave({
     clearSettingsFeedback: actions.clearSettingsFeedback,
@@ -353,71 +501,25 @@ export function useAppController() {
     weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
   });
 
-  return {
-    actions: {
-      handleApplyStarterPack: actions.handleApplyStarterPack,
-      handleArchiveHabit: actions.handleArchiveHabit,
-      handleClearOnboardingError: actions.clearOnboardingError,
-      handleCompleteOnboarding: actions.handleCompleteOnboarding,
-      handleCreateHabit: actions.handleCreateHabit,
-      handleDismissWeeklyReviewSpotlight: () => {
-        const latestReview =
-          weeklyReviewState.weeklyReviewOverview?.latestReview;
-        if (latestReview) {
-          writeLastSeenWeeklyReviewStart(latestReview.weekStart);
-        }
-        actions.dismissWeeklyReviewSpotlight();
-      },
-      handleRenameHabit: actions.handleRenameHabit,
-      handleReorderHabits: actions.handleReorderHabits,
-      handleRetryBoot: actions.retryBoot,
-      handleRetryHistoryLoad: actions.loadFullHistory,
-      handleSettingsDraftChange: actions.handleSettingsDraftChange,
-      handleSkipOnboarding: actions.handleSkipOnboarding,
-      handleTabChange: actions.handleTabChange,
-      handleToggleHabit: actions.handleToggleHabit,
-      handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
-      handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
-      handleWeeklyReviewOpen: async () => {
-        const latestReview =
-          weeklyReviewState.weeklyReviewOverview?.latestReview;
-        if (!latestReview) {
-          actions.dismissWeeklyReviewSpotlight();
-          return;
-        }
+  useFocusTimer({
+    clearFocusSaveError: actions.clearFocusSaveError,
+    recordFocusSession: actions.recordFocusSession,
+    setFocusSaveErrorMessage: actions.setFocusSaveErrorMessage,
+  });
 
-        writeLastSeenWeeklyReviewStart(latestReview.weekStart);
-        actions.dismissWeeklyReviewSpotlight();
-        actions.handleTabChange("history");
-        await actions.selectWeeklyReview(latestReview.weekStart);
-      },
-      handleWeeklyReviewSelect: async (weekStart: string) => {
-        await actions.selectWeeklyReview(weekStart);
-      },
-    },
-    state: {
-      bootError: coreState.bootError,
-      bootPhase: coreState.bootPhase,
-      history,
-      historyLoadError,
-      historyScope,
-      isHistoryLoading,
-      isOnboardingOpen: coreState.isOnboardingOpen,
-      isWeeklyReviewSpotlightOpen:
-        weeklyReviewState.isWeeklyReviewSpotlightOpen,
-      onboardingError: coreState.onboardingError,
-      onboardingPhase: coreState.onboardingPhase,
-      onboardingStatus: coreState.onboardingStatus,
-      selectedWeeklyReview,
-      settingsDraft: coreState.settingsDraft,
-      settingsFieldErrors,
-      settingsSaveErrorMessage,
-      settingsSavePhase: activeSettingsSavePhase,
-      todayState: coreState.todayState,
-      weeklyReviewError,
-      weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
-      weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
-    },
+  return {
+    actions: createControllerActions({
+      actions,
+      weeklyReviewState,
+    }),
+    state: createControllerState({
+      coreState,
+      focusState,
+      historyPageState,
+      historyState: resolvedHistoryState,
+      settingsState: resolvedSettingsState,
+      weeklyReviewState,
+    }),
     tab,
   };
 }

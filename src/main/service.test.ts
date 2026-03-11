@@ -1,5 +1,9 @@
 import type { ReminderRuntimeState } from "@/main/reminder-runtime-state";
 import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -108,6 +112,7 @@ class FakeRepository implements HabitRepository {
     completedAt: null,
     isComplete: false,
   };
+  focusSessions: FocusSession[] = [];
   seedDefaultsCalls = 0;
   transactionLabels: string[] = [];
 
@@ -205,6 +210,23 @@ class FakeRepository implements HabitRepository {
     const values = this.getStatusValues(date, habit.frequency);
     const current = values.get(habitId) ?? false;
     values.set(habitId, !current);
+  }
+
+  getFocusSessions(limit?: number): FocusSession[] {
+    const sessions = [...this.focusSessions].toSorted((left, right) =>
+      right.completedAt.localeCompare(left.completedAt)
+    );
+
+    return limit === undefined ? sessions : sessions.slice(0, limit);
+  }
+
+  saveFocusSession(input: CreateFocusSessionInput): FocusSession {
+    const focusSession = {
+      ...input,
+      id: this.focusSessions.length + 1,
+    };
+    this.focusSessions.unshift(focusSession);
+    return focusSession;
   }
 
   getSettledHistory(
@@ -974,5 +996,47 @@ describe("habitService transactions", () => {
     expect(() => service.createHabit("Read", "productivity", "daily")).toThrow(
       "transaction failed: createHabit"
     );
+  });
+});
+
+describe("focus sessions", () => {
+  it("records a completed focus session", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const focusSession = service.recordFocusSession({
+      completedAt: "2026-03-08T09:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      startedAt: "2026-03-08T09:00:00.000Z",
+    });
+
+    expect(focusSession).toMatchObject({
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      id: 1,
+    });
+    expect(service.getFocusSessions()).toHaveLength(1);
+    expect(repository.transactionLabels).toContain("recordFocusSession");
+    expect(repository.transactionLabels).toContain("getFocusSessions");
+  });
+
+  it("rejects invalid focus session payloads", () => {
+    const service = new HabitService(
+      new FakeRepository(),
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    expect(() =>
+      service.recordFocusSession({
+        completedAt: "bad-timestamp",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      } as CreateFocusSessionInput)
+    ).toThrow("ISO 8601");
   });
 });

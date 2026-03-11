@@ -10,7 +10,17 @@ export const habitIdSchema = z.number().int().positive();
 export const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: "Date keys must use YYYY-MM-DD format.",
 });
+const isoTimestampSchema = z.string().datetime({
+  message: "Timestamps must use ISO 8601 format.",
+  offset: true,
+});
 export const historyLimitSchema = z.number().int().min(1).max(365).optional();
+export const focusSessionLimitSchema = z
+  .number()
+  .int()
+  .min(1)
+  .max(100)
+  .optional();
 
 export const habitNameSchema = z.string().trim().min(1).max(120);
 
@@ -90,3 +100,16 @@ export const notificationIconFilenameSchema = z
     message: "Notification icon filename must be a simple asset filename.",
   })
   .optional();
+
+export const createFocusSessionInputSchema = z
+  .object({
+    completedAt: isoTimestampSchema,
+    completedDate: dateKeySchema,
+    durationSeconds: z
+      .number()
+      .int()
+      .positive()
+      .max(60 * 60 * 8),
+    startedAt: isoTimestampSchema,
+  })
+  .strict();

@@ -18,6 +18,7 @@ import type {
   HabitApi,
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import type {
   CompleteOnboardingInput,
@@ -65,6 +66,8 @@ const habitsApi: HabitApi = {
     category: HabitCategory,
     frequency: HabitFrequency
   ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
+  getFocusSessions: (limit?: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
   getHistory: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getHistory, limit),
   getOnboardingStatus: () =>
@@ -74,6 +77,8 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
   getWeeklyReviewOverview: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
+  recordFocusSession: (input: CreateFocusSessionInput) =>
+    invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
   renameHabit: (habitId: number, name: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
   reorderHabits: (habitIds: number[]) =>

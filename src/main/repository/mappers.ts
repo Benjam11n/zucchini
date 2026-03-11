@@ -1,3 +1,4 @@
+import type { FocusSession } from "@/shared/domain/focus-session";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
@@ -9,6 +10,7 @@ import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import type {
   DailySummaryRow,
+  FocusSessionRow,
   HabitPeriodStatusRow,
   HabitPeriodStatusSnapshot,
   HabitRow,
@@ -34,6 +36,16 @@ export function mapDailySummary(row: DailySummaryRow): DailySummary {
     date: row.date,
     freezeUsed: row.freezeUsed,
     streakCountAfterDay: row.streakCountAfterDay,
+  };
+}
+
+export function mapFocusSession(row: FocusSessionRow): FocusSession {
+  return {
+    completedAt: row.completedAt,
+    completedDate: row.completedDate,
+    durationSeconds: row.durationSeconds,
+    id: row.id,
+    startedAt: row.startedAt,
   };
 }
 

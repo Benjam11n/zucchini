@@ -55,6 +55,21 @@ export const dailySummary = sqliteTable("daily_summary", {
   streakCountAfterDay: integer("streak_count_after_day").notNull(),
 });
 
+export const focusSessions = sqliteTable(
+  "focus_sessions",
+  {
+    completedAt: text("completed_at").notNull(),
+    completedDate: text("completed_date").notNull(),
+    durationSeconds: integer("duration_seconds").notNull(),
+    id: integer().primaryKey({ autoIncrement: true }),
+    startedAt: text("started_at").notNull(),
+  },
+  (table) => [
+    index("focus_sessions_completed_at_idx").on(table.completedAt),
+    index("focus_sessions_completed_date_idx").on(table.completedDate),
+  ]
+);
+
 export const streakState = sqliteTable("streak_state", {
   availableFreezes: integer("available_freezes").notNull(),
   bestStreak: integer("best_streak").notNull(),
@@ -78,6 +93,7 @@ export const settings = sqliteTable("settings", {
 
 export const schema = {
   dailySummary,
+  focusSessions,
   habitPeriodStatus,
   habits,
   reminderRuntimeState,
