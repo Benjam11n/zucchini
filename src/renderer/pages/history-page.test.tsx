@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
-import type { ReactNode } from "react";
+import type { ComponentProps } from "react";
 
 import type * as GitHubCalendarModule from "@/components/custom/github-calendar";
 import type * as TabsModule from "@/components/ui/tabs";
@@ -23,48 +23,71 @@ import type {
 
 import { HistoryPage } from "./history-page";
 
-vi.mock<typeof FramerMotion>(import("framer-motion"), () => {
-  function createMotionProxy() {
-    return new Proxy(
-      {},
-      {
-        get: (_, tag: string) =>
-          forwardRef<HTMLElement, Record<string, unknown>>(
-            function MotionMock(props, ref) {
-              const {
-                animate: _animate,
-                exit: _exit,
-                initial: _initial,
-                layout: _layout,
-                transition: _transition,
-                variants: _variants,
-                whileHover: _whileHover,
-                whileTap: _whileTap,
-                ...rest
-              } = props;
+vi.mock<typeof FramerMotion>(
+  import("framer-motion"),
+  async (importOriginal) => {
+    const actual = await importOriginal();
 
-              return createElement(tag, { ...rest, ref });
-            }
-          ),
-      }
-    );
+    function createMotionProxy() {
+      return new Proxy(
+        {},
+        {
+          get: (_, tag: string) =>
+            forwardRef<HTMLElement, Record<string, unknown>>(
+              function MotionMock(props, ref) {
+                const {
+                  animate: _animate,
+                  exit: _exit,
+                  initial: _initial,
+                  layout: _layout,
+                  transition: _transition,
+                  variants: _variants,
+                  whileHover: _whileHover,
+                  whileTap: _whileTap,
+                  ...rest
+                } = props;
+
+                return createElement(tag, { ...rest, ref });
+              }
+            ),
+        }
+      );
+    }
+
+    return {
+      ...actual,
+      LazyMotion: ({ children }: ComponentProps<typeof actual.LazyMotion>) => (
+        <div>{children}</div>
+      ),
+      m: createMotionProxy() as typeof actual.m,
+    };
   }
+);
 
-  return {
-    LazyMotion: ({ children }: { children: ReactNode }) => children,
-    domAnimation: {},
-    m: createMotionProxy(),
-  };
-});
+vi.mock<typeof TabsModule>(
+  import("@/components/ui/tabs"),
+  async (importOriginal) => {
+    const actual = await importOriginal();
 
-vi.mock<typeof TabsModule>(import("@/components/ui/tabs"), () => ({
-  Tabs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TabsContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TabsList: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TabsTrigger: ({ children }: { children: ReactNode }) => (
-    <button type="button">{children}</button>
-  ),
-}));
+    return {
+      ...actual,
+      Tabs: ({ children }: ComponentProps<typeof actual.Tabs>) => (
+        <div>{children}</div>
+      ),
+      TabsContent: ({
+        children,
+      }: ComponentProps<typeof actual.TabsContent>) => <div>{children}</div>,
+      TabsList: ({ children }: ComponentProps<typeof actual.TabsList>) => (
+        <div>{children}</div>
+      ),
+      TabsTrigger: ({
+        children,
+      }: ComponentProps<typeof actual.TabsTrigger>) => (
+        <button type="button">{children}</button>
+      ),
+    };
+  }
+);
 
 vi.mock<typeof GitHubCalendarModule>(
   import("@/components/custom/github-calendar"),

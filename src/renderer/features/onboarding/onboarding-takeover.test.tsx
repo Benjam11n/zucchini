@@ -8,6 +8,12 @@ import type * as OnboardingReminderStepModule from "./onboarding-reminder-step";
 import { OnboardingTakeover } from "./onboarding-takeover";
 import type * as StarterPackEditorModule from "./starter-pack-editor";
 import type * as StarterPackPickerModule from "./starter-pack-picker";
+import type {
+  OnboardingReminderDraft,
+  ReminderFieldErrors,
+  StarterPackEditorProps,
+  StarterPackPickerProps,
+} from "./types";
 
 vi.mock<typeof StarterPackPickerModule>(
   import("./starter-pack-picker"),
@@ -15,10 +21,7 @@ vi.mock<typeof StarterPackPickerModule>(
     StarterPackPicker: ({
       onSelectChoice,
       selectedChoice,
-    }: {
-      onSelectChoice: (choice: "blank" | "focus-system") => void;
-      selectedChoice: string | null;
-    }) => (
+    }: StarterPackPickerProps) => (
       <div>
         <button onClick={() => onSelectChoice("focus-system")} type="button">
           Choose focus-system
@@ -35,13 +38,7 @@ vi.mock<typeof StarterPackPickerModule>(
 vi.mock<typeof StarterPackEditorModule>(
   import("./starter-pack-editor"),
   () => ({
-    StarterPackEditor: ({
-      drafts,
-      onChange,
-    }: {
-      drafts: { name: string }[];
-      onChange: (drafts: { name: string }[]) => void;
-    }) => (
+    StarterPackEditor: ({ drafts, onChange }: StarterPackEditorProps) => (
       <div>
         <p data-testid="draft-count">{drafts.length}</p>
         <button onClick={() => onChange([])} type="button">
@@ -60,17 +57,9 @@ vi.mock<typeof OnboardingReminderStepModule>(
       onChange,
       reminderDraft,
     }: {
-      fieldErrors: Partial<Record<"reminderTime" | "timezone", string>>;
-      onChange: (draft: {
-        reminderEnabled: boolean;
-        reminderTime: string;
-        timezone: string;
-      }) => void;
-      reminderDraft: {
-        reminderEnabled: boolean;
-        reminderTime: string;
-        timezone: string;
-      };
+      fieldErrors: ReminderFieldErrors;
+      onChange: (draft: OnboardingReminderDraft) => void;
+      reminderDraft: OnboardingReminderDraft;
     }) => (
       <div>
         <label htmlFor="reminder-enabled">Enable reminders</label>

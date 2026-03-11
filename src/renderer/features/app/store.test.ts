@@ -83,7 +83,7 @@ function createOnboardingStatus(
   };
 }
 
-describe("useAppStore weekly review refresh", () => {
+describe("app store actions", () => {
   async function setup(onboardingStatus = createOnboardingStatus()) {
     vi.resetModules();
     vi.unstubAllGlobals();
@@ -153,22 +153,25 @@ describe("useAppStore weekly review refresh", () => {
         removeEventListener: vi.fn(),
       }),
     });
-    const { useAppStore } = await import("./store");
+    const actions = await import("./app-actions");
+    const stores = await import("./stores");
+    stores.resetAppStores();
 
     return {
+      actions,
       applyStarterPackMock,
       completeOnboardingMock,
       getHistoryMock,
       getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
       skipOnboardingMock,
-      useAppStore,
+      stores,
     };
   }
 
   it("reloads weekly review data after a habit rename when weekly reviews are already loaded", async () => {
     const freshWeeklyReview = createWeeklyReview("Make buried chapters video");
-    const { getWeeklyReviewOverviewMock, useAppStore } = await setup();
+    const { actions, getWeeklyReviewOverviewMock, stores } = await setup();
     getWeeklyReviewOverviewMock.mockResolvedValue({
       availableWeeks: [
         {
@@ -182,52 +185,51 @@ describe("useAppStore weekly review refresh", () => {
       trend: [],
     });
 
-    useAppStore.setState({
+    stores.useWeeklyReviewStore.setState({
       selectedWeeklyReview: createWeeklyReview(
         "Make buried chapters videp hasbit"
       ),
       weeklyReviewPhase: "ready",
     });
 
-    await useAppStore
-      .getState()
-      .handleRenameHabit(1, "Make buried chapters video");
+    await actions.handleRenameHabit(1, "Make buried chapters video");
 
     expect(getWeeklyReviewOverviewMock).toHaveBeenCalledWith();
     expect(
-      useAppStore.getState().selectedWeeklyReview?.habitMetrics[0]?.name
+      stores.useWeeklyReviewStore.getState().selectedWeeklyReview
+        ?.habitMetrics[0]?.name
     ).toBe("Make buried chapters video");
   });
 
   it("opens onboarding after boot when there are zero habits and onboarding is incomplete", async () => {
-    const { getHistoryMock, useAppStore } = await setup(
+    const { actions, getHistoryMock, stores } = await setup(
       createOnboardingStatus()
     );
 
-    await useAppStore.getState().bootApp();
+    await actions.bootApp();
 
     expect(getHistoryMock).toHaveBeenCalledWith(14);
-    expect(useAppStore.getState().isOnboardingOpen).toBeTruthy();
+    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeTruthy();
   });
 
   it("does not open onboarding after boot when onboarding was already completed", async () => {
-    const { useAppStore } = await setup(
+    const { actions, stores } = await setup(
       createOnboardingStatus({
         completedAt: "2026-03-09T08:00:00.000Z",
         isComplete: true,
       })
     );
 
-    await useAppStore.getState().bootApp();
+    await actions.bootApp();
 
-    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
   });
 
   it("completes onboarding and refreshes today state", async () => {
-    const { completeOnboardingMock, useAppStore } = await setup(
+    const { actions, completeOnboardingMock, stores } = await setup(
       createOnboardingStatus()
     );
-    await useAppStore.getState().bootApp();
+    await actions.bootApp();
 
     const input: CompleteOnboardingInput = {
       habits: [
@@ -243,13 +245,13 @@ describe("useAppStore weekly review refresh", () => {
       },
     };
 
-    await useAppStore.getState().handleCompleteOnboarding(input);
+    await actions.handleCompleteOnboarding(input);
 
     expect(completeOnboardingMock).toHaveBeenCalledWith(input);
-    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
-    expect(useAppStore.getState().todayState?.settings.reminderTime).toBe(
-      "21:15"
-    );
+    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
+    expect(
+      stores.useTodayStore.getState().todayState?.settings.reminderTime
+    ).toBe("21:15");
   });
 
   it("skips onboarding and prevents it from reappearing on reload", async () => {
@@ -257,15 +259,15 @@ describe("useAppStore weekly review refresh", () => {
       completedAt: "2026-03-10T08:00:00.000Z",
       isComplete: true,
     });
-    const { getOnboardingStatusMock, skipOnboardingMock, useAppStore } =
+    const { actions, getOnboardingStatusMock, skipOnboardingMock, stores } =
       await setup(createOnboardingStatus());
-    await useAppStore.getState().bootApp();
+    await actions.bootApp();
     getOnboardingStatusMock.mockResolvedValue(completedStatus);
 
-    await useAppStore.getState().handleSkipOnboarding();
+    await actions.handleSkipOnboarding();
 
     expect(skipOnboardingMock).toHaveBeenCalledWith();
-    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
   });
 
   it("applies a starter pack from settings and refreshes today state without reopening onboarding", async () => {
@@ -273,10 +275,11 @@ describe("useAppStore weekly review refresh", () => {
       completedAt: "2026-03-09T08:00:00.000Z",
       isComplete: true,
     });
-    const { applyStarterPackMock, useAppStore } = await setup(completedStatus);
-    await useAppStore.getState().bootApp();
+    const { actions, applyStarterPackMock, stores } =
+      await setup(completedStatus);
+    await actions.bootApp();
 
-    await useAppStore.getState().handleApplyStarterPack([
+    await actions.handleApplyStarterPack([
       {
         category: "fitness",
         frequency: "daily",
@@ -291,41 +294,39 @@ describe("useAppStore weekly review refresh", () => {
         name: "20-minute walk",
       },
     ]);
-    expect(useAppStore.getState().todayState?.habits[0]?.name).toBe(
+    expect(stores.useTodayStore.getState().todayState?.habits[0]?.name).toBe(
       "20-minute walk"
     );
-    expect(useAppStore.getState().isOnboardingOpen).toBeFalsy();
+    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
   });
 
   it("loads full history after switching to the history tab", async () => {
-    const { getHistoryMock, useAppStore } = await setup(
+    const { actions, getHistoryMock, stores } = await setup(
       createOnboardingStatus()
     );
-    await useAppStore.getState().bootApp();
+    await actions.bootApp();
 
-    useAppStore.getState().handleTabChange("history");
+    actions.handleTabChange("history");
     await Promise.resolve();
     await Promise.resolve();
 
     expect(getHistoryMock).toHaveBeenNthCalledWith(1, 14);
     expect(getHistoryMock).toHaveBeenNthCalledWith(2);
-    expect(useAppStore.getState().historyScope).toBe("full");
-    expect(useAppStore.getState().history.map((day) => day.date)).toStrictEqual(
-      ["2026-03-10", "2026-03-09"]
-    );
+    expect(stores.useHistoryStore.getState().historyScope).toBe("full");
+    expect(
+      stores.useHistoryStore.getState().history.map((day) => day.date)
+    ).toStrictEqual(["2026-03-10", "2026-03-09"]);
   });
 
   it("keeps using full history after a mutation once the history tab has been opened", async () => {
-    const { getHistoryMock, useAppStore } = await setup(
-      createOnboardingStatus()
-    );
-    await useAppStore.getState().bootApp();
+    const { actions, getHistoryMock } = await setup(createOnboardingStatus());
+    await actions.bootApp();
 
-    useAppStore.getState().handleTabChange("history");
+    actions.handleTabChange("history");
     await Promise.resolve();
     await Promise.resolve();
 
-    await useAppStore.getState().handleRenameHabit(1, "Make buried chapters");
+    await actions.handleRenameHabit(1, "Make buried chapters");
 
     expect(getHistoryMock).toHaveBeenLastCalledWith();
   });

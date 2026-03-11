@@ -9,30 +9,38 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 import { HabitRowEditor } from "./habit-row-editor";
 import type * as SelectorsModule from "./selectors";
 
-vi.mock<typeof FramerMotion>(import("framer-motion"), () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: (_, tag: string) =>
-        forwardRef<HTMLElement, Record<string, unknown>>(
-          function MotionMock(props, ref) {
-            const {
-              animate: _animate,
-              exit: _exit,
-              initial: _initial,
-              layout: _layout,
-              transition: _transition,
-              whileHover: _whileHover,
-              whileTap: _whileTap,
-              ...rest
-            } = props;
+vi.mock<typeof FramerMotion>(
+  import("framer-motion"),
+  async (importOriginal) => {
+    const actual = await importOriginal();
 
-            return createElement(tag, { ...rest, ref });
-          }
-        ),
-    }
-  ),
-}));
+    return {
+      ...actual,
+      m: new Proxy(
+        {},
+        {
+          get: (_, tag: string) =>
+            forwardRef<HTMLElement, Record<string, unknown>>(
+              function MotionMock(props, ref) {
+                const {
+                  animate: _animate,
+                  exit: _exit,
+                  initial: _initial,
+                  layout: _layout,
+                  transition: _transition,
+                  whileHover: _whileHover,
+                  whileTap: _whileTap,
+                  ...rest
+                } = props;
+
+                return createElement(tag, { ...rest, ref });
+              }
+            ),
+        }
+      ) as typeof actual.m,
+    };
+  }
+);
 
 vi.mock<typeof SelectorsModule>(import("./selectors"), () => ({
   HabitCategorySelector: ({

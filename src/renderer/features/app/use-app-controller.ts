@@ -9,68 +9,64 @@ import {
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";
 
+import { appActions } from "./app-actions";
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
 } from "./settings-save";
-import { useAppStore } from "./store";
+import {
+  useBootStore,
+  useHistoryStore,
+  useOnboardingStore,
+  useSettingsStore,
+  useTodayStore,
+  useUiStore,
+  useWeeklyReviewStore,
+} from "./stores";
 import type { AppState, SettingsFieldErrors } from "./types";
 
 const EMPTY_HISTORY: AppState["history"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
 function useAppControllerActions() {
-  return useAppStore(
-    useShallow((state) => ({
-      bootApp: state.bootApp,
-      clearOnboardingError: state.clearOnboardingError,
-      clearSettingsFeedback: state.clearSettingsFeedback,
-      dismissWeeklyReviewSpotlight: state.dismissWeeklyReviewSpotlight,
-      handleApplyStarterPack: state.handleApplyStarterPack,
-      handleArchiveHabit: state.handleArchiveHabit,
-      handleCompleteOnboarding: state.handleCompleteOnboarding,
-      handleCreateHabit: state.handleCreateHabit,
-      handleRenameHabit: state.handleRenameHabit,
-      handleReorderHabits: state.handleReorderHabits,
-      handleSettingsDraftChange: state.handleSettingsDraftChange,
-      handleSkipOnboarding: state.handleSkipOnboarding,
-      handleTabChange: state.handleTabChange,
-      handleToggleHabit: state.handleToggleHabit,
-      handleUpdateHabitCategory: state.handleUpdateHabitCategory,
-      handleUpdateHabitFrequency: state.handleUpdateHabitFrequency,
-      handleUpdateSettings: state.handleUpdateSettings,
-      loadFullHistory: state.loadFullHistory,
-      loadWeeklyReviewOverview: state.loadWeeklyReviewOverview,
-      openWeeklyReviewSpotlight: state.openWeeklyReviewSpotlight,
-      retryBoot: state.retryBoot,
-      selectWeeklyReview: state.selectWeeklyReview,
-      setSettingsSaveErrorMessage: state.setSettingsSaveErrorMessage,
-      setSettingsSavePhase: state.setSettingsSavePhase,
-      setSettingsValidationErrors: state.setSettingsValidationErrors,
-      setSystemTheme: state.setSystemTheme,
-    }))
-  );
+  return appActions;
 }
 
 function useAppControllerCoreState() {
-  return useAppStore(
+  const bootState = useBootStore(
     useShallow((state) => ({
       bootError: state.bootError,
       bootPhase: state.bootPhase,
+    }))
+  );
+  const onboardingState = useOnboardingStore(
+    useShallow((state) => ({
       isOnboardingOpen: state.isOnboardingOpen,
       onboardingError: state.onboardingError,
       onboardingPhase: state.onboardingPhase,
       onboardingStatus: state.onboardingStatus,
-      settingsDraft: state.settingsDraft,
-      settingsSavePhase: state.settingsSavePhase,
-      systemTheme: state.systemTheme,
-      todayState: state.todayState,
     }))
   );
+  const settingsState = useSettingsStore(
+    useShallow((state) => ({
+      settingsDraft: state.settingsDraft,
+      settingsSavePhase: state.settingsSavePhase,
+    }))
+  );
+  const systemTheme = useUiStore((state) => state.systemTheme);
+  const todayState = useTodayStore((state) => state.todayState);
+
+  return {
+    ...bootState,
+    ...onboardingState,
+    ...settingsState,
+    systemTheme,
+    todayState,
+  };
 }
 
 function useWeeklyReviewState() {
-  return useAppStore(
+  return useWeeklyReviewStore(
     useShallow((state) => ({
       isWeeklyReviewSpotlightOpen: state.isWeeklyReviewSpotlightOpen,
       weeklyReviewOverview: state.weeklyReviewOverview,
@@ -80,9 +76,11 @@ function useWeeklyReviewState() {
 }
 
 function useHistoryState() {
-  return useAppStore(
+  const tab = useUiStore((state) => state.tab);
+
+  return useHistoryStore(
     useShallow((state) =>
-      state.tab === "settings"
+      tab === "settings"
         ? null
         : {
             history: state.history,
@@ -95,9 +93,11 @@ function useHistoryState() {
 }
 
 function useHistoryPageState() {
-  return useAppStore(
+  const tab = useUiStore((state) => state.tab);
+
+  return useWeeklyReviewStore(
     useShallow((state) =>
-      state.tab === "history"
+      tab === "history"
         ? {
             selectedWeeklyReview: state.selectedWeeklyReview,
             weeklyReviewError: state.weeklyReviewError,
@@ -108,9 +108,11 @@ function useHistoryPageState() {
 }
 
 function useSettingsPageState() {
-  return useAppStore(
+  const tab = useUiStore((state) => state.tab);
+
+  return useSettingsStore(
     useShallow((state) =>
-      state.tab === "settings"
+      tab === "settings"
         ? {
             settingsFieldErrors: state.settingsFieldErrors,
             settingsSaveErrorMessage: state.settingsSaveErrorMessage,
@@ -307,7 +309,7 @@ function useAppLifecycleEffects({
 }
 
 export function useAppController() {
-  const tab = useAppStore((state) => state.tab);
+  const tab = useUiStore((state) => state.tab);
   const actions = useAppControllerActions();
   const coreState = useAppControllerCoreState();
   const weeklyReviewState = useWeeklyReviewState();
