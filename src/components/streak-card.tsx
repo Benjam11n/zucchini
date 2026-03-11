@@ -1,9 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { CalendarDays, Flame, Snowflake } from "lucide-react";
 
 import { HabitActivityCard } from "@/components/custom/apple-activity-ring";
 import { Card, CardContent } from "@/components/ui/card";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 import { RING_COLORS } from "@/renderer/lib/ring-colors";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { formatDateKey } from "@/shared/utils/date";
@@ -68,11 +66,7 @@ export function StreakCard({
             const c = stat.color;
 
             return (
-              <motion.div
-                key={stat.label}
-                whileHover={hoverLift}
-                whileTap={tapPress}
-              >
+              <div key={stat.label}>
                 <Card size="sm">
                   <CardContent className="flex items-center gap-3">
                     <span
@@ -90,26 +84,19 @@ export function StreakCard({
                       <Icon className="size-4" />
                     </span>
                     <div className="space-y-0.5">
-                      <AnimatePresence initial={false} mode="popLayout">
-                        <motion.p
-                          key={`${stat.label}-${stat.value}`}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-base leading-none font-semibold"
-                          exit={{ opacity: 0, y: -8 }}
-                          initial={{ opacity: 0, y: 8 }}
-                          style={c ? { color: c } : undefined}
-                          transition={microTransition}
-                        >
-                          {stat.value}
-                        </motion.p>
-                      </AnimatePresence>
+                      <p
+                        className="text-base leading-none font-semibold"
+                        style={c ? { color: c } : undefined}
+                      >
+                        {stat.value}
+                      </p>
                       <p className="text-xs tracking-[0.16em] uppercase text-muted-foreground">
                         {stat.label}
                       </p>
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             );
           })}
         </div>

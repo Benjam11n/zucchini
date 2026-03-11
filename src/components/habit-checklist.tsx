@@ -1,9 +1,7 @@
-import { motion } from "framer-motion";
 import { Dumbbell, Utensils, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
-import { staggerItemVariants } from "@/renderer/lib/motion";
 import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 
@@ -52,14 +50,9 @@ export function HabitChecklist({
       }
     >
       {totalHabits === 0 ? (
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-dashed border-border py-10 text-center"
-          initial={{ opacity: 0, y: 12 }}
-          transition={{ duration: 0.2 }}
-        >
+        <div className="rounded-xl border border-dashed border-border py-10 text-center">
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-        </motion.div>
+        </div>
       ) : null}
 
       {habitsByCategory.map((category) => {
@@ -70,12 +63,7 @@ export function HabitChecklist({
         const CategoryIcon = CATEGORY_ICONS[category.value];
 
         return (
-          <motion.div
-            key={category.value}
-            className="grid gap-1"
-            layout
-            variants={staggerItemVariants}
-          >
+          <div key={category.value} className="grid gap-1">
             {/* Category header */}
             <div className="flex items-center gap-2 px-0.5 pb-1">
               <CategoryIcon
@@ -103,7 +91,7 @@ export function HabitChecklist({
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         );
       })}
     </HabitListCard>

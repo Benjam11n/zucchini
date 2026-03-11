@@ -1,9 +1,7 @@
-import { motion } from "framer-motion";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { microTransition } from "@/renderer/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
@@ -36,11 +34,7 @@ export function NewHabitForm({
   }
 
   return (
-    <motion.div
-      className="grid gap-3 rounded-xl border border-dashed border-border/60 p-4"
-      layout
-      transition={microTransition}
-    >
+    <div className="grid gap-3 rounded-xl border border-dashed border-border/60 p-4">
       <form
         className="flex flex-col gap-3 sm:flex-row"
         onSubmit={(event) => {
@@ -68,6 +62,6 @@ export function NewHabitForm({
         onChange={setNewHabitFrequency}
         selectedFrequency={newHabitFrequency}
       />
-    </motion.div>
+    </div>
   );
 }

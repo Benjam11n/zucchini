@@ -1,11 +1,8 @@
-import { motion } from "framer-motion";
-
 import { cn } from "@/lib/utils";
 import {
   SETTINGS_CATEGORY_COLORS,
   SETTINGS_CATEGORY_TEXT_ON_SELECTED,
 } from "@/renderer/features/settings/constants";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 import {
   HABIT_CATEGORY_DEFINITIONS,
   HABIT_FREQUENCY_DEFINITIONS,
@@ -38,11 +35,9 @@ export function HabitCategorySelector({
         const color = SETTINGS_CATEGORY_COLORS[category.value];
 
         return (
-          <motion.button
+          <button
             key={category.value}
-            animate={{ opacity: 1, scale: 1 }}
             id={`${name}-${category.value}`}
-            initial={{ opacity: 0, scale: 0.94 }}
             type="button"
             onClick={() => onChange(normalizeHabitCategory(category.value))}
             className={cn(
@@ -60,9 +55,6 @@ export function HabitCategorySelector({
                   }
                 : undefined
             }
-            transition={microTransition}
-            whileHover={hoverLift}
-            whileTap={tapPress}
           >
             <span
               className="size-2 shrink-0 rounded-full"
@@ -73,7 +65,7 @@ export function HabitCategorySelector({
               }}
             />
             {category.label}
-          </motion.button>
+          </button>
         );
       })}
     </div>
@@ -91,11 +83,9 @@ export function HabitFrequencySelector({
         const isSelected = selectedFrequency === frequency.value;
 
         return (
-          <motion.button
+          <button
             key={frequency.value}
-            animate={{ opacity: 1, scale: 1 }}
             id={`${name}-${frequency.value}`}
-            initial={{ opacity: 0, scale: 0.94 }}
             type="button"
             onClick={() => onChange(normalizeHabitFrequency(frequency.value))}
             className={cn(
@@ -105,12 +95,9 @@ export function HabitFrequencySelector({
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
             )}
-            transition={microTransition}
-            whileHover={hoverLift}
-            whileTap={tapPress}
           >
             {frequency.label}
-          </motion.button>
+          </button>
         );
       })}
     </div>

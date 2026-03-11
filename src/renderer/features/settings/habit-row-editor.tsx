@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +7,6 @@ import {
   ItemDescription,
 } from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
-import { hoverLift, microTransition } from "@/renderer/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { reorderHabitList } from "./reorder-habits";
@@ -40,14 +37,7 @@ export function HabitRowEditor({
   onUpdateHabitFrequency,
 }: HabitRowEditorProps) {
   return (
-    <motion.div
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, y: -10 }}
-      initial={{ opacity: 0, scale: 0.96, y: 12 }}
-      layout
-      transition={microTransition}
-      whileHover={hoverLift}
-    >
+    <div>
       <Item variant="outline" className="bg-muted/20 p-4">
         <ItemContent className="gap-3">
           <div className="flex items-center gap-3">
@@ -132,6 +122,6 @@ export function HabitRowEditor({
           </div>
         </ItemActions>
       </Item>
-    </motion.div>
+    </div>
   );
 }
