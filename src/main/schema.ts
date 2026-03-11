@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   primaryKey,
   sqliteTable,
@@ -41,6 +42,8 @@ export const habitPeriodStatus = sqliteTable(
     primaryKey({
       columns: [table.frequency, table.periodStart, table.habitId],
     }),
+    index("habit_period_status_period_start_idx").on(table.periodStart),
+    index("habit_period_status_period_end_idx").on(table.periodEnd),
   ]
 );
 

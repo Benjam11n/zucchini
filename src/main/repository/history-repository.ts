@@ -11,8 +11,11 @@ import type { DailySummary } from "@/shared/domain/streak";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { dailySummary, habitPeriodStatus } from "../schema";
 import type { SqliteHabitsRepository } from "./habit-repository";
+import type { SettledHistoryOptions } from "./index";
 import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";
 import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
+
+const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 
 export class SqliteHistoryRepository {
   private readonly client: SqliteDatabaseClient;
@@ -171,14 +174,24 @@ export class SqliteHistoryRepository {
     });
   }
 
-  getSettledHistory(limit?: number): DailySummary[] {
+  getSettledHistory(
+    limit?: number,
+    options?: SettledHistoryOptions
+  ): DailySummary[] {
     return this.client.run("getSettledHistory", () => {
+      const effectiveLimit =
+        options?.uncapped === true
+          ? undefined
+          : (limit ?? DEFAULT_SETTLED_HISTORY_LIMIT);
       const query = this.client
         .getDrizzle()
         .select()
         .from(dailySummary)
         .orderBy(desc(dailySummary.date));
-      const rows = limit === undefined ? query.all() : query.limit(limit).all();
+      const rows =
+        effectiveLimit === undefined
+          ? query.all()
+          : query.limit(effectiveLimit).all();
 
       return rows.map((row) => mapDailySummary(row));
     });
@@ -223,59 +236,55 @@ export class SqliteHistoryRepository {
   }
 
   getFirstTrackedDate(): string | null {
-    return this.client.run("getFirstTrackedDate", () => {
-      const statusRow = this.client
-        .getDrizzle()
-        .select({
-          firstDate: sql<string | null>`min(${habitPeriodStatus.periodStart})`,
-        })
-        .from(habitPeriodStatus)
-        .get();
-      const summaryRow = this.client
-        .getDrizzle()
-        .select({
-          firstDate: sql<string | null>`min(${dailySummary.date})`,
-        })
-        .from(dailySummary)
-        .get();
-      const candidates = [statusRow?.firstDate, summaryRow?.firstDate].filter(
-        (value): value is string => value !== null && value !== undefined
-      );
-
-      if (candidates.length === 0) {
-        return null;
-      }
-
-      return candidates.toSorted((left, right) => left.localeCompare(right))[0];
-    });
+    return this.client.run(
+      "getFirstTrackedDate",
+      () =>
+        (
+          this.client
+            .getSqlite()
+            .prepare(
+              `
+                SELECT min(candidate_date) AS firstDate
+                FROM (
+                  SELECT min(period_start) AS candidate_date
+                  FROM habit_period_status
+                  UNION ALL
+                  SELECT min(date) AS candidate_date
+                  FROM daily_summary
+                )
+              `
+            )
+            .get() as {
+            firstDate: string | null;
+          } | null
+        )?.firstDate ?? null
+    );
   }
 
   getLatestTrackedDate(): string | null {
-    return this.client.run("getLatestTrackedDate", () => {
-      const statusRow = this.client
-        .getDrizzle()
-        .select({
-          latestDate: sql<string | null>`max(${habitPeriodStatus.periodEnd})`,
-        })
-        .from(habitPeriodStatus)
-        .get();
-      const summaryRow = this.client
-        .getDrizzle()
-        .select({
-          latestDate: sql<string | null>`max(${dailySummary.date})`,
-        })
-        .from(dailySummary)
-        .get();
-      const candidates = [statusRow?.latestDate, summaryRow?.latestDate].filter(
-        (value): value is string => value !== null && value !== undefined
-      );
-
-      if (candidates.length === 0) {
-        return null;
-      }
-
-      return candidates.toSorted((left, right) => right.localeCompare(left))[0];
-    });
+    return this.client.run(
+      "getLatestTrackedDate",
+      () =>
+        (
+          this.client
+            .getSqlite()
+            .prepare(
+              `
+                SELECT max(candidate_date) AS latestDate
+                FROM (
+                  SELECT max(period_end) AS candidate_date
+                  FROM habit_period_status
+                  UNION ALL
+                  SELECT max(date) AS candidate_date
+                  FROM daily_summary
+                )
+              `
+            )
+            .get() as {
+            latestDate: string | null;
+          } | null
+        )?.latestDate ?? null
+    );
   }
 
   getExistingCompletedAt(date: string): string | null {

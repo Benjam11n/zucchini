@@ -1,2 +1,5 @@
-export type { HabitRepository } from "./repository/index";
+export type {
+  HabitRepository,
+  SettledHistoryOptions,
+} from "./repository/index";
 export { SqliteHabitRepository } from "./repository/index";

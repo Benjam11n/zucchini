@@ -1,0 +1,2 @@
+CREATE INDEX `habit_period_status_period_start_idx` ON `habit_period_status` (`period_start`);--> statement-breakpoint
+CREATE INDEX `habit_period_status_period_end_idx` ON `habit_period_status` (`period_end`);

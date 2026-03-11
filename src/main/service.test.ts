@@ -15,8 +15,10 @@ import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import type { Clock } from "./clock";
-import type { HabitRepository } from "./repository";
+import type { HabitRepository, SettledHistoryOptions } from "./repository";
 import { HabitService } from "./service";
+
+const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 
 class FakeClock implements Clock {
   private readonly today: string;
@@ -205,12 +207,21 @@ class FakeRepository implements HabitRepository {
     values.set(habitId, !current);
   }
 
-  getSettledHistory(limit?: number): DailySummary[] {
+  getSettledHistory(
+    limit?: number,
+    options?: SettledHistoryOptions
+  ): DailySummary[] {
     const history = [...this.dailySummaries.values()].toSorted((left, right) =>
       right.date.localeCompare(left.date)
     );
+    const effectiveLimit =
+      options?.uncapped === true
+        ? undefined
+        : (limit ?? DEFAULT_SETTLED_HISTORY_LIMIT);
 
-    return limit === undefined ? history : history.slice(0, limit);
+    return effectiveLimit === undefined
+      ? history
+      : history.slice(0, effectiveLimit);
   }
 
   getDailySummariesInRange(start: string, end: string): DailySummary[] {
@@ -770,6 +781,37 @@ describe("history retrieval", () => {
       "2026-03-08",
       "2026-03-07",
     ]);
+  });
+
+  it("keeps the full history path uncapped when no limit is provided", () => {
+    const repository = new FakeRepository();
+    repository.streak.lastEvaluatedDate = "2026-03-08";
+
+    for (let index = 0; index < 400; index += 1) {
+      const date = new Date(Date.UTC(2025, 0, 1 + index))
+        .toISOString()
+        .slice(0, 10);
+      const allCompleted = index % 2 === 0;
+
+      repository.dailySummaries.set(date, {
+        allCompleted,
+        completedAt: [null, `${date}T21:00:00.000Z`][Number(allCompleted)],
+        date,
+        freezeUsed: index % 5 === 0,
+        streakCountAfterDay: index + 1,
+      });
+    }
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const history = service.getHistory();
+
+    expect(history).toHaveLength(401);
+    expect(history[1]?.date).toBe("2026-02-04");
+    expect(history.at(-1)?.date).toBe("2025-01-01");
   });
 
   it("initializes storage only once across repeated reads", () => {

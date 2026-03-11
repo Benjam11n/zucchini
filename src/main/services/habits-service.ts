@@ -127,6 +127,8 @@ export class HabitService implements HabitsService {
       const todayState = buildTodayState(this.repository, this.clock);
       const settledHistoryLimit =
         limit === undefined ? undefined : Math.max(limit - 1, 0);
+      const settledHistoryOptions =
+        limit === undefined ? { uncapped: true } : undefined;
 
       return [
         buildHistoryDay(
@@ -134,7 +136,7 @@ export class HabitService implements HabitsService {
           this.repository.getHabitsWithStatus(this.clock.todayKey())
         ),
         ...this.repository
-          .getSettledHistory(settledHistoryLimit)
+          .getSettledHistory(settledHistoryLimit, settledHistoryOptions)
           .map((summary) =>
             buildHistoryDay(
               summary,
