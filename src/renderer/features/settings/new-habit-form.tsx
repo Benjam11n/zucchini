@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { microTransition } from "@/renderer/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
@@ -36,38 +37,75 @@ export function NewHabitForm({
   }
 
   return (
-    <motion.div
-      className="grid gap-3 rounded-xl border border-dashed border-border/60 p-4"
+    <m.div
+      className="grid w-full gap-4 self-start rounded-2xl border border-dashed border-border/60 bg-muted/15 p-4 sm:max-w-2xl"
       layout
       transition={microTransition}
     >
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Add a habit</p>
+        <p className="text-xs text-muted-foreground">
+          Keep the setup lightweight, then fine-tune it below.
+        </p>
+      </div>
       <form
-        className="flex flex-col gap-3 sm:flex-row"
+        className="grid gap-3"
         onSubmit={(event) => {
           event.preventDefault();
           void handleCreate();
         }}
       >
-        <Input
-          id="new-habit"
-          onChange={(event) => setNewHabitName(event.target.value)}
-          placeholder="New habit name..."
-          required
-          type="text"
-          value={newHabitName}
-        />
-        <Button type="submit">Add</Button>
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="grid gap-2">
+            <Label
+              className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase"
+              htmlFor="new-habit"
+            >
+              Name
+            </Label>
+            <Input
+              className="h-9"
+              id="new-habit"
+              onChange={(event) => setNewHabitName(event.target.value)}
+              placeholder="Drink water"
+              required
+              type="text"
+              value={newHabitName}
+            />
+          </div>
+          <Button className="h-9 px-4" type="submit">
+            Add habit
+          </Button>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-2">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Category
+            </Label>
+            <HabitCategorySelector
+              className="gap-1.5"
+              compact
+              name="new-habit-category"
+              onChange={setNewHabitCategory}
+              selectedCategory={newHabitCategory}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Frequency
+            </Label>
+            <HabitFrequencySelector
+              className="gap-1.5"
+              compact
+              name="new-habit-frequency"
+              onChange={setNewHabitFrequency}
+              selectedFrequency={newHabitFrequency}
+            />
+          </div>
+        </div>
       </form>
-      <HabitCategorySelector
-        name="new-habit-category"
-        onChange={setNewHabitCategory}
-        selectedCategory={newHabitCategory}
-      />
-      <HabitFrequencySelector
-        name="new-habit-frequency"
-        onChange={setNewHabitFrequency}
-        selectedFrequency={newHabitFrequency}
-      />
-    </motion.div>
+    </m.div>
   );
 }

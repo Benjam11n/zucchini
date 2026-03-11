@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import {
@@ -15,30 +15,36 @@ import {
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 
 interface HabitCategorySelectorProps {
+  className?: string;
+  compact?: boolean;
   name: string;
   onChange: (category: HabitCategory) => void;
   selectedCategory: HabitCategory;
 }
 
 interface HabitFrequencySelectorProps {
+  className?: string;
+  compact?: boolean;
   name: string;
   onChange: (frequency: HabitFrequency) => void;
   selectedFrequency: HabitFrequency;
 }
 
 export function HabitCategorySelector({
+  className,
+  compact = false,
   name,
   onChange,
   selectedCategory,
 }: HabitCategorySelectorProps) {
   return (
-    <div className="flex gap-2">
+    <div className={cn("flex flex-wrap gap-2", className)}>
       {HABIT_CATEGORY_DEFINITIONS.map((category) => {
         const isSelected = selectedCategory === category.value;
         const color = SETTINGS_CATEGORY_COLORS[category.value];
 
         return (
-          <motion.button
+          <m.button
             key={category.value}
             animate={{ opacity: 1, scale: 1 }}
             id={`${name}-${category.value}`}
@@ -46,7 +52,8 @@ export function HabitCategorySelector({
             type="button"
             onClick={() => onChange(normalizeHabitCategory(category.value))}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-all",
+              "flex shrink-0 items-center gap-1.5 rounded-full border transition-all",
+              compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1 text-xs",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
               !isSelected &&
                 "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
@@ -73,7 +80,7 @@ export function HabitCategorySelector({
               }}
             />
             {category.label}
-          </motion.button>
+          </m.button>
         );
       })}
     </div>
@@ -81,17 +88,19 @@ export function HabitCategorySelector({
 }
 
 export function HabitFrequencySelector({
+  className,
+  compact = false,
   name,
   onChange,
   selectedFrequency,
 }: HabitFrequencySelectorProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={cn("flex flex-wrap gap-2", className)}>
       {HABIT_FREQUENCY_DEFINITIONS.map((frequency) => {
         const isSelected = selectedFrequency === frequency.value;
 
         return (
-          <motion.button
+          <m.button
             key={frequency.value}
             animate={{ opacity: 1, scale: 1 }}
             id={`${name}-${frequency.value}`}
@@ -99,7 +108,8 @@ export function HabitFrequencySelector({
             type="button"
             onClick={() => onChange(normalizeHabitFrequency(frequency.value))}
             className={cn(
-              "rounded-full border px-3 py-1 text-xs transition-all",
+              "rounded-full border transition-all",
+              compact ? "px-2.5 py-1 text-[11px]" : "px-3 py-1 text-xs",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
               isSelected
                 ? "border-primary bg-primary text-primary-foreground"
@@ -110,7 +120,7 @@ export function HabitFrequencySelector({
             whileTap={tapPress}
           >
             {frequency.label}
-          </motion.button>
+          </m.button>
         );
       })}
     </div>

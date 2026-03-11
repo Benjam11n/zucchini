@@ -1,13 +1,8 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent } from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
 import { hoverLift, microTransition } from "@/renderer/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
@@ -40,7 +35,7 @@ export function HabitRowEditor({
   onUpdateHabitFrequency,
 }: HabitRowEditorProps) {
   return (
-    <motion.div
+    <m.div
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96, y: -10 }}
       initial={{ opacity: 0, scale: 0.96, y: 12 }}
@@ -66,7 +61,7 @@ export function HabitRowEditor({
             </span>
           </div>
 
-          <ItemDescription className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 text-sm leading-normal font-normal text-muted-foreground">
             <div className="flex flex-col gap-2">
               <Label className="mr-2 text-xs font-medium text-muted-foreground">
                 Category
@@ -92,7 +87,7 @@ export function HabitRowEditor({
                 selectedFrequency={habit.frequency}
               />
             </div>
-          </ItemDescription>
+          </div>
         </ItemContent>
 
         <ItemActions className="self-end sm:self-center mt-3 sm:mt-0">
@@ -132,6 +127,6 @@ export function HabitRowEditor({
           </div>
         </ItemActions>
       </Item>
-    </motion.div>
+    </m.div>
   );
 }
