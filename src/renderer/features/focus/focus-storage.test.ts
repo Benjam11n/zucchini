@@ -39,6 +39,7 @@ describe("focus storage", () => {
 
     expect(
       isPersistedFocusTimerState({
+        cycleId: "cycle-1",
         endsAt: "2026-03-08T09:25:00.000Z",
         lastUpdatedAt: "2026-03-08T09:00:00.000Z",
         phase: "focus",
@@ -59,6 +60,7 @@ describe("focus storage", () => {
   it("round-trips timer state through localStorage", () => {
     installLocalStorageMock();
     const state = {
+      cycleId: null,
       endsAt: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus" as const,

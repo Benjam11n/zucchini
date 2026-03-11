@@ -166,8 +166,11 @@ async function setupUseAppController({
   const habits = {
     applyStarterPack: vi.fn().mockResolvedValue(todayState),
     archiveHabit: vi.fn().mockResolvedValue(todayState),
+    claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
+    claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     completeOnboarding: vi.fn().mockResolvedValue(todayState),
     createHabit: vi.fn().mockResolvedValue(todayState),
+    getFocusSessions: vi.fn().mockResolvedValue([]),
     getHistory: vi.fn((limit?: number) =>
       Promise.resolve(limit === 14 ? history.slice(0, 2) : history)
     ),
@@ -175,8 +178,12 @@ async function setupUseAppController({
     getTodayState: vi.fn().mockResolvedValue(todayState),
     getWeeklyReview: vi.fn().mockResolvedValue(weeklyReview),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(weeklyReviewOverview),
+    recordFocusSession: vi.fn((_input) => Promise.resolve()),
+    releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
     renameHabit: vi.fn().mockResolvedValue(todayState),
     reorderHabits: vi.fn().mockResolvedValue(todayState),
+    showFocusWidget: vi.fn(() => Promise.resolve()),
+    showMainWindow: vi.fn(() => Promise.resolve()),
     showNotification: vi.fn().mockResolvedValue(42),
     skipOnboarding: vi.fn().mockResolvedValue(42),
     toggleHabit: vi.fn().mockResolvedValue(todayState),

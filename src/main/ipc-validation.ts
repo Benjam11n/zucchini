@@ -6,6 +6,9 @@ import {
   createFocusSessionInputSchema,
   dateKeySchema,
   focusSessionLimitSchema,
+  focusTimerCycleIdSchema,
+  focusTimerInstanceIdSchema,
+  focusTimerLeaseTtlSchema,
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
@@ -69,6 +72,30 @@ export function validateHistoryLimit(value: unknown): number | undefined {
 
 export function validateFocusSessionLimit(value: unknown): number | undefined {
   return parseWithSchema("focus session limit", focusSessionLimitSchema, value);
+}
+
+export function validateFocusTimerCycleId(value: unknown): string {
+  return parseWithSchema(
+    "focus timer cycle id",
+    focusTimerCycleIdSchema,
+    value
+  );
+}
+
+export function validateFocusTimerInstanceId(value: unknown): string {
+  return parseWithSchema(
+    "focus timer instance id",
+    focusTimerInstanceIdSchema,
+    value
+  );
+}
+
+export function validateFocusTimerLeaseTtl(value: unknown): number {
+  return parseWithSchema(
+    "focus timer leadership ttl",
+    focusTimerLeaseTtlSchema,
+    value
+  );
 }
 
 export function validateHabitName(value: unknown): string {

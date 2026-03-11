@@ -23,6 +23,8 @@ import type {
 export const HABITS_IPC_CHANNELS = {
   applyStarterPack: "habits:applyStarterPack",
   archiveHabit: "habits:archiveHabit",
+  claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
+  claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   completeOnboarding: "habits:completeOnboarding",
   createHabit: "habits:createHabit",
   getFocusSessions: "habits:getFocusSessions",
@@ -32,8 +34,11 @@ export const HABITS_IPC_CHANNELS = {
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
   recordFocusSession: "habits:recordFocusSession",
+  releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
+  showFocusWidget: "habits:showFocusWidget",
+  showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
   skipOnboarding: "habits:skipOnboarding",
   toggleHabit: "habits:toggleHabit",
@@ -110,7 +115,15 @@ export interface HabitApi {
   getTodayState: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
+  claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
+  claimFocusTimerLeadership: (
+    instanceId: string,
+    ttlMs: number
+  ) => Promise<boolean>;
   recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
+  releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
+  showFocusWidget: () => Promise<void>;
+  showMainWindow: () => Promise<void>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;

@@ -210,6 +210,7 @@ function createControllerActions({
     },
     handleRetryHistoryLoad: actions.loadFullHistory,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
+    handleShowFocusWidget: actions.showFocusWidget,
     handleSkipOnboarding: actions.handleSkipOnboarding,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,

@@ -21,6 +21,7 @@ function FocusTabHarness() {
       sessionsLoadError={null}
       timerState={timerState}
       todayDate="2026-03-08"
+      onShowWidget={vi.fn()}
       onRetryLoad={vi.fn()}
     />
   );

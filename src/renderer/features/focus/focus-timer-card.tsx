@@ -18,6 +18,7 @@ interface FocusTimerCardProps {
   onPause: () => void;
   onReset: () => void;
   onResume: () => void;
+  onShowWidget: () => void;
   onSkipBreak: () => void;
   onStart: () => void;
 }
@@ -27,6 +28,7 @@ export function FocusTimerCard({
   onPause,
   onReset,
   onResume,
+  onShowWidget,
   onSkipBreak,
   onStart,
 }: FocusTimerCardProps) {
@@ -43,9 +45,14 @@ export function FocusTimerCard({
             <CardDescription>Pomodoro</CardDescription>
             <CardTitle>Focused work timer</CardTitle>
           </div>
-          <Badge variant={isBreak ? "secondary" : "default"}>
-            {isBreak ? "Break" : "Focus"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button onClick={onShowWidget} size="sm" variant="outline">
+              Show widget
+            </Button>
+            <Badge variant={isBreak ? "secondary" : "default"}>
+              {isBreak ? "Break" : "Focus"}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 

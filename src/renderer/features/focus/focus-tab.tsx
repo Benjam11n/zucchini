@@ -19,6 +19,7 @@ function FocusTabComponent({
   sessionsLoadError,
   timerState,
   todayDate,
+  onShowWidget,
   onRetryLoad,
 }: FocusTabProps) {
   const clearFocusSaveError = useFocusStore(
@@ -42,6 +43,9 @@ function FocusTabComponent({
           setTimerState(createIdleFocusTimerState());
         }}
         onResume={() => setTimerState(resumeFocusTimerState(timerState))}
+        onShowWidget={() => {
+          void onShowWidget();
+        }}
         onSkipBreak={() => {
           clearFocusSaveError();
           setTimerState(createIdleFocusTimerState());

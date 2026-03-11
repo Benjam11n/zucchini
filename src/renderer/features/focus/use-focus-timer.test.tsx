@@ -47,6 +47,9 @@ function setupFocusTimerTest() {
   Object.defineProperty(window, "habits", {
     configurable: true,
     value: {
+      claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
+      claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+      releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
       showNotification: vi.fn().mockResolvedValue(42),
     },
   });
@@ -87,6 +90,7 @@ describe("use focus timer", () => {
     localStorage.setItem(
       "zucchini_focus_timer",
       JSON.stringify({
+        cycleId: "cycle-restore",
         endsAt: "2026-03-08T09:25:00.000Z",
         lastUpdatedAt: "2026-03-08T09:00:00.000Z",
         phase: "focus",
@@ -124,6 +128,7 @@ describe("use focus timer", () => {
     const setFocusSaveErrorMessage = vi.fn();
 
     useFocusStore.getState().setTimerState({
+      cycleId: "cycle-1",
       endsAt: "2026-03-08T09:00:01.000Z",
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
@@ -143,6 +148,7 @@ describe("use focus timer", () => {
     await act(async () => {
       vi.advanceTimersByTime(1000);
       await Promise.resolve();
+      await Promise.resolve();
     });
 
     // oxlint-disable-next-line vitest/prefer-called-once
@@ -159,6 +165,7 @@ describe("use focus timer", () => {
     const setFocusSaveErrorMessage = vi.fn();
 
     useFocusStore.getState().setTimerState({
+      cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
@@ -177,6 +184,7 @@ describe("use focus timer", () => {
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
+      await Promise.resolve();
       await Promise.resolve();
     });
 

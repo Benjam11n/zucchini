@@ -5,6 +5,7 @@ export type FocusTimerStatus = "idle" | "running" | "paused";
 export type FocusSessionsPhase = "error" | "idle" | "loading" | "ready";
 
 export interface PersistedFocusTimerState {
+  cycleId: string | null;
   endsAt: string | null;
   lastUpdatedAt: string;
   phase: FocusTimerPhase;
@@ -25,5 +26,6 @@ export interface FocusTabProps {
   sessionsLoadError: Error | null;
   timerState: PersistedFocusTimerState;
   todayDate: string;
+  onShowWidget: () => Promise<void>;
   onRetryLoad: () => Promise<void>;
 }

@@ -12,6 +12,7 @@ interface AppTrayController {
 
 interface CreateAppTrayOptions {
   onOpen: () => void;
+  onOpenWidget: () => void;
   onQuit: () => void;
   onSnooze: (settings: AppSettings) => boolean;
 }
@@ -24,6 +25,7 @@ function createTrayIcon() {
 
 export function createAppTray({
   onOpen,
+  onOpenWidget,
   onQuit,
   onSnooze,
 }: CreateAppTrayOptions): AppTrayController {
@@ -42,6 +44,13 @@ export function createAppTray({
           label: "Open Zucchini",
         },
         {
+          click: onOpenWidget,
+          label: "Show Focus Widget",
+        },
+        {
+          type: "separator",
+        },
+        {
           click: () => {
             if (settings) {
               onSnooze(settings);
@@ -49,9 +58,6 @@ export function createAppTray({
           },
           enabled: settings.reminderEnabled,
           label: `Snooze reminders for ${settings.reminderSnoozeMinutes} min`,
-        },
-        {
-          type: "separator",
         },
         {
           click: onQuit,

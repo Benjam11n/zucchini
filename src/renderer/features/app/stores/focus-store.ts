@@ -7,6 +7,7 @@ import type { FocusStoreState } from "./types";
 
 function createIdleTimerState() {
   return {
+    cycleId: null,
     endsAt: null,
     lastUpdatedAt: new Date().toISOString(),
     phase: "focus" as const,

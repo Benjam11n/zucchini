@@ -1,8 +1,12 @@
 import { ipcMain } from "electron";
 
+import type { FocusTimerCoordinator } from "@/main/focus-timer-coordinator";
 import { serializeIpcError } from "@/main/ipc-errors";
 import {
   validateAppSettings,
+  validateFocusTimerCycleId,
+  validateFocusTimerInstanceId,
+  validateFocusTimerLeaseTtl,
   validateCreateFocusSessionInput,
   validateCompleteOnboardingInput,
   validateDateKey,
@@ -25,6 +29,9 @@ import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
+  focusTimerCoordinator: FocusTimerCoordinator;
+  onShowFocusWidget: () => void;
+  onShowMainWindow: () => void;
   service: HabitsService;
   onSettingsChanged: (settings: AppSettings) => void;
 }
@@ -52,6 +59,9 @@ function registerHandler<TArgs extends unknown[], TResult>(
 }
 
 export function registerIpcHandlers({
+  focusTimerCoordinator,
+  onShowFocusWidget,
+  onShowMainWindow,
   service,
   onSettingsChanged,
 }: RegisterIpcHandlersOptions): void {
@@ -70,6 +80,32 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) =>
     service.recordFocusSession(validateCreateFocusSessionInput(input))
   );
+  registerHandler(
+    HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion,
+    (cycleId: unknown) =>
+      focusTimerCoordinator.claimCycleCompletion(
+        validateFocusTimerCycleId(cycleId)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.claimFocusTimerLeadership,
+    (instanceId: unknown, ttlMs: unknown) =>
+      focusTimerCoordinator.claimLeadership(
+        validateFocusTimerInstanceId(instanceId),
+        validateFocusTimerLeaseTtl(ttlMs)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.releaseFocusTimerLeadership,
+    (instanceId: unknown) =>
+      focusTimerCoordinator.releaseLeadership(
+        validateFocusTimerInstanceId(instanceId)
+      )
+  );
+  registerHandler(HABITS_IPC_CHANNELS.showFocusWidget, () =>
+    onShowFocusWidget()
+  );
+  registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
   registerHandler(HABITS_IPC_CHANNELS.getHistory, (limit?: unknown) =>
     service.getHistory(validateHistoryLimit(limit))
   );

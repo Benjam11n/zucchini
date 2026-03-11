@@ -314,6 +314,10 @@ async function recordFocusSession(input: CreateFocusSessionInput) {
   return focusSession;
 }
 
+async function showFocusWidget() {
+  await window.habits.showFocusWidget();
+}
+
 function setFocusSaveErrorMessage(message: string | null) {
   useFocusStore.getState().setFocusSaveErrorMessage(message);
 }
@@ -365,4 +369,5 @@ export const appActions = {
   setSettingsSavePhase,
   setSettingsValidationErrors,
   setSystemTheme,
+  showFocusWidget,
 };

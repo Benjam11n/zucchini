@@ -70,6 +70,7 @@ describe("createAppTray()", () => {
     resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
+      onOpenWidget: vi.fn(),
       onQuit: vi.fn(),
       onSnooze: vi.fn(() => true),
     });
@@ -86,6 +87,7 @@ describe("createAppTray()", () => {
     resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
+      onOpenWidget: vi.fn(),
       onQuit: vi.fn(),
       onSnooze: vi.fn(() => true),
     });
@@ -103,6 +105,7 @@ describe("createAppTray()", () => {
     resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
+      onOpenWidget: vi.fn(),
       onQuit: vi.fn(),
       onSnooze: vi.fn(() => true),
     });
@@ -113,7 +116,7 @@ describe("createAppTray()", () => {
       reminderEnabled: true,
     });
 
-    expect(trayState.lastMenu?.[1]).toMatchObject({
+    expect(trayState.lastMenu?.[3]).toMatchObject({
       enabled: true,
     });
   });
@@ -122,6 +125,7 @@ describe("createAppTray()", () => {
     resetTrayState();
     const tray = createAppTray({
       onOpen: vi.fn(),
+      onOpenWidget: vi.fn(),
       onQuit: vi.fn(),
       onSnooze: vi.fn(() => true),
     });
@@ -132,7 +136,7 @@ describe("createAppTray()", () => {
       reminderEnabled: false,
     });
 
-    expect(trayState.lastMenu?.[1]).toMatchObject({
+    expect(trayState.lastMenu?.[3]).toMatchObject({
       enabled: false,
     });
   });
@@ -142,6 +146,7 @@ describe("createAppTray()", () => {
     const onOpen = vi.fn();
     const tray = createAppTray({
       onOpen,
+      onOpenWidget: vi.fn(),
       onQuit: vi.fn(),
       onSnooze: vi.fn(() => true),
     });

@@ -15,6 +15,11 @@ import { useAppController } from "@/renderer/features/app/use-app-controller";
 import { MASCOTS } from "@/renderer/lib/mascots";
 import { TodayPage } from "@/renderer/pages/today-page";
 
+const FocusWidget = lazy(async () => {
+  const module = await import("@/renderer/features/focus/focus-widget");
+
+  return { default: module.FocusWidget };
+});
 const HistoryPage = lazy(async () => {
   const module = await import("@/renderer/pages/history-page");
 
@@ -79,7 +84,7 @@ function LoadingStateCard({
   );
 }
 
-export default function App() {
+function MainApp() {
   const { actions, state, tab } = useAppController();
 
   if (state.bootPhase === "loading") {
@@ -231,6 +236,7 @@ export default function App() {
           sessionsLoadError={state.focusSessionsLoadError}
           timerState={state.timerState}
           todayDate={state.todayState.date}
+          onShowWidget={actions.handleShowFocusWidget}
           onRetryLoad={actions.handleRetryFocusLoad}
         />
       </Suspense>
@@ -287,4 +293,26 @@ export default function App() {
       ) : null}
     </>
   );
+}
+
+export default function App() {
+  const view = new URLSearchParams(window.location.search).get("view");
+
+  if (view === "widget") {
+    return (
+      <Suspense
+        fallback={
+          <LoadingStateCard
+            description="Preparing your focus widget."
+            fullscreen
+            title="Loading widget"
+          />
+        }
+      >
+        <FocusWidget />
+      </Suspense>
+    );
+  }
+
+  return <MainApp />;
 }

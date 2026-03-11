@@ -9,6 +9,7 @@ import {
   nativeImage,
   nativeTheme,
   powerMonitor,
+  screen,
 } from "electron";
 import { autoUpdater } from "electron-updater";
 
@@ -19,6 +20,7 @@ import {
 } from "@/main/app-updater";
 import { resolveRuntimeIconPath } from "@/main/assets";
 import { systemClock } from "@/main/clock";
+import { createFocusTimerCoordinator } from "@/main/focus-timer-coordinator";
 import { registerIpcHandlers } from "@/main/ipc";
 import {
   buildLoginItemSettings,
@@ -71,8 +73,41 @@ function applyLoginItemSettings(settings: AppSettings): void {
 
 let isQuitting = false;
 let trayEnabled = false;
+let mainWindow: BrowserWindow | null = null;
+let focusWidgetWindow: BrowserWindow | null = null;
+const focusTimerCoordinator = createFocusTimerCoordinator();
 
-function createWindow(): void {
+function getFocusWidgetBounds() {
+  const { workArea } = screen.getPrimaryDisplay();
+  const width = 272;
+  const height = 56;
+  const margin = 12;
+
+  return {
+    height,
+    width,
+    x: workArea.x + workArea.width - width - margin,
+    y: workArea.y + margin,
+  };
+}
+
+function positionFocusWidgetWindow(win: BrowserWindow): void {
+  const bounds = getFocusWidgetBounds();
+  win.setBounds(bounds);
+}
+
+function loadAppWindow(win: BrowserWindow, search = ""): void {
+  if (process.env.VITE_DEV_SERVER_URL) {
+    win.loadURL(`${process.env.VITE_DEV_SERVER_URL}${search}`);
+    return;
+  }
+
+  win.loadFile(path.join(__dirname, "../dist/index.html"), {
+    search,
+  });
+}
+
+function createWindow(): BrowserWindow {
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
     process.platform === "darwin";
@@ -96,6 +131,7 @@ function createWindow(): void {
     },
     width: 1100,
   });
+  mainWindow = win;
 
   configureWindowSecurity(win);
   win.on("close", (event) => {
@@ -111,6 +147,11 @@ function createWindow(): void {
     event.preventDefault();
     win.hide();
   });
+  win.on("closed", () => {
+    if (mainWindow === win) {
+      mainWindow = null;
+    }
+  });
 
   if (shouldShowInactive) {
     win.once("ready-to-show", () => {
@@ -118,15 +159,81 @@ function createWindow(): void {
     });
   }
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(process.env.VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path.join(__dirname, "../dist/index.html"));
-  }
+  loadAppWindow(win);
+
+  return win;
+}
+
+function createFocusWidgetWindow(): BrowserWindow {
+  const icon =
+    process.platform === "darwin" ? undefined : resolveRuntimeIconPath();
+  const bounds = getFocusWidgetBounds();
+  const win = new BrowserWindow({
+    alwaysOnTop: true,
+    backgroundColor: getWindowBackgroundColor(),
+    frame: false,
+    fullscreenable: false,
+    height: bounds.height,
+    hiddenInMissionControl: true,
+    icon,
+    maximizable: false,
+    minimizable: false,
+    resizable: false,
+    show: false,
+    skipTaskbar: true,
+    title: "Zucchini Focus Widget",
+    webPreferences: {
+      contextIsolation: true,
+      navigateOnDragDrop: false,
+      nodeIntegration: false,
+      preload: path.join(__dirname, "preload.js"),
+      sandbox: true,
+      webSecurity: true,
+    },
+    width: bounds.width,
+    x: bounds.x,
+    y: bounds.y,
+  });
+  focusWidgetWindow = win;
+
+  configureWindowSecurity(win);
+  win.setAlwaysOnTop(true, "floating");
+  win.once("ready-to-show", () => {
+    win.showInactive();
+  });
+  win.on("close", (event) => {
+    if (isQuitting) {
+      return;
+    }
+
+    event.preventDefault();
+    win.hide();
+  });
+  win.on("closed", () => {
+    if (focusWidgetWindow === win) {
+      focusWidgetWindow = null;
+    }
+  });
+
+  loadAppWindow(win, "?view=widget");
+
+  return win;
+}
+
+function showFocusWidget(): void {
+  const widgetWindow =
+    focusWidgetWindow && !focusWidgetWindow.isDestroyed()
+      ? focusWidgetWindow
+      : createFocusWidgetWindow();
+
+  positionFocusWidgetWindow(widgetWindow);
+  widgetWindow.showInactive();
 }
 
 function showMainWindow(): void {
-  const [existingWindow] = BrowserWindow.getAllWindows();
+  const existingWindow =
+    mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+
   if (existingWindow) {
     if (existingWindow.isMinimized()) {
       existingWindow.restore();
@@ -156,6 +263,7 @@ const reminders = createReminderScheduler({
 });
 const tray = createAppTray({
   onOpen: showMainWindow,
+  onOpenWidget: showFocusWidget,
   onQuit: () => {
     isQuitting = true;
     app.quit();
@@ -193,7 +301,10 @@ void app.whenReady().then(() => {
       }
 
       registerIpcHandlers({
+        focusTimerCoordinator,
         onSettingsChanged: applyRuntimeSettings,
+        onShowFocusWidget: showFocusWidget,
+        onShowMainWindow: showMainWindow,
         service,
       });
 
@@ -234,6 +345,7 @@ void app.whenReady().then(() => {
       });
 
       createWindow();
+      createFocusWidgetWindow();
       warmAppRuntime();
       appUpdater.start();
     })
@@ -250,6 +362,11 @@ void app.whenReady().then(() => {
 
   powerMonitor.on("resume", () => {
     reminders.schedule(service.getTodayState().settings);
+  });
+  screen.on("display-metrics-changed", () => {
+    if (focusWidgetWindow && !focusWidgetWindow.isDestroyed()) {
+      positionFocusWidgetWindow(focusWidgetWindow);
+    }
   });
 });
 

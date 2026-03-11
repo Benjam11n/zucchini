@@ -1,6 +1,7 @@
 import type { PersistedFocusTimerState } from "./types";
 
 const FOCUS_TIMER_STORAGE_KEY = "zucchini_focus_timer";
+const FOCUS_TIMER_STORAGE_EVENT = "storage";
 
 export function isPersistedFocusTimerState(
   value: unknown
@@ -12,6 +13,7 @@ export function isPersistedFocusTimerState(
   const candidate = value as Partial<PersistedFocusTimerState>;
 
   return (
+    (candidate.cycleId === null || typeof candidate.cycleId === "string") &&
     (candidate.phase === "focus" || candidate.phase === "break") &&
     (candidate.status === "idle" ||
       candidate.status === "running" ||
@@ -45,4 +47,32 @@ export function writeFocusTimerState(value: PersistedFocusTimerState): void {
   } catch {
     // Ignore storage failures; timer restore is best effort UI state.
   }
+}
+
+export function subscribeToFocusTimerState(
+  onChange: (value: PersistedFocusTimerState | null) => void
+): () => void {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== FOCUS_TIMER_STORAGE_KEY) {
+      return;
+    }
+
+    if (!event.newValue) {
+      onChange(null);
+      return;
+    }
+
+    try {
+      const parsedValue = JSON.parse(event.newValue) as unknown;
+      onChange(isPersistedFocusTimerState(parsedValue) ? parsedValue : null);
+    } catch {
+      onChange(null);
+    }
+  };
+
+  window.addEventListener(FOCUS_TIMER_STORAGE_EVENT, handleStorage);
+
+  return () => {
+    window.removeEventListener(FOCUS_TIMER_STORAGE_EVENT, handleStorage);
+  };
 }

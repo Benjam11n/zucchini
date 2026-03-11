@@ -72,6 +72,14 @@ function createService() {
   };
 }
 
+function createFocusTimerCoordinator() {
+  return {
+    claimCycleCompletion: vi.fn(() => true),
+    claimLeadership: vi.fn(() => true),
+    releaseLeadership: vi.fn(),
+  };
+}
+
 describe("registerIpcHandlers()", () => {
   function resetHandlers(): void {
     handlers.clear();
@@ -80,7 +88,10 @@ describe("registerIpcHandlers()", () => {
   it("serializes validation errors with details", async () => {
     resetHandlers();
     registerIpcHandlers({
+      focusTimerCoordinator: createFocusTimerCoordinator(),
       onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
       service: createService(),
     });
 
@@ -107,7 +118,10 @@ describe("registerIpcHandlers()", () => {
     });
 
     registerIpcHandlers({
+      focusTimerCoordinator: createFocusTimerCoordinator(),
       onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
       service,
     });
 
@@ -125,7 +139,10 @@ describe("registerIpcHandlers()", () => {
   it("serializes unknown errors as internal errors", async () => {
     resetHandlers();
     registerIpcHandlers({
+      focusTimerCoordinator: createFocusTimerCoordinator(),
       onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
       service: createService(),
     });
 
@@ -145,7 +162,10 @@ describe("registerIpcHandlers()", () => {
     const service = createService();
 
     registerIpcHandlers({
+      focusTimerCoordinator: createFocusTimerCoordinator(),
       onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
       service,
     });
 
@@ -172,7 +192,10 @@ describe("registerIpcHandlers()", () => {
     });
 
     registerIpcHandlers({
+      focusTimerCoordinator: createFocusTimerCoordinator(),
       onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
       service,
     });
 
@@ -194,5 +217,31 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(service.recordFocusSession).toHaveBeenCalledWith(payload);
+  });
+
+  it("routes focus timer leadership requests to the coordinator", async () => {
+    resetHandlers();
+    const focusTimerCoordinator = createFocusTimerCoordinator();
+
+    registerIpcHandlers({
+      focusTimerCoordinator,
+      onSettingsChanged: vi.fn(),
+      onShowFocusWidget: vi.fn(),
+      onShowMainWindow: vi.fn(),
+      service: createService(),
+    });
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.claimFocusTimerLeadership);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, "widget-1", 2500)
+    ).resolves.toStrictEqual({
+      data: true,
+      ok: true,
+    });
+    expect(focusTimerCoordinator.claimLeadership).toHaveBeenCalledWith(
+      "widget-1",
+      2500
+    );
   });
 });

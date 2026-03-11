@@ -59,6 +59,14 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.applyStarterPack, habits),
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
+  claimFocusTimerCycleCompletion: (cycleId: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
+  claimFocusTimerLeadership: (instanceId: string, ttlMs: number) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.claimFocusTimerLeadership,
+      instanceId,
+      ttlMs
+    ),
   completeOnboarding: (input: CompleteOnboardingInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.completeOnboarding, input),
   createHabit: (
@@ -79,10 +87,14 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
+  releaseFocusTimerLeadership: (instanceId: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
   renameHabit: (habitId: number, name: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
   reorderHabits: (habitIds: number[]) =>
     invokeHabits(HABITS_IPC_CHANNELS.reorderHabits, habitIds),
+  showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
+  showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>
     invokeHabits(
       HABITS_IPC_CHANNELS.showNotification,
