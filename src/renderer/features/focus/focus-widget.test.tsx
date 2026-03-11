@@ -9,6 +9,15 @@ import { FocusWidget } from "./focus-widget";
 describe("focus widget", () => {
   it("renders a compact timer with a ring snapshot", async () => {
     resetFocusStore();
+    class ResizeObserverMock {
+      observe() {}
+      disconnect() {}
+    }
+
+    Object.defineProperty(globalThis, "ResizeObserver", {
+      configurable: true,
+      value: ResizeObserverMock,
+    });
     Object.defineProperty(window, "matchMedia", {
       configurable: true,
       value: vi.fn().mockReturnValue({
@@ -45,6 +54,7 @@ describe("focus widget", () => {
         getTodayState,
         recordFocusSession: vi.fn((_input) => Promise.resolve()),
         releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
+        resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
         showNotification: vi.fn((_title, _body) => Promise.resolve()),
       },
     });

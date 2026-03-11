@@ -24,6 +24,7 @@ export const focusSessionLimitSchema = z
 export const focusTimerCycleIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerInstanceIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerLeaseTtlSchema = z.number().int().min(250).max(10_000);
+export const focusWidgetSizeSchema = z.number().int().min(32).max(640);
 
 export const habitNameSchema = z.string().trim().min(1).max(120);
 

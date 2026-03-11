@@ -7,6 +7,7 @@ import {
   validateFocusTimerCycleId,
   validateFocusTimerInstanceId,
   validateFocusTimerLeaseTtl,
+  validateFocusWidgetSize,
   validateCreateFocusSessionInput,
   validateCompleteOnboardingInput,
   validateDateKey,
@@ -30,6 +31,7 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
   focusTimerCoordinator: FocusTimerCoordinator;
+  onResizeFocusWidget: (width: number, height: number) => void;
   onShowFocusWidget: () => void;
   onShowMainWindow: () => void;
   service: HabitsService;
@@ -60,6 +62,7 @@ function registerHandler<TArgs extends unknown[], TResult>(
 
 export function registerIpcHandlers({
   focusTimerCoordinator,
+  onResizeFocusWidget,
   onShowFocusWidget,
   onShowMainWindow,
   service,
@@ -100,6 +103,14 @@ export function registerIpcHandlers({
     (instanceId: unknown) =>
       focusTimerCoordinator.releaseLeadership(
         validateFocusTimerInstanceId(instanceId)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.resizeFocusWidget,
+    (width: unknown, height: unknown) =>
+      onResizeFocusWidget(
+        validateFocusWidgetSize(width),
+        validateFocusWidgetSize(height)
       )
   );
   registerHandler(HABITS_IPC_CHANNELS.showFocusWidget, () =>

@@ -37,6 +37,7 @@ export const HABITS_IPC_CHANNELS = {
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
+  resizeFocusWidget: "habits:resizeFocusWidget",
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
@@ -111,22 +112,20 @@ export interface TodayState {
 }
 
 export interface HabitApi {
-  getOnboardingStatus: () => Promise<OnboardingStatus>;
-  getTodayState: () => Promise<TodayState>;
-  toggleHabit: (habitId: number) => Promise<TodayState>;
-  getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
     instanceId: string,
     ttlMs: number
   ) => Promise<boolean>;
-  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
-  releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
-  showFocusWidget: () => Promise<void>;
-  showMainWindow: () => Promise<void>;
+  getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
+  getOnboardingStatus: () => Promise<OnboardingStatus>;
+  getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
+  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
+  releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
+  resizeFocusWidget: (width: number, height: number) => Promise<void>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;
   createHabit: (
     name: string,
@@ -146,10 +145,13 @@ export interface HabitApi {
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
   applyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<TodayState>;
   completeOnboarding: (input: CompleteOnboardingInput) => Promise<TodayState>;
-  skipOnboarding: () => Promise<void>;
+  showFocusWidget: () => Promise<void>;
+  showMainWindow: () => Promise<void>;
   showNotification: (
     title: string,
     body: string,
     iconFilename?: string
   ) => Promise<void>;
+  skipOnboarding: () => Promise<void>;
+  toggleHabit: (habitId: number) => Promise<TodayState>;
 }

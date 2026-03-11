@@ -93,6 +93,8 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
   reorderHabits: (habitIds: number[]) =>
     invokeHabits(HABITS_IPC_CHANNELS.reorderHabits, habitIds),
+  resizeFocusWidget: (width: number, height: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.resizeFocusWidget, width, height),
   showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
   showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>

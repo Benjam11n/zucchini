@@ -79,8 +79,8 @@ const focusTimerCoordinator = createFocusTimerCoordinator();
 
 function getFocusWidgetBounds() {
   const { workArea } = screen.getPrimaryDisplay();
-  const width = 272;
-  const height = 56;
+  const width = 188;
+  const height = 48;
   const margin = 12;
 
   return {
@@ -91,9 +91,18 @@ function getFocusWidgetBounds() {
   };
 }
 
-function positionFocusWidgetWindow(win: BrowserWindow): void {
-  const bounds = getFocusWidgetBounds();
-  win.setBounds(bounds);
+function resizeFocusWidget(width: number, height: number): void {
+  if (!focusWidgetWindow || focusWidgetWindow.isDestroyed()) {
+    return;
+  }
+
+  const [x, y] = focusWidgetWindow.getPosition();
+  focusWidgetWindow.setBounds({
+    height,
+    width,
+    x,
+    y,
+  });
 }
 
 function loadAppWindow(win: BrowserWindow, search = ""): void {
@@ -226,7 +235,6 @@ function showFocusWidget(): void {
       ? focusWidgetWindow
       : createFocusWidgetWindow();
 
-  positionFocusWidgetWindow(widgetWindow);
   widgetWindow.showInactive();
 }
 
@@ -302,6 +310,7 @@ void app.whenReady().then(() => {
 
       registerIpcHandlers({
         focusTimerCoordinator,
+        onResizeFocusWidget: resizeFocusWidget,
         onSettingsChanged: applyRuntimeSettings,
         onShowFocusWidget: showFocusWidget,
         onShowMainWindow: showMainWindow,
@@ -362,11 +371,6 @@ void app.whenReady().then(() => {
 
   powerMonitor.on("resume", () => {
     reminders.schedule(service.getTodayState().settings);
-  });
-  screen.on("display-metrics-changed", () => {
-    if (focusWidgetWindow && !focusWidgetWindow.isDestroyed()) {
-      positionFocusWidgetWindow(focusWidgetWindow);
-    }
   });
 });
 

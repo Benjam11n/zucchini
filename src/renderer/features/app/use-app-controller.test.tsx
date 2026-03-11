@@ -182,6 +182,7 @@ async function setupUseAppController({
     releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
     renameHabit: vi.fn().mockResolvedValue(todayState),
     reorderHabits: vi.fn().mockResolvedValue(todayState),
+    resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
     showFocusWidget: vi.fn(() => Promise.resolve()),
     showMainWindow: vi.fn(() => Promise.resolve()),
     showNotification: vi.fn().mockResolvedValue(42),

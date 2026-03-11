@@ -89,6 +89,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     registerIpcHandlers({
       focusTimerCoordinator: createFocusTimerCoordinator(),
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),
@@ -119,6 +120,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers({
       focusTimerCoordinator: createFocusTimerCoordinator(),
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),
@@ -140,6 +142,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     registerIpcHandlers({
       focusTimerCoordinator: createFocusTimerCoordinator(),
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),
@@ -163,6 +166,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers({
       focusTimerCoordinator: createFocusTimerCoordinator(),
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),
@@ -193,6 +197,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers({
       focusTimerCoordinator: createFocusTimerCoordinator(),
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),
@@ -225,6 +230,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers({
       focusTimerCoordinator,
+      onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
       onShowFocusWidget: vi.fn(),
       onShowMainWindow: vi.fn(),

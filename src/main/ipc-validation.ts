@@ -9,6 +9,7 @@ import {
   focusTimerCycleIdSchema,
   focusTimerInstanceIdSchema,
   focusTimerLeaseTtlSchema,
+  focusWidgetSizeSchema,
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
@@ -96,6 +97,10 @@ export function validateFocusTimerLeaseTtl(value: unknown): number {
     focusTimerLeaseTtlSchema,
     value
   );
+}
+
+export function validateFocusWidgetSize(value: unknown): number {
+  return parseWithSchema("focus widget size", focusWidgetSizeSchema, value);
 }
 
 export function validateHabitName(value: unknown): string {
