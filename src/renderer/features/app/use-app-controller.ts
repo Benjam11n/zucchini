@@ -14,62 +14,15 @@ import {
   mapSettingsValidationErrors,
 } from "./settings-save";
 import { useAppStore } from "./store";
+import type { AppState, SettingsFieldErrors } from "./types";
 
-export function useAppController() {
-  const {
-    bootApp,
-    bootError,
-    bootPhase,
-    clearOnboardingError,
-    clearSettingsFeedback,
-    dismissWeeklyReviewSpotlight,
-    handleArchiveHabit,
-    handleApplyStarterPack,
-    handleCompleteOnboarding,
-    handleCreateHabit,
-    handleRenameHabit,
-    handleReorderHabits,
-    handleSettingsDraftChange,
-    handleSkipOnboarding,
-    handleTabChange,
-    handleToggleHabit,
-    handleUpdateHabitCategory,
-    handleUpdateHabitFrequency,
-    handleUpdateSettings,
-    history,
-    historyLoadError,
-    historyScope,
-    isOnboardingOpen,
-    isHistoryLoading,
-    isWeeklyReviewSpotlightOpen,
-    loadFullHistory,
-    onboardingError,
-    onboardingPhase,
-    onboardingStatus,
-    loadWeeklyReviewOverview,
-    openWeeklyReviewSpotlight,
-    retryBoot,
-    selectWeeklyReview,
-    setSettingsSaveErrorMessage,
-    setSettingsSavePhase,
-    setSettingsValidationErrors,
-    setSystemTheme,
-    settingsFieldErrors,
-    settingsDraft,
-    settingsSaveErrorMessage,
-    settingsSavePhase,
-    selectedWeeklyReview,
-    systemTheme,
-    tab,
-    todayState,
-    weeklyReviewError,
-    weeklyReviewOverview,
-    weeklyReviewPhase,
-  } = useAppStore(
+const EMPTY_HISTORY: AppState["history"] = [];
+const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
+
+function useAppControllerActions() {
+  return useAppStore(
     useShallow((state) => ({
       bootApp: state.bootApp,
-      bootError: state.bootError,
-      bootPhase: state.bootPhase,
       clearOnboardingError: state.clearOnboardingError,
       clearSettingsFeedback: state.clearSettingsFeedback,
       dismissWeeklyReviewSpotlight: state.dismissWeeklyReviewSpotlight,
@@ -86,38 +39,115 @@ export function useAppController() {
       handleUpdateHabitCategory: state.handleUpdateHabitCategory,
       handleUpdateHabitFrequency: state.handleUpdateHabitFrequency,
       handleUpdateSettings: state.handleUpdateSettings,
-      history: state.history,
-      historyLoadError: state.historyLoadError,
-      historyScope: state.historyScope,
-      isHistoryLoading: state.isHistoryLoading,
-      isOnboardingOpen: state.isOnboardingOpen,
-      isWeeklyReviewSpotlightOpen: state.isWeeklyReviewSpotlightOpen,
       loadFullHistory: state.loadFullHistory,
       loadWeeklyReviewOverview: state.loadWeeklyReviewOverview,
-      onboardingError: state.onboardingError,
-      onboardingPhase: state.onboardingPhase,
-      onboardingStatus: state.onboardingStatus,
       openWeeklyReviewSpotlight: state.openWeeklyReviewSpotlight,
       retryBoot: state.retryBoot,
       selectWeeklyReview: state.selectWeeklyReview,
-      selectedWeeklyReview: state.selectedWeeklyReview,
       setSettingsSaveErrorMessage: state.setSettingsSaveErrorMessage,
       setSettingsSavePhase: state.setSettingsSavePhase,
       setSettingsValidationErrors: state.setSettingsValidationErrors,
       setSystemTheme: state.setSystemTheme,
+    }))
+  );
+}
+
+function useAppControllerCoreState() {
+  return useAppStore(
+    useShallow((state) => ({
+      bootError: state.bootError,
+      bootPhase: state.bootPhase,
+      isOnboardingOpen: state.isOnboardingOpen,
+      onboardingError: state.onboardingError,
+      onboardingPhase: state.onboardingPhase,
+      onboardingStatus: state.onboardingStatus,
       settingsDraft: state.settingsDraft,
-      settingsFieldErrors: state.settingsFieldErrors,
-      settingsSaveErrorMessage: state.settingsSaveErrorMessage,
       settingsSavePhase: state.settingsSavePhase,
       systemTheme: state.systemTheme,
-      tab: state.tab,
       todayState: state.todayState,
-      weeklyReviewError: state.weeklyReviewError,
+    }))
+  );
+}
+
+function useWeeklyReviewState() {
+  return useAppStore(
+    useShallow((state) => ({
+      isWeeklyReviewSpotlightOpen: state.isWeeklyReviewSpotlightOpen,
       weeklyReviewOverview: state.weeklyReviewOverview,
       weeklyReviewPhase: state.weeklyReviewPhase,
     }))
   );
+}
 
+function useHistoryState() {
+  return useAppStore(
+    useShallow((state) =>
+      state.tab === "settings"
+        ? null
+        : {
+            history: state.history,
+            historyLoadError: state.historyLoadError,
+            historyScope: state.historyScope,
+            isHistoryLoading: state.isHistoryLoading,
+          }
+    )
+  );
+}
+
+function useHistoryPageState() {
+  return useAppStore(
+    useShallow((state) =>
+      state.tab === "history"
+        ? {
+            selectedWeeklyReview: state.selectedWeeklyReview,
+            weeklyReviewError: state.weeklyReviewError,
+          }
+        : null
+    )
+  );
+}
+
+function useSettingsPageState() {
+  return useAppStore(
+    useShallow((state) =>
+      state.tab === "settings"
+        ? {
+            settingsFieldErrors: state.settingsFieldErrors,
+            settingsSaveErrorMessage: state.settingsSaveErrorMessage,
+            settingsSavePhase: state.settingsSavePhase,
+          }
+        : null
+    )
+  );
+}
+
+function useSettingsAutosave({
+  clearSettingsFeedback,
+  handleUpdateSettings,
+  setSettingsSaveErrorMessage,
+  setSettingsSavePhase,
+  setSettingsValidationErrors,
+  settingsDraft,
+  settingsSavePhase,
+}: {
+  clearSettingsFeedback: ReturnType<
+    typeof useAppControllerActions
+  >["clearSettingsFeedback"];
+  handleUpdateSettings: ReturnType<
+    typeof useAppControllerActions
+  >["handleUpdateSettings"];
+  setSettingsSaveErrorMessage: ReturnType<
+    typeof useAppControllerActions
+  >["setSettingsSaveErrorMessage"];
+  setSettingsSavePhase: ReturnType<
+    typeof useAppControllerActions
+  >["setSettingsSavePhase"];
+  setSettingsValidationErrors: ReturnType<
+    typeof useAppControllerActions
+  >["setSettingsValidationErrors"];
+  settingsDraft: AppSettings | null;
+  settingsSavePhase: AppState["settingsSavePhase"];
+}) {
   const lastSavedDraft = useRef<AppSettings | null>(null);
   const settingsSavePhaseRef = useRef(settingsSavePhase);
 
@@ -188,7 +218,35 @@ export function useAppController() {
     setSettingsValidationErrors,
     settingsDraft,
   ]);
+}
 
+function useAppLifecycleEffects({
+  bootApp,
+  bootPhase,
+  loadWeeklyReviewOverview,
+  openWeeklyReviewSpotlight,
+  setSystemTheme,
+  settingsDraft,
+  systemTheme,
+  todayState,
+  weeklyReviewOverview,
+  weeklyReviewPhase,
+}: {
+  bootApp: ReturnType<typeof useAppControllerActions>["bootApp"];
+  bootPhase: AppState["bootPhase"];
+  loadWeeklyReviewOverview: ReturnType<
+    typeof useAppControllerActions
+  >["loadWeeklyReviewOverview"];
+  openWeeklyReviewSpotlight: ReturnType<
+    typeof useAppControllerActions
+  >["openWeeklyReviewSpotlight"];
+  setSystemTheme: ReturnType<typeof useAppControllerActions>["setSystemTheme"];
+  settingsDraft: AppSettings | null;
+  systemTheme: ReturnType<typeof useAppControllerCoreState>["systemTheme"];
+  todayState: AppState["todayState"];
+  weeklyReviewOverview: AppState["weeklyReviewOverview"];
+  weeklyReviewPhase: AppState["weeklyReviewPhase"];
+}) {
   useEffect(() => {
     void bootApp();
   }, [bootApp]);
@@ -246,68 +304,117 @@ export function useAppController() {
 
     document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
   }, [settingsDraft, systemTheme, todayState]);
+}
+
+export function useAppController() {
+  const tab = useAppStore((state) => state.tab);
+  const actions = useAppControllerActions();
+  const coreState = useAppControllerCoreState();
+  const weeklyReviewState = useWeeklyReviewState();
+  const historyState = useHistoryState();
+  const historyPageState = useHistoryPageState();
+  const settingsPageState = useSettingsPageState();
+
+  const history = historyState?.history ?? EMPTY_HISTORY;
+  const historyLoadError = historyState?.historyLoadError ?? null;
+  const historyScope = historyState?.historyScope ?? "recent";
+  const isHistoryLoading = historyState?.isHistoryLoading ?? false;
+  const selectedWeeklyReview = historyPageState?.selectedWeeklyReview ?? null;
+  const weeklyReviewError = historyPageState?.weeklyReviewError ?? null;
+  const settingsFieldErrors =
+    settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS;
+  const settingsSaveErrorMessage =
+    settingsPageState?.settingsSaveErrorMessage ?? null;
+  const activeSettingsSavePhase =
+    settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase;
+
+  useSettingsAutosave({
+    clearSettingsFeedback: actions.clearSettingsFeedback,
+    handleUpdateSettings: actions.handleUpdateSettings,
+    setSettingsSaveErrorMessage: actions.setSettingsSaveErrorMessage,
+    setSettingsSavePhase: actions.setSettingsSavePhase,
+    setSettingsValidationErrors: actions.setSettingsValidationErrors,
+    settingsDraft: coreState.settingsDraft,
+    settingsSavePhase: coreState.settingsSavePhase,
+  });
+
+  useAppLifecycleEffects({
+    bootApp: actions.bootApp,
+    bootPhase: coreState.bootPhase,
+    loadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
+    openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
+    setSystemTheme: actions.setSystemTheme,
+    settingsDraft: coreState.settingsDraft,
+    systemTheme: coreState.systemTheme,
+    todayState: coreState.todayState,
+    weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
+    weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
+  });
 
   return {
     actions: {
-      handleApplyStarterPack,
-      handleArchiveHabit,
-      handleClearOnboardingError: clearOnboardingError,
-      handleCompleteOnboarding,
-      handleCreateHabit,
+      handleApplyStarterPack: actions.handleApplyStarterPack,
+      handleArchiveHabit: actions.handleArchiveHabit,
+      handleClearOnboardingError: actions.clearOnboardingError,
+      handleCompleteOnboarding: actions.handleCompleteOnboarding,
+      handleCreateHabit: actions.handleCreateHabit,
       handleDismissWeeklyReviewSpotlight: () => {
-        const latestReview = weeklyReviewOverview?.latestReview;
+        const latestReview =
+          weeklyReviewState.weeklyReviewOverview?.latestReview;
         if (latestReview) {
           writeLastSeenWeeklyReviewStart(latestReview.weekStart);
         }
-        dismissWeeklyReviewSpotlight();
+        actions.dismissWeeklyReviewSpotlight();
       },
-      handleRenameHabit,
-      handleReorderHabits,
-      handleRetryBoot: retryBoot,
-      handleRetryHistoryLoad: loadFullHistory,
-      handleSettingsDraftChange,
-      handleSkipOnboarding,
-      handleTabChange,
-      handleToggleHabit,
-      handleUpdateHabitCategory,
-      handleUpdateHabitFrequency,
+      handleRenameHabit: actions.handleRenameHabit,
+      handleReorderHabits: actions.handleReorderHabits,
+      handleRetryBoot: actions.retryBoot,
+      handleRetryHistoryLoad: actions.loadFullHistory,
+      handleSettingsDraftChange: actions.handleSettingsDraftChange,
+      handleSkipOnboarding: actions.handleSkipOnboarding,
+      handleTabChange: actions.handleTabChange,
+      handleToggleHabit: actions.handleToggleHabit,
+      handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
+      handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
       handleWeeklyReviewOpen: async () => {
-        const latestReview = weeklyReviewOverview?.latestReview;
+        const latestReview =
+          weeklyReviewState.weeklyReviewOverview?.latestReview;
         if (!latestReview) {
-          dismissWeeklyReviewSpotlight();
+          actions.dismissWeeklyReviewSpotlight();
           return;
         }
 
         writeLastSeenWeeklyReviewStart(latestReview.weekStart);
-        dismissWeeklyReviewSpotlight();
-        handleTabChange("history");
-        await selectWeeklyReview(latestReview.weekStart);
+        actions.dismissWeeklyReviewSpotlight();
+        actions.handleTabChange("history");
+        await actions.selectWeeklyReview(latestReview.weekStart);
       },
       handleWeeklyReviewSelect: async (weekStart: string) => {
-        await selectWeeklyReview(weekStart);
+        await actions.selectWeeklyReview(weekStart);
       },
     },
     state: {
-      bootError,
-      bootPhase,
+      bootError: coreState.bootError,
+      bootPhase: coreState.bootPhase,
       history,
       historyLoadError,
       historyScope,
       isHistoryLoading,
-      isOnboardingOpen,
-      isWeeklyReviewSpotlightOpen,
-      onboardingError,
-      onboardingPhase,
-      onboardingStatus,
+      isOnboardingOpen: coreState.isOnboardingOpen,
+      isWeeklyReviewSpotlightOpen:
+        weeklyReviewState.isWeeklyReviewSpotlightOpen,
+      onboardingError: coreState.onboardingError,
+      onboardingPhase: coreState.onboardingPhase,
+      onboardingStatus: coreState.onboardingStatus,
       selectedWeeklyReview,
-      settingsDraft,
+      settingsDraft: coreState.settingsDraft,
       settingsFieldErrors,
       settingsSaveErrorMessage,
-      settingsSavePhase,
-      todayState,
+      settingsSavePhase: activeSettingsSavePhase,
+      todayState: coreState.todayState,
       weeklyReviewError,
-      weeklyReviewOverview,
-      weeklyReviewPhase,
+      weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
+      weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
     },
     tab,
   };
