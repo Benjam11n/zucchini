@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ListChecks } from "lucide-react";
+import { memo, useMemo } from "react";
 
 import { HabitChecklist } from "@/components/habit-checklist";
 import { LongerHabitChecklist } from "@/components/longer-habit-checklist";
@@ -13,6 +14,7 @@ import {
 } from "@/renderer/lib/motion";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
+import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 
 interface TodayPageProps {
@@ -21,11 +23,32 @@ interface TodayPageProps {
   onToggleHabit: (habitId: number) => void;
 }
 
-export function TodayPage({ history, state, onToggleHabit }: TodayPageProps) {
-  const dailyHabits = state.habits.filter(isDailyHabit);
-  const periodicHabits = state.habits.filter((habit) => !isDailyHabit(habit));
-  const categoryProgress = getHabitCategoryProgress(dailyHabits);
-  const completedCount = dailyHabits.filter((habit) => habit.completed).length;
+function TodayPageComponent({ history, state, onToggleHabit }: TodayPageProps) {
+  const { categoryProgress, completedCount, dailyHabits, periodicHabits } =
+    useMemo(() => {
+      const nextDailyHabits: HabitWithStatus[] = [];
+      const nextPeriodicHabits: HabitWithStatus[] = [];
+      let nextCompletedCount = 0;
+
+      for (const habit of state.habits) {
+        if (isDailyHabit(habit)) {
+          nextDailyHabits.push(habit);
+          if (habit.completed) {
+            nextCompletedCount += 1;
+          }
+          continue;
+        }
+
+        nextPeriodicHabits.push(habit);
+      }
+
+      return {
+        categoryProgress: getHabitCategoryProgress(nextDailyHabits),
+        completedCount: nextCompletedCount,
+        dailyHabits: nextDailyHabits,
+        periodicHabits: nextPeriodicHabits,
+      };
+    }, [state.habits]);
   const popups = useTodayPopups({ state });
 
   return (
@@ -74,3 +97,5 @@ export function TodayPage({ history, state, onToggleHabit }: TodayPageProps) {
     </>
   );
 }
+
+export const TodayPage = memo(TodayPageComponent);

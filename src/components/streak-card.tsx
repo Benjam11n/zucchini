@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CalendarDays, Flame, Snowflake } from "lucide-react";
+import { memo, useMemo } from "react";
 
 import { HabitActivityCard } from "@/components/custom/apple-activity-ring";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,38 +23,45 @@ interface StatConfig {
   value: number | string;
 }
 
-export function StreakCard({
+function StreakCardComponent({
   currentStreak,
   availableFreezes,
   categoryProgress,
   dateLabel,
 }: StreakCardProps) {
-  const formattedDate = formatDateKey(dateLabel, {
-    day: "numeric",
-    month: "short",
-    weekday: "short",
-  });
+  const formattedDate = useMemo(
+    () =>
+      formatDateKey(dateLabel, {
+        day: "numeric",
+        month: "short",
+        weekday: "short",
+      }),
+    [dateLabel]
+  );
 
-  const stats: StatConfig[] = [
-    {
-      color: RING_COLORS.fitness.base,
-      icon: Flame,
-      label: "Streak",
-      value: currentStreak,
-    },
-    {
-      color: RING_COLORS.productivity.base,
-      icon: Snowflake,
-      label: "Freeze",
-      value: availableFreezes,
-    },
-    {
-      color: undefined,
-      icon: CalendarDays,
-      label: "Date",
-      value: formattedDate,
-    },
-  ];
+  const stats: StatConfig[] = useMemo(
+    () => [
+      {
+        color: RING_COLORS.fitness.base,
+        icon: Flame,
+        label: "Streak",
+        value: currentStreak,
+      },
+      {
+        color: RING_COLORS.productivity.base,
+        icon: Snowflake,
+        label: "Freeze",
+        value: availableFreezes,
+      },
+      {
+        color: undefined,
+        icon: CalendarDays,
+        label: "Date",
+        value: formattedDate,
+      },
+    ],
+    [availableFreezes, currentStreak, formattedDate]
+  );
 
   return (
     <Card>
@@ -117,3 +125,5 @@ export function StreakCard({
     </Card>
   );
 }
+
+export const StreakCard = memo(StreakCardComponent);

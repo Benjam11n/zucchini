@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 import {
@@ -79,7 +80,13 @@ interface HabitListItemProps {
   showCategory?: boolean;
 }
 
-export function HabitListItem({
+const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
+const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };
+const HABIT_ITEM_COMPLETION_ANIMATE = { opacity: 1, scale: 1, x: 0 };
+const HABIT_ITEM_COMPLETION_EXIT = { opacity: 0, scale: 0.7, x: 6 };
+const HABIT_ITEM_COMPLETION_INITIAL = { opacity: 0, scale: 0.7, x: -6 };
+
+function HabitListItemComponent({
   habit,
   onToggle,
   showCategory,
@@ -88,9 +95,9 @@ export function HabitListItem({
 
   return (
     <motion.label
-      animate={{ opacity: 1, scale: 1, x: 0 }}
+      animate={HABIT_ITEM_ANIMATE}
       htmlFor={`habit-${habit.id}`}
-      initial={{ opacity: 0, scale: 0.98, x: -8 }}
+      initial={HABIT_ITEM_INITIAL}
       layout
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
@@ -134,10 +141,10 @@ export function HabitListItem({
       <AnimatePresence initial={false}>
         {habit.completed ? (
           <motion.span
-            animate={{ opacity: 1, scale: 1, x: 0 }}
+            animate={HABIT_ITEM_COMPLETION_ANIMATE}
             className="flex shrink-0"
-            exit={{ opacity: 0, scale: 0.7, x: 6 }}
-            initial={{ opacity: 0, scale: 0.7, x: -6 }}
+            exit={HABIT_ITEM_COMPLETION_EXIT}
+            initial={HABIT_ITEM_COMPLETION_INITIAL}
             transition={microTransition}
           >
             <CheckCircle2
@@ -150,3 +157,22 @@ export function HabitListItem({
     </motion.label>
   );
 }
+
+function areHabitListItemPropsEqual(
+  previous: HabitListItemProps,
+  next: HabitListItemProps
+): boolean {
+  return (
+    previous.habit.id === next.habit.id &&
+    previous.habit.name === next.habit.name &&
+    previous.habit.category === next.habit.category &&
+    previous.habit.completed === next.habit.completed &&
+    previous.onToggle === next.onToggle &&
+    previous.showCategory === next.showCategory
+  );
+}
+
+export const HabitListItem = memo(
+  HabitListItemComponent,
+  areHabitListItemPropsEqual
+);

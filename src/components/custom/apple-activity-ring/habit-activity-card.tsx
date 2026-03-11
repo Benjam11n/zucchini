@@ -1,5 +1,7 @@
 "use client";
 
+import { memo, useMemo } from "react";
+
 import { cn } from "@/lib/utils";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";
@@ -47,16 +49,23 @@ function AppleActivityCard({
   );
 }
 
-export function HabitActivityCard({
+function HabitActivityCardComponent({
   categoryProgress,
   className,
   showDetails = true,
 }: Omit<HabitActivityRingProps, "size">) {
+  const activities = useMemo(
+    () => buildHabitActivityData(categoryProgress),
+    [categoryProgress]
+  );
+
   return (
     <AppleActivityCard
-      activities={buildHabitActivityData(categoryProgress)}
+      activities={activities}
       className={className}
       showDetails={showDetails}
     />
   );
 }
+
+export const HabitActivityCard = memo(HabitActivityCardComponent);
