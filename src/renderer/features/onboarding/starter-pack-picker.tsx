@@ -1,7 +1,9 @@
+import { motion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
 
 import type { StarterPackPickerProps } from "./types";
 import { getStarterPackSummaryOptions } from "./utils";
@@ -19,11 +21,14 @@ export function StarterPackPicker({
         const isSelected = option.id === selectedChoice;
 
         return (
-          <button
+          <motion.button
             key={option.id}
             type="button"
             className="text-left"
             onClick={() => onSelectChoice(option.id)}
+            transition={microTransition}
+            whileHover={hoverLift}
+            whileTap={tapPress}
           >
             <Card
               className={cn(
@@ -66,7 +71,7 @@ export function StarterPackPicker({
                 </div>
               </CardContent>
             </Card>
-          </button>
+          </motion.button>
         );
       })}
     </div>
