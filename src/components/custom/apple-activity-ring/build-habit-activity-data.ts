@@ -7,10 +7,12 @@ import type { ActivityData } from "./types";
 export function buildHabitActivityData(
   categoryProgress: HabitCategoryProgress[]
 ): ActivityData[] {
+  const progressByCategory = new Map(
+    categoryProgress.map((progress) => [progress.category, progress])
+  );
+
   return ACTIVITY_RING_ORDER.map((category, index) => {
-    const progress = categoryProgress.find(
-      (item) => item.category === category
-    );
+    const progress = progressByCategory.get(category);
 
     return {
       color: HABIT_CATEGORY_UI[category].ringColor,

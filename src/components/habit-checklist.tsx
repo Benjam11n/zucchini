@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Dumbbell, Utensils, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { memo, useMemo } from "react";
 
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
 import { staggerItemVariants } from "@/renderer/lib/motion";
@@ -24,7 +25,12 @@ interface HabitChecklistProps {
   icon?: React.ElementType;
 }
 
-export function HabitChecklist({
+type CategoryGroup = (typeof HABIT_CATEGORY_DEFINITIONS)[number] & {
+  completedCount: number;
+  habits: HabitWithStatus[];
+};
+
+function HabitChecklistComponent({
   habits,
   onToggleHabit,
   completedCount,
@@ -33,10 +39,35 @@ export function HabitChecklist({
   icon: Icon,
 }: HabitChecklistProps) {
   const totalHabits = habits.length;
-  const habitsByCategory = HABIT_CATEGORY_DEFINITIONS.map((category) => ({
-    ...category,
-    habits: habits.filter((habit) => habit.category === category.value),
-  })).filter((category) => category.habits.length > 0);
+  const habitsByCategory = useMemo(() => {
+    const groupedHabits = Object.fromEntries(
+      HABIT_CATEGORY_DEFINITIONS.map((category) => [
+        category.value,
+        {
+          completedCount: 0,
+          habits: [] as HabitWithStatus[],
+        },
+      ])
+    ) as Record<
+      HabitCategory,
+      Pick<CategoryGroup, "completedCount" | "habits">
+    >;
+
+    for (const habit of habits) {
+      const group = groupedHabits[habit.category];
+      group.habits.push(habit);
+
+      if (habit.completed) {
+        group.completedCount += 1;
+      }
+    }
+
+    return HABIT_CATEGORY_DEFINITIONS.map((category) => ({
+      ...category,
+      completedCount: groupedHabits[category.value].completedCount,
+      habits: groupedHabits[category.value].habits,
+    })).filter((category) => category.habits.length > 0);
+  }, [habits]);
 
   return (
     <HabitListCard
@@ -64,9 +95,6 @@ export function HabitChecklist({
 
       {habitsByCategory.map((category) => {
         const ui = HABIT_CATEGORY_UI[category.value];
-        const categoryCompleted = category.habits.filter(
-          (habit) => habit.completed
-        ).length;
         const CategoryIcon = CATEGORY_ICONS[category.value];
 
         return (
@@ -89,7 +117,7 @@ export function HabitChecklist({
                 {category.label}
               </span>
               <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
-                {categoryCompleted}/{category.habits.length}
+                {category.completedCount}/{category.habits.length}
               </span>
             </div>
 
@@ -109,3 +137,5 @@ export function HabitChecklist({
     </HabitListCard>
   );
 }
+
+export const HabitChecklist = memo(HabitChecklistComponent);
