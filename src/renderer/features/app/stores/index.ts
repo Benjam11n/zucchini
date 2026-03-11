@@ -9,11 +9,11 @@ import {
   useWeeklyReviewStore,
 } from "./weekly-review-store";
 
-export { resetBootStore, useBootStore };
-export { resetHistoryStore, useHistoryStore };
-export { resetOnboardingStore, useOnboardingStore };
-export { resetSettingsStore, useSettingsStore };
-export { resetTodayStore, useTodayStore };
+export { useBootStore };
+export { useHistoryStore };
+export { useOnboardingStore };
+export { useSettingsStore };
+export { useTodayStore };
 export type {
   BootStoreState,
   HistoryStoreState,
@@ -23,8 +23,8 @@ export type {
   UiStoreState,
   WeeklyReviewStoreState,
 } from "./types";
-export { resetUiStore, useUiStore };
-export { resetWeeklyReviewStore, useWeeklyReviewStore };
+export { useUiStore };
+export { useWeeklyReviewStore };
 
 export function resetAppStores() {
   resetBootStore();

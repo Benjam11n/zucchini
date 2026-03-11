@@ -153,12 +153,12 @@ describe("app store actions", () => {
         removeEventListener: vi.fn(),
       }),
     });
-    const actions = await import("./app-actions");
+    const { appActions } = await import("./app-actions");
     const stores = await import("./stores");
     stores.resetAppStores();
 
     return {
-      actions,
+      actions: appActions,
       applyStarterPackMock,
       completeOnboardingMock,
       getHistoryMock,

@@ -21,6 +21,10 @@ import { SqliteSettingsRepository } from "./settings-repository";
 import { SqliteStreakRepository } from "./streak-repository";
 import type { HabitPeriodStatusSnapshot } from "./types";
 
+export interface SettledHistoryOptions {
+  uncapped?: boolean;
+}
+
 export interface HabitRepository {
   initializeSchema(): void;
   runInTransaction<A>(label: string, execute: () => A): A;
@@ -33,7 +37,10 @@ export interface HabitRepository {
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
-  getSettledHistory(limit?: number): DailySummary[];
+  getSettledHistory(
+    limit?: number,
+    options?: SettledHistoryOptions
+  ): DailySummary[];
   getDailySummariesInRange(start: string, end: string): DailySummary[];
   getHabitPeriodStatusesEndingInRange(
     start: string,
@@ -129,8 +136,11 @@ export class SqliteHabitRepository implements HabitRepository {
     this.historyRepository.toggleHabit(date, habitId);
   }
 
-  getSettledHistory(limit?: number): DailySummary[] {
-    return this.historyRepository.getSettledHistory(limit);
+  getSettledHistory(
+    limit?: number,
+    options?: SettledHistoryOptions
+  ): DailySummary[] {
+    return this.historyRepository.getSettledHistory(limit, options);
   }
 
   getDailySummariesInRange(start: string, end: string): DailySummary[] {

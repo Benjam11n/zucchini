@@ -88,7 +88,7 @@ async function refreshToday(mutator: Promise<TodayState>) {
   }
 }
 
-export async function bootApp() {
+async function bootApp() {
   useBootStore.setState({
     bootError: null,
     bootPhase: "loading",
@@ -134,27 +134,27 @@ export async function bootApp() {
   }
 }
 
-export function clearOnboardingError() {
+function clearOnboardingError() {
   useOnboardingStore.getState().clearOnboardingError();
 }
 
-export function clearSettingsFeedback() {
+function clearSettingsFeedback() {
   useSettingsStore.getState().clearSettingsFeedback();
 }
 
-export function dismissWeeklyReviewSpotlight() {
+function dismissWeeklyReviewSpotlight() {
   useWeeklyReviewStore.getState().dismissWeeklyReviewSpotlight();
 }
 
-export async function handleApplyStarterPack(habits: StarterPackHabitDraft[]) {
+async function handleApplyStarterPack(habits: StarterPackHabitDraft[]) {
   await refreshToday(window.habits.applyStarterPack(habits));
 }
 
-export async function handleArchiveHabit(habitId: number) {
+async function handleArchiveHabit(habitId: number) {
   await refreshToday(window.habits.archiveHabit(habitId));
 }
 
-export async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
+async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
   useOnboardingStore.setState({
     onboardingError: null,
     onboardingPhase: "submitting",
@@ -179,7 +179,7 @@ export async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
   }
 }
 
-export async function handleCreateHabit(
+async function handleCreateHabit(
   name: string,
   category: HabitCategory,
   frequency: HabitFrequency
@@ -188,21 +188,21 @@ export async function handleCreateHabit(
   updateSettingsDraftFromToday();
 }
 
-export function handleSettingsDraftChange(settingsDraft: AppSettings) {
+function handleSettingsDraftChange(settingsDraft: AppSettings) {
   useSettingsStore.getState().handleSettingsDraftChange(settingsDraft);
 }
 
-export async function handleRenameHabit(habitId: number, name: string) {
+async function handleRenameHabit(habitId: number, name: string) {
   await refreshToday(window.habits.renameHabit(habitId, name));
 }
 
-export async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
+async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
   await refreshToday(
     window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
   );
 }
 
-export async function handleSkipOnboarding() {
+async function handleSkipOnboarding() {
   useOnboardingStore.setState({
     onboardingError: null,
     onboardingPhase: "submitting",
@@ -224,7 +224,7 @@ export async function handleSkipOnboarding() {
   }
 }
 
-export function handleTabChange(nextTab: Tab) {
+function handleTabChange(nextTab: Tab) {
   useUiStore.getState().setTab(nextTab);
 
   if (nextTab === "settings") {
@@ -236,25 +236,25 @@ export function handleTabChange(nextTab: Tab) {
   }
 }
 
-export async function handleToggleHabit(habitId: number) {
+async function handleToggleHabit(habitId: number) {
   await refreshToday(window.habits.toggleHabit(habitId));
 }
 
-export async function handleUpdateHabitCategory(
+async function handleUpdateHabitCategory(
   habitId: number,
   category: HabitCategory
 ) {
   await refreshToday(window.habits.updateHabitCategory(habitId, category));
 }
 
-export async function handleUpdateHabitFrequency(
+async function handleUpdateHabitFrequency(
   habitId: number,
   frequency: HabitFrequency
 ) {
   await refreshToday(window.habits.updateHabitFrequency(habitId, frequency));
 }
 
-export async function handleUpdateSettings(settings: AppSettings) {
+async function handleUpdateSettings(settings: AppSettings) {
   const nextSettings = await window.habits.updateSettings(settings);
 
   unstable_batchedUpdates(() => {
@@ -269,39 +269,39 @@ export async function handleUpdateSettings(settings: AppSettings) {
   return nextSettings;
 }
 
-export async function loadFullHistory() {
+async function loadFullHistory() {
   await useHistoryStore.getState().loadFullHistory();
 }
 
-export async function loadWeeklyReviewOverview() {
+async function loadWeeklyReviewOverview() {
   await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
 }
 
-export function openWeeklyReviewSpotlight() {
+function openWeeklyReviewSpotlight() {
   useWeeklyReviewStore.getState().openWeeklyReviewSpotlight();
 }
 
-export async function retryBoot() {
+async function retryBoot() {
   await bootApp();
 }
 
-export async function selectWeeklyReview(weekStart: string) {
+async function selectWeeklyReview(weekStart: string) {
   await useWeeklyReviewStore.getState().selectWeeklyReview(weekStart);
 }
 
-export function setSettingsSaveErrorMessage(message: string | null) {
+function setSettingsSaveErrorMessage(message: string | null) {
   useSettingsStore.getState().setSettingsSaveErrorMessage(message);
 }
 
-export function setSettingsSavePhase(phase: SettingsSavePhase) {
+function setSettingsSavePhase(phase: SettingsSavePhase) {
   useSettingsStore.getState().setSettingsSavePhase(phase);
 }
 
-export function setSettingsValidationErrors(errors: SettingsFieldErrors) {
+function setSettingsValidationErrors(errors: SettingsFieldErrors) {
   useSettingsStore.getState().setSettingsValidationErrors(errors);
 }
 
-export function setSystemTheme(systemTheme: ThemeMode) {
+function setSystemTheme(systemTheme: ThemeMode) {
   useUiStore.getState().setSystemTheme(systemTheme);
 }
 
