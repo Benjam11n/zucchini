@@ -5,7 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import {
   resetFocusStore,
   useFocusStore,
-} from "@/renderer/features/app/stores/focus-store";
+} from "@/renderer/features/focus/store";
 
 import { FocusTab } from "./focus-tab";
 import { createIdleFocusTimerState } from "./use-focus-timer";

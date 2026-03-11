@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { MASCOTS } from "@/renderer/lib/mascots";
+import { MASCOTS } from "@/renderer/shared/assets/mascots";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isDailyHabit } from "@/shared/domain/habit";
 

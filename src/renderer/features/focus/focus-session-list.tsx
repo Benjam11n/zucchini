@@ -1,14 +1,14 @@
 import { Clock3 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+} from "@/renderer/shared/ui/card";
+import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 import type { FocusSessionsPhase, FocusTodaySummary } from "./types";

@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from "@testing-library/react";
 
-import { resetFocusStore } from "@/renderer/features/app/stores/focus-store";
+import { resetFocusStore } from "@/renderer/features/focus/store";
 
 import { FocusWidget } from "./focus-widget";
 

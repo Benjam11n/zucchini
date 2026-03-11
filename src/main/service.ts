@@ -1,2 +1,2 @@
-export type { HabitsService } from "./services/habits-service";
-export { HabitService } from "./services/habits-service";
+export type { HabitsService } from "./features/habits/service";
+export { HabitService } from "./features/habits/service";

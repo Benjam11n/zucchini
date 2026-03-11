@@ -3,9 +3,9 @@ import { Download, Rocket, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { cn } from "@/renderer/shared/lib/utils";
+import { Button } from "@/renderer/shared/ui/button";
+import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 function shouldRenderUpdateButton(state: AppUpdateState): boolean {

@@ -1,19 +1,19 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Snowflake, XCircle } from "lucide-react";
 
-import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
-import { HISTORY_STATUS_UI } from "@/renderer/lib/history-status";
-import { microTransition } from "@/renderer/lib/motion";
+import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status";
 import {
   getActivityBadgeLabel,
   getActivityStatus,
   getActivitySummary,
-} from "@/renderer/pages/history-page.utils";
+} from "@/renderer/features/history/utils";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import { microTransition } from "@/renderer/shared/lib/motion";
+import { cn } from "@/renderer/shared/lib/utils";
+import { Badge } from "@/renderer/shared/ui/badge";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
+import { Progress } from "@/renderer/shared/ui/progress";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 

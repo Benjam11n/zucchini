@@ -1,10 +1,10 @@
 import { m } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Item, ItemActions, ItemContent } from "@/components/ui/item";
-import { Label } from "@/components/ui/label";
-import { hoverLift, microTransition } from "@/renderer/lib/motion";
+import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
+import { Button } from "@/renderer/shared/ui/button";
+import { Input } from "@/renderer/shared/ui/input";
+import { Item, ItemActions, ItemContent } from "@/renderer/shared/ui/item";
+import { Label } from "@/renderer/shared/ui/label";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { reorderHabitList } from "./reorder-habits";

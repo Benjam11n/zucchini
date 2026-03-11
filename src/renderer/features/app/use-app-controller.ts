@@ -1,20 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { useFocusTimer } from "@/renderer/features/focus/use-focus-timer";
-import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
-import {
-  readLastSeenWeeklyReviewStart,
-  writeLastSeenWeeklyReviewStart,
-} from "@/renderer/features/history/weekly-review-storage";
-import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
-import type { AppSettings } from "@/shared/domain/settings";
-
-import { appActions } from "./app-actions";
-import {
-  areAppSettingsEqual,
-  mapSettingsValidationErrors,
-} from "./settings-save";
 import {
   useBootStore,
   useFocusStore,
@@ -24,7 +10,21 @@ import {
   useTodayStore,
   useUiStore,
   useWeeklyReviewStore,
-} from "./stores";
+} from "@/renderer/app/state";
+import { useFocusTimer } from "@/renderer/features/focus/use-focus-timer";
+import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
+import {
+  readLastSeenWeeklyReviewStart,
+  writeLastSeenWeeklyReviewStart,
+} from "@/renderer/features/history/weekly-review-storage";
+import {
+  areAppSettingsEqual,
+  mapSettingsValidationErrors,
+} from "@/renderer/features/settings/save";
+import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import type { AppSettings } from "@/shared/domain/settings";
+
+import { appActions } from "./app-actions";
 import type { AppState, SettingsFieldErrors } from "./types";
 
 const EMPTY_HISTORY: AppState["history"] = [];

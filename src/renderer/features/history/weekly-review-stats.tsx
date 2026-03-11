@@ -1,6 +1,6 @@
 import { Flame, Snowflake, Target, TrendingUp } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewStatsProps {

@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
-import { Button } from "@/components/ui/button";
 import {
   resetFocusStore,
   useFocusStore,
-} from "@/renderer/features/app/stores/focus-store";
+} from "@/renderer/features/focus/store";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 

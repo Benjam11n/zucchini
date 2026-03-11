@@ -1,7 +1,7 @@
 import { Monitor, MoonStar, SunMedium } from "lucide-react";
 import type { ElementType } from "react";
 
-import { RING_COLORS } from "@/renderer/lib/ring-colors";
+import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HabitCategory } from "@/shared/domain/habit";
 import type { ThemeMode } from "@/shared/domain/settings";
 

@@ -1,11 +1,15 @@
 import { m } from "framer-motion";
 
-import { cn } from "@/lib/utils";
 import {
   SETTINGS_CATEGORY_COLORS,
   SETTINGS_CATEGORY_TEXT_ON_SELECTED,
 } from "@/renderer/features/settings/constants";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
+import {
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
+import { cn } from "@/renderer/shared/lib/utils";
 import {
   HABIT_CATEGORY_DEFINITIONS,
   HABIT_FREQUENCY_DEFINITIONS,

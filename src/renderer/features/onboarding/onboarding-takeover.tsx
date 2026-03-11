@@ -8,15 +8,15 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+} from "@/renderer/shared/ui/card";
+import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { CompleteOnboardingInput } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";

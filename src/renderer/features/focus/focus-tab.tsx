@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { useFocusStore } from "@/renderer/features/app/stores/focus-store";
+import { useFocusStore } from "@/renderer/features/focus/store";
 
 import { FocusSessionList } from "./focus-session-list";
 import { FocusTimerCard } from "./focus-timer-card";

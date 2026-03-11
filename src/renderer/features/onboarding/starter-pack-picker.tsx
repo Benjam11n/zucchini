@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
+import {
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
+import { cn } from "@/renderer/shared/lib/utils";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
 
 import type { StarterPackPickerProps } from "./types";
 import { getStarterPackSummaryOptions } from "./utils";

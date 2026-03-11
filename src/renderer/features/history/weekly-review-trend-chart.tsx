@@ -1,13 +1,18 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/ui/card";
 import {
   ChartContainer,
   ChartResponsiveContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import type { ChartConfig } from "@/components/ui/chart";
+} from "@/renderer/shared/ui/chart";
+import type { ChartConfig } from "@/renderer/shared/ui/chart";
 import type { WeeklyReviewTrendPoint } from "@/shared/domain/weekly-review";
 
 const chartConfig = {

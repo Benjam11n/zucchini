@@ -12,7 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/renderer/shared/ui/card";
 
 import { HabitRowEditor } from "./habit-row-editor";
 import { NewHabitForm } from "./new-habit-form";

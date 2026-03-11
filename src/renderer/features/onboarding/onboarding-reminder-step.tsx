@@ -6,10 +6,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { TimeInput } from "@/components/ui/time-input";
+} from "@/renderer/shared/ui/card";
+import { Label } from "@/renderer/shared/ui/label";
+import { Switch } from "@/renderer/shared/ui/switch";
+import { TimeInput } from "@/renderer/shared/ui/time-input";
 
 import type { OnboardingReminderDraft, ReminderFieldErrors } from "./types";
 

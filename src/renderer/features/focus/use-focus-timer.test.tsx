@@ -6,7 +6,7 @@ import { act } from "react";
 import {
   resetFocusStore,
   useFocusStore,
-} from "@/renderer/features/app/stores/focus-store";
+} from "@/renderer/features/focus/store";
 
 import {
   createIdleFocusTimerState,

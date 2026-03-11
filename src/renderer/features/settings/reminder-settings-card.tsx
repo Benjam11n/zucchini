@@ -1,14 +1,14 @@
 import { Bell, Globe2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/renderer/shared/ui/card";
 import {
   Item,
   ItemActions,
@@ -16,10 +16,10 @@ import {
   ItemDescription,
   ItemGroup,
   ItemSeparator,
-} from "@/components/ui/item";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { TimeInput } from "@/components/ui/time-input";
+} from "@/renderer/shared/ui/item";
+import { Label } from "@/renderer/shared/ui/label";
+import { Switch } from "@/renderer/shared/ui/switch";
+import { TimeInput } from "@/renderer/shared/ui/time-input";
 import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 
 import type { SettingsPageProps } from "./types";

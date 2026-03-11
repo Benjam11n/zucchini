@@ -1,14 +1,18 @@
 import { format } from "date-fns";
 import { useState } from "react";
 
-import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
+import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-} from "@/components/ui/carousel";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
+} from "@/renderer/shared/ui/carousel";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/renderer/shared/ui/dialog";
 import type { HistoryDay } from "@/shared/domain/history";
 import { parseDateKey } from "@/shared/utils/date";
 

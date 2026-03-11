@@ -1,5 +1,5 @@
 export type {
   HabitRepository,
   SettledHistoryOptions,
-} from "./repository/index";
-export { SqliteHabitRepository } from "./repository/index";
+} from "./infra/persistence";
+export { SqliteHabitRepository } from "./infra/persistence";

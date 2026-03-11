@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import { microTransition } from "@/renderer/shared/lib/motion";
+import { Badge } from "@/renderer/shared/ui/badge";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemGroup,
-} from "@/components/ui/item";
-import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
-import { microTransition } from "@/renderer/lib/motion";
+} from "@/renderer/shared/ui/item";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface HistoryHabitColumnProps {

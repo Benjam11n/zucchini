@@ -1,10 +1,19 @@
 import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { THEME_OPTIONS } from "@/renderer/features/settings/constants";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
+import {
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
+import { cn } from "@/renderer/shared/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/ui/card";
 
 import type { SettingsPageProps } from "./types";
 

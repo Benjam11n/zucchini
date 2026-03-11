@@ -1,19 +1,19 @@
 import { lazy, Suspense } from "react";
 
-import { Button } from "@/components/ui/button";
+import { AppShell } from "@/renderer/features/app/app-shell";
+import { getBootErrorDisplay } from "@/renderer/features/app/boot-errors";
+import { useAppController } from "@/renderer/features/app/use-app-controller";
+import { TodayPage } from "@/renderer/features/today/page";
+import { MASCOTS } from "@/renderer/shared/assets/mascots";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import { AppShell } from "@/renderer/features/app/app-shell";
-import { getBootErrorDisplay } from "@/renderer/features/app/boot-errors";
-import { useAppController } from "@/renderer/features/app/use-app-controller";
-import { MASCOTS } from "@/renderer/lib/mascots";
-import { TodayPage } from "@/renderer/pages/today-page";
+} from "@/renderer/shared/ui/card";
+import { Spinner } from "@/renderer/shared/ui/spinner";
 
 const FocusWidget = lazy(async () => {
   const module = await import("@/renderer/features/focus/focus-widget");
@@ -21,7 +21,7 @@ const FocusWidget = lazy(async () => {
   return { default: module.FocusWidget };
 });
 const HistoryPage = lazy(async () => {
-  const module = await import("@/renderer/pages/history-page");
+  const module = await import("@/renderer/features/history/page");
 
   return { default: module.HistoryPage };
 });
@@ -31,7 +31,7 @@ const FocusTab = lazy(async () => {
   return { default: module.FocusTab };
 });
 const SettingsPage = lazy(async () => {
-  const module = await import("@/renderer/pages/settings-page");
+  const module = await import("@/renderer/features/settings/page");
 
   return { default: module.SettingsPage };
 });

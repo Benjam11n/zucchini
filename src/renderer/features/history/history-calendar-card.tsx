@@ -1,5 +1,5 @@
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
+import { Calendar } from "@/renderer/shared/ui/calendar";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
 import type { HistoryDay } from "@/shared/domain/history";
 import { parseDateKey, toDateKey } from "@/shared/utils/date";
 

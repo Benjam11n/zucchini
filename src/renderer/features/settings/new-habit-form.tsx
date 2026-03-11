@@ -1,10 +1,10 @@
 import { m } from "framer-motion";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { microTransition } from "@/renderer/lib/motion";
+import { microTransition } from "@/renderer/shared/lib/motion";
+import { Button } from "@/renderer/shared/ui/button";
+import { Input } from "@/renderer/shared/ui/input";
+import { Label } from "@/renderer/shared/ui/label";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,

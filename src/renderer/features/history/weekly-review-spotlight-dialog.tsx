@@ -7,7 +7,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/renderer/shared/lib/utils";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+} from "@/renderer/shared/ui/dialog";
 import type {
   WeeklyReview,
   WeeklyReviewTrendPoint,

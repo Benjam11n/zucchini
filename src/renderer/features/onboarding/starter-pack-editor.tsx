@@ -1,14 +1,14 @@
 import { Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/renderer/shared/ui/button";
+import { Input } from "@/renderer/shared/ui/input";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
   ItemGroup,
-} from "@/components/ui/item";
+} from "@/renderer/shared/ui/item";
 
 import {
   HabitCategorySelector,

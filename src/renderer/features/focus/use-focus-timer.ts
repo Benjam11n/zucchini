@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { useFocusStore } from "@/renderer/features/app/stores/focus-store";
+import { useFocusStore } from "@/renderer/features/focus/store";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import { toDateKey } from "@/shared/utils/date";
 

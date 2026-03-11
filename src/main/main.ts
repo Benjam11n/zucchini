@@ -13,24 +13,24 @@ import {
 } from "electron";
 import { autoUpdater } from "electron-updater";
 
-import {
-  registerAppUpdater,
-  resolveAppUpdateSupportMode,
-  serializeAppUpdaterIpcError,
-} from "@/main/app-updater";
-import { resolveRuntimeIconPath } from "@/main/assets";
-import { systemClock } from "@/main/clock";
-import { createFocusTimerCoordinator } from "@/main/focus-timer-coordinator";
-import { registerIpcHandlers } from "@/main/ipc";
+import { resolveRuntimeIconPath } from "@/main/app/assets";
+import { systemClock } from "@/main/app/clock";
 import {
   buildLoginItemSettings,
   shouldHideOnWindowClose,
   shouldQuitWhenAllWindowsClosed,
-} from "@/main/lifecycle";
+} from "@/main/app/lifecycle";
+import { createAppTray } from "@/main/app/tray";
+import {
+  registerAppUpdater,
+  resolveAppUpdateSupportMode,
+  serializeAppUpdaterIpcError,
+} from "@/main/app/updater";
+import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
+import { createReminderScheduler } from "@/main/features/reminders/scheduler";
+import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
 import { SqliteHabitRepository } from "@/main/repository";
-import { createReminderScheduler } from "@/main/scheduler";
 import { HabitService } from "@/main/service";
-import { createAppTray } from "@/main/tray";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";

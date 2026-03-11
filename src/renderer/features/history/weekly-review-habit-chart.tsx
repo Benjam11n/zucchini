@@ -1,14 +1,19 @@
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/ui/card";
 import {
   ChartContainer,
   ChartResponsiveContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import type { ChartConfig } from "@/components/ui/chart";
-import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
+} from "@/renderer/shared/ui/chart";
+import type { ChartConfig } from "@/renderer/shared/ui/chart";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
 const chartConfig = {

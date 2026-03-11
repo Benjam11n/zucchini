@@ -2,9 +2,13 @@ import { motion } from "framer-motion";
 import { createContext, useContext } from "react";
 import type { DayButtonProps } from "react-day-picker";
 
-import { HabitActivityRingGlyph } from "@/components/custom/apple-activity-ring";
-import { cn } from "@/lib/utils";
-import { hoverLift, microTransition, tapPress } from "@/renderer/lib/motion";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import {
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
+import { cn } from "@/renderer/shared/lib/utils";
 import { toDateKey } from "@/shared/utils/date";
 
 import type { HistoryCalendarContextValue } from "./types";

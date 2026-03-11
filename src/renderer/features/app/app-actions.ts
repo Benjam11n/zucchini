@@ -1,5 +1,15 @@
 import { unstable_batchedUpdates } from "react-dom";
 
+import {
+  useBootStore,
+  useFocusStore,
+  useHistoryStore,
+  useOnboardingStore,
+  useSettingsStore,
+  useTodayStore,
+  useUiStore,
+  useWeeklyReviewStore,
+} from "@/renderer/app/state";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
@@ -14,16 +24,6 @@ import type {
 } from "@/shared/domain/onboarding";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
-import {
-  useBootStore,
-  useFocusStore,
-  useHistoryStore,
-  useOnboardingStore,
-  useSettingsStore,
-  useTodayStore,
-  useUiStore,
-  useWeeklyReviewStore,
-} from "./stores";
 import type { SettingsFieldErrors, SettingsSavePhase, Tab } from "./types";
 
 const RECENT_HISTORY_LIMIT = 14;

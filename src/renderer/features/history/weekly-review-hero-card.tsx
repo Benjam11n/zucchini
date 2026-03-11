@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/renderer/shared/ui/badge";
+import { Button } from "@/renderer/shared/ui/button";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
 import type {
   WeeklyReview,
   WeeklyReviewListItem,

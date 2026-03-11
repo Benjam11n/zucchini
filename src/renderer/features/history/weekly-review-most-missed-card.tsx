@@ -1,7 +1,12 @@
 import { ArrowDownRight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/renderer/shared/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/ui/card";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewMostMissedCardProps {

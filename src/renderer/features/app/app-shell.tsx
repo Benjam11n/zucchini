@@ -2,10 +2,15 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { BarChart3, CalendarDays, Settings2, Timer } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MASCOTS } from "@/renderer/lib/mascots";
-import { pageVariants } from "@/renderer/lib/motion";
+import { MASCOTS } from "@/renderer/shared/assets/mascots";
+import { pageVariants } from "@/renderer/shared/lib/motion";
+import { Card, CardHeader, CardTitle } from "@/renderer/shared/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/renderer/shared/ui/tabs";
 
 import type { Tab } from "./types";
 import { UpdateButton } from "./update-button";
