@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 import type { CircleProgressProps } from "./types";
 
@@ -9,25 +9,13 @@ export function CircleProgress({ data, index }: CircleProgressProps) {
   const radius = (data.size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const progress = ((100 - data.value) / 100) * circumference;
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const timerId = window.setTimeout(() => {
-      setIsVisible(true);
-    }, index * 120);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [index]);
 
   return (
-    <div
-      className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out"
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "scale(1)" : "scale(0.92)",
-      }}
+    <motion.div
+      animate={{ opacity: 1, scale: 1 }}
+      className="absolute inset-0 flex items-center justify-center"
+      initial={{ opacity: 0, scale: 0.8 }}
+      transition={{ delay: index * 0.2, duration: 0.8, ease: "easeOut" }}
     >
       <div className="relative">
         <svg
@@ -49,23 +37,28 @@ export function CircleProgress({ data, index }: CircleProgressProps) {
             strokeWidth={strokeWidth}
           />
 
-          <circle
+          <motion.circle
+            animate={{ strokeDashoffset: progress }}
             cx={data.size / 2}
             cy={data.size / 2}
             fill="none"
+            initial={{ strokeDashoffset: circumference }}
             r={radius}
             stroke={data.color}
             strokeDasharray={circumference}
-            strokeDashoffset={isVisible ? progress : circumference}
             strokeLinecap="round"
             strokeWidth={strokeWidth}
             style={{
               filter: `drop-shadow(0 0 6px ${data.color}55)`,
-              transition: `stroke-dashoffset 1200ms ease-in-out ${index * 120}ms`,
+            }}
+            transition={{
+              delay: index * 0.2,
+              duration: 1.8,
+              ease: "easeInOut",
             }}
           />
         </svg>
       </div>
-    </div>
+    </motion.div>
   );
 }

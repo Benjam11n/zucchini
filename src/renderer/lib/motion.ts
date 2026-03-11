@@ -1,10 +1,36 @@
 import type { Transition, Variants } from "framer-motion";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_IN = [0.4, 0, 1, 1] as const;
 
 export const microTransition: Transition = {
   duration: 0.18,
   ease: EASE_OUT,
+};
+
+const pageTransition: Transition = {
+  duration: 0.28,
+  ease: EASE_OUT,
+};
+
+export const pageVariants: Variants = {
+  animate: {
+    opacity: 1,
+    transition: pageTransition,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.18,
+      ease: EASE_IN,
+    },
+    y: -10,
+  },
+  initial: {
+    opacity: 0,
+    y: 14,
+  },
 };
 
 export const staggerContainerVariants: Variants = {
@@ -21,10 +47,7 @@ export const staggerContainerVariants: Variants = {
 export const staggerItemVariants: Variants = {
   animate: {
     opacity: 1,
-    transition: {
-      duration: 0.28,
-      ease: EASE_OUT,
-    },
+    transition: pageTransition,
     y: 0,
   },
   exit: {

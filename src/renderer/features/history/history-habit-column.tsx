@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import {
   ItemGroup,
 } from "@/components/ui/item";
 import { HABIT_CATEGORY_UI } from "@/renderer/lib/habit-categories";
+import { microTransition } from "@/renderer/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface HistoryHabitColumnProps {
@@ -17,6 +19,7 @@ interface HistoryHabitColumnProps {
   iconClassName: string;
   emptyLabel: string;
   habits: HabitWithStatus[];
+  initialX: number;
 }
 
 export function HistoryHabitColumn({
@@ -25,6 +28,7 @@ export function HistoryHabitColumn({
   iconClassName,
   emptyLabel,
   habits,
+  initialX,
 }: HistoryHabitColumnProps) {
   return (
     <Card className="border-border/60 bg-card/85">
@@ -36,7 +40,12 @@ export function HistoryHabitColumn({
         <ItemGroup className="gap-2">
           {habits.length > 0 ? (
             habits.map((habit) => (
-              <div key={habit.id}>
+              <motion.div
+                key={habit.id}
+                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, x: initialX }}
+                transition={microTransition}
+              >
                 <Item
                   className="rounded-xl border-border/50 bg-background/60"
                   variant="outline"
@@ -57,7 +66,7 @@ export function HistoryHabitColumn({
                     </Badge>
                   </ItemActions>
                 </Item>
-              </div>
+              </motion.div>
             ))
           ) : (
             <p className="text-sm text-muted-foreground">{emptyLabel}</p>

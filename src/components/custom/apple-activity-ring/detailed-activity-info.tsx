@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 import type { ActivityData } from "./types";
 
 interface DetailedActivityInfoProps {
@@ -10,9 +12,14 @@ export function DetailedActivityInfo({
   activities,
 }: DetailedActivityInfoProps) {
   return (
-    <div className="ml-10 flex animate-in flex-col gap-5 fade-in-0 slide-in-from-right-2 duration-300">
+    <motion.div
+      animate={{ opacity: 1, x: 0 }}
+      className="ml-10 flex flex-col gap-5"
+      initial={{ opacity: 0, x: 20 }}
+      transition={{ delay: 0.3, duration: 0.5 }}
+    >
       {activities.map((activity) => (
-        <div key={activity.label} className="flex flex-col gap-0.5">
+        <motion.div key={activity.label} className="flex flex-col gap-0.5">
           <span className="text-[0.65rem] font-medium tracking-[0.18em] uppercase text-zinc-500 dark:text-zinc-400">
             {activity.label}
           </span>
@@ -25,8 +32,8 @@ export function DetailedActivityInfo({
               %
             </span>
           </span>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
