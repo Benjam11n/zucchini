@@ -10,6 +10,7 @@ import {
   useUiStore,
   useWeeklyReviewStore,
 } from "@/renderer/app/state";
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
@@ -91,49 +92,53 @@ async function refreshToday(mutator: Promise<TodayState>) {
 }
 
 async function bootApp() {
-  useBootStore.setState({
-    bootError: null,
-    bootPhase: "loading",
-  });
-
-  try {
-    await reloadAll(undefined, "recent");
-    useBootStore.setState({
-      bootPhase: "ready",
-    });
-  } catch (error: unknown) {
-    unstable_batchedUpdates(() => {
+  await runAsyncTask(() => reloadAll(undefined, "recent"), {
+    mapError: toHabitsIpcError,
+    onError: (bootError) => {
+      unstable_batchedUpdates(() => {
+        useBootStore.setState({
+          bootError,
+          bootPhase: "error",
+        });
+        useHistoryStore.setState({
+          history: [],
+          historyLoadError: null,
+          historyScope: "recent",
+          isHistoryLoading: false,
+        });
+        useOnboardingStore.setState({
+          isOnboardingOpen: false,
+          onboardingError: null,
+          onboardingPhase: "idle",
+          onboardingStatus: null,
+        });
+        useSettingsStore.setState({
+          settingsDraft: null,
+        });
+        useTodayStore.setState({
+          todayState: null,
+        });
+        useWeeklyReviewStore.setState({
+          isWeeklyReviewSpotlightOpen: false,
+          selectedWeeklyReview: null,
+          weeklyReviewError: null,
+          weeklyReviewOverview: null,
+          weeklyReviewPhase: "idle",
+        });
+      });
+    },
+    onStart: () => {
       useBootStore.setState({
-        bootError: toHabitsIpcError(error),
-        bootPhase: "error",
+        bootError: null,
+        bootPhase: "loading",
       });
-      useHistoryStore.setState({
-        history: [],
-        historyLoadError: null,
-        historyScope: "recent",
-        isHistoryLoading: false,
+    },
+    onSuccess: () => {
+      useBootStore.setState({
+        bootPhase: "ready",
       });
-      useOnboardingStore.setState({
-        isOnboardingOpen: false,
-        onboardingError: null,
-        onboardingPhase: "idle",
-        onboardingStatus: null,
-      });
-      useSettingsStore.setState({
-        settingsDraft: null,
-      });
-      useTodayStore.setState({
-        todayState: null,
-      });
-      useWeeklyReviewStore.setState({
-        isWeeklyReviewSpotlightOpen: false,
-        selectedWeeklyReview: null,
-        weeklyReviewError: null,
-        weeklyReviewOverview: null,
-        weeklyReviewPhase: "idle",
-      });
-    });
-  }
+    },
+  });
 }
 
 function clearOnboardingError() {
@@ -161,28 +166,32 @@ async function handleArchiveHabit(habitId: number) {
 }
 
 async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
-  useOnboardingStore.setState({
-    onboardingError: null,
-    onboardingPhase: "submitting",
+  await runAsyncTask(() => window.habits.completeOnboarding(input), {
+    mapError: toHabitsIpcError,
+    onError: (onboardingError) => {
+      useOnboardingStore.setState({
+        onboardingError,
+        onboardingPhase: "idle",
+      });
+    },
+    onStart: () => {
+      useOnboardingStore.setState({
+        onboardingError: null,
+        onboardingPhase: "submitting",
+      });
+    },
+    onSuccess: async (nextTodayState) => {
+      await reloadAll(nextTodayState);
+      useOnboardingStore.setState({
+        onboardingError: null,
+        onboardingPhase: "idle",
+      });
+      useSettingsStore.setState({
+        settingsDraft: nextTodayState.settings,
+      });
+    },
+    rethrow: true,
   });
-
-  try {
-    const nextTodayState = await window.habits.completeOnboarding(input);
-    await reloadAll(nextTodayState);
-    useOnboardingStore.setState({
-      onboardingError: null,
-      onboardingPhase: "idle",
-    });
-    useSettingsStore.setState({
-      settingsDraft: nextTodayState.settings,
-    });
-  } catch (error) {
-    useOnboardingStore.setState({
-      onboardingError: toHabitsIpcError(error),
-      onboardingPhase: "idle",
-    });
-    throw error;
-  }
 }
 
 async function handleCreateHabit(
@@ -209,25 +218,29 @@ async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
 }
 
 async function handleSkipOnboarding() {
-  useOnboardingStore.setState({
-    onboardingError: null,
-    onboardingPhase: "submitting",
+  await runAsyncTask(() => window.habits.skipOnboarding(), {
+    mapError: toHabitsIpcError,
+    onError: (onboardingError) => {
+      useOnboardingStore.setState({
+        onboardingError,
+        onboardingPhase: "idle",
+      });
+    },
+    onStart: () => {
+      useOnboardingStore.setState({
+        onboardingError: null,
+        onboardingPhase: "submitting",
+      });
+    },
+    onSuccess: async () => {
+      await reloadAll();
+      useOnboardingStore.setState({
+        onboardingError: null,
+        onboardingPhase: "idle",
+      });
+    },
+    rethrow: true,
   });
-
-  try {
-    await window.habits.skipOnboarding();
-    await reloadAll();
-    useOnboardingStore.setState({
-      onboardingError: null,
-      onboardingPhase: "idle",
-    });
-  } catch (error) {
-    useOnboardingStore.setState({
-      onboardingError: toHabitsIpcError(error),
-      onboardingPhase: "idle",
-    });
-    throw error;
-  }
 }
 
 function handleTabChange(nextTab: Tab) {

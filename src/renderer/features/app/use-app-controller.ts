@@ -21,6 +21,7 @@ import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
 } from "@/renderer/features/settings/save";
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -351,19 +352,23 @@ function useSettingsAutosave({
       setSettingsSavePhase("pending");
     }
 
-    const timer = setTimeout(async () => {
-      try {
-        setSettingsSavePhase("saving");
-        const savedSettings = await handleUpdateSettings(validationResult.data);
-        lastSavedDraft.current = savedSettings;
-        setSettingsSavePhase("saved");
-        setSettingsSaveErrorMessage(null);
-      } catch {
-        setSettingsSavePhase("error");
-        setSettingsSaveErrorMessage(
-          "Could not save settings. Your changes are still on screen."
-        );
-      }
+    const timer = setTimeout(() => {
+      void runAsyncTask(() => handleUpdateSettings(validationResult.data), {
+        onError: () => {
+          setSettingsSavePhase("error");
+          setSettingsSaveErrorMessage(
+            "Could not save settings. Your changes are still on screen."
+          );
+        },
+        onStart: () => {
+          setSettingsSavePhase("saving");
+        },
+        onSuccess: (savedSettings) => {
+          lastSavedDraft.current = savedSettings;
+          setSettingsSavePhase("saved");
+          setSettingsSaveErrorMessage(null);
+        },
+      });
     }, 600);
 
     return () => clearTimeout(timer);

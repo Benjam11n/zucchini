@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { FocusStoreState } from "@/renderer/app/state/types";
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
@@ -49,25 +50,29 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
       return;
     }
 
-    set({
-      focusSessionsLoadError: null,
-      focusSessionsPhase: "loading",
+    await runAsyncTask(() => window.habits.getFocusSessions(), {
+      mapError: toHabitsIpcError,
+      onError: (focusSessionsLoadError) => {
+        set({
+          focusSessionsLoadError,
+          focusSessionsPhase: "error",
+        });
+      },
+      onStart: () => {
+        set({
+          focusSessionsLoadError: null,
+          focusSessionsPhase: "loading",
+        });
+      },
+      onSuccess: (focusSessions) => {
+        set({
+          focusSessions,
+          focusSessionsLoadError: null,
+          focusSessionsPhase: "ready",
+          hasLoadedFocusSessions: true,
+        });
+      },
     });
-
-    try {
-      const focusSessions = await window.habits.getFocusSessions();
-      set({
-        focusSessions,
-        focusSessionsLoadError: null,
-        focusSessionsPhase: "ready",
-        hasLoadedFocusSessions: true,
-      });
-    } catch (error) {
-      set({
-        focusSessionsLoadError: toHabitsIpcError(error),
-        focusSessionsPhase: "error",
-      });
-    }
   },
   prependFocusSession: (focusSession: FocusSession) =>
     set((state) => ({
