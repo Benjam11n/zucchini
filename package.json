@@ -19,6 +19,8 @@
     "dist:release:win": "electron-builder --config electron-builder.config.ts --win nsis --publish always",
     "dist:release:mac": "electron-builder --config electron-builder.config.ts --mac dmg zip --publish always",
     "typecheck": "tsc --noEmit",
+    "audit": "bun audit",
+    "audit:ci": "bun audit --audit-level=high",
     "lint": "ultracite check .",
     "format": "ultracite fix .",
     "format:check": "oxfmt --check .",
