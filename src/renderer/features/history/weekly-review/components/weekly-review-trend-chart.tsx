@@ -8,7 +8,18 @@ interface WeeklyReviewTrendChartProps {
   trend: WeeklyReviewTrendPoint[];
 }
 
-const WeeklyReviewTrendChartImpl = lazy(async () =>
+function WeeklyReviewChartFallback() {
+  return (
+    <Card className="border-border/60 bg-card/90">
+      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+        <Spinner className="size-4 text-primary/70" />
+        Loading chart...
+      </CardContent>
+    </Card>
+  );
+}
+
+const WeeklyReviewTrendChartImpl = lazy(() =>
   import("./weekly-review-trend-chart-impl").then((module) => ({
     default: module.WeeklyReviewTrendChartImpl,
   }))
@@ -19,16 +30,5 @@ export function WeeklyReviewTrendChart({ trend }: WeeklyReviewTrendChartProps) {
     <Suspense fallback={<WeeklyReviewChartFallback />}>
       <WeeklyReviewTrendChartImpl trend={trend} />
     </Suspense>
-  );
-}
-
-function WeeklyReviewChartFallback() {
-  return (
-    <Card className="border-border/60 bg-card/90">
-      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
-        <Spinner className="size-4 text-primary/70" />
-        Loading chart...
-      </CardContent>
-    </Card>
   );
 }

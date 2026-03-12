@@ -116,6 +116,9 @@ function updateButtonViewReducer(
         isPending: true,
       };
     }
+    default: {
+      return state;
+    }
   }
 }
 

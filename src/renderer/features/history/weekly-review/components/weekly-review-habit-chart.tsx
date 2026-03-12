@@ -8,7 +8,18 @@ interface WeeklyReviewHabitChartProps {
   habitMetrics: WeeklyReviewHabitMetric[];
 }
 
-const WeeklyReviewHabitChartImpl = lazy(async () =>
+function WeeklyReviewChartFallback() {
+  return (
+    <Card className="border-border/60 bg-card/90">
+      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+        <Spinner className="size-4 text-primary/70" />
+        Loading chart...
+      </CardContent>
+    </Card>
+  );
+}
+
+const WeeklyReviewHabitChartImpl = lazy(() =>
   import("./weekly-review-habit-chart-impl").then((module) => ({
     default: module.WeeklyReviewHabitChartImpl,
   }))
@@ -21,16 +32,5 @@ export function WeeklyReviewHabitChart({
     <Suspense fallback={<WeeklyReviewChartFallback />}>
       <WeeklyReviewHabitChartImpl habitMetrics={habitMetrics} />
     </Suspense>
-  );
-}
-
-function WeeklyReviewChartFallback() {
-  return (
-    <Card className="border-border/60 bg-card/90">
-      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
-        <Spinner className="size-4 text-primary/70" />
-        Loading chart...
-      </CardContent>
-    </Card>
   );
 }

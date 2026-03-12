@@ -100,6 +100,9 @@ function starterPacksCardReducer(
         drafts: action.drafts,
       };
     }
+    default: {
+      return state;
+    }
   }
 }
 

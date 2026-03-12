@@ -61,6 +61,7 @@ export function FocusTimerCard({
   const [secondsInput, setSecondsInput] = useState(() =>
     padTimerPart(durationParts.seconds)
   );
+  const primaryActionLabel = isPaused ? "Resume" : "Start";
 
   useEffect(() => {
     setMinutesInput(padTimerPart(durationParts.minutes));
@@ -99,7 +100,7 @@ export function FocusTimerCard({
   return (
     <Card className="overflow-hidden border-border/60 bg-card/95">
       <CardHeader className="gap-6 pb-0">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <CardDescription>Pomodoro</CardDescription>
             <CardTitle>Focused work timer</CardTitle>
@@ -124,8 +125,8 @@ export function FocusTimerCard({
       </CardHeader>
 
       <CardContent className="space-y-8 pt-6">
-        <div className="rounded-[2rem] border border-border/60 bg-muted/15 px-5 py-8 sm:px-8 sm:py-10">
-          <div className="flex justify-center">
+        <div className="flex justify-center">
+          <div className="w-full max-w-[48rem] rounded-[2rem] border border-border/60 bg-muted/15 px-5 py-8 sm:px-8 sm:py-10">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               {canEditDuration ? (
                 <>
@@ -205,21 +206,26 @@ export function FocusTimerCard({
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
-          {isIdle ? (
+          {isIdle || isPaused ? (
             <Button
-              className="h-12 min-w-44 rounded-full px-8 text-base"
+              className="h-11 min-w-36 rounded-full px-6 text-base"
               onClick={() => {
+                if (isPaused) {
+                  onResume();
+                  return;
+                }
+
                 onStart(commitDuration());
               }}
             >
               <Play className="size-4" />
-              Start
+              {primaryActionLabel}
             </Button>
           ) : null}
 
           {isRunning ? (
             <Button
-              className="min-w-32 rounded-full px-5"
+              className="h-11 min-w-36 rounded-full px-6 text-base"
               onClick={onPause}
               variant="secondary"
             >
@@ -228,16 +234,9 @@ export function FocusTimerCard({
             </Button>
           ) : null}
 
-          {isPaused ? (
-            <Button className="min-w-32 rounded-full px-5" onClick={onResume}>
-              <Play className="size-4" />
-              Resume
-            </Button>
-          ) : null}
-
           {isIdle ? null : (
             <Button
-              className="min-w-32 rounded-full px-5"
+              className="h-11 min-w-36 rounded-full px-6 text-base"
               onClick={isBreak ? onSkipBreak : onReset}
               variant="outline"
             >

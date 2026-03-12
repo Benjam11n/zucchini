@@ -57,7 +57,7 @@ import {
 } from "@/renderer/shared/ui/tabs";
 import { parseDateKey } from "@/shared/utils/date";
 
-const WeeklyReviewDailyCadenceChart = lazy(async () =>
+const WeeklyReviewDailyCadenceChart = lazy(() =>
   import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart").then(
     (module) => ({
       default: module.WeeklyReviewDailyCadenceChart,
@@ -65,7 +65,7 @@ const WeeklyReviewDailyCadenceChart = lazy(async () =>
   )
 );
 
-const WeeklyReviewHabitChart = lazy(async () =>
+const WeeklyReviewHabitChart = lazy(() =>
   import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart").then(
     (module) => ({
       default: module.WeeklyReviewHabitChart,
@@ -73,7 +73,7 @@ const WeeklyReviewHabitChart = lazy(async () =>
   )
 );
 
-const WeeklyReviewTrendChart = lazy(async () =>
+const WeeklyReviewTrendChart = lazy(() =>
   import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart").then(
     (module) => ({
       default: module.WeeklyReviewTrendChart,
@@ -95,6 +95,17 @@ function createHistoryViewState(
     selectedDateKey: fallbackDate,
     visibleMonth: fallbackDate ? parseDateKey(fallbackDate) : undefined,
   };
+}
+
+function ChartSectionFallback() {
+  return (
+    <Card className="border-border/60 bg-card/95">
+      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+        <Spinner className="size-4 text-primary/70" />
+        Loading chart...
+      </CardContent>
+    </Card>
+  );
 }
 
 function WeeklyReviewSection({
@@ -182,17 +193,6 @@ function WeeklyReviewSection({
         <WeeklyReviewMostMissedCard habits={review.mostMissedHabits} />
       </div>
     </div>
-  );
-}
-
-function ChartSectionFallback() {
-  return (
-    <Card className="border-border/60 bg-card/95">
-      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
-        <Spinner className="size-4 text-primary/70" />
-        Loading chart...
-      </CardContent>
-    </Card>
   );
 }
 

@@ -71,13 +71,13 @@ interface ChartResponsiveContainerProps {
   width?: number | `${number}%`;
 }
 
-const RechartsResponsiveContainer = lazy(async () =>
+const RechartsResponsiveContainer = lazy(() =>
   import("recharts").then((module) => ({
     default: module.ResponsiveContainer,
   }))
 );
 
-const RechartsTooltip = lazy(async () =>
+const RechartsTooltip = lazy(() =>
   import("recharts").then((module) => ({
     default: module.Tooltip,
   }))
@@ -148,7 +148,8 @@ function ChartResponsiveContainer(props: ChartResponsiveContainerProps) {
 }
 
 function ChartTooltip(props: ChartTooltipPrimitiveProps) {
-  const TooltipComponent = RechartsTooltip as React.ComponentType<any>;
+  const TooltipComponent =
+    RechartsTooltip as React.ComponentType<ChartTooltipPrimitiveProps>;
 
   return (
     <Suspense fallback={null}>

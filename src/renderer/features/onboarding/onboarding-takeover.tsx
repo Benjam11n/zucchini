@@ -114,6 +114,9 @@ function onboardingViewReducer(
     case "setStep": {
       return { ...state, step: action.step };
     }
+    default: {
+      return state;
+    }
   }
 }
 
