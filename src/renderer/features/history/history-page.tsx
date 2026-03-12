@@ -1,6 +1,19 @@
+/**
+ * History tab page.
+ *
+ * This screen lets the user inspect past days and switch into weekly review
+ * mode, combining the calendar browser, day detail panel, and deferred charts.
+ */
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { BarChart3, CalendarDays } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { HistoryCalendarCard } from "@/renderer/features/history/components/history-calendar-card";
 import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
@@ -17,12 +30,9 @@ import {
   getHistoryDayLookup,
   getHistoryStats,
 } from "@/renderer/features/history/lib/history-summary";
-import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart";
-import { WeeklyReviewHabitChart } from "@/renderer/features/history/weekly-review/components/weekly-review-habit-chart";
 import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card";
 import { WeeklyReviewStats } from "@/renderer/features/history/weekly-review/components/weekly-review-stats";
-import { WeeklyReviewTrendChart } from "@/renderer/features/history/weekly-review/components/weekly-review-trend-chart";
 import { GitHubCalendar } from "@/renderer/shared/components/github-calendar";
 import {
   hoverLift,
@@ -46,6 +56,46 @@ import {
   TabsTrigger,
 } from "@/renderer/shared/ui/tabs";
 import { parseDateKey } from "@/shared/utils/date";
+
+const WeeklyReviewDailyCadenceChart = lazy(async () =>
+  import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart").then(
+    (module) => ({
+      default: module.WeeklyReviewDailyCadenceChart,
+    })
+  )
+);
+
+const WeeklyReviewHabitChart = lazy(async () =>
+  import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart").then(
+    (module) => ({
+      default: module.WeeklyReviewHabitChart,
+    })
+  )
+);
+
+const WeeklyReviewTrendChart = lazy(async () =>
+  import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart").then(
+    (module) => ({
+      default: module.WeeklyReviewTrendChart,
+    })
+  )
+);
+
+interface HistoryViewState {
+  selectedDateKey: string | null;
+  visibleMonth: Date | undefined;
+}
+
+function createHistoryViewState(
+  history: HistoryPageProps["history"]
+): HistoryViewState {
+  const fallbackDate = history[0]?.date ?? null;
+
+  return {
+    selectedDateKey: fallbackDate,
+    visibleMonth: fallbackDate ? parseDateKey(fallbackDate) : undefined,
+  };
+}
 
 function WeeklyReviewSection({
   onSelectWeeklyReview,
@@ -117,15 +167,32 @@ function WeeklyReviewSection({
       <WeeklyReviewStats review={review} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <WeeklyReviewDailyCadenceChart review={review} />
-        <WeeklyReviewTrendChart trend={weeklyReviewOverview?.trend ?? []} />
+        <Suspense fallback={<ChartSectionFallback />}>
+          <WeeklyReviewDailyCadenceChart review={review} />
+        </Suspense>
+        <Suspense fallback={<ChartSectionFallback />}>
+          <WeeklyReviewTrendChart trend={weeklyReviewOverview?.trend ?? []} />
+        </Suspense>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
-        <WeeklyReviewHabitChart habitMetrics={review.habitMetrics} />
+        <Suspense fallback={<ChartSectionFallback />}>
+          <WeeklyReviewHabitChart habitMetrics={review.habitMetrics} />
+        </Suspense>
         <WeeklyReviewMostMissedCard habits={review.mostMissedHabits} />
       </div>
     </div>
+  );
+}
+
+function ChartSectionFallback() {
+  return (
+    <Card className="border-border/60 bg-card/95">
+      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+        <Spinner className="size-4 text-primary/70" />
+        Loading chart...
+      </CardContent>
+    </Card>
   );
 }
 
@@ -138,16 +205,15 @@ export function HistoryPage({
   weeklyReviewOverview,
   weeklyReviewPhase,
 }: HistoryPageProps) {
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(
-    history[0]?.date ?? null
-  );
-  const [visibleMonth, setVisibleMonth] = useState<Date | undefined>(
-    history[0] ? parseDateKey(history[0].date) : undefined
+  const [viewState, setViewState] = useState<HistoryViewState>(() =>
+    createHistoryViewState(history)
   );
   const stats = getHistoryStats(history);
   const historyByDate = useMemo(() => getHistoryDayLookup(history), [history]);
   const selectedDay =
-    (selectedDateKey ? historyByDate.get(selectedDateKey) : null) ??
+    (viewState.selectedDateKey
+      ? historyByDate.get(viewState.selectedDateKey)
+      : null) ??
     history[0] ??
     null;
   const calendarWeeks = buildContributionWeeks(history).map((week) => ({
@@ -167,22 +233,28 @@ export function HistoryPage({
     const fallbackDate = history[0]?.date ?? null;
 
     if (!fallbackDate) {
-      setSelectedDateKey(null);
-      setVisibleMonth(undefined);
+      setViewState({
+        selectedDateKey: null,
+        visibleMonth: undefined,
+      });
       return;
     }
 
-    setSelectedDateKey((current) =>
-      current && history.some((day) => day.date === current)
-        ? current
-        : fallbackDate
-    );
-    setVisibleMonth((current) => current ?? parseDateKey(fallbackDate));
+    setViewState((current) => ({
+      selectedDateKey:
+        current.selectedDateKey &&
+        history.some((day) => day.date === current.selectedDateKey)
+          ? current.selectedDateKey
+          : fallbackDate,
+      visibleMonth: current.visibleMonth ?? parseDateKey(fallbackDate),
+    }));
   }, [history]);
 
   const handleSelectDate = useCallback((dateKey: string) => {
-    setSelectedDateKey(dateKey);
-    setVisibleMonth(parseDateKey(dateKey));
+    setViewState({
+      selectedDateKey: dateKey,
+      visibleMonth: parseDateKey(dateKey),
+    });
   }, []);
 
   const historyCalendarContextValue: HistoryCalendarContextValue = useMemo(
@@ -272,10 +344,20 @@ export function HistoryPage({
                 <HistoryCalendarCard
                   historyByDate={historyByDate}
                   historyCalendarContextValue={historyCalendarContextValue}
-                  onSelectDateKey={setSelectedDateKey}
+                  onSelectDateKey={(dateKey) => {
+                    setViewState((current) => ({
+                      ...current,
+                      selectedDateKey: dateKey,
+                    }));
+                  }}
                   selectedDay={selectedDay}
-                  setVisibleMonth={setVisibleMonth}
-                  visibleMonth={visibleMonth}
+                  setVisibleMonth={(visibleMonth) => {
+                    setViewState((current) => ({
+                      ...current,
+                      visibleMonth,
+                    }));
+                  }}
+                  visibleMonth={viewState.visibleMonth}
                 />
                 <HistoryDayPanel
                   selectedDay={selectedDay}

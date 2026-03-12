@@ -1,3 +1,9 @@
+/**
+ * Settings tab page.
+ *
+ * It groups app preferences, reminder controls, appearance options, and habit
+ * management into one place while surfacing the current save state.
+ */
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Bell, ListTodo, Palette } from "lucide-react";
 

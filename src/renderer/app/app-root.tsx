@@ -1,3 +1,10 @@
+/**
+ * Top-level React application composition.
+ *
+ * This file decides which major screen to show, lazy-loads heavier tabs, and
+ * turns controller state into the app shell, onboarding takeover, and loading
+ * or error states.
+ */
 import { lazy, Suspense } from "react";
 
 import { useAppController } from "@/renderer/app/controller/use-app-controller";

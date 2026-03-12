@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
 import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
@@ -31,48 +31,50 @@ export function HistoryHabitColumn({
   initialX,
 }: HistoryHabitColumnProps) {
   return (
-    <Card className="border-border/60 bg-card/85">
-      <CardContent className="p-4">
-        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-          <Icon className={iconClassName} />
-          {title}
-        </div>
-        <ItemGroup className="gap-2">
-          {habits.length > 0 ? (
-            habits.map((habit) => (
-              <motion.div
-                key={habit.id}
-                animate={{ opacity: 1, x: 0 }}
-                initial={{ opacity: 0, x: initialX }}
-                transition={microTransition}
-              >
-                <Item
-                  className="rounded-xl border-border/50 bg-background/60"
-                  variant="outline"
+    <LazyMotion features={domAnimation}>
+      <Card className="border-border/60 bg-card/85">
+        <CardContent className="p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Icon className={iconClassName} />
+            {title}
+          </div>
+          <ItemGroup className="gap-2">
+            {habits.length > 0 ? (
+              habits.map((habit) => (
+                <m.div
+                  key={habit.id}
+                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, x: initialX }}
+                  transition={microTransition}
                 >
-                  <ItemContent>
-                    <span className="text-sm text-foreground">
-                      {habit.name}
-                    </span>
-                  </ItemContent>
-                  <ItemActions>
-                    <Badge
-                      className={
-                        HABIT_CATEGORY_UI[habit.category].badgeClassName
-                      }
-                      variant="outline"
-                    >
-                      {habit.category}
-                    </Badge>
-                  </ItemActions>
-                </Item>
-              </motion.div>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">{emptyLabel}</p>
-          )}
-        </ItemGroup>
-      </CardContent>
-    </Card>
+                  <Item
+                    className="rounded-xl border-border/50 bg-background/60"
+                    variant="outline"
+                  >
+                    <ItemContent>
+                      <span className="text-sm text-foreground">
+                        {habit.name}
+                      </span>
+                    </ItemContent>
+                    <ItemActions>
+                      <Badge
+                        className={
+                          HABIT_CATEGORY_UI[habit.category].badgeClassName
+                        }
+                        variant="outline"
+                      >
+                        {habit.category}
+                      </Badge>
+                    </ItemActions>
+                  </Item>
+                </m.div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+            )}
+          </ItemGroup>
+        </CardContent>
+      </Card>
+    </LazyMotion>
   );
 }

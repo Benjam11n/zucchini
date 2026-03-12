@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Dumbbell, Utensils, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
@@ -69,71 +69,73 @@ function HabitChecklistComponent({
   }, [habits]);
 
   return (
-    <HabitListCard
-      title={title}
-      icon={Icon as LucideIcon}
-      progressLabel={
-        totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined
-      }
-      progressValue={
-        totalHabits > 0
-          ? Math.round((completedCount / totalHabits) * 100)
-          : undefined
-      }
-    >
-      {totalHabits === 0 ? (
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-dashed border-border py-10 text-center"
-          initial={{ opacity: 0, y: 12 }}
-          transition={{ duration: 0.2 }}
-        >
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-        </motion.div>
-      ) : null}
-
-      {habitsByCategory.map((category) => {
-        const ui = HABIT_CATEGORY_UI[category.value];
-        const CategoryIcon = CATEGORY_ICONS[category.value];
-
-        return (
-          <motion.div
-            key={category.value}
-            className="grid gap-1"
-            layout
-            variants={staggerItemVariants}
+    <LazyMotion features={domAnimation}>
+      <HabitListCard
+        title={title}
+        icon={Icon as LucideIcon}
+        progressLabel={
+          totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined
+        }
+        progressValue={
+          totalHabits > 0
+            ? Math.round((completedCount / totalHabits) * 100)
+            : undefined
+        }
+      >
+        {totalHabits === 0 ? (
+          <m.div
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-dashed border-border py-10 text-center"
+            initial={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2 }}
           >
-            {/* Category header */}
-            <div className="flex items-center gap-2 px-0.5 pb-1">
-              <CategoryIcon
-                className="size-3 shrink-0 opacity-60"
-                style={{ color: ui.ringColor }}
-              />
-              <span
-                className="text-[0.68rem] tracking-[0.14em] uppercase"
-                style={{ color: ui.ringColor }}
-              >
-                {category.label}
-              </span>
-              <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
-                {category.completedCount}/{category.habits.length}
-              </span>
-            </div>
+            <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          </m.div>
+        ) : null}
 
-            {/* Habit items */}
-            <div className="grid gap-px">
-              {category.habits.map((habit) => (
-                <HabitListItem
-                  key={habit.id}
-                  habit={habit}
-                  onToggle={onToggleHabit}
+        {habitsByCategory.map((category) => {
+          const ui = HABIT_CATEGORY_UI[category.value];
+          const CategoryIcon = CATEGORY_ICONS[category.value];
+
+          return (
+            <m.div
+              key={category.value}
+              className="grid gap-1"
+              layout
+              variants={staggerItemVariants}
+            >
+              {/* Category header */}
+              <div className="flex items-center gap-2 px-0.5 pb-1">
+                <CategoryIcon
+                  className="size-3 shrink-0 opacity-60"
+                  style={{ color: ui.ringColor }}
                 />
-              ))}
-            </div>
-          </motion.div>
-        );
-      })}
-    </HabitListCard>
+                <span
+                  className="text-[0.68rem] tracking-[0.14em] uppercase"
+                  style={{ color: ui.ringColor }}
+                >
+                  {category.label}
+                </span>
+                <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
+                  {category.completedCount}/{category.habits.length}
+                </span>
+              </div>
+
+              {/* Habit items */}
+              <div className="grid gap-px">
+                {category.habits.map((habit) => (
+                  <HabitListItem
+                    key={habit.id}
+                    habit={habit}
+                    onToggle={onToggleHabit}
+                  />
+                ))}
+              </div>
+            </m.div>
+          );
+        })}
+      </HabitListCard>
+    </LazyMotion>
   );
 }
 

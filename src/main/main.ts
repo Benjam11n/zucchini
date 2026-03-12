@@ -1,3 +1,11 @@
+/**
+ * Electron main-process entry point.
+ *
+ * This file wires together the desktop shell: windows, tray behavior, updater,
+ * reminders, IPC, and startup/shutdown lifecycle. Beginners can treat it as
+ * the place where the native app is bootstrapped and connected to the shared
+ * habit services.
+ */
 import { existsSync } from "node:fs";
 import path from "node:path";
 

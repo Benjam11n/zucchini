@@ -1,3 +1,10 @@
+/**
+ * Pure streak rules for settled and in-progress days.
+ *
+ * This module answers questions like "what happens to the streak when a day is
+ * completed, missed, or saved by a freeze?" without depending on UI or
+ * persistence code.
+ */
 import { awardedFreezeForStreak } from "./freeze";
 
 export interface RollingStreakState {

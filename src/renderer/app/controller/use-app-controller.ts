@@ -1,3 +1,9 @@
+/**
+ * Main renderer orchestration hook.
+ *
+ * This hook gathers state from the feature stores, kicks off boot-time side
+ * effects, and returns the single controller object that powers the app root.
+ */
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 

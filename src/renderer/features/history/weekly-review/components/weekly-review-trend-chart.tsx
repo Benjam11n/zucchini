@@ -1,74 +1,33 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { Suspense, lazy } from "react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/ui/card";
-import {
-  ChartContainer,
-  ChartResponsiveContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/renderer/shared/ui/chart";
-import type { ChartConfig } from "@/renderer/shared/ui/chart";
+import { Card, CardContent } from "@/renderer/shared/ui/card";
+import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { WeeklyReviewTrendPoint } from "@/shared/domain/weekly-review";
-
-const chartConfig = {
-  completionRate: {
-    color: "var(--color-chart-2)",
-    label: "Weekly completion",
-  },
-} satisfies ChartConfig;
 
 interface WeeklyReviewTrendChartProps {
   trend: WeeklyReviewTrendPoint[];
 }
 
+const WeeklyReviewTrendChartImpl = lazy(async () =>
+  import("./weekly-review-trend-chart-impl").then((module) => ({
+    default: module.WeeklyReviewTrendChartImpl,
+  }))
+);
+
 export function WeeklyReviewTrendChart({ trend }: WeeklyReviewTrendChartProps) {
   return (
+    <Suspense fallback={<WeeklyReviewChartFallback />}>
+      <WeeklyReviewTrendChartImpl trend={trend} />
+    </Suspense>
+  );
+}
+
+function WeeklyReviewChartFallback() {
+  return (
     <Card className="border-border/60 bg-card/90">
-      <CardHeader>
-        <CardTitle>Trend line</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <ChartResponsiveContainer width="100%" height="100%">
-            <LineChart data={trend}>
-              <CartesianGrid
-                stroke="var(--border)"
-                strokeDasharray="3 3"
-                vertical={false}
-              />
-              <XAxis
-                axisLine={false}
-                dataKey="label"
-                tick={{ fontSize: 11 }}
-                tickLine={false}
-              />
-              <YAxis
-                axisLine={false}
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-                tickLine={false}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent formatter={(value) => `${value}%`} />
-                }
-              />
-              <Line
-                dataKey="completionRate"
-                dot={{ fill: "var(--color-completionRate)", r: 4 }}
-                name="Weekly completion"
-                stroke="var(--color-completionRate)"
-                strokeWidth={3}
-                type="monotone"
-              />
-            </LineChart>
-          </ChartResponsiveContainer>
-        </ChartContainer>
+      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
+        <Spinner className="size-4 text-primary/70" />
+        Loading chart...
       </CardContent>
     </Card>
   );

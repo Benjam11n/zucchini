@@ -1,3 +1,9 @@
+/**
+ * Application settings domain and validation helpers.
+ *
+ * This file describes the persisted settings object and provides pure checks
+ * for reminder times, snooze values, and time zone strings.
+ */
 export type ThemeMode = "system" | "light" | "dark";
 
 const DEFAULT_REMINDER_TIME = "20:30";

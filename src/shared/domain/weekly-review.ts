@@ -1,3 +1,9 @@
+/**
+ * Weekly review read-models.
+ *
+ * These types describe the chart-ready data returned to the renderer for the
+ * weekly review experience: daily cadence, trend lines, and per-habit metrics.
+ */
 import type { HabitCategory, HabitFrequency } from "./habit";
 
 export type WeeklyReviewDayStatus = "complete" | "empty" | "freeze" | "missed";

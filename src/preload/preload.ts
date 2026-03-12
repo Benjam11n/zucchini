@@ -1,3 +1,10 @@
+/**
+ * Electron preload bridge.
+ *
+ * The preload script is the safe boundary between the renderer and Electron.
+ * It exposes a narrow, typed API for habits and updater actions without
+ * giving React direct access to privileged Electron objects.
+ */
 import { contextBridge, ipcRenderer } from "electron";
 import type { IpcRendererEvent } from "electron";
 

@@ -1,7 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { Download, Rocket, RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { useEffect, useReducer } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
 import { Button } from "@/renderer/shared/ui/button";
@@ -73,10 +73,57 @@ function getButtonIcon({
   return <Rocket className="size-4" />;
 }
 
+interface UpdateButtonViewState {
+  actionError: string | null;
+  isPending: boolean;
+  state: AppUpdateState | null;
+}
+
+type UpdateButtonAction =
+  | { actionError: string; type: "actionFailed" }
+  | { state: AppUpdateState; type: "loadSucceeded" }
+  | { type: "startAction" };
+
+const INITIAL_UPDATE_BUTTON_STATE: UpdateButtonViewState = {
+  actionError: null,
+  isPending: true,
+  state: null,
+};
+
+function updateButtonViewReducer(
+  state: UpdateButtonViewState,
+  action: UpdateButtonAction
+): UpdateButtonViewState {
+  switch (action.type) {
+    case "actionFailed": {
+      return {
+        ...state,
+        actionError: action.actionError,
+        isPending: false,
+      };
+    }
+    case "loadSucceeded": {
+      return {
+        actionError: null,
+        isPending: false,
+        state: action.state,
+      };
+    }
+    case "startAction": {
+      return {
+        ...state,
+        actionError: null,
+        isPending: true,
+      };
+    }
+  }
+}
+
 export function UpdateButton() {
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(true);
-  const [state, setState] = useState<AppUpdateState | null>(null);
+  const [viewState, dispatch] = useReducer(
+    updateButtonViewReducer,
+    INITIAL_UPDATE_BUTTON_STATE
+  );
 
   useEffect(() => {
     let isSubscribed = true;
@@ -85,19 +132,17 @@ export function UpdateButton() {
       try {
         const nextState = await window.updater.getState();
         if (isSubscribed) {
-          setState(nextState);
+          dispatch({ state: nextState, type: "loadSucceeded" });
         }
       } catch (error) {
         if (isSubscribed) {
-          setActionError(
-            error instanceof Error
-              ? error.message
-              : "Zucchini could not load update status."
-          );
-        }
-      } finally {
-        if (isSubscribed) {
-          setIsPending(false);
+          dispatch({
+            actionError:
+              error instanceof Error
+                ? error.message
+                : "Zucchini could not load update status.",
+            type: "actionFailed",
+          });
         }
       }
     };
@@ -105,9 +150,7 @@ export function UpdateButton() {
     void loadState();
 
     const unsubscribe = window.updater.onStateChange((nextState) => {
-      setActionError(null);
-      setState(nextState);
-      setIsPending(false);
+      dispatch({ state: nextState, type: "loadSucceeded" });
     });
 
     return () => {
@@ -117,74 +160,76 @@ export function UpdateButton() {
   }, []);
 
   async function handleClick(): Promise<void> {
-    if (state === null || state.status === "downloading") {
+    if (viewState.state === null || viewState.state.status === "downloading") {
       return;
     }
 
-    setActionError(null);
-    setIsPending(true);
+    dispatch({ type: "startAction" });
 
     try {
-      await (state.status === "downloaded"
+      await (viewState.state.status === "downloaded"
         ? window.updater.installUpdate()
         : window.updater.downloadUpdate());
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "Zucchini could not finish the update action."
-      );
-      setIsPending(false);
+      dispatch({
+        actionError:
+          error instanceof Error
+            ? error.message
+            : "Zucchini could not finish the update action.",
+        type: "actionFailed",
+      });
     }
   }
 
-  if (state === null || !shouldRenderUpdateButton(state)) {
+  if (viewState.state === null || !shouldRenderUpdateButton(viewState.state)) {
     return null;
   }
 
-  const { actionLabel, detailLabel } = getButtonCopy(state);
-  const isDownloading = state.status === "downloading";
-  const isRestartReady = state.status === "downloaded";
+  const { actionLabel, detailLabel } = getButtonCopy(viewState.state);
+  const isDownloading = viewState.state.status === "downloading";
+  const isRestartReady = viewState.state.status === "downloaded";
 
   return (
-    <AnimatePresence>
-      <motion.div
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
-        exit={{ opacity: 0, x: -16, y: 16 }}
-        initial={{ opacity: 0, x: -16, y: 16 }}
-      >
-        <Button
-          className={cn(
-            "pointer-events-auto h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 px-4 py-3 text-left shadow-lg backdrop-blur-sm",
-            isRestartReady
-              ? "bg-secondary text-secondary-foreground"
-              : "bg-card text-card-foreground hover:bg-card/90"
-          )}
-          disabled={isPending || isDownloading}
-          onClick={() => {
-            void handleClick();
-          }}
-          variant={isRestartReady ? "secondary" : "outline"}
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        <m.div
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
+          exit={{ opacity: 0, x: -16, y: 16 }}
+          initial={{ opacity: 0, x: -16, y: 16 }}
         >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-            {getButtonIcon({
-              isDownloading,
-              isPending,
-              status: state.status,
-            })}
-          </span>
+          <Button
+            className={cn(
+              "pointer-events-auto h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 px-4 py-3 text-left shadow-lg backdrop-blur-sm",
+              isRestartReady
+                ? "bg-secondary text-secondary-foreground"
+                : "bg-card text-card-foreground hover:bg-card/90"
+            )}
+            disabled={viewState.isPending || isDownloading}
+            onClick={() => {
+              void handleClick();
+            }}
+            variant={isRestartReady ? "secondary" : "outline"}
+          >
+            <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+              {getButtonIcon({
+                isDownloading,
+                isPending: viewState.isPending,
+                status: viewState.state.status,
+              })}
+            </span>
 
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-semibold tracking-tight">
-              {actionLabel}
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm font-semibold tracking-tight">
+                {actionLabel}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                {viewState.actionError ?? detailLabel}
+              </span>
             </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {actionError ?? detailLabel}
-            </span>
-          </span>
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+          </Button>
+        </m.div>
+      </AnimatePresence>
+    </LazyMotion>
   );
 }

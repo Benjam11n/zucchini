@@ -1,3 +1,9 @@
+/**
+ * Focus tab page.
+ *
+ * This page combines the focus timer controls with the saved session history
+ * so users can run cycles and review their recent deep-work activity.
+ */
 import { memo } from "react";
 
 import type { FocusPageProps } from "@/renderer/features/focus/focus.types";

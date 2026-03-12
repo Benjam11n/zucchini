@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
@@ -70,70 +70,72 @@ export function LongerHabitChecklist({
   }
 
   return (
-    <HabitListCard
-      title="Longer Cycles"
-      icon={CalendarRange}
-      description="Weekly and monthly habits stay out of the rings and daily streak."
-      progressLabel={
-        totalHabitsCount > 0
-          ? `${totalCompletedCount}/${totalHabitsCount}`
-          : undefined
-      }
-      progressValue={
-        totalHabitsCount > 0
-          ? Math.round((totalCompletedCount / totalHabitsCount) * 100)
-          : undefined
-      }
-    >
-      {sections.map((section) => {
-        const completedCount = section.habits.filter(
-          (habit) => habit.completed
-        ).length;
+    <LazyMotion features={domAnimation}>
+      <HabitListCard
+        title="Longer Cycles"
+        icon={CalendarRange}
+        description="Weekly and monthly habits stay out of the rings and daily streak."
+        progressLabel={
+          totalHabitsCount > 0
+            ? `${totalCompletedCount}/${totalHabitsCount}`
+            : undefined
+        }
+        progressValue={
+          totalHabitsCount > 0
+            ? Math.round((totalCompletedCount / totalHabitsCount) * 100)
+            : undefined
+        }
+      >
+        {sections.map((section) => {
+          const completedCount = section.habits.filter(
+            (habit) => habit.completed
+          ).length;
 
-        return (
-          <motion.div
-            key={section.value}
-            className="grid gap-3"
-            variants={staggerItemVariants}
-          >
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div className="grid gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-border/70 bg-card/70 p-1 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.7)]">
-                    <HabitActivityRingGlyph
-                      categoryProgress={section.categoryProgress}
-                      size={24}
-                    />
-                  </span>
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {section.title}
-                  </h3>
+          return (
+            <m.div
+              key={section.value}
+              className="grid gap-3"
+              variants={staggerItemVariants}
+            >
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div className="grid gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full border border-border/70 bg-card/70 p-1 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.7)]">
+                      <HabitActivityRingGlyph
+                        categoryProgress={section.categoryProgress}
+                        size={24}
+                      />
+                    </span>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {section.title}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {section.description}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {section.description}
-                </p>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="tabular-nums">
+                    {completedCount}/{section.habits.length}
+                  </span>
+                  <span>{section.resetLabel}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="tabular-nums">
-                  {completedCount}/{section.habits.length}
-                </span>
-                <span>{section.resetLabel}</span>
-              </div>
-            </div>
 
-            <div className="grid gap-px">
-              {section.habits.map((habit) => (
-                <HabitListItem
-                  key={habit.id}
-                  habit={habit}
-                  onToggle={onToggleHabit}
-                  showCategory={true}
-                />
-              ))}
-            </div>
-          </motion.div>
-        );
-      })}
-    </HabitListCard>
+              <div className="grid gap-px">
+                {section.habits.map((habit) => (
+                  <HabitListItem
+                    key={habit.id}
+                    habit={habit}
+                    onToggle={onToggleHabit}
+                    showCategory={true}
+                  />
+                ))}
+              </div>
+            </m.div>
+          );
+        })}
+      </HabitListCard>
+    </LazyMotion>
   );
 }

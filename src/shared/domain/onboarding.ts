@@ -1,3 +1,9 @@
+/**
+ * Shared onboarding definitions and starter-pack content.
+ *
+ * The onboarding flow uses this file to know which starter packs exist, what
+ * habits they create, and what data is required to mark onboarding complete.
+ */
 import { normalizeHabitCategory, normalizeHabitFrequency } from "./habit";
 import type { HabitCategory, HabitFrequency } from "./habit";
 import type { AppSettings } from "./settings";

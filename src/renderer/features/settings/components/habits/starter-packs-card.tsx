@@ -1,5 +1,5 @@
 import { Wand2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useReducer } from "react";
 
 import { StarterPackEditor } from "@/renderer/features/starter-packs/components/starter-pack-editor";
 import { StarterPackPicker } from "@/renderer/features/starter-packs/components/starter-pack-picker";
@@ -26,36 +26,100 @@ interface StarterPacksCardProps {
   onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
 }
 
+interface StarterPacksCardState {
+  drafts: EditableStarterPackHabitDraft[];
+  errorMessage: string | null;
+  isApplying: boolean;
+  selectedStarterPack: StarterPackId;
+  statusMessage: string | null;
+}
+
+type StarterPacksCardAction =
+  | { type: "applyFailed" }
+  | { type: "applyStarted" }
+  | { type: "applySucceeded" }
+  | { type: "resetDrafts" }
+  | { selectedStarterPack: StarterPackId; type: "selectStarterPack" }
+  | { drafts: EditableStarterPackHabitDraft[]; type: "setDrafts" };
+
+const INITIAL_STARTER_PACK_ID: StarterPackId = "morning-routine";
+
+function createStarterPacksCardState(
+  selectedStarterPack: StarterPackId = INITIAL_STARTER_PACK_ID
+): StarterPacksCardState {
+  return {
+    drafts: createStarterPackDrafts(selectedStarterPack),
+    errorMessage: null,
+    isApplying: false,
+    selectedStarterPack,
+    statusMessage: null,
+  };
+}
+
+function starterPacksCardReducer(
+  state: StarterPacksCardState,
+  action: StarterPacksCardAction
+): StarterPacksCardState {
+  switch (action.type) {
+    case "applyFailed": {
+      return {
+        ...state,
+        errorMessage: "Could not apply that starter pack right now.",
+        isApplying: false,
+        statusMessage: null,
+      };
+    }
+    case "applyStarted": {
+      return {
+        ...state,
+        errorMessage: null,
+        isApplying: true,
+        statusMessage: null,
+      };
+    }
+    case "applySucceeded": {
+      return {
+        ...state,
+        errorMessage: null,
+        isApplying: false,
+        statusMessage: "Starter pack added to your habits.",
+      };
+    }
+    case "resetDrafts": {
+      return {
+        ...state,
+        drafts: createStarterPackDrafts(state.selectedStarterPack),
+      };
+    }
+    case "selectStarterPack": {
+      return createStarterPacksCardState(action.selectedStarterPack);
+    }
+    case "setDrafts": {
+      return {
+        ...state,
+        drafts: action.drafts,
+      };
+    }
+  }
+}
+
 export function StarterPacksCard({
   onApplyStarterPack,
 }: StarterPacksCardProps) {
-  const [selectedStarterPack, setSelectedStarterPack] =
-    useState<StarterPackId>("morning-routine");
-  const [drafts, setDrafts] = useState<EditableStarterPackHabitDraft[]>(() =>
-    createStarterPackDrafts("morning-routine")
+  const [state, dispatch] = useReducer(
+    starterPacksCardReducer,
+    INITIAL_STARTER_PACK_ID,
+    createStarterPacksCardState
   );
-  const [isApplying, setIsApplying] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    setDrafts(createStarterPackDrafts(selectedStarterPack));
-    setStatusMessage(null);
-    setErrorMessage(null);
-  }, [selectedStarterPack]);
 
   async function handleApply(): Promise<void> {
-    setIsApplying(true);
-    setErrorMessage(null);
-    setStatusMessage(null);
+    dispatch({ type: "applyStarted" });
 
     try {
-      await onApplyStarterPack(toStarterPackHabits(drafts));
-      setStatusMessage("Starter pack added to your habits.");
+      await onApplyStarterPack(toStarterPackHabits(state.drafts));
+      dispatch({ type: "applySucceeded" });
     } catch {
-      setErrorMessage("Could not apply that starter pack right now.");
-    } finally {
-      setIsApplying(false);
+      dispatch({ type: "applyFailed" });
     }
   }
 
@@ -72,34 +136,42 @@ export function StarterPacksCard({
         <StarterPackPicker
           onSelectChoice={(choice) => {
             if (choice !== "blank") {
-              setSelectedStarterPack(choice);
+              dispatch({
+                selectedStarterPack: choice,
+                type: "selectStarterPack",
+              });
             }
           }}
-          selectedChoice={selectedStarterPack}
+          selectedChoice={state.selectedStarterPack}
         />
-        <StarterPackEditor drafts={drafts} onChange={setDrafts} />
+        <StarterPackEditor
+          drafts={state.drafts}
+          onChange={(drafts) => {
+            dispatch({ drafts, type: "setDrafts" });
+          }}
+        />
 
-        {statusMessage ? (
+        {state.statusMessage ? (
           <p className="text-sm text-emerald-700 dark:text-emerald-300">
-            {statusMessage}
+            {state.statusMessage}
           </p>
         ) : null}
-        {errorMessage ? (
-          <p className="text-sm text-destructive">{errorMessage}</p>
+        {state.errorMessage ? (
+          <p className="text-sm text-destructive">{state.errorMessage}</p>
         ) : null}
 
         <div className="flex flex-wrap justify-end gap-3">
           <Button
             type="button"
             variant="ghost"
-            onClick={() =>
-              setDrafts(createStarterPackDrafts(selectedStarterPack))
-            }
+            onClick={() => {
+              dispatch({ type: "resetDrafts" });
+            }}
           >
             Reset pack
           </Button>
           <Button
-            disabled={isApplying || !hasStarterPackHabits(drafts)}
+            disabled={state.isApplying || !hasStarterPackHabits(state.drafts)}
             type="button"
             onClick={() => {
               void handleApply();

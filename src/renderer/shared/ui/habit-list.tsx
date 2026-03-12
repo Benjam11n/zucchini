@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { memo } from "react";
@@ -40,41 +40,43 @@ export function HabitListCard({
   children,
 }: HabitListCardProps) {
   return (
-    <Card>
-      <CardHeader className="gap-2 pb-4">
-        <div className="flex items-start justify-between">
-          <div className="grid gap-1">
-            <div className="flex items-center gap-2">
-              {Icon && <Icon className="size-5 text-primary" />}
-              <CardTitle className="text-base font-medium">{title}</CardTitle>
+    <LazyMotion features={domAnimation}>
+      <Card>
+        <CardHeader className="gap-2 pb-4">
+          <div className="flex items-start justify-between">
+            <div className="grid gap-1">
+              <div className="flex items-center gap-2">
+                {Icon && <Icon className="size-5 text-primary" />}
+                <CardTitle className="text-base font-medium">{title}</CardTitle>
+              </div>
+              {description && (
+                <CardDescription className="text-sm">
+                  {description}
+                </CardDescription>
+              )}
             </div>
-            {description && (
-              <CardDescription className="text-sm">
-                {description}
-              </CardDescription>
+            {progressLabel && (
+              <AnimatePresence initial={false} mode="popLayout">
+                <m.span
+                  key={String(progressLabel)}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-muted-foreground tabular-nums shrink-0 mt-1"
+                  exit={{ opacity: 0, y: -8 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  transition={microTransition}
+                >
+                  {progressLabel}
+                </m.span>
+              </AnimatePresence>
             )}
           </div>
-          {progressLabel && (
-            <AnimatePresence initial={false} mode="popLayout">
-              <motion.span
-                key={String(progressLabel)}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-xs text-muted-foreground tabular-nums shrink-0 mt-1"
-                exit={{ opacity: 0, y: -8 }}
-                initial={{ opacity: 0, y: 8 }}
-                transition={microTransition}
-              >
-                {progressLabel}
-              </motion.span>
-            </AnimatePresence>
+          {progressValue !== undefined && (
+            <Progress className="h-1 mt-1" value={progressValue} />
           )}
-        </div>
-        {progressValue !== undefined && (
-          <Progress className="h-1 mt-1" value={progressValue} />
-        )}
-      </CardHeader>
-      <CardContent className="grid gap-6 pt-1">{children}</CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="grid gap-6 pt-1">{children}</CardContent>
+      </Card>
+    </LazyMotion>
   );
 }
 
@@ -98,7 +100,7 @@ function HabitListItemComponent({
   const ui = HABIT_CATEGORY_UI[habit.category];
 
   return (
-    <motion.label
+    <m.label
       animate={HABIT_ITEM_ANIMATE}
       htmlFor={`habit-${habit.id}`}
       initial={HABIT_ITEM_INITIAL}
@@ -144,7 +146,7 @@ function HabitListItemComponent({
       </div>
       <AnimatePresence initial={false}>
         {habit.completed ? (
-          <motion.span
+          <m.span
             animate={HABIT_ITEM_COMPLETION_ANIMATE}
             className="flex shrink-0"
             exit={HABIT_ITEM_COMPLETION_EXIT}
@@ -155,10 +157,10 @@ function HabitListItemComponent({
               className="size-3.5 opacity-60"
               style={{ color: ui.ringColor }}
             />
-          </motion.span>
+          </m.span>
         ) : null}
       </AnimatePresence>
-    </motion.label>
+    </m.label>
   );
 }
 

@@ -1,3 +1,10 @@
+/**
+ * Core habit domain types and helpers.
+ *
+ * This file defines what a habit looks like in Zucchini and includes small,
+ * pure utilities for normalizing categories/frequencies and calculating ring
+ * progress.
+ */
 export const HABIT_CATEGORY_DEFINITIONS = [
   {
     label: "Nutrition",

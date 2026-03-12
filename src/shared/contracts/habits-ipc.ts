@@ -1,3 +1,9 @@
+/**
+ * Shared IPC contract for habit-related renderer <-> main communication.
+ *
+ * This file defines the channel names, request/response error shape, and the
+ * high-level API the renderer expects the preload bridge to expose.
+ */
 import type {
   CreateFocusSessionInput,
   FocusSession,

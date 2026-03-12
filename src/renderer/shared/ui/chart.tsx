@@ -1,6 +1,5 @@
+import { Suspense, lazy } from "react";
 import type * as React from "react";
-import { Tooltip, ResponsiveContainer } from "recharts";
-import type { TooltipProps } from "recharts";
 
 import { cn } from "@/renderer/shared/lib/class-names";
 
@@ -54,6 +53,36 @@ interface ChartTooltipPayloadItem {
   value?: number | string;
 }
 
+interface ChartTooltipContentPrimitiveProps {
+  active?: boolean;
+  label?: string;
+  payload?: ChartTooltipPayloadItem[];
+}
+
+interface ChartTooltipPrimitiveProps {
+  active?: boolean;
+  content?: React.ReactNode;
+  cursor?: Record<string, unknown>;
+}
+
+interface ChartResponsiveContainerProps {
+  children: React.ReactNode;
+  height?: number | `${number}%`;
+  width?: number | `${number}%`;
+}
+
+const RechartsResponsiveContainer = lazy(async () =>
+  import("recharts").then((module) => ({
+    default: module.ResponsiveContainer,
+  }))
+);
+
+const RechartsTooltip = lazy(async () =>
+  import("recharts").then((module) => ({
+    default: module.Tooltip,
+  }))
+);
+
 function ChartTooltipContent({
   active,
   className,
@@ -61,11 +90,7 @@ function ChartTooltipContent({
   indicator = "dot",
   label,
   payload,
-}: TooltipProps<number, string> &
-  ChartTooltipContentProps & {
-    label?: string;
-    payload?: ChartTooltipPayloadItem[];
-  }) {
+}: ChartTooltipContentPrimitiveProps & ChartTooltipContentProps) {
   if (!active || !payload?.length) {
     return null;
   }
@@ -114,6 +139,23 @@ function ChartTooltipContent({
   );
 }
 
-export const ChartTooltip = Tooltip;
-export const ChartResponsiveContainer = ResponsiveContainer;
+function ChartResponsiveContainer(props: ChartResponsiveContainerProps) {
+  return (
+    <Suspense fallback={<div className="h-full w-full" />}>
+      <RechartsResponsiveContainer {...props} />
+    </Suspense>
+  );
+}
+
+function ChartTooltip(props: ChartTooltipPrimitiveProps) {
+  const TooltipComponent = RechartsTooltip as React.ComponentType<any>;
+
+  return (
+    <Suspense fallback={null}>
+      <TooltipComponent {...props} />
+    </Suspense>
+  );
+}
+
 export { ChartContainer, ChartTooltipContent };
+export { ChartResponsiveContainer, ChartTooltip };

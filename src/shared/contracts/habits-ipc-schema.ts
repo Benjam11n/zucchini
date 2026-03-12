@@ -1,3 +1,9 @@
+/**
+ * Runtime validation schemas for IPC payloads.
+ *
+ * The main process uses these Zod schemas to reject malformed renderer input
+ * before any database or business-logic work runs.
+ */
 import { z } from "zod";
 
 import {
