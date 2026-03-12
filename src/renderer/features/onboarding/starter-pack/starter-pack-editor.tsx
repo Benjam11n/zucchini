@@ -13,15 +13,15 @@ import {
 import {
   HabitCategorySelector,
   HabitFrequencySelector,
-} from "../settings/selectors";
+} from "../../settings/habit-settings/habit-category-selector";
 import type {
   EditableStarterPackHabitDraft,
   StarterPackEditorProps,
-} from "./types";
+} from "../types";
 import {
   removeStarterPackHabitDraft,
   updateStarterPackHabitDraft,
-} from "./utils";
+} from "../utils";
 
 function StarterPackHabitRow({
   draft,

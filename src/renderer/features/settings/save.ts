@@ -3,6 +3,7 @@ import type { ZodIssue } from "zod";
 import type { SettingsFieldErrors } from "@/renderer/features/app/types";
 import type { AppSettings } from "@/shared/domain/settings";
 
+// Check: why is this file called save.ts? is it utils? can we have a better name?
 export function areAppSettingsEqual(
   left: AppSettings | null,
   right: AppSettings | null

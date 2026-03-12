@@ -6,12 +6,12 @@ import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/store";
 import { useFocusTimer } from "@/renderer/features/focus/use-focus-timer";
 import { useHistoryStore } from "@/renderer/features/history/store";
-import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
+import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review/weekly-review-spotlight";
 import {
   readLastSeenWeeklyReviewStart,
   writeLastSeenWeeklyReviewStart,
-} from "@/renderer/features/history/weekly-review-storage";
-import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review-store";
+} from "@/renderer/features/history/weekly-review/weekly-review-storage";
+import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/weekly-review-store";
 import { useOnboardingStore } from "@/renderer/features/onboarding/store";
 import {
   areAppSettingsEqual,

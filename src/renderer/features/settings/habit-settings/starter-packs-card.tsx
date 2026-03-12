@@ -14,14 +14,14 @@ import type {
   StarterPackId,
 } from "@/shared/domain/onboarding";
 
-import { StarterPackEditor } from "../onboarding/starter-pack-editor";
-import { StarterPackPicker } from "../onboarding/starter-pack-picker";
-import type { EditableStarterPackHabitDraft } from "../onboarding/types";
+import { StarterPackEditor } from "../../onboarding/starter-pack/starter-pack-editor";
+import { StarterPackPicker } from "../../onboarding/starter-pack/starter-pack-picker";
+import type { EditableStarterPackHabitDraft } from "../../onboarding/types";
 import {
   createStarterPackDrafts,
   hasStarterPackHabits,
   toStarterPackHabits,
-} from "../onboarding/utils";
+} from "../../onboarding/utils";
 
 interface StarterPacksCardProps {
   onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;

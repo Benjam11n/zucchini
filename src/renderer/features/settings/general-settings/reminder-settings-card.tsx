@@ -22,7 +22,7 @@ import { Switch } from "@/renderer/shared/ui/switch";
 import { TimeInput } from "@/renderer/shared/ui/time-input";
 import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 
-import type { SettingsPageProps } from "./types";
+import type { SettingsPageProps } from "../types";
 
 export function ReminderSettingsCard({
   fieldErrors,

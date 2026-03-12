@@ -16,7 +16,7 @@ import {
 
 import { HabitRowEditor } from "./habit-row-editor";
 import { NewHabitForm } from "./new-habit-form";
-import type { HabitManagementCardProps } from "./types";
+import type { HabitManagementCardProps } from "../types";
 
 export function HabitManagementCard({
   habits,

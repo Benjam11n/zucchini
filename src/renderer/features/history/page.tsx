@@ -2,7 +2,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { BarChart3, CalendarDays } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { GitHubCalendar } from "@/renderer/features/history/components/github-calendar";
+import { GitHubCalendar } from "@/renderer/shared/components/github-calendar";
 import { HistoryCalendarCard } from "@/renderer/features/history/history-calendar-card";
 import { HistoryDayPanel } from "@/renderer/features/history/history-day-panel";
 import { HISTORY_METRIC_BADGE_CLASSNAMES } from "@/renderer/features/history/history-status";
@@ -16,12 +16,12 @@ import {
   getHistoryDayLookup,
   getHistoryStats,
 } from "@/renderer/features/history/utils";
-import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/history/weekly-review-daily-cadence-chart";
-import { WeeklyReviewHabitChart } from "@/renderer/features/history/weekly-review-habit-chart";
-import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review-hero-card";
-import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review-most-missed-card";
-import { WeeklyReviewStats } from "@/renderer/features/history/weekly-review-stats";
-import { WeeklyReviewTrendChart } from "@/renderer/features/history/weekly-review-trend-chart";
+import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/history/weekly-review/weekly-review-daily-cadence-chart";
+import { WeeklyReviewHabitChart } from "@/renderer/features/history/weekly-review/weekly-review-habit-chart";
+import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review/weekly-review-hero-card";
+import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review/weekly-review-most-missed-card";
+import { WeeklyReviewStats } from "@/renderer/features/history/weekly-review/weekly-review-stats";
+import { WeeklyReviewTrendChart } from "@/renderer/features/history/weekly-review/weekly-review-trend-chart";
 import {
   hoverLift,
   staggerContainerVariants,

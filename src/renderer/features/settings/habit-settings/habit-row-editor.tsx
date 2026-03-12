@@ -8,8 +8,8 @@ import { Label } from "@/renderer/shared/ui/label";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { reorderHabitList } from "./reorder-habits";
-import { HabitCategorySelector, HabitFrequencySelector } from "./selectors";
-import type { HabitManagementCardProps } from "./types";
+import { HabitCategorySelector, HabitFrequencySelector } from "./habit-category-selector";
+import type { HabitManagementCardProps } from "../types";
 
 interface HabitRowEditorProps extends Pick<
   HabitManagementCardProps,

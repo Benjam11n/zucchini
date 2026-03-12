@@ -1,4 +1,4 @@
-import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review-state";
+import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/weekly-review-state";
 import type { HabitApi } from "@/shared/contracts/habits-ipc";
 import type {
   WeeklyReview,

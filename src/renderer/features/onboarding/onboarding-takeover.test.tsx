@@ -6,8 +6,8 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 import type * as OnboardingReminderStepModule from "./onboarding-reminder-step";
 import { OnboardingTakeover } from "./onboarding-takeover";
-import type * as StarterPackEditorModule from "./starter-pack-editor";
-import type * as StarterPackPickerModule from "./starter-pack-picker";
+import type * as StarterPackEditorModule from "./starter-pack/starter-pack-editor";
+import type * as StarterPackPickerModule from "./starter-pack/starter-pack-picker";
 import type {
   OnboardingReminderDraft,
   ReminderFieldErrors,
@@ -16,7 +16,7 @@ import type {
 } from "./types";
 
 vi.mock<typeof StarterPackPickerModule>(
-  import("./starter-pack-picker"),
+  import("./starter-pack/starter-pack-picker"),
   () => ({
     StarterPackPicker: ({
       onSelectChoice,
@@ -36,7 +36,7 @@ vi.mock<typeof StarterPackPickerModule>(
 );
 
 vi.mock<typeof StarterPackEditorModule>(
-  import("./starter-pack-editor"),
+  import("./starter-pack/starter-pack-editor"),
   () => ({
     StarterPackEditor: ({ drafts, onChange }: StarterPackEditorProps) => (
       <div>

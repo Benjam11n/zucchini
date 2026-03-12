@@ -43,7 +43,7 @@ const OnboardingTakeover = lazy(async () => {
 });
 const WeeklyReviewSpotlightDialog = lazy(async () => {
   const module =
-    await import("@/renderer/features/history/weekly-review-spotlight-dialog");
+    await import("@/renderer/features/history/weekly-review/weekly-review-spotlight-dialog");
 
   return { default: module.WeeklyReviewSpotlightDialog };
 });

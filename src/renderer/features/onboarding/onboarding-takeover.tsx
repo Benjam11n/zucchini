@@ -23,8 +23,8 @@ import type { CompleteOnboardingInput } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { OnboardingReminderStep } from "./onboarding-reminder-step";
-import { StarterPackEditor } from "./starter-pack-editor";
-import { StarterPackPicker } from "./starter-pack-picker";
+import { StarterPackEditor } from "./starter-pack/starter-pack-editor";
+import { StarterPackPicker } from "./starter-pack/starter-pack-picker";
 import type {
   EditableStarterPackHabitDraft,
   OnboardingReminderDraft,

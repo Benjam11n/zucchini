@@ -9,8 +9,8 @@ import {
 import { cn } from "@/renderer/shared/lib/utils";
 import { Card, CardContent } from "@/renderer/shared/ui/card";
 
-import type { StarterPackPickerProps } from "./types";
-import { getStarterPackSummaryOptions } from "./utils";
+import type { StarterPackPickerProps } from "../types";
+import { getStarterPackSummaryOptions } from "../utils";
 
 export function StarterPackPicker({
   selectedChoice,

@@ -11,8 +11,8 @@ import {
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 
-import { HabitCategorySelector, HabitFrequencySelector } from "./selectors";
-import type { HabitManagementCardProps } from "./types";
+import { HabitCategorySelector, HabitFrequencySelector } from "./habit-category-selector";
+import type { HabitManagementCardProps } from "../types";
 
 export function NewHabitForm({
   onCreateHabit,

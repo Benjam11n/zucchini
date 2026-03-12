@@ -7,7 +7,7 @@ import { createElement, forwardRef } from "react";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { HabitRowEditor } from "./habit-row-editor";
-import type * as SelectorsModule from "./selectors";
+import type * as SelectorsModule from "./habit-category-selector";
 
 vi.mock<typeof FramerMotion>(
   import("framer-motion"),
@@ -42,7 +42,7 @@ vi.mock<typeof FramerMotion>(
   }
 );
 
-vi.mock<typeof SelectorsModule>(import("./selectors"), () => ({
+vi.mock<typeof SelectorsModule>(import("./habit-category-selector"), () => ({
   HabitCategorySelector: ({
     onChange,
   }: {

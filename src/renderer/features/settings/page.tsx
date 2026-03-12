@@ -1,10 +1,9 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Bell, ListTodo, Palette } from "lucide-react";
 
-import { AppearanceSettingsCard } from "@/renderer/features/settings/appearance-settings-card";
-import { HabitManagementCard } from "@/renderer/features/settings/habit-management-card";
-import { ReminderSettingsCard } from "@/renderer/features/settings/reminder-settings-card";
-import { StarterPacksCard } from "@/renderer/features/settings/starter-packs-card";
+import { HabitManagementCard } from "@/renderer/features/settings/habit-settings/habit-management-card";
+import { ReminderSettingsCard } from "@/renderer/features/settings/general-settings/reminder-settings-card";
+import { StarterPacksCard } from "@/renderer/features/settings/habit-settings/starter-packs-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/types";
 import {
   staggerContainerVariants,
@@ -17,6 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/renderer/shared/ui/tabs";
+import { AppearanceSettingsCard } from "./appearance-settings/appearance-settings-card";
 
 function getSaveStatus(savePhase: SettingsPageProps["savePhase"]) {
   if (savePhase === "pending") {

@@ -182,7 +182,7 @@ describe("app store actions", () => {
     const { resetHistoryStore, useHistoryStore } =
       await import("@/renderer/features/history/store");
     const { resetWeeklyReviewStore, useWeeklyReviewStore } =
-      await import("@/renderer/features/history/weekly-review-store");
+      await import("@/renderer/features/history/weekly-review/weekly-review-store");
     const { resetOnboardingStore, useOnboardingStore } =
       await import("@/renderer/features/onboarding/store");
     const { resetSettingsStore, useSettingsStore } =

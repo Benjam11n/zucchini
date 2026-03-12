@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import type { WeeklyReviewStoreState } from "@/renderer/app/state/types";
-import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review-state";
+import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/weekly-review-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 
