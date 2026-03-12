@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from "react";
 
-import { cn } from "@/renderer/shared/lib/utils";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";
 import { CircleProgress } from "./circle-progress";

@@ -2,7 +2,7 @@ import type * as React from "react";
 import { Tooltip, ResponsiveContainer } from "recharts";
 import type { TooltipProps } from "recharts";
 
-import { cn } from "@/renderer/shared/lib/utils";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 export type ChartConfig = Record<
   string,

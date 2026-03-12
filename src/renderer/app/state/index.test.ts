@@ -172,23 +172,24 @@ describe("app store actions", () => {
         removeEventListener: vi.fn(),
       }),
     });
-    const { appActions } = await import("@/renderer/features/app/app-actions");
+    const { appActions } =
+      await import("@/renderer/app/controller/app-actions");
     const { resetBootStore, useBootStore } =
       await import("@/renderer/app/state/boot-store");
     const { resetUiStore, useUiStore } =
       await import("@/renderer/app/state/ui-store");
     const { resetFocusStore, useFocusStore } =
-      await import("@/renderer/features/focus/store");
+      await import("@/renderer/features/focus/state/focus-store");
     const { resetHistoryStore, useHistoryStore } =
-      await import("@/renderer/features/history/store");
+      await import("@/renderer/features/history/state/history-store");
     const { resetWeeklyReviewStore, useWeeklyReviewStore } =
-      await import("@/renderer/features/history/weekly-review/weekly-review-store");
+      await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
     const { resetOnboardingStore, useOnboardingStore } =
-      await import("@/renderer/features/onboarding/store");
+      await import("@/renderer/features/onboarding/state/onboarding-store");
     const { resetSettingsStore, useSettingsStore } =
-      await import("@/renderer/features/settings/store");
+      await import("@/renderer/features/settings/state/settings-store");
     const { resetTodayStore, useTodayStore } =
-      await import("@/renderer/features/today/store");
+      await import("@/renderer/features/today/state/today-store");
 
     resetBootStore();
     resetFocusStore();

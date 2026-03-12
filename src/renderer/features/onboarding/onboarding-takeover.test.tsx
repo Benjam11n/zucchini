@@ -2,21 +2,23 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import type * as StarterPackEditorModule from "@/renderer/features/starter-packs/components/starter-pack-editor";
+import type * as StarterPackPickerModule from "@/renderer/features/starter-packs/components/starter-pack-picker";
+import type {
+  StarterPackEditorProps,
+  StarterPackPickerProps,
+} from "@/renderer/features/starter-packs/starter-packs.types";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import type * as OnboardingReminderStepModule from "./onboarding-reminder-step";
+import type * as OnboardingReminderStepModule from "./components/onboarding-reminder-step";
 import { OnboardingTakeover } from "./onboarding-takeover";
-import type * as StarterPackEditorModule from "./starter-pack/starter-pack-editor";
-import type * as StarterPackPickerModule from "./starter-pack/starter-pack-picker";
 import type {
   OnboardingReminderDraft,
   ReminderFieldErrors,
-  StarterPackEditorProps,
-  StarterPackPickerProps,
-} from "./types";
+} from "./onboarding.types";
 
 vi.mock<typeof StarterPackPickerModule>(
-  import("./starter-pack/starter-pack-picker"),
+  import("@/renderer/features/starter-packs/components/starter-pack-picker"),
   () => ({
     StarterPackPicker: ({
       onSelectChoice,
@@ -36,7 +38,7 @@ vi.mock<typeof StarterPackPickerModule>(
 );
 
 vi.mock<typeof StarterPackEditorModule>(
-  import("./starter-pack/starter-pack-editor"),
+  import("@/renderer/features/starter-packs/components/starter-pack-editor"),
   () => ({
     StarterPackEditor: ({ drafts, onChange }: StarterPackEditorProps) => (
       <div>
@@ -50,7 +52,7 @@ vi.mock<typeof StarterPackEditorModule>(
 );
 
 vi.mock<typeof OnboardingReminderStepModule>(
-  import("./onboarding-reminder-step"),
+  import("./components/onboarding-reminder-step"),
   () => ({
     OnboardingReminderStep: ({
       fieldErrors,

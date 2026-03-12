@@ -1,7 +1,7 @@
 import { Clock } from "lucide-react";
 import { useId } from "react";
 
-import { cn } from "@/renderer/shared/lib/utils";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 // value is "HH:MM" in 24-hour format
 interface TimeInputProps {

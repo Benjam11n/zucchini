@@ -1,9 +1,9 @@
 import { m } from "framer-motion";
 
 import type { HistoryStatus } from "@/renderer/features/history/history-status";
-import type { ContributionIntensity } from "@/renderer/features/history/types";
+import type { ContributionIntensity } from "@/renderer/features/history/history.types";
+import { cn } from "@/renderer/shared/lib/class-names";
 import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
-import { cn } from "@/renderer/shared/lib/utils";
 import {
   Tooltip,
   TooltipContent,

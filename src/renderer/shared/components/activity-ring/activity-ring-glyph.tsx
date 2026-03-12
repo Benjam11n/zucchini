@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/renderer/shared/lib/utils";
+import { cn } from "@/renderer/shared/lib/class-names";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";

@@ -4,13 +4,13 @@ import type { LucideIcon } from "lucide-react";
 import { memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
+import { cn } from "@/renderer/shared/lib/class-names";
 import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
 import {
   hoverLift,
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
-import { cn } from "@/renderer/shared/lib/utils";
 import {
   Card,
   CardContent,

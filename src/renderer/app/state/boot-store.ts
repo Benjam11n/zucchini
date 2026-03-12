@@ -1,6 +1,13 @@
 import { create } from "zustand";
 
-import type { BootStoreState } from "./types";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
+
+export interface BootStoreState {
+  bootError: HabitsIpcError | null;
+  bootPhase: "error" | "loading" | "ready";
+  setBootError: (error: HabitsIpcError | null) => void;
+  setBootPhase: (phase: BootStoreState["bootPhase"]) => void;
+}
 
 function getInitialBootState(): Pick<
   BootStoreState,

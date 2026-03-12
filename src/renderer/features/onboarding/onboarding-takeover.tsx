@@ -8,6 +8,17 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { StarterPackEditor } from "@/renderer/features/starter-packs/components/starter-pack-editor";
+import { StarterPackPicker } from "@/renderer/features/starter-packs/components/starter-pack-picker";
+import {
+  createStarterPackDrafts,
+  hasStarterPackHabits,
+  toStarterPackHabits,
+} from "@/renderer/features/starter-packs/lib/starter-pack-drafts";
+import type {
+  EditableStarterPackHabitDraft,
+  StarterPackChoice,
+} from "@/renderer/features/starter-packs/starter-packs.types";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -22,22 +33,15 @@ import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { CompleteOnboardingInput } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import { OnboardingReminderStep } from "./onboarding-reminder-step";
-import { StarterPackEditor } from "./starter-pack/starter-pack-editor";
-import { StarterPackPicker } from "./starter-pack/starter-pack-picker";
-import type {
-  EditableStarterPackHabitDraft,
-  OnboardingReminderDraft,
-  OnboardingStarterChoice,
-  ReminderFieldErrors,
-} from "./types";
+import { OnboardingReminderStep } from "./components/onboarding-reminder-step";
 import {
   createReminderDraft,
-  createStarterPackDrafts,
-  hasStarterPackHabits,
   resolveOnboardingSettings,
-  toStarterPackHabits,
-} from "./utils";
+} from "./lib/onboarding-settings";
+import type {
+  OnboardingReminderDraft,
+  ReminderFieldErrors,
+} from "./onboarding.types";
 
 type OnboardingStep = "edit" | "pick" | "reminders";
 
@@ -58,7 +62,7 @@ export function OnboardingTakeover({
 }: OnboardingTakeoverProps) {
   const [step, setStep] = useState<OnboardingStep>("pick");
   const [selectedChoice, setSelectedChoice] =
-    useState<OnboardingStarterChoice | null>(null);
+    useState<StarterPackChoice | null>(null);
   const [habitDrafts, setHabitDrafts] = useState(
     [] as EditableStarterPackHabitDraft[]
   );
