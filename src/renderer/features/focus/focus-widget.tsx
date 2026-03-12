@@ -1,3 +1,4 @@
+import { Pause, Play, RotateCcw, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -14,6 +15,7 @@ import {
   createIdleFocusTimerState,
   createRunningFocusTimerState,
   formatTimerLabel,
+  pauseFocusTimerState,
   resumeFocusTimerState,
   useFocusTimer,
 } from "./use-focus-timer";
@@ -111,9 +113,11 @@ export function FocusWidget() {
   }, [systemTheme, todayState?.settings.themeMode]);
 
   const isBreak = timerState.phase === "break";
-  const canStart =
-    timerState.status === "idle" || timerState.status === "paused";
-  const canStop = timerState.status !== "idle";
+  const isIdle = timerState.status === "idle";
+  const isPaused = timerState.status === "paused";
+  const isRunning = timerState.status === "running";
+  const canStart = isIdle || isPaused;
+  const canReset = !isIdle;
 
   useEffect(() => {
     const widgetElement = widgetRef.current;
@@ -151,7 +155,7 @@ export function FocusWidget() {
       }
       resizeObserver.disconnect();
     };
-  }, [canStart, canStop, categoryProgress, timerState.remainingMs]);
+  }, [canReset, canStart, timerState.remainingMs]);
 
   useFocusTimer({
     clearFocusSaveError,
@@ -163,58 +167,96 @@ export function FocusWidget() {
     <main className="flex h-screen w-screen items-center justify-center overflow-hidden bg-background text-foreground">
       <section
         ref={widgetRef}
-        className="grid min-w-max grid-cols-[auto_auto_auto] items-center gap-x-2 overflow-hidden px-2 py-1.5"
+        className="flex min-w-max items-center gap-2 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(8,12,10,0.96),rgba(3,7,5,0.96))] px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.85)]"
         style={DRAG_REGION_STYLE}
       >
         <p
-          className={`w-[58px] justify-self-start text-left text-[1.05rem] leading-none font-black tracking-tight tabular-nums ${
+          className={`min-w-[64px] pl-1 text-left text-[1.12rem] leading-none font-black tracking-tight tabular-nums ${
             isBreak ? "text-muted-foreground" : "text-foreground"
           }`}
         >
           {formatTimerLabel(timerState.remainingMs)}
         </p>
 
-        <div className="flex items-center justify-center gap-1.5 justify-self-center">
+        <div
+          className="flex items-center gap-1 rounded-full border border-white/8 bg-white/3 p-1"
+          style={NO_DRAG_REGION_STYLE}
+        >
           {canStart ? (
             <Button
-              className="h-6 px-2 leading-none"
+              aria-label={isPaused ? "Resume timer" : "Start timer"}
+              className="rounded-full"
               onClick={() => {
                 clearFocusSaveError();
                 setTimerState(
-                  timerState.status === "paused"
+                  isPaused
                     ? resumeFocusTimerState(timerState)
-                    : createRunningFocusTimerState()
+                    : createRunningFocusTimerState(
+                        new Date(),
+                        timerState.focusDurationMs
+                      )
                 );
               }}
-              size="xs"
-              style={NO_DRAG_REGION_STYLE}
+              size="icon-xs"
             >
-              Start
+              <Play className="size-3.5" />
             </Button>
           ) : null}
 
-          {canStop ? (
+          {isRunning ? (
             <Button
-              className="h-6 px-2 leading-none"
+              aria-label="Pause timer"
+              className="rounded-full"
+              onClick={() => {
+                setTimerState(pauseFocusTimerState(timerState));
+              }}
+              size="icon-xs"
+              variant="secondary"
+            >
+              <Pause className="size-3.5" />
+            </Button>
+          ) : null}
+
+          {canReset ? (
+            <Button
+              aria-label="Reset timer"
+              className="rounded-full"
               onClick={() => {
                 clearFocusSaveError();
-                setTimerState(createIdleFocusTimerState());
+                setTimerState(
+                  createIdleFocusTimerState(
+                    new Date(),
+                    timerState.focusDurationMs
+                  )
+                );
               }}
-              size="xs"
-              style={NO_DRAG_REGION_STYLE}
-              variant="outline"
+              size="icon-xs"
+              variant="ghost"
             >
-              Stop
+              <RotateCcw className="size-3.5" />
             </Button>
           ) : null}
         </div>
 
-        <div className="justify-self-end">
+        <div className="px-0.5" style={NO_DRAG_REGION_STYLE}>
           <HabitActivityRingGlyph
             categoryProgress={categoryProgress}
-            size={30}
+            size={28}
           />
         </div>
+
+        <Button
+          aria-label="Close widget"
+          className="rounded-full"
+          onClick={() => {
+            window.close();
+          }}
+          size="icon-xs"
+          style={NO_DRAG_REGION_STYLE}
+          variant="ghost"
+        >
+          <X className="size-3.5" />
+        </Button>
       </section>
     </main>
   );

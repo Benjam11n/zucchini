@@ -10,6 +10,7 @@ import {
   createRunningFocusTimerState,
   pauseFocusTimerState,
   resumeFocusTimerState,
+  setFocusTimerDuration,
 } from "./use-focus-timer";
 
 function FocusTabComponent({
@@ -40,7 +41,9 @@ function FocusTabComponent({
         onPause={() => setTimerState(pauseFocusTimerState(timerState))}
         onReset={() => {
           clearFocusSaveError();
-          setTimerState(createIdleFocusTimerState());
+          setTimerState(
+            createIdleFocusTimerState(new Date(), timerState.focusDurationMs)
+          );
         }}
         onResume={() => setTimerState(resumeFocusTimerState(timerState))}
         onShowWidget={() => {
@@ -48,11 +51,18 @@ function FocusTabComponent({
         }}
         onSkipBreak={() => {
           clearFocusSaveError();
-          setTimerState(createIdleFocusTimerState());
+          setTimerState(
+            createIdleFocusTimerState(new Date(), timerState.focusDurationMs)
+          );
         }}
-        onStart={() => {
+        onStart={(focusDurationMs) => {
           clearFocusSaveError();
-          setTimerState(createRunningFocusTimerState());
+          setTimerState(
+            createRunningFocusTimerState(new Date(), focusDurationMs)
+          );
+        }}
+        onDurationChange={(focusDurationMs) => {
+          setTimerState(setFocusTimerDuration(timerState, focusDurationMs));
         }}
       />
 

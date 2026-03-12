@@ -50,6 +50,7 @@ function setupFocusTimerTest() {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
       releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
+      showFocusWidget: vi.fn(() => Promise.resolve()),
       showNotification: vi.fn().mockResolvedValue(42),
     },
   });
@@ -92,6 +93,7 @@ describe("use focus timer", () => {
       JSON.stringify({
         cycleId: "cycle-restore",
         endsAt: "2026-03-08T09:25:00.000Z",
+        focusDurationMs: 1_500_000,
         lastUpdatedAt: "2026-03-08T09:00:00.000Z",
         phase: "focus",
         remainingMs: 1_500_000,
@@ -130,6 +132,7 @@ describe("use focus timer", () => {
     useFocusStore.getState().setTimerState({
       cycleId: "cycle-1",
       endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
       remainingMs: 1000,
@@ -167,6 +170,7 @@ describe("use focus timer", () => {
     useFocusStore.getState().setTimerState({
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
       remainingMs: 1000,
@@ -192,6 +196,30 @@ describe("use focus timer", () => {
     expect(useFocusStore.getState().timerState).toStrictEqual(
       createIdleFocusTimerState(new Date("2026-03-08T09:00:01.000Z"))
     );
+    teardownFocusTimerTest();
+  });
+
+  it("reopens the widget when a focus timer starts", async () => {
+    setupFocusTimerTest();
+    const clearFocusSaveError = vi.fn();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+    const setFocusSaveErrorMessage = vi.fn();
+
+    renderHook(() =>
+      useFocusTimer({
+        clearFocusSaveError,
+        recordFocusSession,
+        setFocusSaveErrorMessage,
+      })
+    );
+
+    await act(async () => {
+      useFocusStore.getState().setTimerState(createRunningFocusTimerState());
+      await Promise.resolve();
+    });
+
+    // eslint-disable-next-line vitest/prefer-called-once
+    expect(window.habits.showFocusWidget).toHaveBeenCalledTimes(1);
     teardownFocusTimerTest();
   });
 });

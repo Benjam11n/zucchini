@@ -58,4 +58,24 @@ describe("focus tab", () => {
       status: createIdleFocusTimerState().status,
     });
   });
+
+  it("lets you set a custom focus duration before starting", () => {
+    resetFocusStore();
+    render(<FocusTabHarness />);
+
+    fireEvent.change(screen.getByLabelText("Focus minutes"), {
+      target: { value: "45" },
+    });
+    fireEvent.change(screen.getByLabelText("Focus seconds"), {
+      target: { value: "30" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Start" }));
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      focusDurationMs: 45 * 60 * 1000 + 30 * 1000,
+      remainingMs: 45 * 60 * 1000 + 30 * 1000,
+      status: "running",
+    });
+  });
 });

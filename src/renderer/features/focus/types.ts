@@ -7,6 +7,7 @@ export type FocusSessionsPhase = "error" | "idle" | "loading" | "ready";
 export interface PersistedFocusTimerState {
   cycleId: string | null;
   endsAt: string | null;
+  focusDurationMs: number;
   lastUpdatedAt: string;
   phase: FocusTimerPhase;
   remainingMs: number;

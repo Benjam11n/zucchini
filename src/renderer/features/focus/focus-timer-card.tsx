@@ -1,4 +1,5 @@
 import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
@@ -10,21 +11,35 @@ import {
   CardTitle,
 } from "@/renderer/shared/ui/card";
 
+import {
+  clampFocusDurationMs,
+  splitFocusDurationMs,
+} from "./focus-timer-constants";
 import type { PersistedFocusTimerState } from "./types";
 import { formatTimerLabel } from "./use-focus-timer";
 
 interface FocusTimerCardProps {
   timerState: PersistedFocusTimerState;
+  onDurationChange: (focusDurationMs: number) => void;
   onPause: () => void;
   onReset: () => void;
   onResume: () => void;
   onShowWidget: () => void;
   onSkipBreak: () => void;
-  onStart: () => void;
+  onStart: (focusDurationMs: number) => void;
+}
+
+function padTimerPart(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+function sanitizeTimerInput(value: string): string {
+  return value.replaceAll(/\D/g, "").slice(0, 2);
 }
 
 export function FocusTimerCard({
   timerState,
+  onDurationChange,
   onPause,
   onReset,
   onResume,
@@ -36,53 +51,186 @@ export function FocusTimerCard({
   const isIdle = timerState.status === "idle";
   const isPaused = timerState.status === "paused";
   const isRunning = timerState.status === "running";
+  const canEditDuration = isIdle && !isBreak;
+  const durationParts = splitFocusDurationMs(timerState.focusDurationMs);
+  const [displayMinutes, displaySeconds] = formatTimerLabel(
+    timerState.remainingMs
+  ).split(":");
+  const [minutesInput, setMinutesInput] = useState(() =>
+    padTimerPart(durationParts.minutes)
+  );
+  const [secondsInput, setSecondsInput] = useState(() =>
+    padTimerPart(durationParts.seconds)
+  );
+
+  useEffect(() => {
+    setMinutesInput(padTimerPart(durationParts.minutes));
+    setSecondsInput(padTimerPart(durationParts.seconds));
+  }, [durationParts.minutes, durationParts.seconds]);
+
+  const commitDuration = (
+    nextMinutesInput = minutesInput,
+    nextSecondsInput = secondsInput
+  ) => {
+    const parsedMinutes = Number.parseInt(nextMinutesInput, 10);
+    const parsedSeconds = Number.parseInt(nextSecondsInput, 10);
+    const normalizedMinutes = Number.isNaN(parsedMinutes)
+      ? durationParts.minutes
+      : Math.min(60, Math.max(0, parsedMinutes));
+    const normalizedSeconds = Number.isNaN(parsedSeconds)
+      ? durationParts.seconds
+      : Math.min(59, Math.max(0, parsedSeconds));
+    const durationMs = clampFocusDurationMs(
+      (normalizedMinutes * 60 +
+        (normalizedMinutes === 60 ? 0 : normalizedSeconds)) *
+        1000
+    );
+    const normalizedParts = splitFocusDurationMs(durationMs);
+
+    setMinutesInput(padTimerPart(normalizedParts.minutes));
+    setSecondsInput(padTimerPart(normalizedParts.seconds));
+
+    if (canEditDuration) {
+      onDurationChange(durationMs);
+    }
+
+    return durationMs;
+  };
 
   return (
-    <Card className="border-border/70 bg-card/95">
-      <CardHeader className="gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="space-y-1">
+    <Card className="overflow-hidden border-border/60 bg-card/95">
+      <CardHeader className="gap-6 pb-0">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
             <CardDescription>Pomodoro</CardDescription>
             <CardTitle>Focused work timer</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={onShowWidget} size="sm" variant="outline">
+            <Button
+              className="rounded-full border-white/10 bg-white/3 px-4"
+              onClick={onShowWidget}
+              size="sm"
+              variant="outline"
+            >
               Show widget
             </Button>
-            <Badge variant={isBreak ? "secondary" : "default"}>
+            <Badge
+              className="rounded-full px-3 py-1"
+              variant={isBreak ? "secondary" : "default"}
+            >
               {isBreak ? "Break" : "Focus"}
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        <div className="rounded-3xl border border-border/60 bg-muted/30 px-6 py-8 text-center">
-          <p className="text-5xl font-black tracking-tight text-foreground sm:text-6xl">
-            {formatTimerLabel(timerState.remainingMs)}
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Completed focus sessions are saved automatically.
-          </p>
+      <CardContent className="space-y-8 pt-6">
+        <div className="rounded-[2rem] border border-border/60 bg-muted/15 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="flex justify-center">
+            <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
+              {canEditDuration ? (
+                <>
+                  <div className="flex justify-end overflow-visible">
+                    <input
+                      aria-label="Focus minutes"
+                      className="w-[2.6ch] overflow-visible bg-transparent pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      inputMode="numeric"
+                      onBlur={() => {
+                        commitDuration();
+                      }}
+                      onChange={(event) => {
+                        setMinutesInput(
+                          sanitizeTimerInput(event.currentTarget.value)
+                        );
+                      }}
+                      onFocus={(event) => {
+                        event.currentTarget.select();
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          commitDuration();
+                          event.currentTarget.blur();
+                        }
+                      }}
+                      value={minutesInput}
+                    />
+                  </div>
+                  <span className="text-center text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground/70">
+                    :
+                  </span>
+                  <div className="flex justify-start overflow-visible">
+                    <input
+                      aria-label="Focus seconds"
+                      className="w-[2.6ch] overflow-visible pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      inputMode="numeric"
+                      onBlur={() => {
+                        commitDuration();
+                      }}
+                      onChange={(event) => {
+                        setSecondsInput(
+                          sanitizeTimerInput(event.currentTarget.value)
+                        );
+                      }}
+                      onFocus={(event) => {
+                        event.currentTarget.select();
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          commitDuration();
+                          event.currentTarget.blur();
+                        }
+                      }}
+                      value={secondsInput}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-end">
+                    <p className="pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground">
+                      {displayMinutes}
+                    </p>
+                  </div>
+                  <span className="text-center text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground/70">
+                    :
+                  </span>
+                  <div className="flex justify-start">
+                    <p className="pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground">
+                      {displaySeconds}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {isIdle ? (
-            <Button className="min-w-28" onClick={onStart}>
+            <Button
+              className="h-12 min-w-44 rounded-full px-8 text-base"
+              onClick={() => {
+                onStart(commitDuration());
+              }}
+            >
               <Play className="size-4" />
               Start
             </Button>
           ) : null}
 
           {isRunning ? (
-            <Button className="min-w-28" onClick={onPause} variant="secondary">
+            <Button
+              className="min-w-32 rounded-full px-5"
+              onClick={onPause}
+              variant="secondary"
+            >
               <Pause className="size-4" />
               Pause
             </Button>
           ) : null}
 
           {isPaused ? (
-            <Button className="min-w-28" onClick={onResume}>
+            <Button className="min-w-32 rounded-full px-5" onClick={onResume}>
               <Play className="size-4" />
               Resume
             </Button>
@@ -90,7 +238,7 @@ export function FocusTimerCard({
 
           {isIdle ? null : (
             <Button
-              className="min-w-28"
+              className="min-w-32 rounded-full px-5"
               onClick={isBreak ? onSkipBreak : onReset}
               variant="outline"
             >

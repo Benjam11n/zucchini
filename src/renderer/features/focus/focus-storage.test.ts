@@ -41,6 +41,7 @@ describe("focus storage", () => {
       isPersistedFocusTimerState({
         cycleId: "cycle-1",
         endsAt: "2026-03-08T09:25:00.000Z",
+        focusDurationMs: 1_500_000,
         lastUpdatedAt: "2026-03-08T09:00:00.000Z",
         phase: "focus",
         remainingMs: 1_500_000,
@@ -62,6 +63,7 @@ describe("focus storage", () => {
     const state = {
       cycleId: null,
       endsAt: null,
+      focusDurationMs: 1_500_000,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus" as const,
       remainingMs: 1_500_000,
@@ -72,5 +74,32 @@ describe("focus storage", () => {
     writeFocusTimerState(state);
 
     expect(readFocusTimerState()).toStrictEqual(state);
+  });
+
+  it("restores legacy timer state without a saved duration", () => {
+    installLocalStorageMock();
+    localStorage.setItem(
+      "zucchini_focus_timer",
+      JSON.stringify({
+        cycleId: null,
+        endsAt: null,
+        lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+        phase: "focus",
+        remainingMs: 1_500_000,
+        startedAt: null,
+        status: "idle",
+      })
+    );
+
+    expect(readFocusTimerState()).toStrictEqual({
+      cycleId: null,
+      endsAt: null,
+      focusDurationMs: 1_500_000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1_500_000,
+      startedAt: null,
+      status: "idle",
+    });
   });
 });

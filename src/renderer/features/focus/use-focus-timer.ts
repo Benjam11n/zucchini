@@ -9,9 +9,12 @@ import {
   subscribeToFocusTimerState,
   writeFocusTimerState,
 } from "./focus-storage";
+import {
+  clampFocusDurationMs,
+  DEFAULT_FOCUS_DURATION_MS,
+} from "./focus-timer-constants";
 import type { PersistedFocusTimerState } from "./types";
 
-const FOCUS_DURATION_MS = 25 * 60 * 1000;
 const BREAK_DURATION_MS = 5 * 60 * 1000;
 const LEASE_TTL_MS = 2500;
 
@@ -41,39 +44,49 @@ function resolveRestoredTimerState(
 }
 
 export function createIdleFocusTimerState(
-  now = new Date()
+  now = new Date(),
+  focusDurationMs = DEFAULT_FOCUS_DURATION_MS
 ): PersistedFocusTimerState {
+  const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
+
   return {
     cycleId: null,
     endsAt: null,
+    focusDurationMs: resolvedFocusDurationMs,
     lastUpdatedAt: now.toISOString(),
     phase: "focus",
-    remainingMs: FOCUS_DURATION_MS,
+    remainingMs: resolvedFocusDurationMs,
     startedAt: null,
     status: "idle",
   };
 }
 
 export function createRunningFocusTimerState(
-  now = new Date()
+  now = new Date(),
+  focusDurationMs = DEFAULT_FOCUS_DURATION_MS
 ): PersistedFocusTimerState {
+  const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
+
   return {
     cycleId: createCycleId(),
-    endsAt: new Date(now.getTime() + FOCUS_DURATION_MS).toISOString(),
+    endsAt: new Date(now.getTime() + resolvedFocusDurationMs).toISOString(),
+    focusDurationMs: resolvedFocusDurationMs,
     lastUpdatedAt: now.toISOString(),
     phase: "focus",
-    remainingMs: FOCUS_DURATION_MS,
+    remainingMs: resolvedFocusDurationMs,
     startedAt: now.toISOString(),
     status: "running",
   };
 }
 
 function createRunningBreakTimerState(
+  focusDurationMs: number,
   now = new Date()
 ): PersistedFocusTimerState {
   return {
     cycleId: null,
     endsAt: new Date(now.getTime() + BREAK_DURATION_MS).toISOString(),
+    focusDurationMs: clampFocusDurationMs(focusDurationMs),
     lastUpdatedAt: now.toISOString(),
     phase: "break",
     remainingMs: BREAK_DURATION_MS,
@@ -127,14 +140,27 @@ export function formatTimerLabel(remainingMs: number): string {
 
 function createCompletedFocusSessionInput(
   startedAt: string,
-  completedAt: string
+  completedAt: string,
+  durationMs: number
 ): CreateFocusSessionInput {
   return {
     completedAt,
     completedDate: toDateKey(new Date(completedAt)),
-    durationSeconds: FOCUS_DURATION_MS / 1000,
+    durationSeconds: clampFocusDurationMs(durationMs) / 1000,
     startedAt,
   };
+}
+
+export function setFocusTimerDuration(
+  timerState: PersistedFocusTimerState,
+  focusDurationMs: number,
+  now = new Date()
+): PersistedFocusTimerState {
+  if (timerState.status !== "idle" || timerState.phase !== "focus") {
+    return timerState;
+  }
+
+  return createIdleFocusTimerState(now, focusDurationMs);
 }
 
 async function notify(
@@ -161,6 +187,8 @@ export function useFocusTimer({
   const timerState = useFocusStore((state) => state.timerState);
   const setTimerState = useFocusStore((state) => state.setTimerState);
   const instanceIdRef = useRef(createCycleId());
+  const hasSeenTimerStateRef = useRef(false);
+  const previousTimerStateRef = useRef(timerState);
 
   useEffect(() => {
     const restored = readFocusTimerState();
@@ -183,6 +211,30 @@ export function useFocusTimer({
 
   useEffect(() => {
     writeFocusTimerState(timerState);
+  }, [timerState]);
+
+  useEffect(() => {
+    if (!hasSeenTimerStateRef.current) {
+      hasSeenTimerStateRef.current = true;
+      previousTimerStateRef.current = timerState;
+      return;
+    }
+
+    const previousTimerState = previousTimerStateRef.current;
+    previousTimerStateRef.current = timerState;
+
+    const startedFocusTimer =
+      previousTimerState.status !== "running" &&
+      timerState.status === "running" &&
+      timerState.phase === "focus";
+
+    if (!startedFocusTimer) {
+      return;
+    }
+
+    void window.habits.showFocusWidget().catch(() => {
+      // Re-opening the widget is best effort UI behavior.
+    });
   }, [timerState]);
 
   useEffect(() => {
@@ -228,7 +280,12 @@ export function useFocusTimer({
           if (currentState.phase === "focus" && currentState.startedAt) {
             useFocusStore
               .getState()
-              .setTimerState(createRunningBreakTimerState(new Date()));
+              .setTimerState(
+                createRunningBreakTimerState(
+                  currentState.focusDurationMs,
+                  new Date()
+                )
+              );
 
             const claimedCompletion =
               await window.habits.claimFocusTimerCycleCompletion(
@@ -245,7 +302,8 @@ export function useFocusTimer({
               void recordFocusSession(
                 createCompletedFocusSessionInput(
                   currentState.startedAt,
-                  currentState.endsAt
+                  currentState.endsAt,
+                  currentState.focusDurationMs
                 )
               ).catch(() => {
                 setFocusSaveErrorMessage(
@@ -259,7 +317,9 @@ export function useFocusTimer({
 
           useFocusStore
             .getState()
-            .setTimerState(createIdleFocusTimerState(now));
+            .setTimerState(
+              createIdleFocusTimerState(now, currentState.focusDurationMs)
+            );
           void notify(
             window.habits.showNotification,
             "Break complete",

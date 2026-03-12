@@ -4,13 +4,16 @@ import type { FocusStoreState } from "@/renderer/app/state/types";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
+import { DEFAULT_FOCUS_DURATION_MS } from "./focus-timer-constants";
+
 function createIdleTimerState() {
   return {
     cycleId: null,
     endsAt: null,
+    focusDurationMs: DEFAULT_FOCUS_DURATION_MS,
     lastUpdatedAt: new Date().toISOString(),
     phase: "focus" as const,
-    remainingMs: 25 * 60 * 1000,
+    remainingMs: DEFAULT_FOCUS_DURATION_MS,
     startedAt: null,
     status: "idle" as const,
   };
