@@ -59,106 +59,95 @@ function parseWithSchema<T>(
   );
 }
 
-export function validateHabitId(value: unknown): number {
-  return parseWithSchema("habit id", habitIdSchema, value);
+function createValidator<T>(label: string, schema: ZodType<T>) {
+  return (value: unknown): T => parseWithSchema(label, schema, value);
 }
+
+export const validateHabitId = createValidator("habit id", habitIdSchema);
 
 export function validateDateKey(label: string, value: unknown): string {
   return parseWithSchema(label, dateKeySchema, value);
 }
 
-export function validateHistoryLimit(value: unknown): number | undefined {
-  return parseWithSchema("history limit", historyLimitSchema, value);
-}
+export const validateHistoryLimit = createValidator(
+  "history limit",
+  historyLimitSchema
+);
 
-export function validateFocusSessionLimit(value: unknown): number | undefined {
-  return parseWithSchema("focus session limit", focusSessionLimitSchema, value);
-}
+export const validateFocusSessionLimit = createValidator(
+  "focus session limit",
+  focusSessionLimitSchema
+);
 
-export function validateFocusTimerCycleId(value: unknown): string {
-  return parseWithSchema(
-    "focus timer cycle id",
-    focusTimerCycleIdSchema,
-    value
-  );
-}
+export const validateFocusTimerCycleId = createValidator(
+  "focus timer cycle id",
+  focusTimerCycleIdSchema
+);
 
-export function validateFocusTimerInstanceId(value: unknown): string {
-  return parseWithSchema(
-    "focus timer instance id",
-    focusTimerInstanceIdSchema,
-    value
-  );
-}
+export const validateFocusTimerInstanceId = createValidator(
+  "focus timer instance id",
+  focusTimerInstanceIdSchema
+);
 
-export function validateFocusTimerLeaseTtl(value: unknown): number {
-  return parseWithSchema(
-    "focus timer leadership ttl",
-    focusTimerLeaseTtlSchema,
-    value
-  );
-}
+export const validateFocusTimerLeaseTtl = createValidator(
+  "focus timer leadership ttl",
+  focusTimerLeaseTtlSchema
+);
 
-export function validateFocusWidgetSize(value: unknown): number {
-  return parseWithSchema("focus widget size", focusWidgetSizeSchema, value);
-}
+export const validateFocusWidgetSize = createValidator(
+  "focus widget size",
+  focusWidgetSizeSchema
+);
 
-export function validateHabitName(value: unknown): string {
-  return parseWithSchema("habit name", habitNameSchema, value);
-}
+export const validateHabitName = createValidator("habit name", habitNameSchema);
 
-export function validateHabitCategory(value: unknown): HabitCategory {
-  return parseWithSchema("habit category", habitCategorySchema, value);
-}
+export const validateHabitCategory = createValidator<HabitCategory>(
+  "habit category",
+  habitCategorySchema
+);
 
-export function validateHabitFrequency(value: unknown): HabitFrequency {
-  return parseWithSchema("habit frequency", habitFrequencySchema, value);
-}
+export const validateHabitFrequency = createValidator<HabitFrequency>(
+  "habit frequency",
+  habitFrequencySchema
+);
 
-export function validateAppSettings(value: unknown): AppSettings {
-  return parseWithSchema("app settings", appSettingsSchema, value);
-}
+export const validateAppSettings = createValidator<AppSettings>(
+  "app settings",
+  appSettingsSchema
+);
 
-export function validateReorderHabitIds(value: unknown): number[] {
-  return parseWithSchema("habit order", reorderHabitIdsSchema, value);
-}
+export const validateReorderHabitIds = createValidator(
+  "habit order",
+  reorderHabitIdsSchema
+);
 
-export function validateStarterPackApply(
-  value: unknown
-): StarterPackHabitDraft[] {
-  return parseWithSchema("starter pack habits", starterPackApplySchema, value);
-}
+export const validateStarterPackApply = createValidator<
+  StarterPackHabitDraft[]
+>("starter pack habits", starterPackApplySchema);
 
-export function validateCompleteOnboardingInput(
-  value: unknown
-): CompleteOnboardingInput {
-  return parseWithSchema(
+export const validateCompleteOnboardingInput =
+  createValidator<CompleteOnboardingInput>(
     "complete onboarding",
-    completeOnboardingInputSchema,
-    value
+    completeOnboardingInputSchema
   );
-}
 
-export function validateNotificationTitle(value: unknown): string {
-  return parseWithSchema("notification title", notificationTitleSchema, value);
-}
+export const validateNotificationTitle = createValidator(
+  "notification title",
+  notificationTitleSchema
+);
 
-export function validateNotificationBody(value: unknown): string {
-  return parseWithSchema("notification body", notificationBodySchema, value);
-}
+export const validateNotificationBody = createValidator(
+  "notification body",
+  notificationBodySchema
+);
 
-export function validateNotificationIconFilename(
-  value: unknown
-): string | undefined {
-  return parseWithSchema(
-    "notification icon filename",
-    notificationIconFilenameSchema,
-    value
+export const validateNotificationIconFilename = createValidator(
+  "notification icon filename",
+  notificationIconFilenameSchema
+);
+
+export const validateCreateFocusSessionInput =
+  createValidator<CreateFocusSessionInput>(
+    "focus session",
+    createFocusSessionInputSchema
   );
-}
-
-export function validateCreateFocusSessionInput(
-  value: unknown
-): CreateFocusSessionInput {
-  return parseWithSchema("focus session", createFocusSessionInputSchema, value);
-}
