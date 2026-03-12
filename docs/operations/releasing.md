@@ -36,12 +36,17 @@ The release workflow lives at `.github/workflows/release.yml`.
 
 When you push a tag that matches `v*`, GitHub Actions will:
 
-1. Check out the repository.
-2. Install Bun dependencies.
-3. Run `bun run test`.
-4. Run `bun run build`.
-5. Build and publish unsigned Windows and macOS artifacts to a draft GitHub
+1. Run a read-only build job on Windows and macOS that checks out the code,
+   installs Bun dependencies, runs `bun run audit:ci`, runs `bun run test`,
+   and runs `bun run build`.
+2. Upload the built `dist` and `dist-electron` outputs from each platform as
+   workflow artifacts.
+3. Run a separate publish job on each platform that downloads the build
+   artifacts and pushes unsigned Windows and macOS installers to a draft GitHub
    Release for that tag.
+
+The workflow keeps `contents: write` scoped to the publish job so the build and
+test steps only run with read access to the repository.
 
 The workflow publishes these assets:
 
