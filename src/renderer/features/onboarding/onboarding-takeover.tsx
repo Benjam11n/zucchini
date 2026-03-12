@@ -155,7 +155,7 @@ export function OnboardingTakeover({
       return;
     }
 
-    const {settings} = resolvedSettings;
+    const { settings } = resolvedSettings;
 
     await requestNotificationPermission();
     await runAsyncTask(

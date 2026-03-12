@@ -173,8 +173,31 @@ describe("app store actions", () => {
       }),
     });
     const { appActions } = await import("@/renderer/features/app/app-actions");
-    const stores = await import("@/renderer/app/state");
-    stores.resetAppStores();
+    const { resetBootStore, useBootStore } =
+      await import("@/renderer/app/state/boot-store");
+    const { resetUiStore, useUiStore } =
+      await import("@/renderer/app/state/ui-store");
+    const { resetFocusStore, useFocusStore } =
+      await import("@/renderer/features/focus/store");
+    const { resetHistoryStore, useHistoryStore } =
+      await import("@/renderer/features/history/store");
+    const { resetWeeklyReviewStore, useWeeklyReviewStore } =
+      await import("@/renderer/features/history/weekly-review-store");
+    const { resetOnboardingStore, useOnboardingStore } =
+      await import("@/renderer/features/onboarding/store");
+    const { resetSettingsStore, useSettingsStore } =
+      await import("@/renderer/features/settings/store");
+    const { resetTodayStore, useTodayStore } =
+      await import("@/renderer/features/today/store");
+
+    resetBootStore();
+    resetFocusStore();
+    resetHistoryStore();
+    resetOnboardingStore();
+    resetSettingsStore();
+    resetTodayStore();
+    resetUiStore();
+    resetWeeklyReviewStore();
 
     return {
       actions: appActions,
@@ -185,7 +208,16 @@ describe("app store actions", () => {
       getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
       skipOnboardingMock,
-      stores,
+      stores: {
+        useBootStore,
+        useFocusStore,
+        useHistoryStore,
+        useOnboardingStore,
+        useSettingsStore,
+        useTodayStore,
+        useUiStore,
+        useWeeklyReviewStore,
+      },
     };
   }
 

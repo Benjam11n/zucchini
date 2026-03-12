@@ -1,26 +1,24 @@
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import {
-  useBootStore,
-  useFocusStore,
-  useHistoryStore,
-  useOnboardingStore,
-  useSettingsStore,
-  useTodayStore,
-  useUiStore,
-  useWeeklyReviewStore,
-} from "@/renderer/app/state";
+import { useBootStore } from "@/renderer/app/state/boot-store";
+import { useUiStore } from "@/renderer/app/state/ui-store";
+import { useFocusStore } from "@/renderer/features/focus/store";
 import { useFocusTimer } from "@/renderer/features/focus/use-focus-timer";
+import { useHistoryStore } from "@/renderer/features/history/store";
 import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review-spotlight";
 import {
   readLastSeenWeeklyReviewStart,
   writeLastSeenWeeklyReviewStart,
 } from "@/renderer/features/history/weekly-review-storage";
+import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review-store";
+import { useOnboardingStore } from "@/renderer/features/onboarding/store";
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
 } from "@/renderer/features/settings/save";
+import { useSettingsStore } from "@/renderer/features/settings/store";
+import { useTodayStore } from "@/renderer/features/today/store";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { AppSettings } from "@/shared/domain/settings";

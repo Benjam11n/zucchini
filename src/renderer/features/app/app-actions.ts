@@ -1,15 +1,13 @@
 import { unstable_batchedUpdates } from "react-dom";
 
-import {
-  useBootStore,
-  useFocusStore,
-  useHistoryStore,
-  useOnboardingStore,
-  useSettingsStore,
-  useTodayStore,
-  useUiStore,
-  useWeeklyReviewStore,
-} from "@/renderer/app/state";
+import { useBootStore } from "@/renderer/app/state/boot-store";
+import { useUiStore } from "@/renderer/app/state/ui-store";
+import { useFocusStore } from "@/renderer/features/focus/store";
+import { useHistoryStore } from "@/renderer/features/history/store";
+import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review-store";
+import { useOnboardingStore } from "@/renderer/features/onboarding/store";
+import { useSettingsStore } from "@/renderer/features/settings/store";
+import { useTodayStore } from "@/renderer/features/today/store";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
