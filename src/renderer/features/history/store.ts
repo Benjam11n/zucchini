@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { HistoryStoreState } from "@/renderer/app/state/types";
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 
 function getInitialHistoryState(): Pick<
@@ -22,25 +23,29 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    set({
-      historyLoadError: null,
-      isHistoryLoading: true,
+    await runAsyncTask(() => window.habits.getHistory(), {
+      mapError: toHabitsIpcError,
+      onError: (historyLoadError) => {
+        set({
+          historyLoadError,
+          isHistoryLoading: false,
+        });
+      },
+      onStart: () => {
+        set({
+          historyLoadError: null,
+          isHistoryLoading: true,
+        });
+      },
+      onSuccess: (history) => {
+        set({
+          history,
+          historyLoadError: null,
+          historyScope: "full",
+          isHistoryLoading: false,
+        });
+      },
     });
-
-    try {
-      const history = await window.habits.getHistory();
-      set({
-        history,
-        historyLoadError: null,
-        historyScope: "full",
-        isHistoryLoading: false,
-      });
-    } catch (error) {
-      set({
-        historyLoadError: toHabitsIpcError(error),
-        isHistoryLoading: false,
-      });
-    }
   },
   setHistory: (history) => set({ history }),
 }));

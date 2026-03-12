@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
@@ -154,24 +155,30 @@ export function OnboardingTakeover({
       return;
     }
 
+    const {settings} = resolvedSettings;
+
     await requestNotificationPermission();
-    try {
-      await onComplete({
-        habits:
-          selectedChoice === "blank" ? [] : toStarterPackHabits(habitDrafts),
-        settings: resolvedSettings.settings,
-      });
-    } catch {
-      // Store state already captures the error for inline display.
-    }
+    await runAsyncTask(
+      () =>
+        onComplete({
+          habits:
+            selectedChoice === "blank" ? [] : toStarterPackHabits(habitDrafts),
+          settings,
+        }),
+      {
+        onError: () => {
+          // Store state already captures the error for inline display.
+        },
+      }
+    );
   }
 
   async function handleSkip(): Promise<void> {
-    try {
-      await onSkip();
-    } catch {
-      // Store state already captures the error for inline display.
-    }
+    await runAsyncTask(() => onSkip(), {
+      onError: () => {
+        // Store state already captures the error for inline display.
+      },
+    });
   }
 
   return (

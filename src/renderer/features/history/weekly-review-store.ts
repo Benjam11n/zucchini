@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { WeeklyReviewStoreState } from "@/renderer/app/state/types";
 import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review-state";
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 
 function getInitialWeeklyReviewState(): Pick<
@@ -29,30 +30,34 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         isWeeklyReviewSpotlightOpen: false,
       }),
     loadWeeklyReviewOverview: async () => {
-      set({
-        weeklyReviewError: null,
-        weeklyReviewPhase: "loading",
-      });
-
-      try {
-        const weeklyReviewState = await loadWeeklyReviewState(
-          window.habits,
-          get().selectedWeeklyReview
-        );
-        set({
-          selectedWeeklyReview: weeklyReviewState.selectedWeeklyReview,
-          weeklyReviewError: null,
-          weeklyReviewOverview: weeklyReviewState.overview,
-          weeklyReviewPhase: "ready",
-        });
-      } catch (error) {
-        set({
-          selectedWeeklyReview: null,
-          weeklyReviewError: toHabitsIpcError(error),
-          weeklyReviewOverview: null,
-          weeklyReviewPhase: "error",
-        });
-      }
+      await runAsyncTask(
+        () => loadWeeklyReviewState(window.habits, get().selectedWeeklyReview),
+        {
+          mapError: toHabitsIpcError,
+          onError: (weeklyReviewError) => {
+            set({
+              selectedWeeklyReview: null,
+              weeklyReviewError,
+              weeklyReviewOverview: null,
+              weeklyReviewPhase: "error",
+            });
+          },
+          onStart: () => {
+            set({
+              weeklyReviewError: null,
+              weeklyReviewPhase: "loading",
+            });
+          },
+          onSuccess: (weeklyReviewState) => {
+            set({
+              selectedWeeklyReview: weeklyReviewState.selectedWeeklyReview,
+              weeklyReviewError: null,
+              weeklyReviewOverview: weeklyReviewState.overview,
+              weeklyReviewPhase: "ready",
+            });
+          },
+        }
+      );
     },
     openWeeklyReviewSpotlight: () =>
       set({
@@ -64,25 +69,28 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      set({
-        weeklyReviewError: null,
-        weeklyReviewPhase: "loading",
+      await runAsyncTask(() => window.habits.getWeeklyReview(weekStart), {
+        mapError: toHabitsIpcError,
+        onError: (weeklyReviewError) => {
+          set({
+            weeklyReviewError,
+            weeklyReviewPhase: "error",
+          });
+        },
+        onStart: () => {
+          set({
+            weeklyReviewError: null,
+            weeklyReviewPhase: "loading",
+          });
+        },
+        onSuccess: (selectedWeeklyReview) => {
+          set({
+            selectedWeeklyReview,
+            weeklyReviewError: null,
+            weeklyReviewPhase: "ready",
+          });
+        },
       });
-
-      try {
-        const selectedWeeklyReview =
-          await window.habits.getWeeklyReview(weekStart);
-        set({
-          selectedWeeklyReview,
-          weeklyReviewError: null,
-          weeklyReviewPhase: "ready",
-        });
-      } catch (error) {
-        set({
-          weeklyReviewError: toHabitsIpcError(error),
-          weeklyReviewPhase: "error",
-        });
-      }
     },
   })
 );
