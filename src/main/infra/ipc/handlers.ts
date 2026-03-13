@@ -16,6 +16,7 @@ import {
   validateHabitCategory,
   validateHabitFrequency,
   validateHabitId,
+  validateHabitWeekdays,
   validateHistoryLimit,
   validateHabitName,
   validateNotificationBody,
@@ -155,11 +156,19 @@ export function registerIpcHandlers({
   );
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
-    (name: unknown, category: unknown, frequency: unknown) =>
+    (
+      name: unknown,
+      category: unknown,
+      frequency: unknown,
+      weekdays?: unknown
+    ) =>
       service.createHabit(
         validateHabitName(name),
         validateHabitCategory(category),
-        validateHabitFrequency(frequency)
+        validateHabitFrequency(frequency),
+        weekdays === undefined || weekdays === null
+          ? null
+          : validateHabitWeekdays(weekdays)
       )
   );
   registerHandler(
@@ -181,6 +190,16 @@ export function registerIpcHandlers({
       service.updateHabitFrequency(
         validateHabitId(habitId),
         validateHabitFrequency(frequency)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.updateHabitWeekdays,
+    (habitId: unknown, weekdays: unknown) =>
+      service.updateHabitWeekdays(
+        validateHabitId(habitId),
+        weekdays === null || weekdays === undefined
+          ? null
+          : validateHabitWeekdays(weekdays)
       )
   );
   registerHandler(HABITS_IPC_CHANNELS.archiveHabit, (habitId: unknown) =>

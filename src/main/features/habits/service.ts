@@ -19,8 +19,13 @@ import type {
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { cloneStarterPackHabits } from "@/shared/domain/onboarding";
 import type {
@@ -66,11 +71,16 @@ export interface HabitsService {
   createHabit(
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
   ): TodayState;
   renameHabit(habitId: number, name: string): TodayState;
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState;
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState;
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): TodayState;
   archiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
 }
@@ -341,7 +351,8 @@ export class HabitService implements HabitsService {
   createHabit(
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays: HabitWeekday[] | null = null
   ): TodayState {
     const trimmedName = name.trim();
     if (!trimmedName) {
@@ -356,6 +367,7 @@ export class HabitService implements HabitsService {
         trimmedName,
         normalizeHabitCategory(category),
         normalizeHabitFrequency(frequency),
+        normalizeHabitWeekdays(selectedWeekdays),
         this.repository.getMaxSortOrder() + 1,
         this.clock.now().toISOString()
       );
@@ -387,9 +399,26 @@ export class HabitService implements HabitsService {
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState {
     this.initialize();
     return this.repository.runInTransaction("updateHabitFrequency", () => {
+      this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
       this.repository.updateHabitFrequency(
         habitId,
         normalizeHabitFrequency(frequency)
+      );
+      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): TodayState {
+    this.initialize();
+    return this.repository.runInTransaction("updateHabitWeekdays", () => {
+      this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
+      this.repository.updateHabitWeekdays(
+        habitId,
+        normalizeHabitWeekdays(selectedWeekdays)
       );
       this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
       return buildTodayState(this.repository, this.clock);

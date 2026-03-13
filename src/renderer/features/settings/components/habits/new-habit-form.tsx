@@ -9,12 +9,18 @@ import { Label } from "@/renderer/shared/ui/label";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
+  normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 
 import {
   HabitCategorySelector,
   HabitFrequencySelector,
+  HabitWeekdaySelector,
 } from "./habit-category-selector";
 
 export function NewHabitForm({
@@ -27,16 +33,27 @@ export function NewHabitForm({
   const [newHabitFrequency, setNewHabitFrequency] = useState<HabitFrequency>(
     DEFAULT_HABIT_FREQUENCY
   );
+  const [newHabitSelectedWeekdays, setNewHabitSelectedWeekdays] = useState<
+    HabitWeekday[] | null
+  >(null);
 
   async function handleCreate(): Promise<void> {
     if (!newHabitName.trim()) {
       return;
     }
 
-    await onCreateHabit(newHabitName, newHabitCategory, newHabitFrequency);
+    await onCreateHabit(
+      newHabitName,
+      newHabitCategory,
+      newHabitFrequency,
+      newHabitFrequency === "daily"
+        ? normalizeHabitWeekdays(newHabitSelectedWeekdays)
+        : null
+    );
     setNewHabitName("");
     setNewHabitCategory(DEFAULT_HABIT_CATEGORY);
     setNewHabitFrequency(DEFAULT_HABIT_FREQUENCY);
+    setNewHabitSelectedWeekdays(null);
   }
 
   return (
@@ -103,11 +120,31 @@ export function NewHabitForm({
               className="gap-1.5"
               compact
               name="new-habit-frequency"
-              onChange={setNewHabitFrequency}
+              onChange={(frequency) => {
+                setNewHabitFrequency(frequency);
+                if (frequency !== "daily") {
+                  setNewHabitSelectedWeekdays(null);
+                }
+              }}
               selectedFrequency={newHabitFrequency}
             />
           </div>
         </div>
+
+        {newHabitFrequency === "daily" ? (
+          <div className="grid gap-2">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Applies on
+            </Label>
+            <HabitWeekdaySelector
+              className="gap-1.5"
+              compact
+              name="new-habit-weekdays"
+              onChange={setNewHabitSelectedWeekdays}
+              selectedWeekdays={newHabitSelectedWeekdays}
+            />
+          </div>
+        ) : null}
       </form>
     </m.div>
   );

@@ -15,6 +15,7 @@ import {
   habitIdSchema,
   historyLimitSchema,
   habitNameSchema,
+  habitWeekdaysSchema,
   notificationBodySchema,
   notificationIconFilenameSchema,
   notificationTitleSchema,
@@ -22,7 +23,11 @@ import {
   starterPackApplySchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 import type {
   CompleteOnboardingInput,
   StarterPackHabitDraft,
@@ -109,6 +114,10 @@ export const validateHabitCategory = createValidator<HabitCategory>(
 export const validateHabitFrequency = createValidator<HabitFrequency>(
   "habit frequency",
   habitFrequencySchema
+);
+export const validateHabitWeekdays = createValidator<HabitWeekday[]>(
+  "habit weekdays",
+  habitWeekdaysSchema
 );
 
 export const validateAppSettings = createValidator<AppSettings>(

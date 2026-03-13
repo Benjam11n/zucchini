@@ -20,6 +20,7 @@ export const habits = sqliteTable("habits", {
     .notNull()
     .default(false),
   name: text().notNull(),
+  selectedWeekdays: text("selected_weekdays"),
   sortOrder: integer("sort_order").notNull(),
 });
 
@@ -34,6 +35,7 @@ export const habitPeriodStatus = sqliteTable(
     habitCreatedAt: text("habit_created_at").notNull(),
     habitId: integer("habit_id").notNull(),
     habitName: text("habit_name").notNull(),
+    habitSelectedWeekdays: text("habit_selected_weekdays"),
     habitSortOrder: integer("habit_sort_order").notNull().default(0),
     periodEnd: text("period_end").notNull(),
     periodStart: text("period_start").notNull(),

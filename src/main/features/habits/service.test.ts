@@ -10,8 +10,10 @@ import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type {
   CompleteOnboardingInput,
@@ -72,6 +74,7 @@ class FakeRepository implements HabitRepository {
       id: 1,
       isArchived: false,
       name: "Habit 1",
+      selectedWeekdays: null,
       sortOrder: 0,
     },
   ];
@@ -154,11 +157,13 @@ class FakeRepository implements HabitRepository {
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.getHabits().map((habit) => ({
-      ...habit,
-      completed:
-        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false,
-    }));
+    return this.getHabits()
+      .filter((habit) => isHabitScheduledForDate(habit, date))
+      .map((habit) => ({
+        ...habit,
+        completed:
+          this.getStatusValues(date, habit.frequency).get(habit.id) ?? false,
+      }));
   }
 
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
@@ -187,21 +192,44 @@ class FakeRepository implements HabitRepository {
   }
 
   ensureStatusRowsForDate(date: string): void {
-    this.getHabits().forEach((habit) => {
-      this.getStatusValues(date, habit.frequency).set(
-        habit.id,
-        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
-      );
-    });
+    this.getHabits()
+      .filter((habit) => isHabitScheduledForDate(habit, date))
+      .forEach((habit) => {
+        this.getStatusValues(date, habit.frequency).set(
+          habit.id,
+          this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
+        );
+      });
   }
 
   ensureStatusRow(date: string, habitId: number): void {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit) {
+    if (!habit || !isHabitScheduledForDate(habit, date)) {
       return;
     }
 
     this.getStatusValues(date, habit.frequency).set(habitId, false);
+  }
+
+  removeStatusRowsForDate(date: string, habitId: number): void {
+    const dailyPeriod = getHabitPeriod("daily", date);
+    const weeklyPeriod = getHabitPeriod("weekly", date);
+    const monthlyPeriod = getHabitPeriod("monthly", date);
+    [
+      this.getPeriodKey("daily", dailyPeriod.start),
+      this.getPeriodKey("weekly", weeklyPeriod.start),
+      this.getPeriodKey("monthly", monthlyPeriod.start),
+    ].forEach((key) => {
+      const entry = this.statusByPeriod.get(key);
+      if (!entry) {
+        return;
+      }
+
+      entry.values.delete(habitId);
+      if (entry.values.size === 0) {
+        this.statusByPeriod.delete(key);
+      }
+    });
   }
 
   toggleHabit(date: string, habitId: number): void {
@@ -274,6 +302,7 @@ class FakeRepository implements HabitRepository {
             name: habit.name,
             periodEnd: entry.end,
             periodStart: entry.start,
+            selectedWeekdays: habit.selectedWeekdays,
             sortOrder: habit.sortOrder,
           };
         })
@@ -348,6 +377,7 @@ class FakeRepository implements HabitRepository {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
+    selectedWeekdays: HabitWeekday[] | null,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -359,6 +389,7 @@ class FakeRepository implements HabitRepository {
       id,
       isArchived: false,
       name,
+      selectedWeekdays,
       sortOrder,
     });
     return id;
@@ -376,6 +407,7 @@ class FakeRepository implements HabitRepository {
         habit.name,
         habit.category,
         habit.frequency,
+        habit.selectedWeekdays ?? null,
         startingSortOrder + index,
         createdAt
       );
@@ -402,6 +434,17 @@ class FakeRepository implements HabitRepository {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
       habit.frequency = frequency;
+      habit.selectedWeekdays = null;
+    }
+  }
+
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (habit) {
+      habit.selectedWeekdays = selectedWeekdays;
     }
   }
 
@@ -552,6 +595,31 @@ describe("habit categories", () => {
     });
   });
 
+  it("creates daily habits that are only due on selected weekdays", () => {
+    const repository = new FakeRepository();
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const todayState = service.createHabit(
+      "Gym session",
+      "fitness",
+      "daily",
+      [1, 3, 5]
+    );
+
+    expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
+      "Habit 1",
+    ]);
+    expect(
+      repository.habits.find((habit) => habit.name === "Gym session")
+    ).toMatchObject({
+      frequency: "daily",
+      selectedWeekdays: [1, 3, 5],
+    });
+  });
+
   it("updates a habit category and returns refreshed state", () => {
     const repository = new FakeRepository();
     const service = new HabitService(
@@ -574,6 +642,23 @@ describe("habit categories", () => {
     const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
+  });
+
+  it("removes a daily habit from today when its weekday schedule no longer includes today", () => {
+    const repository = new FakeRepository();
+    repository.setStatusForDate("2026-03-10", new Map([[1, false]]));
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitWeekdays(1, [1, 3, 5]);
+
+    expect(todayState.habits).toStrictEqual([]);
+    expect(repository.habits[0]?.selectedWeekdays).toStrictEqual([1, 3, 5]);
+    expect(
+      repository.getHabitPeriodStatusesEndingInRange("2026-03-10", "2026-03-10")
+    ).toStrictEqual([]);
   });
 
   it("ignores reorder payloads that do not match the active habit ids", () => {

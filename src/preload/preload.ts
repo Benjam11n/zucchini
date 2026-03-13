@@ -26,7 +26,11 @@ import type {
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 import type {
   CompleteOnboardingInput,
   StarterPackHabitDraft,
@@ -79,8 +83,16 @@ const habitsApi: HabitApi = {
   createHabit: (
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
-  ) => invokeHabits(HABITS_IPC_CHANNELS.createHabit, name, category, frequency),
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
+  ) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.createHabit,
+      name,
+      category,
+      frequency,
+      selectedWeekdays
+    ),
   getFocusSessions: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
   getHistory: (limit?: number) =>
@@ -138,6 +150,15 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
   updateHabitFrequency: (habitId: number, frequency: HabitFrequency) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateHabitFrequency, habitId, frequency),
+  updateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.updateHabitWeekdays,
+      habitId,
+      selectedWeekdays
+    ),
   updateSettings: (settings: AppSettings) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateSettings, settings),
 };

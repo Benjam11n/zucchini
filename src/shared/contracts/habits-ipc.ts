@@ -11,6 +11,7 @@ import type {
 import type {
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "../domain/habit";
 import type { HistoryDay } from "../domain/history";
@@ -52,6 +53,7 @@ export const HABITS_IPC_CHANNELS = {
   toggleHabit: "habits:toggleHabit",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
+  updateHabitWeekdays: "habits:updateHabitWeekdays",
   updateSettings: "habits:updateSettings",
 } as const;
 
@@ -140,7 +142,8 @@ export interface HabitApi {
   createHabit: (
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<TodayState>;
   renameHabit: (habitId: number, name: string) => Promise<TodayState>;
   updateHabitCategory: (
@@ -150,6 +153,10 @@ export interface HabitApi {
   updateHabitFrequency: (
     habitId: number,
     frequency: HabitFrequency
+  ) => Promise<TodayState>;
+  updateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;

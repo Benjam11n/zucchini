@@ -97,6 +97,7 @@ describe("today page", () => {
         onToggleHabit={vi.fn()}
         onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
         onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
+        onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
       />
     );
 

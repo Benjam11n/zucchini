@@ -4,12 +4,19 @@ import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
 } from "@/shared/domain/habit";
 import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
 
 import { habits } from "../db/schema";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { mapHabit } from "./mappers";
+
+function serializeHabitWeekdays(
+  selectedWeekdays: readonly HabitWeekday[] | null
+): string | null {
+  return selectedWeekdays ? JSON.stringify(selectedWeekdays) : null;
+}
 
 export class SqliteHabitsRepository {
   private readonly client: SqliteDatabaseClient;
@@ -78,6 +85,7 @@ export class SqliteHabitsRepository {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
+    selectedWeekdays: HabitWeekday[] | null,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -90,6 +98,7 @@ export class SqliteHabitsRepository {
           createdAt,
           frequency,
           name,
+          selectedWeekdays: serializeHabitWeekdays(selectedWeekdays),
           sortOrder,
         })
         .returning({
@@ -116,6 +125,7 @@ export class SqliteHabitsRepository {
             createdAt,
             frequency: habit.frequency,
             name: habit.name,
+            selectedWeekdays: null,
             sortOrder: startingSortOrder + index,
           })
           .returning({
@@ -155,7 +165,26 @@ export class SqliteHabitsRepository {
       this.client
         .getDrizzle()
         .update(habits)
-        .set({ frequency })
+        .set({
+          frequency,
+          selectedWeekdays: null,
+        })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
+    });
+  }
+
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): void {
+    this.client.run("updateHabitWeekdays", () => {
+      this.client
+        .getDrizzle()
+        .update(habits)
+        .set({
+          selectedWeekdays: serializeHabitWeekdays(selectedWeekdays),
+        })
         .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
         .run();
     });

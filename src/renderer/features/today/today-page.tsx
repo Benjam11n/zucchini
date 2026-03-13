@@ -25,6 +25,7 @@ import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type {
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -35,7 +36,8 @@ interface TodayPageProps {
   onCreateHabit: (
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
@@ -49,6 +51,10 @@ interface TodayPageProps {
     habitId: number,
     frequency: HabitFrequency
   ) => Promise<void>;
+  onUpdateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ) => Promise<void>;
 }
 
 function TodayPageComponent({
@@ -61,6 +67,7 @@ function TodayPageComponent({
   onToggleHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitWeekdays,
 }: TodayPageProps) {
   const { categoryProgress, completedCount, dailyHabits, periodicHabits } =
     useMemo(() => {
@@ -125,6 +132,7 @@ function TodayPageComponent({
                   onReorderHabits={onReorderHabits}
                   onUpdateHabitCategory={onUpdateHabitCategory}
                   onUpdateHabitFrequency={onUpdateHabitFrequency}
+                  onUpdateHabitWeekdays={onUpdateHabitWeekdays}
                 />
               }
               habits={dailyHabits}

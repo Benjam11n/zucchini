@@ -19,6 +19,7 @@ export function HabitManagementCard({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitWeekdays,
 }: HabitManagementCardProps) {
   return (
     <Card>
@@ -38,6 +39,7 @@ export function HabitManagementCard({
           onReorderHabits={onReorderHabits}
           onUpdateHabitCategory={onUpdateHabitCategory}
           onUpdateHabitFrequency={onUpdateHabitFrequency}
+          onUpdateHabitWeekdays={onUpdateHabitWeekdays}
         />
       </CardContent>
     </Card>

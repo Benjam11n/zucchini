@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
 
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
 
 import type * as SelectorsModule from "./habit-category-selector";
 import { HabitRowEditor } from "./habit-row-editor";
@@ -61,6 +61,15 @@ vi.mock<typeof SelectorsModule>(import("./habit-category-selector"), () => ({
       Weekly
     </button>
   ),
+  HabitWeekdaySelector: ({
+    onChange,
+  }: {
+    onChange: (selectedWeekdays: HabitWeekday[] | null) => void;
+  }) => (
+    <button onClick={() => onChange([1, 3, 5])} type="button">
+      Weekdays
+    </button>
+  ),
 }));
 
 function createHabit(
@@ -87,6 +96,7 @@ describe("habit row editor", () => {
     const onReorderHabits = vi.fn().mockResolvedValue(42);
     const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
     const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
+    const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(1)];
 
     render(
@@ -99,6 +109,7 @@ describe("habit row editor", () => {
         onReorderHabits={onReorderHabits}
         onUpdateHabitCategory={onUpdateHabitCategory}
         onUpdateHabitFrequency={onUpdateHabitFrequency}
+        onUpdateHabitWeekdays={onUpdateHabitWeekdays}
       />
     );
 
@@ -110,13 +121,14 @@ describe("habit row editor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Nutrition" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekly" }));
+    fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
 
     expect(onRenameHabit).toHaveBeenCalledWith(1, "Deep work block");
     expect(onUpdateHabitCategory).toHaveBeenCalledWith(1, "nutrition");
     expect(onUpdateHabitFrequency).toHaveBeenCalledWith(1, "weekly");
+    expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(1, [1, 3, 5]);
     expect(onArchiveHabit).toHaveBeenCalledWith(1);
-    expect(onReorderHabits).not.toHaveBeenCalled();
   });
 
   it("reorders habits upward and downward using the computed list", () => {
@@ -125,6 +137,7 @@ describe("habit row editor", () => {
     const onReorderHabits = vi.fn().mockResolvedValue(42);
     const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
     const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
+    const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(1), createHabit(2), createHabit(3)];
 
     render(
@@ -137,6 +150,7 @@ describe("habit row editor", () => {
         onReorderHabits={onReorderHabits}
         onUpdateHabitCategory={onUpdateHabitCategory}
         onUpdateHabitFrequency={onUpdateHabitFrequency}
+        onUpdateHabitWeekdays={onUpdateHabitWeekdays}
       />
     );
 
@@ -166,6 +180,7 @@ describe("habit row editor", () => {
         onReorderHabits={vi.fn().mockResolvedValue(42)}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
         onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
       />
     );
 

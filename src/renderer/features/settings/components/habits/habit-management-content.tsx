@@ -18,6 +18,7 @@ export function HabitManagementContent({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitWeekdays,
 }: HabitManagementCardProps) {
   return (
     <LazyMotion features={domAnimation}>
@@ -34,6 +35,7 @@ export function HabitManagementContent({
               onReorderHabits={onReorderHabits}
               onUpdateHabitCategory={onUpdateHabitCategory}
               onUpdateHabitFrequency={onUpdateHabitFrequency}
+              onUpdateHabitWeekdays={onUpdateHabitWeekdays}
             />
           ))}
         </AnimatePresence>

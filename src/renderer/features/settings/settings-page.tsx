@@ -140,6 +140,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onReorderHabits={props.onReorderHabits}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
+                onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
               />
               <StarterPacksCard onApplyStarterPack={props.onApplyStarterPack} />
             </m.div>

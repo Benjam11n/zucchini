@@ -7,6 +7,7 @@ import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type {
@@ -41,6 +42,7 @@ export interface HabitRepository {
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
+  removeStatusRowsForDate(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
   getFocusSessions(limit?: number): FocusSession[];
   saveFocusSession(input: CreateFocusSessionInput): FocusSession;
@@ -68,6 +70,7 @@ export interface HabitRepository {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
+    selectedWeekdays: HabitWeekday[] | null,
     sortOrder: number,
     createdAt: string
   ): number;
@@ -79,6 +82,10 @@ export interface HabitRepository {
   renameHabit(habitId: number, name: string): void;
   updateHabitCategory(habitId: number, category: HabitCategory): void;
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): void;
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): void;
   archiveHabit(habitId: number): void;
   normalizeHabitOrder(): void;
   reorderHabits(habitIds: number[]): void;
@@ -140,6 +147,10 @@ export class SqliteHabitRepository implements HabitRepository {
 
   ensureStatusRow(date: string, habitId: number): void {
     this.historyRepository.ensureStatusRow(date, habitId);
+  }
+
+  removeStatusRowsForDate(date: string, habitId: number): void {
+    this.historyRepository.removeStatusRowsForDate(date, habitId);
   }
 
   toggleHabit(date: string, habitId: number): void {
@@ -223,6 +234,7 @@ export class SqliteHabitRepository implements HabitRepository {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
+    selectedWeekdays: HabitWeekday[] | null,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -230,6 +242,7 @@ export class SqliteHabitRepository implements HabitRepository {
       name,
       category,
       frequency,
+      selectedWeekdays,
       sortOrder,
       createdAt
     );
@@ -263,6 +276,13 @@ export class SqliteHabitRepository implements HabitRepository {
 
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): void {
     this.habitsRepository.updateHabitFrequency(habitId, frequency);
+  }
+
+  updateHabitWeekdays(
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ): void {
+    this.habitsRepository.updateHabitWeekdays(habitId, selectedWeekdays);
   }
 
   archiveHabit(habitId: number): void {

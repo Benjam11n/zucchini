@@ -1,8 +1,10 @@
 import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
 import {
+  isHabitScheduledForDate,
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
@@ -43,17 +45,19 @@ export class SqliteHistoryRepository {
         ])
       );
 
-      return activeHabits.map((habit) => {
-        const period = getHabitPeriod(habit.frequency, date);
-        const status = statusByKey.get(
-          this.getStatusKey(habit.frequency, period.start, habit.id)
-        );
+      return activeHabits
+        .filter((habit) => isHabitScheduledForDate(habit, date))
+        .map((habit) => {
+          const period = getHabitPeriod(habit.frequency, date);
+          const status = statusByKey.get(
+            this.getStatusKey(habit.frequency, period.start, habit.id)
+          );
 
-        return {
-          ...habit,
-          completed: status?.completed ?? false,
-        };
-      });
+          return {
+            ...habit,
+            completed: status?.completed ?? false,
+          };
+        });
     });
   }
 
@@ -68,6 +72,7 @@ export class SqliteHistoryRepository {
           frequency: habitPeriodStatus.frequency,
           id: habitPeriodStatus.habitId,
           name: habitPeriodStatus.habitName,
+          selectedWeekdays: habitPeriodStatus.habitSelectedWeekdays,
           sortOrder: habitPeriodStatus.habitSortOrder,
         })
         .from(habitPeriodStatus)
@@ -90,6 +95,9 @@ export class SqliteHistoryRepository {
           id: row.id,
           isArchived: false,
           name: row.name,
+          selectedWeekdays: normalizeHabitWeekdays(
+            row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
+          ),
           sortOrder: row.sortOrder,
         }))
     );
@@ -102,17 +110,28 @@ export class SqliteHistoryRepository {
         return;
       }
 
+      const dueHabits = activeHabits.filter((habit) =>
+        isHabitScheduledForDate(habit, date)
+      );
+
+      if (dueHabits.length === 0) {
+        return;
+      }
+
       this.client
         .getDrizzle()
         .insert(habitPeriodStatus)
         .values(
-          activeHabits.map((habit) => ({
+          dueHabits.map((habit) => ({
             completed: false,
             frequency: habit.frequency,
             habitCategory: habit.category,
             habitCreatedAt: habit.createdAt,
             habitId: habit.id,
             habitName: habit.name,
+            habitSelectedWeekdays: habit.selectedWeekdays
+              ? JSON.stringify(habit.selectedWeekdays)
+              : null,
             habitSortOrder: habit.sortOrder,
             periodEnd: getHabitPeriod(habit.frequency, date).end,
             periodStart: getHabitPeriod(habit.frequency, date).start,
@@ -126,7 +145,7 @@ export class SqliteHistoryRepository {
   ensureStatusRow(date: string, habitId: number): void {
     this.client.run("ensureStatusRow", () => {
       const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit) {
+      if (!habit || !isHabitScheduledForDate(habit, date)) {
         return;
       }
 
@@ -140,6 +159,9 @@ export class SqliteHistoryRepository {
           habitCreatedAt: habit.createdAt,
           habitId,
           habitName: habit.name,
+          habitSelectedWeekdays: habit.selectedWeekdays
+            ? JSON.stringify(habit.selectedWeekdays)
+            : null,
           habitSortOrder: habit.sortOrder,
           periodEnd: getHabitPeriod(habit.frequency, date).end,
           periodStart: getHabitPeriod(habit.frequency, date).start,
@@ -149,10 +171,42 @@ export class SqliteHistoryRepository {
     });
   }
 
+  removeStatusRowsForDate(date: string, habitId: number): void {
+    this.client.run("removeStatusRowsForDate", () => {
+      const dailyPeriod = getHabitPeriod("daily", date);
+      const weeklyPeriod = getHabitPeriod("weekly", date);
+      const monthlyPeriod = getHabitPeriod("monthly", date);
+
+      this.client
+        .getDrizzle()
+        .delete(habitPeriodStatus)
+        .where(
+          and(
+            eq(habitPeriodStatus.habitId, habitId),
+            or(
+              and(
+                eq(habitPeriodStatus.frequency, dailyPeriod.frequency),
+                eq(habitPeriodStatus.periodStart, dailyPeriod.start)
+              ),
+              and(
+                eq(habitPeriodStatus.frequency, weeklyPeriod.frequency),
+                eq(habitPeriodStatus.periodStart, weeklyPeriod.start)
+              ),
+              and(
+                eq(habitPeriodStatus.frequency, monthlyPeriod.frequency),
+                eq(habitPeriodStatus.periodStart, monthlyPeriod.start)
+              )
+            )
+          )
+        )
+        .run();
+    });
+  }
+
   toggleHabit(date: string, habitId: number): void {
     this.client.run("toggleHabit", () => {
       const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit) {
+      if (!habit || !isHabitScheduledForDate(habit, date)) {
         return;
       }
 

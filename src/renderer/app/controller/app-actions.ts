@@ -20,6 +20,7 @@ import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type {
@@ -198,9 +199,12 @@ async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
 async function handleCreateHabit(
   name: string,
   category: HabitCategory,
-  frequency: HabitFrequency
+  frequency: HabitFrequency,
+  selectedWeekdays: HabitWeekday[] | null = null
 ) {
-  await refreshToday(window.habits.createHabit(name, category, frequency));
+  await refreshToday(
+    window.habits.createHabit(name, category, frequency, selectedWeekdays)
+  );
   updateSettingsDraftFromToday();
 }
 
@@ -276,6 +280,15 @@ async function handleUpdateHabitFrequency(
   frequency: HabitFrequency
 ) {
   await refreshToday(window.habits.updateHabitFrequency(habitId, frequency));
+}
+
+async function handleUpdateHabitWeekdays(
+  habitId: number,
+  selectedWeekdays: HabitWeekday[] | null
+) {
+  await refreshToday(
+    window.habits.updateHabitWeekdays(habitId, selectedWeekdays)
+  );
 }
 
 async function handleUpdateSettings(settings: AppSettings) {
@@ -365,6 +378,7 @@ export const appActions = {
   handleToggleHabit,
   handleUpdateHabitCategory,
   handleUpdateHabitFrequency,
+  handleUpdateHabitWeekdays,
   handleUpdateSettings,
   loadFocusSessions,
   loadFullHistory,

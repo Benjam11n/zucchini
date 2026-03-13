@@ -1,4 +1,8 @@
-import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 
 import type {
   dailySummary,
@@ -22,5 +26,6 @@ export interface HabitPeriodStatusSnapshot {
   name: string;
   periodEnd: string;
   periodStart: string;
+  selectedWeekdays?: HabitWeekday[] | null;
   sortOrder: number;
 }

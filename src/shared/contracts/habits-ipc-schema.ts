@@ -45,12 +45,33 @@ export const habitCategorySchema = z.enum([
 ]);
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
+const habitWeekdaySchema = z.union([
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+  z.literal(6),
+]);
+export const habitWeekdaysSchema = z
+  .array(habitWeekdaySchema)
+  .max(7)
+  .superRefine((weekdays, context) => {
+    if (new Set(weekdays).size !== weekdays.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Habit weekdays cannot contain duplicates.",
+      });
+    }
+  });
 
 const starterPackHabitDraftSchema = z
   .object({
     category: habitCategorySchema,
     frequency: habitFrequencySchema,
     name: habitNameSchema,
+    selectedWeekdays: habitWeekdaysSchema.nullish(),
   })
   .strict();
 

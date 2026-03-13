@@ -173,6 +173,7 @@ function MainApp() {
       onToggleHabit={actions.handleToggleHabit}
       onUpdateHabitCategory={actions.handleUpdateHabitCategory}
       onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
+      onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
     />
   );
 
@@ -285,6 +286,7 @@ function MainApp() {
           onReorderHabits={actions.handleReorderHabits}
           onUpdateHabitCategory={actions.handleUpdateHabitCategory}
           onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
+          onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
         />
       </Suspense>
     );

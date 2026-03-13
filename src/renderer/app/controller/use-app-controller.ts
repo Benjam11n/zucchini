@@ -203,6 +203,7 @@ function createControllerActions({
     handleToggleHabit: actions.handleToggleHabit,
     handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
     handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
+    handleUpdateHabitWeekdays: actions.handleUpdateHabitWeekdays,
     handleWeeklyReviewOpen: async () => {
       const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
       if (!latestReview) {

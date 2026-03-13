@@ -1,6 +1,7 @@
 import type {
   HabitCategory,
   HabitFrequency,
+  HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
@@ -25,7 +26,8 @@ export interface SettingsPageProps {
   onCreateHabit: (
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onUpdateHabitCategory: (
@@ -35,6 +37,10 @@ export interface SettingsPageProps {
   onUpdateHabitFrequency: (
     habitId: number,
     frequency: HabitFrequency
+  ) => Promise<void>;
+  onUpdateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
@@ -47,7 +53,8 @@ export interface HabitManagementCardProps {
   onCreateHabit: (
     name: string,
     category: HabitCategory,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
@@ -58,5 +65,9 @@ export interface HabitManagementCardProps {
   onUpdateHabitFrequency: (
     habitId: number,
     frequency: HabitFrequency
+  ) => Promise<void>;
+  onUpdateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;
 }

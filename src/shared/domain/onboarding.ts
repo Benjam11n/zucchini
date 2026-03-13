@@ -4,8 +4,12 @@
  * The onboarding flow uses this file to know which starter packs exist, what
  * habits they create, and what data is required to mark onboarding complete.
  */
-import { normalizeHabitCategory, normalizeHabitFrequency } from "./habit";
-import type { HabitCategory, HabitFrequency } from "./habit";
+import {
+  normalizeHabitCategory,
+  normalizeHabitFrequency,
+  normalizeHabitWeekdays,
+} from "./habit";
+import type { HabitCategory, HabitFrequency, HabitWeekday } from "./habit";
 import type { AppSettings } from "./settings";
 
 export const STARTER_PACK_IDS = [
@@ -20,6 +24,7 @@ export interface StarterPackHabitDraft {
   category: HabitCategory;
   frequency: HabitFrequency;
   name: string;
+  selectedWeekdays?: HabitWeekday[] | null;
 }
 
 export interface StarterPackDefinition {
@@ -133,6 +138,7 @@ export function cloneStarterPackHabits(
     category: normalizeHabitCategory(habit.category),
     frequency: normalizeHabitFrequency(habit.frequency),
     name: habit.name.trim(),
+    selectedWeekdays: normalizeHabitWeekdays(habit.selectedWeekdays),
   }));
 }
 

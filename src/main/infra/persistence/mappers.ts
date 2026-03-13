@@ -2,6 +2,7 @@ import type { FocusSession } from "@/shared/domain/focus-session";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
 import { isThemeMode } from "@/shared/domain/settings";
@@ -25,6 +26,9 @@ export function mapHabit(row: HabitRow): Habit {
     id: row.id,
     isArchived: row.isArchived,
     name: row.name,
+    selectedWeekdays: normalizeHabitWeekdays(
+      row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
+    ),
     sortOrder: row.sortOrder,
   };
 }
@@ -62,6 +66,9 @@ export function mapHabitPeriodStatusSnapshot(
     name: row.habitName,
     periodEnd: row.periodEnd,
     periodStart: row.periodStart,
+    selectedWeekdays: normalizeHabitWeekdays(
+      row.habitSelectedWeekdays ? JSON.parse(row.habitSelectedWeekdays) : null
+    ),
     sortOrder: row.habitSortOrder,
   };
 }

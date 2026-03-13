@@ -73,6 +73,7 @@ function createService() {
     toggleHabit: vi.fn(),
     updateHabitCategory: vi.fn(),
     updateHabitFrequency: vi.fn(),
+    updateHabitWeekdays: vi.fn(),
     updateSettings: vi.fn(() => defaultSettings),
   };
 }

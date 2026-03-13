@@ -11,6 +11,7 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 import {
   HabitCategorySelector,
   HabitFrequencySelector,
+  HabitWeekdaySelector,
 } from "./habit-category-selector";
 import { reorderHabitList } from "./reorder-habits";
 
@@ -21,6 +22,7 @@ interface HabitRowEditorProps extends Pick<
   | "onReorderHabits"
   | "onUpdateHabitCategory"
   | "onUpdateHabitFrequency"
+  | "onUpdateHabitWeekdays"
 > {
   habit: HabitWithStatus;
   habits: HabitWithStatus[];
@@ -36,6 +38,7 @@ export function HabitRowEditor({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitWeekdays,
 }: HabitRowEditorProps) {
   return (
     <m.div
@@ -90,6 +93,22 @@ export function HabitRowEditor({
                 selectedFrequency={habit.frequency}
               />
             </div>
+
+            {habit.frequency === "daily" ? (
+              <div className="flex flex-col gap-2">
+                <Label className="mr-2 text-xs font-medium text-muted-foreground">
+                  Applies on
+                </Label>
+                <HabitWeekdaySelector
+                  compact
+                  name={`habit-weekdays-${habit.id}`}
+                  onChange={(selectedWeekdays) => {
+                    void onUpdateHabitWeekdays(habit.id, selectedWeekdays);
+                  }}
+                  selectedWeekdays={habit.selectedWeekdays ?? null}
+                />
+              </div>
+            ) : null}
           </div>
         </ItemContent>
 
