@@ -20,6 +20,7 @@ function FocusPageHarness() {
   return (
     <FocusPage
       focusSaveErrorMessage={null}
+      focusCyclesBeforeLongBreak={4}
       phase="ready"
       sessions={[]}
       sessionsLoadError={null}
@@ -57,6 +58,7 @@ describe("focus tab", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(useFocusStore.getState().timerState).toMatchObject({
+      completedFocusCycles: 0,
       phase: createIdleFocusTimerState().phase,
       remainingMs: createIdleFocusTimerState().remainingMs,
       status: createIdleFocusTimerState().status,
@@ -85,18 +87,20 @@ describe("focus tab", () => {
 
   it("shows the break badge and final-minute cue", () => {
     resetFocusStore();
-    useFocusStore
-      .getState()
-      .setTimerState(
-        createRunningBreakTimerState(
-          25 * 60 * 1000,
-          new Date("2026-03-08T09:00:00.000Z")
-        )
-      );
+    useFocusStore.getState().setTimerState(
+      createRunningBreakTimerState({
+        breakDurationMs: 5 * 60 * 1000,
+        breakVariant: "short",
+        completedFocusCycles: 1,
+        focusDurationMs: 25 * 60 * 1000,
+        now: new Date("2026-03-08T09:00:00.000Z"),
+      })
+    );
 
     render(<FocusPageHarness />);
 
-    expect(screen.getByText("Break")).toBeInTheDocument();
+    expect(screen.getByText("Short break")).toBeInTheDocument();
+    expect(screen.getByText("Completed this set: 1/4")).toBeInTheDocument();
 
     act(() => {
       useFocusStore.getState().setTimerState({
@@ -106,6 +110,18 @@ describe("focus tab", () => {
     });
 
     expect(screen.getByText("1 min left")).toBeInTheDocument();
+  });
+
+  it("shows the next long break threshold on the status row", () => {
+    resetFocusStore();
+    useFocusStore
+      .getState()
+      .setTimerState(createIdleFocusTimerState(new Date(), 25 * 60 * 1000, 3));
+
+    render(<FocusPageHarness />);
+
+    expect(screen.getByText("Completed this set: 3/4")).toBeInTheDocument();
+    expect(screen.getByText("Next break: long")).toBeInTheDocument();
   });
 
   it("uses amber timer text during the last minute", () => {

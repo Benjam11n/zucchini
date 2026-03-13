@@ -13,6 +13,9 @@ describe("ipc validation", () => {
   it("accepts valid app settings payloads", () => {
     expect(
       validateAppSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: false,
         minimizeToTray: true,
         reminderEnabled: true,
@@ -31,6 +34,9 @@ describe("ipc validation", () => {
   it("rejects invalid timezones with a typed ipc validation error", () => {
     expect(() =>
       validateAppSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: false,
         minimizeToTray: false,
         reminderEnabled: true,
@@ -38,6 +44,23 @@ describe("ipc validation", () => {
         reminderTime: "20:30",
         themeMode: "system",
         timezone: "Mars/Colony",
+      })
+    ).toThrow(IpcValidationError);
+  });
+
+  it("rejects long breaks shorter than short breaks", () => {
+    expect(() =>
+      validateAppSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 4,
+        focusShortBreakMinutes: 5,
+        launchAtLogin: false,
+        minimizeToTray: false,
+        reminderEnabled: true,
+        reminderSnoozeMinutes: 15,
+        reminderTime: "20:30",
+        themeMode: "system",
+        timezone: "Asia/Singapore",
       })
     ).toThrow(IpcValidationError);
   });
@@ -77,6 +100,9 @@ describe("ipc validation", () => {
           },
         ],
         settings: {
+          focusCyclesBeforeLongBreak: 4,
+          focusLongBreakMinutes: 15,
+          focusShortBreakMinutes: 5,
           launchAtLogin: false,
           minimizeToTray: false,
           reminderEnabled: true,

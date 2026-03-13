@@ -5,6 +5,9 @@ import {
 
 describe("onboarding settings", () => {
   const baseSettings = {
+    focusCyclesBeforeLongBreak: 4,
+    focusLongBreakMinutes: 15,
+    focusShortBreakMinutes: 5,
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,

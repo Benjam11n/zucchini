@@ -113,6 +113,9 @@ vi.mock<typeof OnboardingReminderStepModule>(
 
 function createBaseSettings(): AppSettings {
   return {
+    focusCyclesBeforeLongBreak: 4,
+    focusLongBreakMinutes: 15,
+    focusShortBreakMinutes: 5,
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,

@@ -24,6 +24,11 @@ export class SqliteSettingsRepository {
       const map = new Map(rows.map((row) => [row.key, row.value]));
       const defaults = createDefaultAppSettings(defaultTimezone);
       const candidateSettings: AppSettings = {
+        focusCyclesBeforeLongBreak: Number(
+          map.get("focusCyclesBeforeLongBreak")
+        ),
+        focusLongBreakMinutes: Number(map.get("focusLongBreakMinutes")),
+        focusShortBreakMinutes: Number(map.get("focusShortBreakMinutes")),
         launchAtLogin: map.get("launchAtLogin") === "true",
         minimizeToTray: map.get("minimizeToTray") === "true",
         reminderEnabled: map.get("reminderEnabled") === "true",
@@ -60,6 +65,18 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
+      this.upsertSetting(
+        "focusCyclesBeforeLongBreak",
+        String(nextSettings.focusCyclesBeforeLongBreak)
+      );
+      this.upsertSetting(
+        "focusLongBreakMinutes",
+        String(nextSettings.focusLongBreakMinutes)
+      );
+      this.upsertSetting(
+        "focusShortBreakMinutes",
+        String(nextSettings.focusShortBreakMinutes)
+      );
       this.upsertSetting("launchAtLogin", String(nextSettings.launchAtLogin));
       this.upsertSetting("minimizeToTray", String(nextSettings.minimizeToTray));
       this.upsertSetting(
@@ -81,6 +98,18 @@ export class SqliteSettingsRepository {
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
       const defaults = createDefaultAppSettings(timezone);
+      this.upsertSetting(
+        "focusCyclesBeforeLongBreak",
+        String(defaults.focusCyclesBeforeLongBreak)
+      );
+      this.upsertSetting(
+        "focusLongBreakMinutes",
+        String(defaults.focusLongBreakMinutes)
+      );
+      this.upsertSetting(
+        "focusShortBreakMinutes",
+        String(defaults.focusShortBreakMinutes)
+      );
       this.upsertSetting("launchAtLogin", String(defaults.launchAtLogin));
       this.upsertSetting("minimizeToTray", String(defaults.minimizeToTray));
       this.upsertSetting("reminderEnabled", String(defaults.reminderEnabled));

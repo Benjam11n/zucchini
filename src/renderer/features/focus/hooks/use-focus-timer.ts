@@ -11,10 +11,17 @@ import {
   subscribeToFocusTimerState,
   writeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-storage";
+import {
+  getDefaultPomodoroTimerSettings,
+  readPomodoroTimerSettings,
+  subscribeToPomodoroTimerSettings,
+} from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 const LEASE_TTL_MS = 2500;
+const MS_PER_MINUTE = 60 * 1000;
 
 function createCycleId(): string {
   if ("randomUUID" in crypto) {
@@ -55,19 +62,31 @@ async function notify(
 
 export function useFocusTimer({
   clearFocusSaveError,
+  pomodoroSettings,
   recordFocusSession,
   setFocusSaveErrorMessage,
 }: {
   clearFocusSaveError: () => void;
+  pomodoroSettings: PomodoroTimerSettings | null;
   recordFocusSession: (input: CreateFocusSessionInput) => Promise<unknown>;
   setFocusSaveErrorMessage: (message: string | null) => void;
 }) {
   const timerState = useFocusStore((state) => state.timerState);
   const setTimerState = useFocusStore((state) => state.setTimerState);
   const instanceIdRef = useRef(createCycleId());
+  const [storedPomodoroSettings, setStoredPomodoroSettings] = useState(() =>
+    readPomodoroTimerSettings()
+  );
+  const resolvedPomodoroSettings =
+    pomodoroSettings ??
+    storedPomodoroSettings ??
+    getDefaultPomodoroTimerSettings();
+  const pomodoroSettingsRef = useRef(resolvedPomodoroSettings);
   const hasSeenTimerStateRef = useRef(false);
   const previousTimerStateRef = useRef(timerState);
   const [hasHydrated, setHasHydrated] = useState(false);
+
+  pomodoroSettingsRef.current = resolvedPomodoroSettings;
 
   useEffect(() => {
     const restored = readFocusTimerState();
@@ -84,6 +103,14 @@ export function useFocusTimer({
         useFocusStore
           .getState()
           .setTimerState(nextTimerState ?? createIdleFocusTimerState());
+      }),
+    []
+  );
+
+  useEffect(
+    () =>
+      subscribeToPomodoroTimerSettings((nextPomodoroSettings) => {
+        setStoredPomodoroSettings(nextPomodoroSettings);
       }),
     []
   );
@@ -169,14 +196,24 @@ export function useFocusTimer({
 
         if (remainingMs === 0) {
           if (currentState.phase === "focus" && currentState.startedAt) {
-            useFocusStore
-              .getState()
-              .setTimerState(
-                createRunningBreakTimerState(
-                  currentState.focusDurationMs,
-                  new Date()
-                )
-              );
+            const completedFocusCycles = currentState.completedFocusCycles + 1;
+            const shouldStartLongBreak =
+              completedFocusCycles >=
+              pomodoroSettingsRef.current.focusCyclesBeforeLongBreak;
+
+            useFocusStore.getState().setTimerState(
+              createRunningBreakTimerState({
+                breakDurationMs:
+                  (shouldStartLongBreak
+                    ? pomodoroSettingsRef.current.focusLongBreakMinutes
+                    : pomodoroSettingsRef.current.focusShortBreakMinutes) *
+                  MS_PER_MINUTE,
+                breakVariant: shouldStartLongBreak ? "long" : "short",
+                completedFocusCycles,
+                focusDurationMs: currentState.focusDurationMs,
+                now: new Date(),
+              })
+            );
 
             const claimedCompletion =
               await window.habits.claimFocusTimerCycleCompletion(
@@ -188,7 +225,9 @@ export function useFocusTimer({
               void notify(
                 window.habits.showNotification,
                 "Focus complete",
-                "Time for a short break."
+                shouldStartLongBreak
+                  ? "Time for a long break."
+                  : "Time for a short break."
               );
               void recordFocusSession(
                 createCompletedFocusSessionInput(
@@ -209,7 +248,13 @@ export function useFocusTimer({
           useFocusStore
             .getState()
             .setTimerState(
-              createIdleFocusTimerState(now, currentState.focusDurationMs)
+              createIdleFocusTimerState(
+                now,
+                currentState.focusDurationMs,
+                currentState.breakVariant === "long"
+                  ? 0
+                  : currentState.completedFocusCycles
+              )
             );
           void notify(
             window.habits.showNotification,

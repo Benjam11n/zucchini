@@ -239,6 +239,9 @@ function MainApp() {
       >
         <FocusPage
           focusSaveErrorMessage={state.focusSaveErrorMessage}
+          focusCyclesBeforeLongBreak={
+            state.todayState.settings.focusCyclesBeforeLongBreak
+          }
           phase={state.focusSessionsPhase}
           sessions={state.focusSessions}
           sessionsLoadError={state.focusSessionsLoadError}

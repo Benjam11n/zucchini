@@ -27,6 +27,9 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
       },
     ],
     settings: {
+      focusCyclesBeforeLongBreak: 4,
+      focusLongBreakMinutes: 15,
+      focusShortBreakMinutes: 5,
       launchAtLogin: false,
       minimizeToTray: false,
       reminderEnabled: true,
@@ -253,6 +256,40 @@ describe("use app controller", () => {
     );
   });
 
+  it("autosaves valid pomodoro settings changes after the debounce", async () => {
+    cleanup();
+    (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
+    document.documentElement.className = "";
+    vi.restoreAllMocks();
+
+    const { habits, hook } = await setupUseAppController();
+
+    act(() => {
+      hook.result.current.actions.handleSettingsDraftChange({
+        ...hook.result.current.state.settingsDraft!,
+        focusLongBreakMinutes: 20,
+      });
+    });
+
+    await waitFor(() => {
+      expect(hook.result.current.state.settingsSavePhase).toBe("pending");
+    });
+
+    await waitFor(
+      () => {
+        expect(habits.updateSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            focusLongBreakMinutes: 20,
+          })
+        );
+        expect(hook.result.current.state.settingsSavePhase).toBe("saved");
+      },
+      {
+        timeout: 2000,
+      }
+    );
+  });
+
   it("marks invalid settings drafts without calling updateSettings", async () => {
     cleanup();
     (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
@@ -276,6 +313,38 @@ describe("use app controller", () => {
       expect(hook.result.current.state.settingsSavePhase).toBe("invalid");
       expect(hook.result.current.state.settingsFieldErrors.reminderTime).toBe(
         "Reminder time must use HH:MM 24-hour format."
+      );
+    });
+
+    expect(habits.updateSettings).not.toHaveBeenCalled();
+  });
+
+  it("marks invalid pomodoro drafts without calling updateSettings", async () => {
+    cleanup();
+    (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
+    document.documentElement.className = "";
+    vi.restoreAllMocks();
+
+    const { habits, hook } = await setupUseAppController();
+
+    act(() => {
+      hook.result.current.actions.handleTabChange("settings");
+    });
+
+    act(() => {
+      hook.result.current.actions.handleSettingsDraftChange({
+        ...hook.result.current.state.settingsDraft!,
+        focusLongBreakMinutes: 3,
+        focusShortBreakMinutes: 5,
+      });
+    });
+
+    await waitFor(() => {
+      expect(hook.result.current.state.settingsSavePhase).toBe("invalid");
+      expect(
+        hook.result.current.state.settingsFieldErrors.focusLongBreakMinutes
+      ).toBe(
+        "Long break minutes must be greater than or equal to short break minutes."
       );
     });
 

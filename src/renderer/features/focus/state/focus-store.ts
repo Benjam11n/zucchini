@@ -9,7 +9,7 @@ import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
-import { DEFAULT_FOCUS_DURATION_MS } from "../lib/focus-timer.constants";
+import { createIdleFocusTimerState } from "../lib/focus-timer-state";
 
 export interface FocusStoreState {
   focusSaveErrorMessage: string | null;
@@ -26,16 +26,7 @@ export interface FocusStoreState {
 }
 
 function createIdleTimerState() {
-  return {
-    cycleId: null,
-    endsAt: null,
-    focusDurationMs: DEFAULT_FOCUS_DURATION_MS,
-    lastUpdatedAt: new Date().toISOString(),
-    phase: "focus" as const,
-    remainingMs: DEFAULT_FOCUS_DURATION_MS,
-    startedAt: null,
-    status: "idle" as const,
-  };
+  return createIdleFocusTimerState();
 }
 
 function getInitialFocusState(): Pick<

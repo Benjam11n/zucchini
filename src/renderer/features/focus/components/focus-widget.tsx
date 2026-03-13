@@ -15,6 +15,7 @@ import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ri
 import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
+import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 
 const SNAPSHOT_REFRESH_MS = 30 * 1000;
 const DRAG_REGION_STYLE = { WebkitAppRegion: "drag" } as CSSProperties;
@@ -159,6 +160,9 @@ export function FocusWidget() {
 
   useFocusTimer({
     clearFocusSaveError,
+    pomodoroSettings: todayState
+      ? getPomodoroTimerSettings(todayState.settings)
+      : null,
     recordFocusSession: window.habits.recordFocusSession,
     setFocusSaveErrorMessage,
   });
@@ -178,6 +182,15 @@ export function FocusWidget() {
           </p>
         </div>
 
+        {isBreak ? (
+          <div
+            className="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide text-white/80 uppercase"
+            style={NO_DRAG_REGION_STYLE}
+          >
+            {timerState.breakVariant === "long" ? "Long break" : "Short break"}
+          </div>
+        ) : null}
+
         <div
           className="flex items-center gap-1 rounded-full border border-white/8 bg-white/3 p-1"
           style={NO_DRAG_REGION_STYLE}
@@ -193,7 +206,8 @@ export function FocusWidget() {
                     ? resumeFocusTimerState(timerState)
                     : createRunningFocusTimerState(
                         new Date(),
-                        timerState.focusDurationMs
+                        timerState.focusDurationMs,
+                        timerState.completedFocusCycles
                       )
                 );
               }}

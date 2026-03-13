@@ -5,9 +5,10 @@
  * management into one place while surfacing the current save state.
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { Bell, ListTodo, Palette } from "lucide-react";
+import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
 
 import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
+import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
 import { StarterPacksCard } from "@/renderer/features/settings/components/habits/starter-packs-card";
@@ -88,6 +89,10 @@ export function SettingsPage(props: SettingsPageProps) {
                 <Palette className="size-4" />
                 Appearance
               </TabsTrigger>
+              <TabsTrigger className="flex-1" value="pomodoro">
+                <TimerReset className="size-4" />
+                Pomodoro
+              </TabsTrigger>
               <TabsTrigger className="flex-1" value="habits">
                 <ListTodo className="size-4" />
                 Habits
@@ -98,6 +103,16 @@ export function SettingsPage(props: SettingsPageProps) {
           <TabsContent value="general">
             <m.section variants={staggerItemVariants}>
               <ReminderSettingsCard
+                fieldErrors={props.fieldErrors}
+                onChange={props.onChange}
+                settings={props.settings}
+              />
+            </m.section>
+          </TabsContent>
+
+          <TabsContent value="pomodoro">
+            <m.section variants={staggerItemVariants}>
+              <PomodoroSettingsCard
                 fieldErrors={props.fieldErrors}
                 onChange={props.onChange}
                 settings={props.settings}

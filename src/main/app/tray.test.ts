@@ -49,6 +49,9 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
 }));
 
 const baseSettings: AppSettings = {
+  focusCyclesBeforeLongBreak: 4,
+  focusLongBreakMinutes: 15,
+  focusShortBreakMinutes: 5,
   launchAtLogin: false,
   minimizeToTray: false,
   reminderEnabled: true,

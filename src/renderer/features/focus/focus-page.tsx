@@ -21,6 +21,7 @@ import { FocusTimerCard } from "./components/focus-timer-card";
 
 function FocusPageComponent({
   focusSaveErrorMessage,
+  focusCyclesBeforeLongBreak,
   phase,
   sessions,
   sessionsLoadError,
@@ -43,6 +44,7 @@ function FocusPageComponent({
       ) : null}
 
       <FocusTimerCard
+        focusCyclesBeforeLongBreak={focusCyclesBeforeLongBreak}
         timerState={timerState}
         onPause={() => setTimerState(pauseFocusTimerState(timerState))}
         onReset={() => {
@@ -58,13 +60,23 @@ function FocusPageComponent({
         onSkipBreak={() => {
           clearFocusSaveError();
           setTimerState(
-            createIdleFocusTimerState(new Date(), timerState.focusDurationMs)
+            createIdleFocusTimerState(
+              new Date(),
+              timerState.focusDurationMs,
+              timerState.breakVariant === "long"
+                ? 0
+                : timerState.completedFocusCycles
+            )
           );
         }}
         onStart={(focusDurationMs) => {
           clearFocusSaveError();
           setTimerState(
-            createRunningFocusTimerState(new Date(), focusDurationMs)
+            createRunningFocusTimerState(
+              new Date(),
+              focusDurationMs,
+              timerState.completedFocusCycles
+            )
           );
         }}
         onDurationChange={(focusDurationMs) => {

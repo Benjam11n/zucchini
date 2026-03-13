@@ -8,6 +8,9 @@ describe("buildLoginItemSettings()", () => {
   it("disables launch at login when the setting is off", () => {
     expect(
       buildLoginItemSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: false,
         minimizeToTray: true,
         reminderEnabled: true,
@@ -25,6 +28,9 @@ describe("buildLoginItemSettings()", () => {
   it("hides on launch when tray mode is enabled", () => {
     expect(
       buildLoginItemSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: true,
         minimizeToTray: true,
         reminderEnabled: true,

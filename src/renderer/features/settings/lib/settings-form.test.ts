@@ -7,6 +7,9 @@ import {
 import type { AppSettings } from "@/shared/domain/settings";
 
 const baseSettings: AppSettings = {
+  focusCyclesBeforeLongBreak: 4,
+  focusLongBreakMinutes: 15,
+  focusShortBreakMinutes: 5,
   launchAtLogin: false,
   minimizeToTray: false,
   reminderEnabled: true,

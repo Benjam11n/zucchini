@@ -9,10 +9,13 @@ import {
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
+import { writePomodoroTimerSettings } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 import { useFocusTimer } from "./use-focus-timer";
 
@@ -23,6 +26,12 @@ type FocusSessionRecordedListener = (session: {
   id: number;
   startedAt: string;
 }) => void;
+
+const DEFAULT_TIMER_SETTINGS = {
+  focusCyclesBeforeLongBreak: 4,
+  focusLongBreakMinutes: 15,
+  focusShortBreakMinutes: 5,
+};
 
 function createLocalStorageMock() {
   const storage = new Map<string, string>();
@@ -86,6 +95,35 @@ function teardownFocusTimerTest() {
   vi.useRealTimers();
 }
 
+function renderFocusTimerHook({
+  clearFocusSaveError = vi.fn(),
+  pomodoroSettings = DEFAULT_TIMER_SETTINGS,
+  recordFocusSession = vi
+    .fn<(input: CreateFocusSessionInput) => Promise<unknown>>()
+    .mockResolvedValue(42),
+  setFocusSaveErrorMessage = vi.fn(),
+}: {
+  clearFocusSaveError?: () => void;
+  pomodoroSettings?: PomodoroTimerSettings | null;
+  recordFocusSession?: (input: CreateFocusSessionInput) => Promise<unknown>;
+  setFocusSaveErrorMessage?: (message: string | null) => void;
+} = {}) {
+  renderHook(() =>
+    useFocusTimer({
+      clearFocusSaveError,
+      pomodoroSettings,
+      recordFocusSession,
+      setFocusSaveErrorMessage,
+    })
+  );
+
+  return {
+    clearFocusSaveError,
+    recordFocusSession,
+    setFocusSaveErrorMessage,
+  };
+}
+
 describe("use focus timer", () => {
   it("pauses and resumes using end-time math", () => {
     setupFocusTimerTest();
@@ -116,6 +154,8 @@ describe("use focus timer", () => {
     localStorage.setItem(
       "zucchini_focus_timer",
       JSON.stringify({
+        breakVariant: null,
+        completedFocusCycles: 2,
         cycleId: "cycle-restore",
         endsAt: "2026-03-08T09:25:00.000Z",
         focusDurationMs: 1_500_000,
@@ -127,17 +167,7 @@ describe("use focus timer", () => {
       })
     );
 
-    const clearFocusSaveError = vi.fn();
-    const recordFocusSession = vi.fn();
-    const setFocusSaveErrorMessage = vi.fn();
-
-    renderHook(() =>
-      useFocusTimer({
-        clearFocusSaveError,
-        recordFocusSession,
-        setFocusSaveErrorMessage,
-      })
-    );
+    renderFocusTimerHook();
 
     await act(async () => {
       await Promise.resolve();
@@ -149,6 +179,7 @@ describe("use focus timer", () => {
     expect(useFocusStore.getState().timerState.remainingMs).toBe(1_500_000);
     expect(persistedTimerState).not.toBeNull();
     expect(JSON.parse(persistedTimerState as string)).toMatchObject({
+      completedFocusCycles: 2,
       cycleId: "cycle-restore",
       remainingMs: 1_500_000,
       status: "running",
@@ -156,13 +187,13 @@ describe("use focus timer", () => {
     teardownFocusTimerTest();
   });
 
-  it("records one completed focus session and transitions into a break", async () => {
+  it("records one completed focus session and transitions into a short break", async () => {
     setupFocusTimerTest();
-    const clearFocusSaveError = vi.fn();
     const recordFocusSession = vi.fn().mockResolvedValue(42);
-    const setFocusSaveErrorMessage = vi.fn();
 
     useFocusStore.getState().setTimerState({
+      breakVariant: null,
+      completedFocusCycles: 0,
       cycleId: "cycle-1",
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
@@ -173,13 +204,7 @@ describe("use focus timer", () => {
       status: "running",
     });
 
-    renderHook(() =>
-      useFocusTimer({
-        clearFocusSaveError,
-        recordFocusSession,
-        setFocusSaveErrorMessage,
-      })
-    );
+    renderFocusTimerHook({ recordFocusSession });
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
@@ -189,18 +214,60 @@ describe("use focus timer", () => {
 
     // oxlint-disable-next-line vitest/prefer-called-once
     expect(recordFocusSession).toHaveBeenCalledTimes(1);
-    expect(useFocusStore.getState().timerState.phase).toBe("break");
-    expect(useFocusStore.getState().timerState.status).toBe("running");
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: "short",
+      completedFocusCycles: 1,
+      phase: "break",
+      remainingMs: 5 * 60 * 1000,
+      status: "running",
+    });
     teardownFocusTimerTest();
   });
 
-  it("completes a break without recording a focus session", async () => {
+  it("starts a long break when the cycle threshold is reached", async () => {
     setupFocusTimerTest();
-    const clearFocusSaveError = vi.fn();
     const recordFocusSession = vi.fn().mockResolvedValue(42);
-    const setFocusSaveErrorMessage = vi.fn();
 
     useFocusStore.getState().setTimerState({
+      breakVariant: null,
+      completedFocusCycles: 3,
+      cycleId: "cycle-4",
+      endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1000,
+      startedAt: "2026-03-08T08:35:01.000Z",
+      status: "running",
+    });
+
+    renderFocusTimerHook({ recordFocusSession });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // oxlint-disable-next-line vitest/prefer-called-once
+    expect(recordFocusSession).toHaveBeenCalledTimes(1);
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: "long",
+      completedFocusCycles: 4,
+      phase: "break",
+      remainingMs: 15 * 60 * 1000,
+      status: "running",
+    });
+    teardownFocusTimerTest();
+  });
+
+  it("completes a short break without recording a focus session", async () => {
+    setupFocusTimerTest();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: "short",
+      completedFocusCycles: 2,
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
@@ -211,13 +278,7 @@ describe("use focus timer", () => {
       status: "running",
     });
 
-    renderHook(() =>
-      useFocusTimer({
-        clearFocusSaveError,
-        recordFocusSession,
-        setFocusSaveErrorMessage,
-      })
-    );
+    renderFocusTimerHook({ recordFocusSession });
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
@@ -227,24 +288,164 @@ describe("use focus timer", () => {
 
     expect(recordFocusSession).not.toHaveBeenCalled();
     expect(useFocusStore.getState().timerState).toStrictEqual(
-      createIdleFocusTimerState(new Date("2026-03-08T09:00:01.000Z"))
+      createIdleFocusTimerState(
+        new Date("2026-03-08T09:00:01.000Z"),
+        25 * 60 * 1000,
+        2
+      )
+    );
+    teardownFocusTimerTest();
+  });
+
+  it("resets the cycle count after a long break completes", async () => {
+    setupFocusTimerTest();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: "long",
+      completedFocusCycles: 4,
+      cycleId: null,
+      endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "break",
+      remainingMs: 1000,
+      startedAt: null,
+      status: "running",
+    });
+
+    renderFocusTimerHook({ recordFocusSession });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(recordFocusSession).not.toHaveBeenCalled();
+    expect(useFocusStore.getState().timerState).toStrictEqual(
+      createIdleFocusTimerState(
+        new Date("2026-03-08T09:00:01.000Z"),
+        25 * 60 * 1000
+      )
+    );
+    teardownFocusTimerTest();
+  });
+
+  it("uses the latest saved settings only for the next created break", async () => {
+    setupFocusTimerTest();
+    const clearFocusSaveError = vi.fn();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+    const setFocusSaveErrorMessage = vi.fn();
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: null,
+      completedFocusCycles: 0,
+      cycleId: "cycle-settings",
+      endsAt: "2026-03-08T09:00:02.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 2000,
+      startedAt: "2026-03-08T08:35:02.000Z",
+      status: "running",
+    });
+
+    const { rerender } = renderHook(
+      ({ pomodoroSettings }) =>
+        useFocusTimer({
+          clearFocusSaveError,
+          pomodoroSettings,
+          recordFocusSession,
+          setFocusSaveErrorMessage,
+        }),
+      {
+        initialProps: {
+          pomodoroSettings: DEFAULT_TIMER_SETTINGS,
+        },
+      }
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().timerState.remainingMs).toBe(1000);
+
+    rerender({
+      pomodoroSettings: {
+        focusCyclesBeforeLongBreak: 2,
+        focusLongBreakMinutes: 20,
+        focusShortBreakMinutes: 7,
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: "short",
+      remainingMs: 7 * 60 * 1000,
+      status: "running",
+    });
+    teardownFocusTimerTest();
+  });
+
+  it("falls back to stored pomodoro settings before runtime settings load", async () => {
+    setupFocusTimerTest();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+    writePomodoroTimerSettings({
+      focusCyclesBeforeLongBreak: 2,
+      focusLongBreakMinutes: 20,
+      focusShortBreakMinutes: 7,
+    });
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: null,
+      completedFocusCycles: 1,
+      cycleId: "cycle-stored",
+      endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1000,
+      startedAt: "2026-03-08T08:35:01.000Z",
+      status: "running",
+    });
+
+    renderFocusTimerHook({
+      pomodoroSettings: null,
+      recordFocusSession,
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // oxlint-disable-next-line vitest/prefer-called-once
+    expect(recordFocusSession).toHaveBeenCalledTimes(1);
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: "long",
+      completedFocusCycles: 2,
+      remainingMs: 20 * 60 * 1000,
+      status: "running",
+    });
+    expect(window.habits.showNotification).toHaveBeenCalledWith(
+      "Focus complete",
+      "Time for a long break."
     );
     teardownFocusTimerTest();
   });
 
   it("reopens the widget when a focus timer starts", async () => {
     setupFocusTimerTest();
-    const clearFocusSaveError = vi.fn();
-    const recordFocusSession = vi.fn().mockResolvedValue(42);
-    const setFocusSaveErrorMessage = vi.fn();
-
-    renderHook(() =>
-      useFocusTimer({
-        clearFocusSaveError,
-        recordFocusSession,
-        setFocusSaveErrorMessage,
-      })
-    );
+    renderFocusTimerHook();
 
     await act(async () => {
       useFocusStore.getState().setTimerState(createRunningFocusTimerState());
@@ -258,17 +459,7 @@ describe("use focus timer", () => {
 
   it("prepends broadcast focus sessions once per unique id", async () => {
     const { emitFocusSessionRecorded } = setupFocusTimerTest();
-    const clearFocusSaveError = vi.fn();
-    const recordFocusSession = vi.fn().mockResolvedValue(42);
-    const setFocusSaveErrorMessage = vi.fn();
-
-    renderHook(() =>
-      useFocusTimer({
-        clearFocusSaveError,
-        recordFocusSession,
-        setFocusSaveErrorMessage,
-      })
-    );
+    renderFocusTimerHook();
 
     await act(async () => {
       emitFocusSessionRecorded({

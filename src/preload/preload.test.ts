@@ -48,6 +48,9 @@ describe("preload habits API", () => {
       date: "2026-03-08",
       habits: [],
       settings: {
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: false,
         minimizeToTray: false,
         reminderEnabled: true,

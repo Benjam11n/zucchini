@@ -39,6 +39,8 @@ describe("focus storage", () => {
 
     expect(
       isPersistedFocusTimerState({
+        breakVariant: null,
+        completedFocusCycles: 2,
         cycleId: "cycle-1",
         endsAt: "2026-03-08T09:25:00.000Z",
         focusDurationMs: 1_500_000,
@@ -61,6 +63,8 @@ describe("focus storage", () => {
   it("round-trips timer state through localStorage", () => {
     installLocalStorageMock();
     const state = {
+      breakVariant: null,
+      completedFocusCycles: 0,
       cycleId: null,
       endsAt: null,
       focusDurationMs: 1_500_000,
@@ -92,6 +96,8 @@ describe("focus storage", () => {
     );
 
     expect(readFocusTimerState()).toStrictEqual({
+      breakVariant: null,
+      completedFocusCycles: 0,
       cycleId: null,
       endsAt: null,
       focusDurationMs: 1_500_000,
@@ -100,6 +106,36 @@ describe("focus storage", () => {
       remainingMs: 1_500_000,
       startedAt: null,
       status: "idle",
+    });
+  });
+
+  it("restores legacy break state with a short-break default", () => {
+    installLocalStorageMock();
+    localStorage.setItem(
+      "zucchini_focus_timer",
+      JSON.stringify({
+        cycleId: null,
+        endsAt: "2026-03-08T09:05:00.000Z",
+        focusDurationMs: 1_500_000,
+        lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+        phase: "break",
+        remainingMs: 300_000,
+        startedAt: null,
+        status: "running",
+      })
+    );
+
+    expect(readFocusTimerState()).toStrictEqual({
+      breakVariant: "short",
+      completedFocusCycles: 0,
+      cycleId: null,
+      endsAt: "2026-03-08T09:05:00.000Z",
+      focusDurationMs: 1_500_000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "break",
+      remainingMs: 300_000,
+      startedAt: null,
+      status: "running",
     });
   });
 });

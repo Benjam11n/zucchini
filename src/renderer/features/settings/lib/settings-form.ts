@@ -16,6 +16,9 @@ export function areAppSettingsEqual(
   }
 
   return (
+    left.focusCyclesBeforeLongBreak === right.focusCyclesBeforeLongBreak &&
+    left.focusLongBreakMinutes === right.focusLongBreakMinutes &&
+    left.focusShortBreakMinutes === right.focusShortBreakMinutes &&
     left.launchAtLogin === right.launchAtLogin &&
     left.minimizeToTray === right.minimizeToTray &&
     left.reminderEnabled === right.reminderEnabled &&

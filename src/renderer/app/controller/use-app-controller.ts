@@ -10,6 +10,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useBootStore } from "@/renderer/app/state/boot-store";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
+import { writePomodoroTimerSettings } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review/lib/weekly-review-spotlight";
@@ -28,6 +29,7 @@ import { useSettingsStore } from "@/renderer/features/settings/state/settings-st
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { appActions } from "./app-actions";
@@ -414,6 +416,10 @@ function useAppLifecycleEffects({
   weeklyReviewOverview: AppControllerState["weeklyReviewOverview"];
   weeklyReviewPhase: AppControllerState["weeklyReviewPhase"];
 }) {
+  const savedPomodoroSettings = todayState
+    ? getPomodoroTimerSettings(todayState.settings)
+    : null;
+
   useEffect(() => {
     void bootApp();
   }, [bootApp]);
@@ -462,6 +468,19 @@ function useAppLifecycleEffects({
       mediaQuery.removeEventListener("change", syncSystemTheme);
     };
   }, [setSystemTheme]);
+
+  useEffect(() => {
+    if (!savedPomodoroSettings) {
+      return;
+    }
+
+    writePomodoroTimerSettings(savedPomodoroSettings);
+  }, [
+    savedPomodoroSettings,
+    savedPomodoroSettings?.focusCyclesBeforeLongBreak,
+    savedPomodoroSettings?.focusLongBreakMinutes,
+    savedPomodoroSettings?.focusShortBreakMinutes,
+  ]);
 
   useEffect(() => {
     const preferredTheme =
@@ -514,6 +533,9 @@ export function useAppController() {
 
   useFocusTimer({
     clearFocusSaveError: actions.clearFocusSaveError,
+    pomodoroSettings: coreState.todayState
+      ? getPomodoroTimerSettings(coreState.todayState.settings)
+      : null,
     recordFocusSession: actions.recordFocusSession,
     setFocusSaveErrorMessage: actions.setFocusSaveErrorMessage,
   });

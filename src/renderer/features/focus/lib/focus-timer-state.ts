@@ -1,13 +1,14 @@
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import { toDateKey } from "@/shared/utils/date";
 
-import type { PersistedFocusTimerState } from "../focus.types";
+import type {
+  FocusBreakVariant,
+  PersistedFocusTimerState,
+} from "../focus.types";
 import {
   clampFocusDurationMs,
   DEFAULT_FOCUS_DURATION_MS,
 } from "./focus-timer.constants";
-
-const BREAK_DURATION_MS = 5 * 60 * 1000;
 
 function createCycleId(): string {
   if ("randomUUID" in crypto) {
@@ -19,11 +20,14 @@ function createCycleId(): string {
 
 export function createIdleFocusTimerState(
   now = new Date(),
-  focusDurationMs = DEFAULT_FOCUS_DURATION_MS
+  focusDurationMs = DEFAULT_FOCUS_DURATION_MS,
+  completedFocusCycles = 0
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
 
   return {
+    breakVariant: null,
+    completedFocusCycles: Math.max(0, completedFocusCycles),
     cycleId: null,
     endsAt: null,
     focusDurationMs: resolvedFocusDurationMs,
@@ -37,11 +41,14 @@ export function createIdleFocusTimerState(
 
 export function createRunningFocusTimerState(
   now = new Date(),
-  focusDurationMs = DEFAULT_FOCUS_DURATION_MS
+  focusDurationMs = DEFAULT_FOCUS_DURATION_MS,
+  completedFocusCycles = 0
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
 
   return {
+    breakVariant: null,
+    completedFocusCycles: Math.max(0, completedFocusCycles),
     cycleId: createCycleId(),
     endsAt: new Date(now.getTime() + resolvedFocusDurationMs).toISOString(),
     focusDurationMs: resolvedFocusDurationMs,
@@ -53,17 +60,30 @@ export function createRunningFocusTimerState(
   };
 }
 
-export function createRunningBreakTimerState(
-  focusDurationMs: number,
-  now = new Date()
-): PersistedFocusTimerState {
+export function createRunningBreakTimerState({
+  breakDurationMs,
+  breakVariant,
+  completedFocusCycles,
+  focusDurationMs,
+  now = new Date(),
+}: {
+  breakDurationMs: number;
+  breakVariant: FocusBreakVariant;
+  completedFocusCycles: number;
+  focusDurationMs: number;
+  now?: Date;
+}): PersistedFocusTimerState {
+  const resolvedBreakDurationMs = Math.max(1000, breakDurationMs);
+
   return {
+    breakVariant,
+    completedFocusCycles: Math.max(0, completedFocusCycles),
     cycleId: null,
-    endsAt: new Date(now.getTime() + BREAK_DURATION_MS).toISOString(),
+    endsAt: new Date(now.getTime() + resolvedBreakDurationMs).toISOString(),
     focusDurationMs: clampFocusDurationMs(focusDurationMs),
     lastUpdatedAt: now.toISOString(),
     phase: "break",
-    remainingMs: BREAK_DURATION_MS,
+    remainingMs: resolvedBreakDurationMs,
     startedAt: null,
     status: "running",
   };
@@ -134,5 +154,9 @@ export function setFocusTimerDuration(
     return timerState;
   }
 
-  return createIdleFocusTimerState(now, focusDurationMs);
+  return createIdleFocusTimerState(
+    now,
+    focusDurationMs,
+    timerState.completedFocusCycles
+  );
 }

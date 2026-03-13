@@ -93,6 +93,9 @@ class FakeRepository implements HabitRepository {
     lastEvaluatedDate: "2026-03-05",
   };
   settings: AppSettings = {
+    focusCyclesBeforeLongBreak: 4,
+    focusLongBreakMinutes: 15,
+    focusShortBreakMinutes: 5,
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,
@@ -479,6 +482,9 @@ function createCompleteOnboardingInput(): CompleteOnboardingInput {
       },
     ],
     settings: {
+      focusCyclesBeforeLongBreak: 4,
+      focusLongBreakMinutes: 15,
+      focusShortBreakMinutes: 5,
       launchAtLogin: false,
       minimizeToTray: false,
       reminderEnabled: true,

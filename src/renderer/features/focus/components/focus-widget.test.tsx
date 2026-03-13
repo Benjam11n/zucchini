@@ -62,6 +62,9 @@ describe("focus widget", () => {
       date: "2026-03-10",
       habits: [],
       settings: {
+        focusCyclesBeforeLongBreak: 4,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
         launchAtLogin: false,
         minimizeToTray: false,
         reminderEnabled: true,
@@ -176,11 +179,15 @@ describe("focus widget", () => {
   it("shows break status and the final-minute cue", async () => {
     setupWidgetTest({ renderWidget: false });
     act(() => {
-      useFocusStore
-        .getState()
-        .setTimerState(
-          createRunningBreakTimerState(25 * 60 * 1000, new Date())
-        );
+      useFocusStore.getState().setTimerState(
+        createRunningBreakTimerState({
+          breakDurationMs: 5 * 60 * 1000,
+          breakVariant: "short",
+          completedFocusCycles: 1,
+          focusDurationMs: 25 * 60 * 1000,
+          now: new Date(),
+        })
+      );
     });
 
     render(<FocusWidget />);
@@ -200,6 +207,28 @@ describe("focus widget", () => {
     expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
   });
 
+  it("renders a long-break pill when the widget is in a long break", async () => {
+    const { getTodayState } = setupWidgetTest({ renderWidget: false });
+    act(() => {
+      useFocusStore.getState().setTimerState(
+        createRunningBreakTimerState({
+          breakDurationMs: 15 * 60 * 1000,
+          breakVariant: "long",
+          completedFocusCycles: 4,
+          focusDurationMs: 25 * 60 * 1000,
+          now: new Date(),
+        })
+      );
+    });
+
+    render(<FocusWidget />);
+
+    await waitFor(() => {
+      expect(getTodayState.mock.calls[0]).toStrictEqual([]);
+      expect(screen.getByText("Long break")).toBeInTheDocument();
+    });
+  });
+
   it("does not show a status icon during normal focus", async () => {
     setupWidgetTest();
 
@@ -208,8 +237,8 @@ describe("focus widget", () => {
     });
   });
 
-  it("uses amber timer text during the final minute of focus", () => {
-    setupWidgetTest({ renderWidget: false });
+  it("uses amber timer text during the final minute of focus", async () => {
+    const { getTodayState } = setupWidgetTest({ renderWidget: false });
     act(() => {
       useFocusStore
         .getState()
@@ -225,7 +254,10 @@ describe("focus widget", () => {
       });
     });
 
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
+    await waitFor(() => {
+      expect(getTodayState.mock.calls[0]).toStrictEqual([]);
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
+    });
   });
 });

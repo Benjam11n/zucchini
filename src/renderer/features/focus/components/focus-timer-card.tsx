@@ -18,6 +18,7 @@ import {
 } from "@/renderer/shared/ui/card";
 
 interface FocusTimerCardProps {
+  focusCyclesBeforeLongBreak: number;
   timerState: PersistedFocusTimerState;
   onDurationChange: (focusDurationMs: number) => void;
   onPause: () => void;
@@ -37,6 +38,7 @@ function sanitizeTimerInput(value: string): string {
 }
 
 export function FocusTimerCard({
+  focusCyclesBeforeLongBreak,
   timerState,
   onDurationChange,
   onPause,
@@ -62,9 +64,20 @@ export function FocusTimerCard({
   if (isBreakFinalMinute) {
     phaseBadgeVariant = "destructive";
     phaseBadgeLabel = "1 min left";
+  } else if (timerState.breakVariant === "long") {
+    phaseBadgeVariant = "secondary";
+    phaseBadgeLabel = "Long break";
   } else if (isBreak) {
     phaseBadgeVariant = "secondary";
-    phaseBadgeLabel = "Break";
+    phaseBadgeLabel = "Short break";
+  }
+
+  let nextBreakVariant = "short";
+  if (timerState.phase !== "break" || timerState.breakVariant !== "long") {
+    nextBreakVariant =
+      timerState.completedFocusCycles + 1 >= focusCyclesBeforeLongBreak
+        ? "long"
+        : "short";
   }
 
   const canEditDuration = isIdle && !isBreak;
@@ -222,6 +235,14 @@ export function FocusTimerCard({
                   </div>
                 </>
               )}
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+              <span>
+                Completed this set: {timerState.completedFocusCycles}/
+                {focusCyclesBeforeLongBreak}
+              </span>
+              <span>Next break: {nextBreakVariant}</span>
             </div>
           </div>
         </div>

@@ -5,13 +5,28 @@
  * for reminder times, snooze values, and time zone strings.
  */
 export type ThemeMode = "system" | "light" | "dark";
+export interface PomodoroTimerSettings {
+  focusCyclesBeforeLongBreak: number;
+  focusLongBreakMinutes: number;
+  focusShortBreakMinutes: number;
+}
 
 const DEFAULT_REMINDER_TIME = "20:30";
 export const DEFAULT_REMINDER_SNOOZE_MINUTES = 15;
+export const DEFAULT_FOCUS_SHORT_BREAK_MINUTES = 5;
+export const DEFAULT_FOCUS_LONG_BREAK_MINUTES = 15;
+export const DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK = 4;
 const MIN_REMINDER_SNOOZE_MINUTES = 1;
 const MAX_REMINDER_SNOOZE_MINUTES = 240;
+const MIN_FOCUS_BREAK_MINUTES = 1;
+const MAX_FOCUS_BREAK_MINUTES = 60;
+const MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK = 1;
+const MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK = 12;
 
 export interface AppSettings {
+  focusCyclesBeforeLongBreak: PomodoroTimerSettings["focusCyclesBeforeLongBreak"];
+  focusLongBreakMinutes: PomodoroTimerSettings["focusLongBreakMinutes"];
+  focusShortBreakMinutes: PomodoroTimerSettings["focusShortBreakMinutes"];
   launchAtLogin: boolean;
   minimizeToTray: boolean;
   reminderEnabled: boolean;
@@ -21,8 +36,17 @@ export interface AppSettings {
   timezone: string;
 }
 
+export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
+  return {
+    focusCyclesBeforeLongBreak: DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK,
+    focusLongBreakMinutes: DEFAULT_FOCUS_LONG_BREAK_MINUTES,
+    focusShortBreakMinutes: DEFAULT_FOCUS_SHORT_BREAK_MINUTES,
+  };
+}
+
 export function createDefaultAppSettings(timezone: string): AppSettings {
   return {
+    ...createDefaultPomodoroTimerSettings(),
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,
@@ -30,6 +54,21 @@ export function createDefaultAppSettings(timezone: string): AppSettings {
     reminderTime: DEFAULT_REMINDER_TIME,
     themeMode: "system",
     timezone,
+  };
+}
+
+export function getPomodoroTimerSettings(
+  settings: Pick<
+    AppSettings,
+    | "focusCyclesBeforeLongBreak"
+    | "focusLongBreakMinutes"
+    | "focusShortBreakMinutes"
+  >
+): PomodoroTimerSettings {
+  return {
+    focusCyclesBeforeLongBreak: settings.focusCyclesBeforeLongBreak,
+    focusLongBreakMinutes: settings.focusLongBreakMinutes,
+    focusShortBreakMinutes: settings.focusShortBreakMinutes,
   };
 }
 
@@ -61,6 +100,33 @@ export function isValidReminderSnoozeMinutes(value: number): boolean {
     Number.isInteger(value) &&
     value >= MIN_REMINDER_SNOOZE_MINUTES &&
     value <= MAX_REMINDER_SNOOZE_MINUTES
+  );
+}
+
+export function isValidFocusBreakMinutes(value: number): boolean {
+  return (
+    Number.isInteger(value) &&
+    value >= MIN_FOCUS_BREAK_MINUTES &&
+    value <= MAX_FOCUS_BREAK_MINUTES
+  );
+}
+
+export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
+  return (
+    Number.isInteger(value) &&
+    value >= MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK &&
+    value <= MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK
+  );
+}
+
+export function isValidPomodoroTimerSettings(
+  settings: PomodoroTimerSettings
+): boolean {
+  return (
+    isValidFocusCyclesBeforeLongBreak(settings.focusCyclesBeforeLongBreak) &&
+    isValidFocusBreakMinutes(settings.focusLongBreakMinutes) &&
+    isValidFocusBreakMinutes(settings.focusShortBreakMinutes) &&
+    settings.focusLongBreakMinutes >= settings.focusShortBreakMinutes
   );
 }
 

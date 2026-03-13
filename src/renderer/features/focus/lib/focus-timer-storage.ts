@@ -7,6 +7,67 @@ import {
 const FOCUS_TIMER_STORAGE_KEY = "zucchini_focus_timer";
 const FOCUS_TIMER_STORAGE_EVENT = "storage";
 
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isPersistedBreakVariant(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === "short" ||
+    value === "long"
+  );
+}
+
+function isPersistedFocusTimerPhase(
+  value: unknown
+): value is "focus" | "break" {
+  return value === "focus" || value === "break";
+}
+
+function isPersistedFocusTimerStatus(
+  value: unknown
+): value is "idle" | "running" | "paused" {
+  return value === "idle" || value === "running" || value === "paused";
+}
+
+function getPersistedFocusDurationMs(
+  candidate: Partial<PersistedFocusTimerState>
+): number {
+  return typeof candidate.focusDurationMs === "number" &&
+    Number.isFinite(candidate.focusDurationMs)
+    ? clampFocusDurationMs(candidate.focusDurationMs)
+    : DEFAULT_FOCUS_DURATION_MS;
+}
+
+function getCompletedFocusCycles(
+  candidate: Partial<PersistedFocusTimerState>
+): number {
+  return typeof candidate.completedFocusCycles === "number" &&
+    Number.isInteger(candidate.completedFocusCycles) &&
+    candidate.completedFocusCycles >= 0
+    ? candidate.completedFocusCycles
+    : 0;
+}
+
+function isValidPersistedFocusTimerState(
+  candidate: Partial<PersistedFocusTimerState>
+): candidate is PersistedFocusTimerState {
+  return (
+    isPersistedBreakVariant(candidate.breakVariant) &&
+    isNullableString(candidate.cycleId) &&
+    isPersistedFocusTimerPhase(candidate.phase) &&
+    isPersistedFocusTimerStatus(candidate.status) &&
+    isNullableString(candidate.startedAt) &&
+    isNullableString(candidate.endsAt) &&
+    typeof candidate.remainingMs === "number" &&
+    Number.isFinite(candidate.remainingMs) &&
+    candidate.remainingMs >= 0 &&
+    typeof candidate.lastUpdatedAt === "string"
+  );
+}
+
 function parsePersistedFocusTimerState(
   value: unknown
 ): PersistedFocusTimerState | null {
@@ -15,36 +76,21 @@ function parsePersistedFocusTimerState(
   }
 
   const candidate = value as Partial<PersistedFocusTimerState>;
-  const focusDurationMs =
-    typeof candidate.focusDurationMs === "number" &&
-    Number.isFinite(candidate.focusDurationMs)
-      ? clampFocusDurationMs(candidate.focusDurationMs)
-      : DEFAULT_FOCUS_DURATION_MS;
-
-  if (
-    !(candidate.cycleId === null || typeof candidate.cycleId === "string") ||
-    !(candidate.phase === "focus" || candidate.phase === "break") ||
-    !(
-      candidate.status === "idle" ||
-      candidate.status === "running" ||
-      candidate.status === "paused"
-    ) ||
-    !(
-      candidate.startedAt === null || typeof candidate.startedAt === "string"
-    ) ||
-    !(candidate.endsAt === null || typeof candidate.endsAt === "string") ||
-    typeof candidate.remainingMs !== "number" ||
-    !Number.isFinite(candidate.remainingMs) ||
-    candidate.remainingMs < 0 ||
-    typeof candidate.lastUpdatedAt !== "string"
-  ) {
+  if (!isValidPersistedFocusTimerState(candidate)) {
     return null;
   }
 
+  let breakVariant: PersistedFocusTimerState["breakVariant"] = null;
+  if (candidate.phase === "break") {
+    breakVariant = candidate.breakVariant === "long" ? "long" : "short";
+  }
+
   return {
+    breakVariant,
+    completedFocusCycles: getCompletedFocusCycles(candidate),
     cycleId: candidate.cycleId,
     endsAt: candidate.endsAt,
-    focusDurationMs,
+    focusDurationMs: getPersistedFocusDurationMs(candidate),
     lastUpdatedAt: candidate.lastUpdatedAt,
     phase: candidate.phase,
     remainingMs: candidate.remainingMs,

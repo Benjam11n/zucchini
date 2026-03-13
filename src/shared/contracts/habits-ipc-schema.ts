@@ -7,6 +7,8 @@
 import { z } from "zod";
 
 import {
+  isValidFocusBreakMinutes,
+  isValidFocusCyclesBeforeLongBreak,
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
   isValidTimeZone,
@@ -60,6 +62,18 @@ const themeModeSchema = z.enum(["system", "light", "dark"]);
 
 export const appSettingsSchema = z
   .object({
+    focusCyclesBeforeLongBreak: z
+      .number()
+      .int()
+      .refine(isValidFocusCyclesBeforeLongBreak, {
+        message: "Cycles before a long break must be between 1 and 12.",
+      }),
+    focusLongBreakMinutes: z.number().int().refine(isValidFocusBreakMinutes, {
+      message: "Long break minutes must be between 1 and 60.",
+    }),
+    focusShortBreakMinutes: z.number().int().refine(isValidFocusBreakMinutes, {
+      message: "Short break minutes must be between 1 and 60.",
+    }),
     launchAtLogin: z.boolean(),
     minimizeToTray: z.boolean(),
     reminderEnabled: z.boolean(),
@@ -77,7 +91,17 @@ export const appSettingsSchema = z
       message: "Timezone must be a valid IANA timezone.",
     }),
   })
-  .strict();
+  .strict()
+  .superRefine((settings, context) => {
+    if (settings.focusLongBreakMinutes < settings.focusShortBreakMinutes) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Long break minutes must be greater than or equal to short break minutes.",
+        path: ["focusLongBreakMinutes"],
+      });
+    }
+  });
 
 export const completeOnboardingInputSchema = z
   .object({
