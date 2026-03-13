@@ -10,6 +10,7 @@ import type { FocusPageProps } from "@/renderer/features/focus/focus.types";
 import {
   createIdleFocusTimerState,
   createRunningFocusTimerState,
+  getCompletedFocusCyclesAfterBreak,
   getPomodoroFocusDurationMs,
   pauseFocusTimerState,
   resumeFocusTimerState,
@@ -107,12 +108,13 @@ function FocusPageComponent({
           onSkipBreak={() => {
             clearFocusSaveError();
             setTimerState(
-              createIdleFocusTimerState(
+              createRunningFocusTimerState(
                 new Date(),
                 defaultFocusDurationMs,
-                timerState.breakVariant === "long"
-                  ? 0
-                  : timerState.completedFocusCycles
+                getCompletedFocusCyclesAfterBreak(
+                  timerState.breakVariant,
+                  timerState.completedFocusCycles
+                )
               )
             );
           }}

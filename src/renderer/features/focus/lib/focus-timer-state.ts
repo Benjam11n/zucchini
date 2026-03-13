@@ -91,6 +91,13 @@ export function createRunningBreakTimerState({
   };
 }
 
+export function getCompletedFocusCyclesAfterBreak(
+  breakVariant: FocusBreakVariant | null,
+  completedFocusCycles: number
+): number {
+  return breakVariant === "long" ? 0 : completedFocusCycles;
+}
+
 export function getPomodoroFocusDurationMs(
   settings: Pick<PomodoroTimerSettings, "focusDefaultDurationSeconds">
 ): number {

@@ -286,7 +286,7 @@ describe("use focus timer", () => {
     teardownFocusTimerTest();
   });
 
-  it("completes a short break without recording a focus session", async () => {
+  it("starts the next focus session after a short break completes", async () => {
     setupFocusTimerTest();
     const recordFocusSession = vi.fn().mockResolvedValue(42);
 
@@ -312,13 +312,17 @@ describe("use focus timer", () => {
     });
 
     expect(recordFocusSession).not.toHaveBeenCalled();
-    expect(useFocusStore.getState().timerState).toStrictEqual(
-      createIdleFocusTimerState(
-        new Date("2026-03-08T09:00:01.000Z"),
-        25 * 60 * 1000,
-        2
-      )
-    );
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: null,
+      completedFocusCycles: 2,
+      endsAt: "2026-03-08T09:25:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:01.000Z",
+      phase: "focus",
+      remainingMs: 25 * 60 * 1000,
+      startedAt: "2026-03-08T09:00:01.000Z",
+      status: "running",
+    });
     teardownFocusTimerTest();
   });
 
@@ -357,7 +361,7 @@ describe("use focus timer", () => {
     teardownFocusTimerTest();
   });
 
-  it("returns to idle focus with the latest saved default duration after a break", async () => {
+  it("starts the next focus session with the latest saved default duration after a short break", async () => {
     setupFocusTimerTest();
     const recordFocusSession = vi.fn().mockResolvedValue(42);
 
@@ -391,13 +395,17 @@ describe("use focus timer", () => {
     });
 
     expect(recordFocusSession).not.toHaveBeenCalled();
-    expect(useFocusStore.getState().timerState).toStrictEqual(
-      createIdleFocusTimerState(
-        new Date("2026-03-08T09:00:01.000Z"),
-        30 * 60 * 1000,
-        2
-      )
-    );
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      breakVariant: null,
+      completedFocusCycles: 2,
+      endsAt: "2026-03-08T09:30:01.000Z",
+      focusDurationMs: 30 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:01.000Z",
+      phase: "focus",
+      remainingMs: 30 * 60 * 1000,
+      startedAt: "2026-03-08T09:00:01.000Z",
+      status: "running",
+    });
     teardownFocusTimerTest();
   });
 

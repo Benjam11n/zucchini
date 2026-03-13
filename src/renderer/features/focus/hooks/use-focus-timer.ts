@@ -5,6 +5,8 @@ import {
   createCompletedFocusSessionInput,
   createIdleFocusTimerState,
   createRunningBreakTimerState,
+  createRunningFocusTimerState,
+  getCompletedFocusCyclesAfterBreak,
   getPomodoroFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
@@ -280,16 +282,28 @@ export function useFocusTimer({
             return;
           }
 
+          const nextCompletedFocusCycles = getCompletedFocusCyclesAfterBreak(
+            currentState.breakVariant,
+            currentState.completedFocusCycles
+          );
+          const nextFocusDurationMs = getPomodoroFocusDurationMs(
+            pomodoroSettingsRef.current
+          );
+
           useFocusStore
             .getState()
             .setTimerState(
-              createIdleFocusTimerState(
-                now,
-                getPomodoroFocusDurationMs(pomodoroSettingsRef.current),
-                currentState.breakVariant === "long"
-                  ? 0
-                  : currentState.completedFocusCycles
-              )
+              currentState.breakVariant === "long"
+                ? createIdleFocusTimerState(
+                    now,
+                    nextFocusDurationMs,
+                    nextCompletedFocusCycles
+                  )
+                : createRunningFocusTimerState(
+                    now,
+                    nextFocusDurationMs,
+                    nextCompletedFocusCycles
+                  )
             );
           void notify(
             window.habits.showNotification,
