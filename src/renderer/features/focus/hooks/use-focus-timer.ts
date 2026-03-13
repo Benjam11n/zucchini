@@ -249,6 +249,7 @@ export function useFocusTimer({
                 completedFocusCycles,
                 focusDurationMs: currentState.focusDurationMs,
                 now: new Date(),
+                timerSessionId: currentState.timerSessionId,
               })
             );
 
@@ -270,7 +271,8 @@ export function useFocusTimer({
                 createCompletedFocusSessionInput(
                   currentState.startedAt,
                   currentState.endsAt,
-                  currentState.focusDurationMs
+                  currentState.focusDurationMs,
+                  currentState.timerSessionId ?? createCycleId()
                 )
               ).catch(() => {
                 setFocusSaveErrorMessage(
@@ -302,7 +304,8 @@ export function useFocusTimer({
                 : createRunningFocusTimerState(
                     now,
                     nextFocusDurationMs,
-                    nextCompletedFocusCycles
+                    nextCompletedFocusCycles,
+                    currentState.timerSessionId
                   )
             );
           void notify(

@@ -15,6 +15,12 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === "string";
 }
 
+function isOptionalNullableString(
+  value: unknown
+): value is string | null | undefined {
+  return value === undefined || isNullableString(value);
+}
+
 function isPersistedBreakVariant(value: unknown): boolean {
   return (
     value === undefined ||
@@ -64,6 +70,7 @@ function isValidPersistedFocusTimerState(
     isPersistedFocusTimerPhase(candidate.phase) &&
     isPersistedFocusTimerStatus(candidate.status) &&
     isNullableString(candidate.startedAt) &&
+    isOptionalNullableString(candidate.timerSessionId) &&
     isNullableString(candidate.endsAt) &&
     typeof candidate.remainingMs === "number" &&
     Number.isFinite(candidate.remainingMs) &&
@@ -100,6 +107,7 @@ function parsePersistedFocusTimerState(
     remainingMs: candidate.remainingMs,
     startedAt: candidate.startedAt,
     status: candidate.status,
+    timerSessionId: candidate.timerSessionId ?? null,
   };
 }
 

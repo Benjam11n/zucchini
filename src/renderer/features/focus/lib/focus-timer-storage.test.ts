@@ -49,6 +49,7 @@ describe("focus storage", () => {
         remainingMs: 1_500_000,
         startedAt: "2026-03-08T09:00:00.000Z",
         status: "running",
+        timerSessionId: "timer-session-1",
       })
     ).toBeTruthy();
   });
@@ -73,6 +74,7 @@ describe("focus storage", () => {
       remainingMs: 1_500_000,
       startedAt: null,
       status: "idle" as const,
+      timerSessionId: null,
     };
 
     writeFocusTimerState(state);
@@ -106,6 +108,7 @@ describe("focus storage", () => {
       remainingMs: 1_500_000,
       startedAt: null,
       status: "idle",
+      timerSessionId: null,
     });
   });
 
@@ -136,6 +139,7 @@ describe("focus storage", () => {
       remainingMs: 300_000,
       startedAt: null,
       status: "running",
+      timerSessionId: null,
     });
   });
 });

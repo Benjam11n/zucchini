@@ -61,12 +61,15 @@ export const focusSessions = sqliteTable(
     completedAt: text("completed_at").notNull(),
     completedDate: text("completed_date").notNull(),
     durationSeconds: integer("duration_seconds").notNull(),
+    entryKind: text("entry_kind").notNull().default("completed"),
     id: integer().primaryKey({ autoIncrement: true }),
     startedAt: text("started_at").notNull(),
+    timerSessionId: text("timer_session_id"),
   },
   (table) => [
     index("focus_sessions_completed_at_idx").on(table.completedAt),
     index("focus_sessions_completed_date_idx").on(table.completedDate),
+    index("focus_sessions_timer_session_id_idx").on(table.timerSessionId),
   ]
 );
 

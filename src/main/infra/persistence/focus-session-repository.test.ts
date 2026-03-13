@@ -6,15 +6,19 @@ function createFakeClient() {
       completedAt: "2026-03-08T10:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
+      entryKind: "completed",
       id: 2,
       startedAt: "2026-03-08T10:00:00.000Z",
+      timerSessionId: "timer-session-2",
     },
     {
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
+      entryKind: "completed",
       id: 1,
       startedAt: "2026-03-08T09:00:00.000Z",
+      timerSessionId: "timer-session-1",
     },
   ];
 
@@ -78,7 +82,9 @@ describe("focus session repository", () => {
       completedAt: "2026-03-08T11:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
+      entryKind: "completed",
       startedAt: "2026-03-08T11:00:00.000Z",
+      timerSessionId: "timer-session-3",
     });
     const sessions = repository.listRecentSessions(2);
 

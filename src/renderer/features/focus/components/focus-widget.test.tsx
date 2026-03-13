@@ -139,7 +139,10 @@ describe("focus widget", () => {
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Reset timer" }));
     });
-    expect(useFocusStore.getState().timerState.status).toBe("idle");
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.status).toBe("idle");
+    });
+    expect(window.habits.recordFocusSession).not.toHaveBeenCalled();
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Close widget" }));
@@ -187,6 +190,7 @@ describe("focus widget", () => {
           completedFocusCycles: 1,
           focusDurationMs: 25 * 60 * 1000,
           now: new Date(),
+          timerSessionId: "timer-session-widget-short",
         })
       );
     });
@@ -218,6 +222,7 @@ describe("focus widget", () => {
           completedFocusCycles: 4,
           focusDurationMs: 25 * 60 * 1000,
           now: new Date(),
+          timerSessionId: "timer-session-widget-long",
         })
       );
     });
@@ -260,5 +265,59 @@ describe("focus widget", () => {
       expect(screen.queryByRole("status")).not.toBeInTheDocument();
       expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
     });
+  });
+
+  it("records a partial focus entry when resetting after elapsed focus time", async () => {
+    setupWidgetTest({ renderWidget: false });
+    act(() => {
+      useFocusStore.getState().setTimerState({
+        ...createRunningFocusTimerState(new Date("2026-03-08T09:00:00.000Z")),
+        remainingMs: 15 * 60 * 1000,
+        status: "paused",
+      });
+    });
+
+    render(<FocusWidget />);
+
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Reset timer" }));
+    });
+
+    await waitFor(() => {
+      expect(window.habits.recordFocusSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          durationSeconds: 10 * 60,
+          entryKind: "partial",
+        })
+      );
+      expect(useFocusStore.getState().timerState.status).toBe("idle");
+    });
+  });
+
+  it("does not record a partial entry when resetting during a break", async () => {
+    setupWidgetTest({ renderWidget: false });
+    act(() => {
+      useFocusStore.getState().setTimerState(
+        createRunningBreakTimerState({
+          breakDurationMs: 5 * 60 * 1000,
+          breakVariant: "short",
+          completedFocusCycles: 1,
+          focusDurationMs: 25 * 60 * 1000,
+          now: new Date("2026-03-08T09:25:00.000Z"),
+          timerSessionId: "timer-session-widget-break-reset",
+        })
+      );
+    });
+
+    render(<FocusWidget />);
+
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Reset timer" }));
+    });
+
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.status).toBe("idle");
+    });
+    expect(window.habits.recordFocusSession).not.toHaveBeenCalled();
   });
 });

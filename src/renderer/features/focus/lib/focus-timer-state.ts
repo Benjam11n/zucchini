@@ -20,6 +20,10 @@ function createCycleId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function resolveTimerSessionId(timerSessionId: string | null): string {
+  return timerSessionId ?? createCycleId();
+}
+
 export function createIdleFocusTimerState(
   now = new Date(),
   focusDurationMs = DEFAULT_FOCUS_DURATION_MS,
@@ -38,13 +42,15 @@ export function createIdleFocusTimerState(
     remainingMs: resolvedFocusDurationMs,
     startedAt: null,
     status: "idle",
+    timerSessionId: null,
   };
 }
 
 export function createRunningFocusTimerState(
   now = new Date(),
   focusDurationMs = DEFAULT_FOCUS_DURATION_MS,
-  completedFocusCycles = 0
+  completedFocusCycles = 0,
+  timerSessionId: string | null = null
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
 
@@ -59,6 +65,7 @@ export function createRunningFocusTimerState(
     remainingMs: resolvedFocusDurationMs,
     startedAt: now.toISOString(),
     status: "running",
+    timerSessionId: resolveTimerSessionId(timerSessionId),
   };
 }
 
@@ -68,12 +75,14 @@ export function createRunningBreakTimerState({
   completedFocusCycles,
   focusDurationMs,
   now = new Date(),
+  timerSessionId,
 }: {
   breakDurationMs: number;
   breakVariant: FocusBreakVariant;
   completedFocusCycles: number;
   focusDurationMs: number;
   now?: Date;
+  timerSessionId: string | null;
 }): PersistedFocusTimerState {
   const resolvedBreakDurationMs = Math.max(1000, breakDurationMs);
 
@@ -88,6 +97,7 @@ export function createRunningBreakTimerState({
     remainingMs: resolvedBreakDurationMs,
     startedAt: null,
     status: "running",
+    timerSessionId,
   };
 }
 
@@ -150,13 +160,58 @@ export function formatTimerLabel(remainingMs: number): string {
 export function createCompletedFocusSessionInput(
   startedAt: string,
   completedAt: string,
-  durationMs: number
+  durationMs: number,
+  timerSessionId: string
 ): CreateFocusSessionInput {
   return {
     completedAt,
     completedDate: toDateKey(new Date(completedAt)),
     durationSeconds: clampFocusDurationMs(durationMs) / 1000,
+    entryKind: "completed",
     startedAt,
+    timerSessionId,
+  };
+}
+
+function getRemainingFocusTimerMs(
+  timerState: PersistedFocusTimerState,
+  now = new Date()
+): number {
+  if (timerState.status === "running" && timerState.endsAt) {
+    return Math.max(Date.parse(timerState.endsAt) - now.getTime(), 0);
+  }
+
+  return Math.max(timerState.remainingMs, 0);
+}
+
+export function createPartialFocusSessionInput(
+  timerState: PersistedFocusTimerState,
+  now = new Date()
+): CreateFocusSessionInput | null {
+  if (
+    timerState.phase !== "focus" ||
+    !timerState.startedAt ||
+    !timerState.timerSessionId
+  ) {
+    return null;
+  }
+
+  const remainingMs = getRemainingFocusTimerMs(timerState, now);
+  const elapsedSeconds = Math.floor(
+    Math.max(timerState.focusDurationMs - remainingMs, 0) / 1000
+  );
+
+  if (elapsedSeconds < 1) {
+    return null;
+  }
+
+  return {
+    completedAt: now.toISOString(),
+    completedDate: toDateKey(now),
+    durationSeconds: elapsedSeconds,
+    entryKind: "partial",
+    startedAt: timerState.startedAt,
+    timerSessionId: timerState.timerSessionId,
   };
 }
 

@@ -1,26 +1,33 @@
 import type { FocusSession } from "@/shared/domain/focus-session";
 
-import { buildFocusRuns } from "./focus-session-groups";
+import { buildFocusHistorySessions } from "./focus-session-groups";
 
 function createFocusSession(input: {
   completedAt: string;
   completedDate: string;
   durationSeconds?: number;
+  entryKind?: FocusSession["entryKind"];
   id: number;
   startedAt: string;
+  timerSessionId?: string | null;
 }): FocusSession {
   return {
     completedAt: input.completedAt,
     completedDate: input.completedDate,
     durationSeconds: input.durationSeconds ?? 1500,
+    entryKind: input.entryKind ?? "completed",
     id: input.id,
     startedAt: input.startedAt,
+    timerSessionId:
+      "timerSessionId" in input
+        ? (input.timerSessionId ?? null)
+        : `timer-session-${input.id}`,
   };
 }
 
 describe("focus session groups", () => {
-  it("creates one run from a single session", () => {
-    const runs = buildFocusRuns([
+  it("creates one history session from a single focus entry", () => {
+    const sessions = buildFocusHistorySessions([
       createFocusSession({
         completedAt: "2026-03-13T09:25:00.000Z",
         completedDate: "2026-03-13",
@@ -29,77 +36,88 @@ describe("focus session groups", () => {
       }),
     ]);
 
-    expect(runs).toHaveLength(1);
-    expect(runs[0]).toMatchObject({
-      runSpanMinutes: 25,
-      sessionCount: 1,
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]).toMatchObject({
+      completedLoopCount: 1,
+      hasPartialEntry: false,
+      sessionSpanMinutes: 25,
       totalDurationSeconds: 1500,
     });
-    expect(runs[0]?.timelineSegments).toHaveLength(1);
+    expect(sessions[0]?.timelineSegments).toHaveLength(1);
   });
 
-  it("merges same-day sessions when the gap is within thirty minutes", () => {
-    const runs = buildFocusRuns([
-      createFocusSession({
-        completedAt: "2026-03-13T10:15:00.000Z",
-        completedDate: "2026-03-13",
-        id: 2,
-        startedAt: "2026-03-13T09:50:00.000Z",
-      }),
-      createFocusSession({
-        completedAt: "2026-03-13T09:25:00.000Z",
-        completedDate: "2026-03-13",
-        id: 1,
-        startedAt: "2026-03-13T09:00:00.000Z",
-      }),
-    ]);
-
-    expect(runs).toHaveLength(1);
-    expect(runs[0]?.sessionCount).toBe(2);
-    expect(runs[0]?.idleGapMinutesBetweenSessions).toStrictEqual([25]);
-  });
-
-  it("splits runs when the gap is greater than thirty minutes", () => {
-    const runs = buildFocusRuns([
+  it("groups entries by a shared timer session id even with long gaps", () => {
+    const sessions = buildFocusHistorySessions([
       createFocusSession({
         completedAt: "2026-03-13T11:25:00.000Z",
         completedDate: "2026-03-13",
         id: 2,
         startedAt: "2026-03-13T11:00:00.000Z",
+        timerSessionId: "timer-session-shared",
       }),
       createFocusSession({
         completedAt: "2026-03-13T09:25:00.000Z",
         completedDate: "2026-03-13",
         id: 1,
         startedAt: "2026-03-13T09:00:00.000Z",
+        timerSessionId: "timer-session-shared",
       }),
     ]);
 
-    expect(runs).toHaveLength(2);
-    expect(runs.map((run) => run.sessionCount)).toStrictEqual([1, 1]);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.completedLoopCount).toBe(2);
+    expect(sessions[0]?.idleGapMinutesBetweenEntries).toStrictEqual([95]);
   });
 
-  it("never merges across different completed dates", () => {
-    const runs = buildFocusRuns([
+  it("never merges close entries from different timer session ids", () => {
+    const sessions = buildFocusHistorySessions([
       createFocusSession({
-        completedAt: "2026-03-14T00:10:00.000Z",
-        completedDate: "2026-03-14",
+        completedAt: "2026-03-13T09:55:00.000Z",
+        completedDate: "2026-03-13",
         id: 2,
-        startedAt: "2026-03-13T23:45:00.000Z",
+        startedAt: "2026-03-13T09:30:00.000Z",
+        timerSessionId: "timer-session-2",
       }),
       createFocusSession({
-        completedAt: "2026-03-13T23:25:00.000Z",
+        completedAt: "2026-03-13T09:25:00.000Z",
         completedDate: "2026-03-13",
         id: 1,
-        startedAt: "2026-03-13T23:00:00.000Z",
+        startedAt: "2026-03-13T09:00:00.000Z",
+        timerSessionId: "timer-session-1",
       }),
     ]);
 
-    expect(runs).toHaveLength(2);
+    expect(sessions).toHaveLength(2);
+    expect(sessions.map((session) => session.completedLoopCount)).toStrictEqual(
+      [1, 1]
+    );
   });
 
-  it("normalizes unsorted input and keeps newest runs first", () => {
-    const runs = buildFocusRuns([
+  it("treats legacy entries without a timer session id as standalone sessions", () => {
+    const sessions = buildFocusHistorySessions([
+      createFocusSession({
+        completedAt: "2026-03-13T09:55:00.000Z",
+        completedDate: "2026-03-13",
+        id: 2,
+        startedAt: "2026-03-13T09:30:00.000Z",
+        timerSessionId: null,
+      }),
+      createFocusSession({
+        completedAt: "2026-03-13T09:25:00.000Z",
+        completedDate: "2026-03-13",
+        id: 1,
+        startedAt: "2026-03-13T09:00:00.000Z",
+        timerSessionId: null,
+      }),
+    ]);
+
+    expect(sessions).toHaveLength(2);
+    expect(sessions[0]?.sessionId).toBe("legacy-2");
+    expect(sessions[1]?.sessionId).toBe("legacy-1");
+  });
+
+  it("keeps newer history sessions before older ones", () => {
+    const sessions = buildFocusHistorySessions([
       createFocusSession({
         completedAt: "2026-03-12T09:25:00.000Z",
         completedDate: "2026-03-12",
@@ -114,14 +132,14 @@ describe("focus session groups", () => {
       }),
     ]);
 
-    expect(runs.map((run) => run.date)).toStrictEqual([
+    expect(sessions.map((session) => session.date)).toStrictEqual([
       "2026-03-13",
       "2026-03-12",
     ]);
   });
 
-  it("drops malformed sessions without crashing", () => {
-    const runs = buildFocusRuns([
+  it("drops malformed entries without crashing", () => {
+    const sessions = buildFocusHistorySessions([
       createFocusSession({
         completedAt: "2026-03-13T09:25:00.000Z",
         completedDate: "2026-03-13",
@@ -136,38 +154,48 @@ describe("focus session groups", () => {
       }),
     ]);
 
-    expect(runs).toHaveLength(1);
-    expect(runs[0]?.sessionCount).toBe(1);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.completedLoopCount).toBe(1);
   });
 
-  it("derives timeline offsets and widths for a multi-session run", () => {
-    const [run] = buildFocusRuns([
+  it("derives timeline offsets for completed loops, breaks, and a partial ending", () => {
+    const [session] = buildFocusHistorySessions([
       createFocusSession({
-        completedAt: "2026-03-13T10:45:00.000Z",
+        completedAt: "2026-03-13T10:57:00.000Z",
         completedDate: "2026-03-13",
+        durationSeconds: 720,
+        entryKind: "partial",
         id: 3,
-        startedAt: "2026-03-13T10:25:00.000Z",
+        startedAt: "2026-03-13T10:45:00.000Z",
+        timerSessionId: "timer-session-mixed",
       }),
       createFocusSession({
         completedAt: "2026-03-13T10:15:00.000Z",
         completedDate: "2026-03-13",
         id: 2,
         startedAt: "2026-03-13T09:50:00.000Z",
+        timerSessionId: "timer-session-mixed",
       }),
       createFocusSession({
         completedAt: "2026-03-13T09:25:00.000Z",
         completedDate: "2026-03-13",
         id: 1,
         startedAt: "2026-03-13T09:00:00.000Z",
+        timerSessionId: "timer-session-mixed",
       }),
     ]);
 
-    expect(run?.runSpanMinutes).toBe(105);
-    expect(run?.timelineSegments).toMatchObject([
+    expect(session).toMatchObject({
+      completedLoopCount: 2,
+      hasPartialEntry: true,
+      sessionSpanMinutes: 117,
+    });
+    expect(session?.timelineSegments).toMatchObject([
       {
         durationSeconds: 1500,
         endOffsetMinutes: 25,
-        kind: "session",
+        entryKind: "completed",
+        kind: "entry",
         startOffsetMinutes: 0,
       },
       {
@@ -179,24 +207,73 @@ describe("focus session groups", () => {
       {
         durationSeconds: 1500,
         endOffsetMinutes: 75,
-        kind: "session",
+        entryKind: "completed",
+        kind: "entry",
         startOffsetMinutes: 50,
       },
       {
-        durationMinutes: 10,
-        endOffsetMinutes: 85,
+        durationMinutes: 30,
+        endOffsetMinutes: 105,
         kind: "break",
         startOffsetMinutes: 75,
       },
       {
-        durationSeconds: 1500,
-        endOffsetMinutes: 105,
-        kind: "session",
-        startOffsetMinutes: 85,
+        durationSeconds: 720,
+        endOffsetMinutes: 117,
+        entryKind: "partial",
+        kind: "entry",
+        startOffsetMinutes: 105,
       },
     ]);
     expect(
-      run?.timelineSegments.every((segment) => segment.widthPercent > 0)
+      session?.timelineSegments.every((segment) => segment.widthPercent > 0)
     ).toBeTruthy();
+  });
+
+  it("shows a completed short break before the next focus is persisted", () => {
+    const [session] = buildFocusHistorySessions(
+      [
+        createFocusSession({
+          completedAt: "2026-03-13T09:25:00.000Z",
+          completedDate: "2026-03-13",
+          id: 1,
+          startedAt: "2026-03-13T09:00:00.000Z",
+          timerSessionId: "timer-session-active",
+        }),
+      ],
+      {
+        breakVariant: null,
+        completedFocusCycles: 1,
+        cycleId: "active-cycle",
+        endsAt: "2026-03-13T09:55:00.000Z",
+        focusDurationMs: 1_500_000,
+        lastUpdatedAt: "2026-03-13T09:30:00.000Z",
+        phase: "focus",
+        remainingMs: 1_500_000,
+        startedAt: "2026-03-13T09:30:00.000Z",
+        status: "running",
+        timerSessionId: "timer-session-active",
+      }
+    );
+
+    expect(session).toMatchObject({
+      completedLoopCount: 1,
+      sessionSpanMinutes: 30,
+    });
+    expect(session?.timelineSegments).toMatchObject([
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 25,
+        entryKind: "completed",
+        kind: "entry",
+        startOffsetMinutes: 0,
+      },
+      {
+        durationMinutes: 5,
+        endOffsetMinutes: 30,
+        kind: "break",
+        startOffsetMinutes: 25,
+      },
+    ]);
   });
 });

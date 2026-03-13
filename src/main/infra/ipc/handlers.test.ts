@@ -201,8 +201,10 @@ describe("registerIpcHandlers()", () => {
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
+      entryKind: "completed",
       id: 1,
       startedAt: "2026-03-08T09:00:00.000Z",
+      timerSessionId: "timer-session-1",
     });
 
     registerIpcHandlers({
@@ -220,7 +222,9 @@ describe("registerIpcHandlers()", () => {
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
+      entryKind: "completed",
       startedAt: "2026-03-08T09:00:00.000Z",
+      timerSessionId: "timer-session-1",
     };
 
     await expect(

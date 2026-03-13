@@ -79,6 +79,12 @@ function isValidIsoTimestamp(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(Date.parse(value));
 }
 
+function isValidFocusSessionEntryKind(
+  value: string
+): value is CreateFocusSessionInput["entryKind"] {
+  return value === "completed" || value === "partial";
+}
+
 function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
   if (
     !isValidIsoTimestamp(input.startedAt) ||
@@ -97,6 +103,14 @@ function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
     input.durationSeconds > 60 * 60 * 8
   ) {
     throw new Error("Focus session durations must be positive integers.");
+  }
+
+  if (!isValidFocusSessionEntryKind(input.entryKind)) {
+    throw new Error("Focus session entries must be completed or partial.");
+  }
+
+  if (input.timerSessionId.trim().length === 0) {
+    throw new Error("Focus session entries must include a timer session id.");
   }
 }
 

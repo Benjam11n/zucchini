@@ -7,8 +7,8 @@
 import { memo, useState } from "react";
 
 import type { FocusPageProps } from "@/renderer/features/focus/focus.types";
+import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
-  createIdleFocusTimerState,
   createRunningFocusTimerState,
   getCompletedFocusCyclesAfterBreak,
   getPomodoroFocusDurationMs,
@@ -47,6 +47,9 @@ function FocusPageComponent({
   const clearFocusSaveError = useFocusStore(
     (state) => state.clearFocusSaveError
   );
+  const setFocusSaveErrorMessage = useFocusStore(
+    (state) => state.setFocusSaveErrorMessage
+  );
   const setTimerState = useFocusStore((state) => state.setTimerState);
   const [isPomodoroDialogOpen, setIsPomodoroDialogOpen] = useState(false);
   const defaultFocusDurationMs = getPomodoroFocusDurationMs(settings);
@@ -62,6 +65,17 @@ function FocusPageComponent({
         )
       );
     }
+  };
+
+  const handleReset = async () => {
+    await resetFocusTimerSession({
+      clearFocusSaveError,
+      focusDurationMs: defaultFocusDurationMs,
+      recordFocusSession: window.habits.recordFocusSession,
+      setFocusSaveErrorMessage,
+      setTimerState,
+      timerState,
+    });
   };
 
   return (
@@ -96,10 +110,7 @@ function FocusPageComponent({
           }}
           onPause={() => setTimerState(pauseFocusTimerState(timerState))}
           onReset={() => {
-            clearFocusSaveError();
-            setTimerState(
-              createIdleFocusTimerState(new Date(), defaultFocusDurationMs)
-            );
+            void handleReset();
           }}
           onResume={() => setTimerState(resumeFocusTimerState(timerState))}
           onShowWidget={() => {
@@ -114,7 +125,8 @@ function FocusPageComponent({
                 getCompletedFocusCyclesAfterBreak(
                   timerState.breakVariant,
                   timerState.completedFocusCycles
-                )
+                ),
+                timerState.timerSessionId
               )
             );
           }}
@@ -135,6 +147,7 @@ function FocusPageComponent({
         phase={phase}
         sessions={sessions}
         sessionsLoadError={sessionsLoadError}
+        timerState={timerState}
         todayDate={todayDate}
         onRetryLoad={onRetryLoad}
       />

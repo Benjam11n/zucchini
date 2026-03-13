@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
+import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
-  createIdleFocusTimerState,
   createRunningFocusTimerState,
   formatTimerLabel,
   getPomodoroFocusDurationMs,
@@ -241,13 +241,16 @@ export function FocusWidget() {
               aria-label="Reset timer"
               className="rounded-full"
               onClick={() => {
-                clearFocusSaveError();
-                setTimerState(
-                  createIdleFocusTimerState(
-                    new Date(),
-                    getPomodoroFocusDurationMs(resolvedPomodoroSettings)
-                  )
-                );
+                void resetFocusTimerSession({
+                  clearFocusSaveError,
+                  focusDurationMs: getPomodoroFocusDurationMs(
+                    resolvedPomodoroSettings
+                  ),
+                  recordFocusSession: window.habits.recordFocusSession,
+                  setFocusSaveErrorMessage,
+                  setTimerState,
+                  timerState,
+                });
               }}
               size="icon-xs"
               variant="ghost"

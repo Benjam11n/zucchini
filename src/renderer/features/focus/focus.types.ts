@@ -19,6 +19,7 @@ export interface PersistedFocusTimerState {
   remainingMs: number;
   startedAt: string | null;
   status: FocusTimerStatus;
+  timerSessionId: string | null;
 }
 
 export interface FocusTodaySummary {

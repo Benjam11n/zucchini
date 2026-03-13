@@ -1,4 +1,5 @@
 import type {
+  PersistedFocusTimerState,
   FocusSessionsPhase,
   FocusTodaySummary,
 } from "@/renderer/features/focus/focus.types";
@@ -6,7 +7,7 @@ import {
   formatFocusMinutes,
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
-import { buildFocusRuns } from "@/renderer/features/focus/lib/focus-session-groups";
+import { buildFocusHistorySessions } from "@/renderer/features/focus/lib/focus-session-groups";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
@@ -29,7 +30,9 @@ export function getFocusTodaySummary(
   );
 
   return {
-    completedCount: todaySessions.length,
+    completedCount: todaySessions.filter(
+      (session) => session.entryKind === "completed"
+    ).length,
     totalMinutes: formatFocusMinutes(
       todaySessions.reduce(
         (totalSeconds, session) => totalSeconds + session.durationSeconds,
@@ -43,6 +46,7 @@ interface FocusSessionListProps {
   phase: FocusSessionsPhase;
   sessions: FocusSession[];
   sessionsLoadError: Error | null;
+  timerState: PersistedFocusTimerState;
   todayDate: string;
   onRetryLoad: () => Promise<void>;
 }
@@ -51,22 +55,26 @@ export function FocusSessionList({
   phase,
   sessions,
   sessionsLoadError,
+  timerState,
   todayDate,
   onRetryLoad,
 }: FocusSessionListProps) {
   const todaySummary = getFocusTodaySummary(sessions, todayDate);
-  const runs = buildFocusRuns(sessions);
+  const historySessions = buildFocusHistorySessions(sessions, timerState);
 
   return (
     <Card className="border-border/70 bg-card/95">
       <CardHeader className="gap-3">
         <div className="space-y-1">
           <CardDescription>Recent focus</CardDescription>
-          <CardTitle>Recent focus runs</CardTitle>
+          <CardTitle>Recent focus sessions</CardTitle>
         </div>
 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-          <span>{todaySummary.completedCount} sessions today</span>
+          <span>
+            {todaySummary.completedCount} completed loop
+            {todaySummary.completedCount === 1 ? "" : "s"} today
+          </span>
           <span>{getFocusMinutesLabel(todaySummary.totalMinutes)}</span>
         </div>
       </CardHeader>
@@ -100,8 +108,8 @@ export function FocusSessionList({
           </p>
         ) : null}
 
-        {sessions.length > 0 && runs.length > 0 ? (
-          <FocusRunList runs={runs} />
+        {sessions.length > 0 && historySessions.length > 0 ? (
+          <FocusRunList sessions={historySessions} />
         ) : null}
       </CardContent>
     </Card>

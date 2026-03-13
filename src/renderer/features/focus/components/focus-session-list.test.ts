@@ -3,6 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 
+import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 import { FocusSessionList, getFocusTodaySummary } from "./focus-session-list";
@@ -12,14 +13,18 @@ function createFocusSession(
   completedDate: string,
   durationSeconds = 1500,
   startedAt = `${completedDate}T09:00:00.000Z`,
-  completedAt = `${completedDate}T09:25:00.000Z`
+  completedAt = `${completedDate}T09:25:00.000Z`,
+  overrides: Partial<FocusSession> = {}
 ): FocusSession {
   return {
     completedAt,
     completedDate,
     durationSeconds,
+    entryKind: "completed",
     id,
     startedAt,
+    timerSessionId: `timer-session-${id}`,
+    ...overrides,
   };
 }
 
@@ -79,34 +84,45 @@ describe("focus session list", () => {
             "2026-03-08",
             1200,
             "2026-03-08T10:00:00.000Z",
-            "2026-03-08T10:20:00.000Z"
+            "2026-03-08T10:20:00.000Z",
+            {
+              entryKind: "partial",
+              timerSessionId: "timer-session-grouped",
+            }
           ),
           createFocusSession(
             2,
             "2026-03-08",
             1500,
             "2026-03-08T09:30:00.000Z",
-            "2026-03-08T09:55:00.000Z"
+            "2026-03-08T09:55:00.000Z",
+            {
+              timerSessionId: "timer-session-grouped",
+            }
           ),
           createFocusSession(
             1,
             "2026-03-08",
             1500,
             "2026-03-08T09:00:00.000Z",
-            "2026-03-08T09:25:00.000Z"
+            "2026-03-08T09:25:00.000Z",
+            {
+              timerSessionId: "timer-session-grouped",
+            }
           ),
         ],
         sessionsLoadError: null,
+        timerState: createIdleFocusTimerState(),
         todayDate: "2026-03-08",
       })
     );
 
     const sessionListCard = screen
-      .getByText("Recent focus runs")
+      .getByText("Recent focus sessions")
       .closest("[data-slot='card']") as HTMLElement;
 
     expect(sessionListCard).toHaveTextContent(
-      /3 sessions today[\s\S]*70 focused minutes[\s\S]*1h 20m window[\s\S]*3 sessions/
+      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*1h 20m session window[\s\S]*2 completed loops[\s\S]*Partial end/
     );
     expect(sessionListCard).toHaveTextContent(/Show details/);
     expect(screen.getAllByLabelText("5 minute break")).toHaveLength(2);
@@ -114,12 +130,14 @@ describe("focus session list", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Show details" }));
 
-    const runCard = screen.getByTestId("focus-run-card");
+    const sessionCard = screen.getByTestId("focus-session-card");
 
-    expect(runCard).toHaveTextContent(/Hide details[\s\S]*25 min[\s\S]*5m gap/);
+    expect(sessionCard).toHaveTextContent(
+      /Hide details[\s\S]*25 min[\s\S]*5m gap[\s\S]*Partial · 20 min/
+    );
   });
 
-  it("keeps newer runs before older runs", () => {
+  it("keeps newer sessions before older sessions", () => {
     render(
       createElement(FocusSessionList, {
         onRetryLoad: vi.fn(),
@@ -130,25 +148,32 @@ describe("focus session list", () => {
             "2026-03-08",
             1500,
             "2026-03-08T09:00:00.000Z",
-            "2026-03-08T09:25:00.000Z"
+            "2026-03-08T09:25:00.000Z",
+            {
+              timerSessionId: "timer-session-newer",
+            }
           ),
           createFocusSession(
             1,
             "2026-03-07",
             1500,
             "2026-03-07T09:00:00.000Z",
-            "2026-03-07T09:25:00.000Z"
+            "2026-03-07T09:25:00.000Z",
+            {
+              timerSessionId: "timer-session-older",
+            }
           ),
         ],
         sessionsLoadError: null,
+        timerState: createIdleFocusTimerState(),
         todayDate: "2026-03-08",
       })
     );
 
-    const runCards = screen.getAllByTestId("focus-run-card");
+    const sessionCards = screen.getAllByTestId("focus-session-card");
 
-    expect(runCards[0]).toHaveAttribute("data-run-date", "2026-03-08");
-    expect(runCards[1]).toHaveAttribute("data-run-date", "2026-03-07");
+    expect(sessionCards[0]).toHaveAttribute("data-session-date", "2026-03-08");
+    expect(sessionCards[1]).toHaveAttribute("data-session-date", "2026-03-07");
   });
 
   it("renders loading and empty states unchanged", () => {
@@ -158,6 +183,7 @@ describe("focus session list", () => {
         phase: "loading",
         sessions: [],
         sessionsLoadError: null,
+        timerState: createIdleFocusTimerState(),
         todayDate: "2026-03-08",
       })
     );
@@ -172,6 +198,7 @@ describe("focus session list", () => {
         phase: "ready",
         sessions: [],
         sessionsLoadError: null,
+        timerState: createIdleFocusTimerState(),
         todayDate: "2026-03-08",
       })
     );

@@ -86,8 +86,10 @@ function createFocusSession(
     completedAt,
     completedDate: "2026-03-10",
     durationSeconds: 1500,
+    entryKind: "completed",
     id,
     startedAt: "2026-03-10T09:00:00.000Z",
+    timerSessionId: `timer-session-${id}`,
   };
 }
 

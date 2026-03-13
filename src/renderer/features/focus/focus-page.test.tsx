@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 import {
   createIdleFocusTimerState,
@@ -49,8 +55,18 @@ function FocusPageHarness() {
   );
 }
 
+function installHabitsMock() {
+  Object.defineProperty(window, "habits", {
+    configurable: true,
+    value: {
+      recordFocusSession: vi.fn(() => Promise.resolve()),
+    },
+  });
+}
+
 describe("focus tab", () => {
   it("renders the timer and empty history state", () => {
+    installHabitsMock();
     resetFocusStore();
     render(<FocusPageHarness />);
 
@@ -61,10 +77,11 @@ describe("focus tab", () => {
     expect(
       screen.getByText("No completed focus sessions yet.")
     ).toBeInTheDocument();
-    expect(screen.getByText("Recent focus runs")).toBeInTheDocument();
+    expect(screen.getByText("Recent focus sessions")).toBeInTheDocument();
   });
 
-  it("supports start, pause, resume, and reset controls", () => {
+  it("supports start, pause, resume, and reset controls", async () => {
+    installHabitsMock();
     resetFocusStore();
     render(<FocusPageHarness />);
 
@@ -78,15 +95,18 @@ describe("focus tab", () => {
     expect(useFocusStore.getState().timerState.status).toBe("running");
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
-    expect(useFocusStore.getState().timerState).toMatchObject({
-      completedFocusCycles: 0,
-      phase: createIdleFocusTimerState().phase,
-      remainingMs: createIdleFocusTimerState().remainingMs,
-      status: createIdleFocusTimerState().status,
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState).toMatchObject({
+        completedFocusCycles: 0,
+        phase: createIdleFocusTimerState().phase,
+        remainingMs: createIdleFocusTimerState().remainingMs,
+        status: createIdleFocusTimerState().status,
+      });
     });
   });
 
   it("lets you set a custom focus duration before starting", () => {
+    installHabitsMock();
     resetFocusStore();
     render(<FocusPageHarness />);
 
@@ -107,6 +127,7 @@ describe("focus tab", () => {
   });
 
   it("shows the break badge and final-minute cue", () => {
+    installHabitsMock();
     resetFocusStore();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
@@ -115,13 +136,14 @@ describe("focus tab", () => {
         completedFocusCycles: 1,
         focusDurationMs: 25 * 60 * 1000,
         now: new Date("2026-03-08T09:00:00.000Z"),
+        timerSessionId: "timer-session-page-short",
       })
     );
 
     render(<FocusPageHarness />);
 
     expect(screen.getAllByText("Short break").length).toBeGreaterThan(0);
-    expect(screen.getByText("Long break after 4 sessions")).toBeInTheDocument();
+    expect(screen.getByText("4 sessions")).toBeInTheDocument();
 
     act(() => {
       useFocusStore.getState().setTimerState({
@@ -134,6 +156,7 @@ describe("focus tab", () => {
   });
 
   it("shows the next long break threshold on the status row", () => {
+    installHabitsMock();
     resetFocusStore();
     useFocusStore
       .getState()
@@ -144,7 +167,33 @@ describe("focus tab", () => {
     expect(screen.getByText("Next break: long")).toBeInTheDocument();
   });
 
+  it("keeps the same timer session id when skipping a break", () => {
+    installHabitsMock();
+    resetFocusStore();
+    useFocusStore.getState().setTimerState(
+      createRunningBreakTimerState({
+        breakDurationMs: 5 * 60 * 1000,
+        breakVariant: "short",
+        completedFocusCycles: 1,
+        focusDurationMs: 25 * 60 * 1000,
+        now: new Date("2026-03-08T09:25:00.000Z"),
+        timerSessionId: "timer-session-page-skip",
+      })
+    );
+
+    render(<FocusPageHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Skip break" }));
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      phase: "focus",
+      status: "running",
+      timerSessionId: "timer-session-page-skip",
+    });
+  });
+
   it("renders the roadmap totals for one full set", () => {
+    installHabitsMock();
     resetFocusStore();
     render(<FocusPageHarness />);
 
@@ -154,6 +203,7 @@ describe("focus tab", () => {
   });
 
   it("opens the advanced pomodoro settings in a dialog", () => {
+    installHabitsMock();
     resetFocusStore();
     render(<FocusPageHarness />);
 
@@ -164,6 +214,7 @@ describe("focus tab", () => {
   });
 
   it("uses amber timer text during the last minute", () => {
+    installHabitsMock();
     resetFocusStore();
     useFocusStore
       .getState()

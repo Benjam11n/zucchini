@@ -34,6 +34,7 @@ export const focusTimerCycleIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerInstanceIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerLeaseTtlSchema = z.number().int().min(250).max(10_000);
 export const focusWidgetSizeSchema = z.number().int().min(32).max(640);
+const focusSessionEntryKindSchema = z.enum(["completed", "partial"]);
 
 export const habitNameSchema = z.string().trim().min(1).max(120);
 
@@ -151,6 +152,8 @@ export const createFocusSessionInputSchema = z
       .int()
       .positive()
       .max(60 * 60 * 8),
+    entryKind: focusSessionEntryKindSchema,
     startedAt: isoTimestampSchema,
+    timerSessionId: z.string().trim().min(1).max(120),
   })
   .strict();

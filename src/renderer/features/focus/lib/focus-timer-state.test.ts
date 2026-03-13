@@ -41,6 +41,7 @@ describe("focus timer state", () => {
       completedFocusCycles: 4,
       focusDurationMs: 25 * 60 * 1000,
       now: new Date("2026-03-08T09:00:00.000Z"),
+      timerSessionId: "timer-session-long",
     });
 
     expect(runningBreak).toMatchObject({

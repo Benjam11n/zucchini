@@ -44,8 +44,10 @@ export function mapFocusSession(row: FocusSessionRow): FocusSession {
     completedAt: row.completedAt,
     completedDate: row.completedDate,
     durationSeconds: row.durationSeconds,
+    entryKind: row.entryKind === "partial" ? "partial" : "completed",
     id: row.id,
     startedAt: row.startedAt,
+    timerSessionId: row.timerSessionId,
   };
 }
 

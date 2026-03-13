@@ -1,16 +1,16 @@
-import type { FocusRunView } from "@/renderer/features/focus/lib/focus-session-groups";
+import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 
 import { FocusRunCard } from "./focus-run-card";
 
 interface FocusRunListProps {
-  runs: FocusRunView[];
+  sessions: FocusHistorySessionView[];
 }
 
-export function FocusRunList({ runs }: FocusRunListProps) {
+export function FocusRunList({ sessions }: FocusRunListProps) {
   return (
     <div className="space-y-3">
-      {runs.map((run) => (
-        <FocusRunCard key={run.runId} run={run} />
+      {sessions.map((session) => (
+        <FocusRunCard key={session.sessionId} session={session} />
       ))}
     </div>
   );

@@ -100,7 +100,7 @@ function getNextBreakVariant(
 function getCycleChipLabel(focusCyclesBeforeLongBreak: number): string {
   return focusCyclesBeforeLongBreak === 1
     ? "Long break after 1 session"
-    : `Long break after ${focusCyclesBeforeLongBreak} sessions`;
+    : `${focusCyclesBeforeLongBreak} sessions`;
 }
 
 function padTimerPart(value: number): string {

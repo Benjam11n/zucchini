@@ -5,14 +5,17 @@ import {
   formatFocusMinutes,
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
-import type { FocusRunView } from "@/renderer/features/focus/lib/focus-session-groups";
+import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
 
 import { FocusRunTimeline } from "./focus-run-timeline";
 
-function formatRunRange(startedAt: string, completedAt: string): string {
+function formatSessionRangeLabel(
+  startedAt: string,
+  completedAt: string
+): string {
   const startDate = new Date(startedAt);
   const endDate = new Date(completedAt);
 
@@ -28,22 +31,22 @@ function formatRunRange(startedAt: string, completedAt: string): string {
   return `${dateLabel}, ${timeFormatter.format(startDate)} - ${timeFormatter.format(endDate)}`;
 }
 
-function formatRunWindow(runSpanMinutes: number): string {
-  if (runSpanMinutes < 60) {
-    return `${runSpanMinutes}m window`;
+function formatSessionWindow(sessionSpanMinutes: number): string {
+  if (sessionSpanMinutes < 60) {
+    return `${sessionSpanMinutes}m session window`;
   }
 
-  const hours = Math.floor(runSpanMinutes / 60);
-  const minutes = runSpanMinutes % 60;
+  const hours = Math.floor(sessionSpanMinutes / 60);
+  const minutes = sessionSpanMinutes % 60;
 
   if (minutes === 0) {
-    return `${hours}h window`;
+    return `${hours}h session window`;
   }
 
-  return `${hours}h ${minutes}m window`;
+  return `${hours}h ${minutes}m session window`;
 }
 
-function formatSessionRange(startedAt: string, completedAt: string): string {
+function formatEntryRange(startedAt: string, completedAt: string): string {
   const formatter = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     minute: "2-digit",
@@ -53,32 +56,32 @@ function formatSessionRange(startedAt: string, completedAt: string): string {
 }
 
 interface FocusRunCardProps {
-  run: FocusRunView;
+  session: FocusHistorySessionView;
 }
 
-export function FocusRunCard({ run }: FocusRunCardProps) {
+export function FocusRunCard({ session }: FocusRunCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = useId();
-  const totalMinutes = formatFocusMinutes(run.totalDurationSeconds);
-  const breakCount = run.idleGapMinutesBetweenSessions.filter(
+  const totalMinutes = formatFocusMinutes(session.totalDurationSeconds);
+  const breakCount = session.idleGapMinutesBetweenEntries.filter(
     (gap) => gap > 0
   ).length;
-  const firstSession = run.sessions[0]!;
-  const lastSession = run.sessions.at(-1)!;
+  const firstEntry = session.entries[0]!;
+  const lastEntry = session.entries.at(-1)!;
 
   return (
     <div
       className="space-y-4 rounded-[26px] border border-border/60 bg-muted/20 px-4 py-4"
-      data-run-date={run.date}
-      data-testid="focus-run-card"
+      data-session-date={session.date}
+      data-testid="focus-session-card"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">
-            {formatRunRange(run.startedAt, run.completedAt)}
+            {formatSessionRangeLabel(session.startedAt, session.completedAt)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {formatRunWindow(run.runSpanMinutes)}
+            {formatSessionWindow(session.sessionSpanMinutes)}
           </p>
         </div>
 
@@ -87,25 +90,33 @@ export function FocusRunCard({ run }: FocusRunCardProps) {
             {getFocusMinutesLabel(totalMinutes)}
           </Badge>
           <Badge variant="secondary" className="rounded-full">
-            {run.sessionCount} session{run.sessionCount === 1 ? "" : "s"}
+            {session.completedLoopCount} completed loop
+            {session.completedLoopCount === 1 ? "" : "s"}
           </Badge>
+          {session.hasPartialEntry ? (
+            <Badge
+              variant="outline"
+              className="rounded-full border-amber-500/40"
+            >
+              Partial end
+            </Badge>
+          ) : null}
         </div>
       </div>
 
-      <FocusRunTimeline run={run} />
+      <FocusRunTimeline session={session} />
 
       <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/60 px-3 py-2">
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">
-            {run.sessions.length === 1
-              ? formatSessionRange(
-                  firstSession.startedAt,
-                  firstSession.completedAt
-                )
-              : `${formatSessionRange(firstSession.startedAt, lastSession.completedAt)}`}
+            {session.entries.length === 1
+              ? formatEntryRange(firstEntry.startedAt, firstEntry.completedAt)
+              : `${formatEntryRange(firstEntry.startedAt, lastEntry.completedAt)}`}
           </p>
           <p className="text-xs text-muted-foreground">
-            {run.sessionCount} session{run.sessionCount === 1 ? "" : "s"}
+            {session.completedLoopCount} completed loop
+            {session.completedLoopCount === 1 ? "" : "s"}
+            {session.hasPartialEntry ? " · 1 partial entry" : ""}
             {breakCount > 0
               ? ` · ${breakCount} break${breakCount === 1 ? "" : "s"}`
               : ""}
@@ -133,25 +144,28 @@ export function FocusRunCard({ run }: FocusRunCardProps) {
 
       {isExpanded ? (
         <div className="grid gap-2" id={detailsId}>
-          {run.sessions.map((session, index) => (
+          {session.entries.map((entry, index) => (
             <div
-              key={session.id}
+              key={entry.id}
               className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/70 px-3 py-2"
             >
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <Clock3 className="size-4 text-primary/80" />
                 <span>
-                  {formatSessionRange(session.startedAt, session.completedAt)}
+                  {formatEntryRange(entry.startedAt, entry.completedAt)}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{formatFocusMinutes(session.durationSeconds)} min</span>
+                <span>
+                  {entry.entryKind === "partial" ? "Partial · " : ""}
+                  {formatFocusMinutes(entry.durationSeconds)} min
+                </span>
                 {index > 0 &&
-                run.idleGapMinutesBetweenSessions[index - 1] > 0 ? (
+                session.idleGapMinutesBetweenEntries[index - 1] > 0 ? (
                   <span className="inline-flex items-center gap-1">
                     <PauseCircle className="size-3.5" />
-                    {run.idleGapMinutesBetweenSessions[index - 1]}m gap
+                    {session.idleGapMinutesBetweenEntries[index - 1]}m gap
                   </span>
                 ) : null}
               </div>

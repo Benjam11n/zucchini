@@ -23,8 +23,10 @@ type FocusSessionRecordedListener = (session: {
   completedAt: string;
   completedDate: string;
   durationSeconds: number;
+  entryKind: "completed" | "partial";
   id: number;
   startedAt: string;
+  timerSessionId: string | null;
 }) => void;
 
 const DEFAULT_TIMER_SETTINGS = {
@@ -189,6 +191,7 @@ describe("use focus timer", () => {
         remainingMs: 1_500_000,
         startedAt: "2026-03-08T09:00:00.000Z",
         status: "running",
+        timerSessionId: "timer-session-restore",
       })
     );
 
@@ -227,6 +230,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: "2026-03-08T08:35:01.000Z",
       status: "running",
+      timerSessionId: "timer-session-1",
     });
 
     renderFocusTimerHook({ recordFocusSession });
@@ -239,12 +243,19 @@ describe("use focus timer", () => {
 
     // oxlint-disable-next-line vitest/prefer-called-once
     expect(recordFocusSession).toHaveBeenCalledTimes(1);
+    expect(recordFocusSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entryKind: "completed",
+        timerSessionId: "timer-session-1",
+      })
+    );
     expect(useFocusStore.getState().timerState).toMatchObject({
       breakVariant: "short",
       completedFocusCycles: 1,
       phase: "break",
       remainingMs: 5 * 60 * 1000,
       status: "running",
+      timerSessionId: "timer-session-1",
     });
     teardownFocusTimerTest();
   });
@@ -264,6 +275,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: "2026-03-08T08:35:01.000Z",
       status: "running",
+      timerSessionId: "timer-session-4",
     });
 
     renderFocusTimerHook({ recordFocusSession });
@@ -276,12 +288,19 @@ describe("use focus timer", () => {
 
     // oxlint-disable-next-line vitest/prefer-called-once
     expect(recordFocusSession).toHaveBeenCalledTimes(1);
+    expect(recordFocusSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entryKind: "completed",
+        timerSessionId: "timer-session-4",
+      })
+    );
     expect(useFocusStore.getState().timerState).toMatchObject({
       breakVariant: "long",
       completedFocusCycles: 4,
       phase: "break",
       remainingMs: 15 * 60 * 1000,
       status: "running",
+      timerSessionId: "timer-session-4",
     });
     teardownFocusTimerTest();
   });
@@ -301,6 +320,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: null,
       status: "running",
+      timerSessionId: "timer-session-short-break",
     });
 
     renderFocusTimerHook({ recordFocusSession });
@@ -322,6 +342,7 @@ describe("use focus timer", () => {
       remainingMs: 25 * 60 * 1000,
       startedAt: "2026-03-08T09:00:01.000Z",
       status: "running",
+      timerSessionId: "timer-session-short-break",
     });
     teardownFocusTimerTest();
   });
@@ -341,6 +362,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: null,
       status: "running",
+      timerSessionId: "timer-session-long-break",
     });
 
     renderFocusTimerHook({ recordFocusSession });
@@ -376,6 +398,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: null,
       status: "running",
+      timerSessionId: "timer-session-short-break-latest",
     });
 
     renderFocusTimerHook({
@@ -405,6 +428,7 @@ describe("use focus timer", () => {
       remainingMs: 30 * 60 * 1000,
       startedAt: "2026-03-08T09:00:01.000Z",
       status: "running",
+      timerSessionId: "timer-session-short-break-latest",
     });
     teardownFocusTimerTest();
   });
@@ -426,6 +450,7 @@ describe("use focus timer", () => {
       remainingMs: 2000,
       startedAt: "2026-03-08T08:35:02.000Z",
       status: "running",
+      timerSessionId: "timer-session-settings",
     });
 
     const { rerender } = renderHook(
@@ -494,6 +519,7 @@ describe("use focus timer", () => {
       remainingMs: 1000,
       startedAt: "2026-03-08T08:35:01.000Z",
       status: "running",
+      timerSessionId: "timer-session-stored",
     });
 
     renderFocusTimerHook({
@@ -545,15 +571,19 @@ describe("use focus timer", () => {
         completedAt: "2026-03-08T09:25:00.000Z",
         completedDate: "2026-03-08",
         durationSeconds: 1500,
+        entryKind: "completed",
         id: 10,
         startedAt: "2026-03-08T09:00:00.000Z",
+        timerSessionId: "timer-session-broadcast",
       });
       emitFocusSessionRecorded({
         completedAt: "2026-03-08T09:25:00.000Z",
         completedDate: "2026-03-08",
         durationSeconds: 1500,
+        entryKind: "completed",
         id: 10,
         startedAt: "2026-03-08T09:00:00.000Z",
+        timerSessionId: "timer-session-broadcast",
       });
       await Promise.resolve();
     });
@@ -563,8 +593,10 @@ describe("use focus timer", () => {
         completedAt: "2026-03-08T09:25:00.000Z",
         completedDate: "2026-03-08",
         durationSeconds: 1500,
+        entryKind: "completed",
         id: 10,
         startedAt: "2026-03-08T09:00:00.000Z",
+        timerSessionId: "timer-session-broadcast",
       },
     ]);
     teardownFocusTimerTest();

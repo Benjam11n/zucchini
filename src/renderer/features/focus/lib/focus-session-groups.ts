@@ -1,54 +1,60 @@
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
-import type { FocusSession } from "@/shared/domain/focus-session";
-const RUN_GAP_THRESHOLD_MINUTES = 30;
-const RUN_GAP_THRESHOLD_MS = RUN_GAP_THRESHOLD_MINUTES * MS_PER_MINUTE;
+import type {
+  FocusSession,
+  FocusSessionEntryKind,
+} from "@/shared/domain/focus-session";
 
-export interface FocusSessionView {
+import type { PersistedFocusTimerState } from "../focus.types";
+
+export interface FocusSessionEntryView {
   completedAt: string;
   completedDate: string;
   durationSeconds: number;
   endMinuteOfDay: number;
+  entryKind: FocusSessionEntryKind;
   id: number;
   startedAt: string;
   startMinuteOfDay: number;
+  timerSessionId: string | null;
 }
 
-interface FocusRunTimelineSegmentBase {
+interface FocusHistorySessionTimelineSegmentBase {
   endOffsetMinutes: number;
   id: string;
-  kind: "break" | "session";
   startOffsetMinutes: number;
   widthPercent: number;
 }
 
-export interface FocusRunSessionTimelineSegment extends FocusRunTimelineSegmentBase {
+export interface FocusHistorySessionEntryTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
   completedAt: string;
   durationSeconds: number;
+  entryKind: FocusSessionEntryKind;
   id: `${number}`;
-  kind: "session";
+  kind: "entry";
   startedAt: string;
 }
 
-export interface FocusRunBreakTimelineSegment extends FocusRunTimelineSegmentBase {
+export interface FocusHistorySessionBreakTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
   durationMinutes: number;
-  id: `break-${number}-${number}`;
+  id: string;
   kind: "break";
 }
 
-export type FocusRunTimelineSegment =
-  | FocusRunBreakTimelineSegment
-  | FocusRunSessionTimelineSegment;
+export type FocusHistorySessionTimelineSegment =
+  | FocusHistorySessionBreakTimelineSegment
+  | FocusHistorySessionEntryTimelineSegment;
 
-export interface FocusRunView {
+export interface FocusHistorySessionView {
   completedAt: string;
+  completedLoopCount: number;
   date: string;
-  idleGapMinutesBetweenSessions: number[];
-  runId: string;
-  runSpanMinutes: number;
-  sessionCount: number;
-  sessions: FocusSessionView[];
+  entries: FocusSessionEntryView[];
+  hasPartialEntry: boolean;
+  idleGapMinutesBetweenEntries: number[];
+  sessionId: string;
+  sessionSpanMinutes: number;
   startedAt: string;
-  timelineSegments: FocusRunTimelineSegment[];
+  timelineSegments: FocusHistorySessionTimelineSegment[];
   totalDurationSeconds: number;
 }
 
@@ -56,7 +62,7 @@ function getMinuteOfDay(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
-function toSessionView(session: FocusSession): FocusSessionView | null {
+function toEntryView(session: FocusSession): FocusSessionEntryView | null {
   const startedAt = new Date(session.startedAt);
   const completedAt = new Date(session.completedAt);
 
@@ -73,16 +79,18 @@ function toSessionView(session: FocusSession): FocusSessionView | null {
     completedDate: session.completedDate,
     durationSeconds: session.durationSeconds,
     endMinuteOfDay: getMinuteOfDay(completedAt),
+    entryKind: session.entryKind,
     id: session.id,
     startMinuteOfDay: getMinuteOfDay(startedAt),
     startedAt: session.startedAt,
+    timerSessionId: session.timerSessionId,
   };
 }
 
-function sortSessionsByStartTime(
-  sessions: FocusSessionView[]
-): FocusSessionView[] {
-  return [...sessions].toSorted((left, right) => {
+function sortEntriesByStartTime(
+  entries: FocusSessionEntryView[]
+): FocusSessionEntryView[] {
+  return [...entries].toSorted((left, right) => {
     const timeDifference =
       Date.parse(left.startedAt) - Date.parse(right.startedAt);
 
@@ -94,158 +102,242 @@ function sortSessionsByStartTime(
   });
 }
 
-function buildRunView(sessions: FocusSessionView[]): FocusRunView {
-  const sortedSessions = sortSessionsByStartTime(sessions);
-  const firstSession = sortedSessions[0]!;
-  const lastSession = sortedSessions.at(-1)!;
-  const runStartMs = Date.parse(firstSession.startedAt);
-  const runEndMs = Date.parse(lastSession.completedAt);
-  const runSpanMinutes = Math.max(
+function getSessionGroupingKey(entry: FocusSessionEntryView): string {
+  return entry.timerSessionId ?? `legacy-${entry.id}`;
+}
+
+function getTrailingBreakEndMs({
+  activeTimerState,
+  now,
+  sessionId,
+  sessionLastCompletedAt,
+}: {
+  activeTimerState?: PersistedFocusTimerState;
+  now: Date;
+  sessionId: string;
+  sessionLastCompletedAt: string;
+}): number | null {
+  if (
+    !activeTimerState ||
+    activeTimerState.status !== "running" ||
+    activeTimerState.timerSessionId !== sessionId
+  ) {
+    return null;
+  }
+
+  const sessionLastCompletedAtMs = Date.parse(sessionLastCompletedAt);
+
+  if (activeTimerState.phase === "focus" && activeTimerState.startedAt) {
+    const activeFocusStartMs = Date.parse(activeTimerState.startedAt);
+
+    return activeFocusStartMs > sessionLastCompletedAtMs
+      ? activeFocusStartMs
+      : null;
+  }
+
+  if (activeTimerState.phase === "break") {
+    return now.getTime() > sessionLastCompletedAtMs ? now.getTime() : null;
+  }
+
+  return null;
+}
+
+function buildHistorySessionView(
+  entries: FocusSessionEntryView[],
+  {
+    activeTimerState,
+    now = new Date(),
+  }: {
+    activeTimerState?: PersistedFocusTimerState;
+    now?: Date;
+  } = {}
+): FocusHistorySessionView {
+  const sortedEntries = sortEntriesByStartTime(entries);
+  const firstEntry = sortedEntries[0]!;
+  const lastEntry = sortedEntries.at(-1)!;
+  const sessionStartMs = Date.parse(firstEntry.startedAt);
+  const sessionId = getSessionGroupingKey(firstEntry);
+  const trailingBreakEndMs = getTrailingBreakEndMs({
+    activeTimerState,
+    now,
+    sessionId,
+    sessionLastCompletedAt: lastEntry.completedAt,
+  });
+  const sessionEndMs = trailingBreakEndMs ?? Date.parse(lastEntry.completedAt);
+  const sessionSpanMinutes = Math.max(
     1,
-    Math.ceil((runEndMs - runStartMs) / MS_PER_MINUTE)
+    Math.ceil((sessionEndMs - sessionStartMs) / MS_PER_MINUTE)
   );
-  const totalDurationSeconds = sortedSessions.reduce(
-    (total, session) => total + session.durationSeconds,
+  const totalDurationSeconds = sortedEntries.reduce(
+    (total, entry) => total + entry.durationSeconds,
     0
   );
-  const idleGapMinutesBetweenSessions = sortedSessions
+  const idleGapMinutesBetweenEntries = sortedEntries
     .slice(1)
-    .map((session, index) => {
-      const previousSession = sortedSessions[index]!;
+    .map((entry, index) => {
+      const previousEntry = sortedEntries[index]!;
 
       return Math.max(
         0,
         Math.round(
-          (Date.parse(session.startedAt) -
-            Date.parse(previousSession.completedAt)) /
+          (Date.parse(entry.startedAt) -
+            Date.parse(previousEntry.completedAt)) /
             MS_PER_MINUTE
         )
       );
     });
 
   return {
-    completedAt: lastSession.completedAt,
-    date: lastSession.completedDate,
-    idleGapMinutesBetweenSessions,
-    runId: `${lastSession.completedDate}-${firstSession.id}-${lastSession.id}`,
-    runSpanMinutes,
-    sessionCount: sortedSessions.length,
-    sessions: sortedSessions,
-    startedAt: firstSession.startedAt,
-    timelineSegments: sortedSessions.flatMap((session, index) => {
-      const segmentStartMinutes =
-        (Date.parse(session.startedAt) - runStartMs) / MS_PER_MINUTE;
-      const segmentEndMinutes =
-        (Date.parse(session.completedAt) - runStartMs) / MS_PER_MINUTE;
-      const segments: FocusRunTimelineSegment[] = [
-        {
-          completedAt: session.completedAt,
-          durationSeconds: session.durationSeconds,
-          endOffsetMinutes: segmentEndMinutes,
-          id: `${session.id}`,
-          kind: "session",
-          startOffsetMinutes: segmentStartMinutes,
-          startedAt: session.startedAt,
+    completedAt: lastEntry.completedAt,
+    completedLoopCount: sortedEntries.filter(
+      (entry) => entry.entryKind === "completed"
+    ).length,
+    date: lastEntry.completedDate,
+    entries: sortedEntries,
+    hasPartialEntry: sortedEntries.some(
+      (entry) => entry.entryKind === "partial"
+    ),
+    idleGapMinutesBetweenEntries,
+    sessionId,
+    sessionSpanMinutes,
+    startedAt: firstEntry.startedAt,
+    timelineSegments: (() => {
+      const timelineSegments = sortedEntries.flatMap((entry, index) => {
+        const segmentStartMinutes =
+          (Date.parse(entry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
+        const segmentEndMinutes =
+          (Date.parse(entry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
+        const segments: FocusHistorySessionTimelineSegment[] = [
+          {
+            completedAt: entry.completedAt,
+            durationSeconds: entry.durationSeconds,
+            endOffsetMinutes: segmentEndMinutes,
+            entryKind: entry.entryKind,
+            id: `${entry.id}`,
+            kind: "entry",
+            startOffsetMinutes: segmentStartMinutes,
+            startedAt: entry.startedAt,
+            widthPercent: Math.max(
+              (segmentEndMinutes - segmentStartMinutes) / sessionSpanMinutes,
+              0.04
+            ),
+          } satisfies FocusHistorySessionEntryTimelineSegment,
+        ];
+
+        const nextEntry = sortedEntries[index + 1];
+
+        if (!nextEntry) {
+          return segments;
+        }
+
+        const breakStartMinutes = segmentEndMinutes;
+        const breakEndMinutes =
+          (Date.parse(nextEntry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
+        const breakDurationMinutes = Math.max(
+          0,
+          Math.round(
+            (Date.parse(nextEntry.startedAt) - Date.parse(entry.completedAt)) /
+              MS_PER_MINUTE
+          )
+        );
+
+        if (breakDurationMinutes <= 0 || breakEndMinutes <= breakStartMinutes) {
+          return segments;
+        }
+
+        segments.push({
+          durationMinutes: breakDurationMinutes,
+          endOffsetMinutes: breakEndMinutes,
+          id: `break-${entry.id}-${nextEntry.id}`,
+          kind: "break",
+          startOffsetMinutes: breakStartMinutes,
           widthPercent: Math.max(
-            (segmentEndMinutes - segmentStartMinutes) / runSpanMinutes,
-            0.04
+            (breakEndMinutes - breakStartMinutes) / sessionSpanMinutes,
+            0.02
           ),
-        } satisfies FocusRunSessionTimelineSegment,
-      ];
+        } satisfies FocusHistorySessionBreakTimelineSegment);
 
-      const nextSession = sortedSessions[index + 1];
-
-      if (!nextSession) {
         return segments;
+      });
+
+      if (!trailingBreakEndMs) {
+        return timelineSegments;
       }
 
-      const breakStartMinutes = segmentEndMinutes;
-      const breakEndMinutes =
-        (Date.parse(nextSession.startedAt) - runStartMs) / MS_PER_MINUTE;
-      const breakDurationMinutes = Math.max(
+      const trailingBreakStartMinutes =
+        (Date.parse(lastEntry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
+      const trailingBreakEndMinutes =
+        (trailingBreakEndMs - sessionStartMs) / MS_PER_MINUTE;
+      const trailingBreakDurationMinutes = Math.max(
         0,
         Math.round(
-          (Date.parse(nextSession.startedAt) -
-            Date.parse(session.completedAt)) /
+          (trailingBreakEndMs - Date.parse(lastEntry.completedAt)) /
             MS_PER_MINUTE
         )
       );
 
-      if (breakDurationMinutes <= 0 || breakEndMinutes <= breakStartMinutes) {
-        return segments;
+      if (
+        trailingBreakDurationMinutes > 0 &&
+        trailingBreakEndMinutes > trailingBreakStartMinutes
+      ) {
+        timelineSegments.push({
+          durationMinutes: trailingBreakDurationMinutes,
+          endOffsetMinutes: trailingBreakEndMinutes,
+          id: `break-${lastEntry.id}-active`,
+          kind: "break",
+          startOffsetMinutes: trailingBreakStartMinutes,
+          widthPercent: Math.max(
+            (trailingBreakEndMinutes - trailingBreakStartMinutes) /
+              sessionSpanMinutes,
+            0.02
+          ),
+        });
       }
 
-      segments.push({
-        durationMinutes: breakDurationMinutes,
-        endOffsetMinutes: breakEndMinutes,
-        id: `break-${session.id}-${nextSession.id}`,
-        kind: "break",
-        startOffsetMinutes: breakStartMinutes,
-        widthPercent: Math.max(
-          (breakEndMinutes - breakStartMinutes) / runSpanMinutes,
-          0.02
-        ),
-      } satisfies FocusRunBreakTimelineSegment);
-
-      return segments;
-    }),
+      return timelineSegments;
+    })(),
     totalDurationSeconds,
   };
 }
 
-export function buildFocusRuns(sessions: FocusSession[]): FocusRunView[] {
-  const sortedSessions = [...sessions].toSorted((left, right) => {
-    const completedDifference =
-      Date.parse(right.completedAt) - Date.parse(left.completedAt);
+export function buildFocusHistorySessions(
+  sessions: FocusSession[],
+  activeTimerState?: PersistedFocusTimerState
+): FocusHistorySessionView[] {
+  const groupedEntries = new Map<string, FocusSessionEntryView[]>();
 
-    if (completedDifference !== 0) {
-      return completedDifference;
+  for (const session of sessions) {
+    const entryView = toEntryView(session);
+
+    if (!entryView) {
+      continue;
     }
 
-    return right.id - left.id;
-  });
+    const groupKey = getSessionGroupingKey(entryView);
+    const existingEntries = groupedEntries.get(groupKey);
 
-  const runs: FocusRunView[] = [];
-  let currentRunSessions: FocusSessionView[] = [];
+    if (existingEntries) {
+      existingEntries.push(entryView);
+      continue;
+    }
 
-  for (const session of sortedSessions) {
-    const sessionView = toSessionView(session);
+    groupedEntries.set(groupKey, [entryView]);
+  }
 
-    if (!sessionView) {
-      if (currentRunSessions.length > 0) {
-        runs.push(buildRunView(currentRunSessions));
-        currentRunSessions = [];
+  return [...groupedEntries.values()]
+    .map((entries) =>
+      buildHistorySessionView(entries, {
+        activeTimerState,
+      })
+    )
+    .toSorted((left, right) => {
+      const completedDifference =
+        Date.parse(right.completedAt) - Date.parse(left.completedAt);
+
+      if (completedDifference !== 0) {
+        return completedDifference;
       }
 
-      continue;
-    }
-
-    const [latestRunSession] = currentRunSessions;
-
-    if (!latestRunSession) {
-      currentRunSessions = [sessionView];
-      continue;
-    }
-
-    const latestRunStartMs = Date.parse(latestRunSession.startedAt);
-    const sameDate =
-      sessionView.completedDate === latestRunSession.completedDate;
-    const gapMs = latestRunStartMs - Date.parse(sessionView.completedAt);
-    const shouldJoinCurrentRun =
-      sameDate && gapMs >= 0 && gapMs <= RUN_GAP_THRESHOLD_MS;
-
-    if (shouldJoinCurrentRun) {
-      currentRunSessions.unshift(sessionView);
-      continue;
-    }
-
-    runs.push(buildRunView(currentRunSessions));
-    currentRunSessions = [sessionView];
-  }
-
-  if (currentRunSessions.length > 0) {
-    runs.push(buildRunView(currentRunSessions));
-  }
-
-  return runs;
+      return Date.parse(right.startedAt) - Date.parse(left.startedAt);
+    });
 }

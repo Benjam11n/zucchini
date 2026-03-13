@@ -40,7 +40,9 @@ export class SqliteFocusSessionRepository {
           completedAt: input.completedAt,
           completedDate: input.completedDate,
           durationSeconds: input.durationSeconds,
+          entryKind: input.entryKind,
           startedAt: input.startedAt,
+          timerSessionId: input.timerSessionId,
         })
         .returning()
         .get();
