@@ -29,8 +29,8 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
     settings: {
       focusCyclesBeforeLongBreak: 4,
       focusDefaultDurationSeconds: 1500,
-      focusLongBreakMinutes: 15,
-      focusShortBreakMinutes: 5,
+      focusLongBreakSeconds: 15 * 60,
+      focusShortBreakSeconds: 5 * 60,
       launchAtLogin: false,
       minimizeToTray: false,
       reminderEnabled: true,
@@ -268,7 +268,7 @@ describe("use app controller", () => {
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
         ...hook.result.current.state.settingsDraft!,
-        focusLongBreakMinutes: 20,
+        focusLongBreakSeconds: 20 * 60,
       });
     });
 
@@ -280,7 +280,7 @@ describe("use app controller", () => {
       () => {
         expect(habits.updateSettings).toHaveBeenCalledWith(
           expect.objectContaining({
-            focusLongBreakMinutes: 20,
+            focusLongBreakSeconds: 20 * 60,
           })
         );
         expect(hook.result.current.state.settingsSavePhase).toBe("saved");
@@ -335,17 +335,17 @@ describe("use app controller", () => {
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
         ...hook.result.current.state.settingsDraft!,
-        focusLongBreakMinutes: 3,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 3 * 60,
+        focusShortBreakSeconds: 5 * 60,
       });
     });
 
     await waitFor(() => {
       expect(hook.result.current.state.settingsSavePhase).toBe("invalid");
       expect(
-        hook.result.current.state.settingsFieldErrors.focusLongBreakMinutes
+        hook.result.current.state.settingsFieldErrors.focusLongBreakSeconds
       ).toBe(
-        "Long break minutes must be greater than or equal to short break minutes."
+        "Long break duration must be greater than or equal to short break duration."
       );
     });
 

@@ -89,8 +89,8 @@ function FocusPageComponent({
       <div className="grid gap-6">
         <FocusTimerCard
           focusCyclesBeforeLongBreak={settings.focusCyclesBeforeLongBreak}
-          focusLongBreakMinutes={settings.focusLongBreakMinutes}
-          focusShortBreakMinutes={settings.focusShortBreakMinutes}
+          focusLongBreakSeconds={settings.focusLongBreakSeconds}
+          focusShortBreakSeconds={settings.focusShortBreakSeconds}
           onCycleChange={(focusCyclesBeforeLongBreak) => {
             handleSettingsChange({
               ...settings,

@@ -18,8 +18,8 @@ export function areAppSettingsEqual(
   return (
     left.focusDefaultDurationSeconds === right.focusDefaultDurationSeconds &&
     left.focusCyclesBeforeLongBreak === right.focusCyclesBeforeLongBreak &&
-    left.focusLongBreakMinutes === right.focusLongBreakMinutes &&
-    left.focusShortBreakMinutes === right.focusShortBreakMinutes &&
+    left.focusLongBreakSeconds === right.focusLongBreakSeconds &&
+    left.focusShortBreakSeconds === right.focusShortBreakSeconds &&
     left.launchAtLogin === right.launchAtLogin &&
     left.minimizeToTray === right.minimizeToTray &&
     left.reminderEnabled === right.reminderEnabled &&

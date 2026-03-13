@@ -32,8 +32,8 @@ type FocusSessionRecordedListener = (session: {
 const DEFAULT_TIMER_SETTINGS = {
   focusCyclesBeforeLongBreak: 4,
   focusDefaultDurationSeconds: 1500,
-  focusLongBreakMinutes: 15,
-  focusShortBreakMinutes: 5,
+  focusLongBreakSeconds: 15 * 60,
+  focusShortBreakSeconds: 5 * 60,
 };
 
 function createLocalStorageMock() {
@@ -135,8 +135,8 @@ describe("use focus timer", () => {
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 4,
         focusDefaultDurationSeconds: 30 * 60,
-        focusLongBreakMinutes: 15,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 15 * 60,
+        focusShortBreakSeconds: 5 * 60,
       },
     });
 
@@ -405,8 +405,8 @@ describe("use focus timer", () => {
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 4,
         focusDefaultDurationSeconds: 30 * 60,
-        focusLongBreakMinutes: 15,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 15 * 60,
+        focusShortBreakSeconds: 5 * 60,
       },
       recordFocusSession,
     });
@@ -479,8 +479,8 @@ describe("use focus timer", () => {
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 2,
         focusDefaultDurationSeconds: 1500,
-        focusLongBreakMinutes: 20,
-        focusShortBreakMinutes: 7,
+        focusLongBreakSeconds: 20 * 60,
+        focusShortBreakSeconds: 7 * 60,
       },
     });
 
@@ -504,8 +504,8 @@ describe("use focus timer", () => {
     writePomodoroTimerSettings({
       focusCyclesBeforeLongBreak: 2,
       focusDefaultDurationSeconds: 1500,
-      focusLongBreakMinutes: 20,
-      focusShortBreakMinutes: 7,
+      focusLongBreakSeconds: 20 * 60,
+      focusShortBreakSeconds: 7 * 60,
     });
 
     useFocusStore.getState().setTimerState({

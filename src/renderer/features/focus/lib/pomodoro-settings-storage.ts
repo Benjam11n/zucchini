@@ -18,11 +18,35 @@ function parsePomodoroTimerSettings(
   }
 
   const candidate = value as Partial<PomodoroTimerSettings>;
+  let focusLongBreakSeconds: number | null = null;
+  if (typeof candidate.focusLongBreakSeconds === "number") {
+    ({ focusLongBreakSeconds } = candidate);
+  } else if (
+    typeof (candidate as { focusLongBreakMinutes?: number })
+      .focusLongBreakMinutes === "number"
+  ) {
+    focusLongBreakSeconds =
+      (candidate as { focusLongBreakMinutes: number }).focusLongBreakMinutes *
+      60;
+  }
+
+  let focusShortBreakSeconds: number | null = null;
+  if (typeof candidate.focusShortBreakSeconds === "number") {
+    ({ focusShortBreakSeconds } = candidate);
+  } else if (
+    typeof (candidate as { focusShortBreakMinutes?: number })
+      .focusShortBreakMinutes === "number"
+  ) {
+    focusShortBreakSeconds =
+      (candidate as { focusShortBreakMinutes: number }).focusShortBreakMinutes *
+      60;
+  }
+
   if (
     typeof candidate.focusDefaultDurationSeconds !== "number" ||
     typeof candidate.focusCyclesBeforeLongBreak !== "number" ||
-    typeof candidate.focusLongBreakMinutes !== "number" ||
-    typeof candidate.focusShortBreakMinutes !== "number"
+    focusLongBreakSeconds === null ||
+    focusShortBreakSeconds === null
   ) {
     return null;
   }
@@ -30,8 +54,8 @@ function parsePomodoroTimerSettings(
   const settings: PomodoroTimerSettings = {
     focusCyclesBeforeLongBreak: candidate.focusCyclesBeforeLongBreak,
     focusDefaultDurationSeconds: candidate.focusDefaultDurationSeconds,
-    focusLongBreakMinutes: candidate.focusLongBreakMinutes,
-    focusShortBreakMinutes: candidate.focusShortBreakMinutes,
+    focusLongBreakSeconds,
+    focusShortBreakSeconds,
   };
 
   return isValidPomodoroTimerSettings(settings) ? settings : null;

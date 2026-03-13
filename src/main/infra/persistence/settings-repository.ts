@@ -23,6 +23,8 @@ export class SqliteSettingsRepository {
       const rows = this.client.getDrizzle().select().from(settings).all();
       const map = new Map(rows.map((row) => [row.key, row.value]));
       const defaults = createDefaultAppSettings(defaultTimezone);
+      const savedLongBreakSeconds = map.get("focusLongBreakSeconds");
+      const savedShortBreakSeconds = map.get("focusShortBreakSeconds");
       const candidateSettings: AppSettings = {
         focusCyclesBeforeLongBreak: Number(
           map.get("focusCyclesBeforeLongBreak")
@@ -30,8 +32,14 @@ export class SqliteSettingsRepository {
         focusDefaultDurationSeconds: Number(
           map.get("focusDefaultDurationSeconds")
         ),
-        focusLongBreakMinutes: Number(map.get("focusLongBreakMinutes")),
-        focusShortBreakMinutes: Number(map.get("focusShortBreakMinutes")),
+        focusLongBreakSeconds:
+          savedLongBreakSeconds === undefined
+            ? Number(map.get("focusLongBreakMinutes")) * 60
+            : Number(savedLongBreakSeconds),
+        focusShortBreakSeconds:
+          savedShortBreakSeconds === undefined
+            ? Number(map.get("focusShortBreakMinutes")) * 60
+            : Number(savedShortBreakSeconds),
         launchAtLogin: map.get("launchAtLogin") === "true",
         minimizeToTray: map.get("minimizeToTray") === "true",
         reminderEnabled: map.get("reminderEnabled") === "true",
@@ -77,12 +85,12 @@ export class SqliteSettingsRepository {
         String(nextSettings.focusCyclesBeforeLongBreak)
       );
       this.upsertSetting(
-        "focusLongBreakMinutes",
-        String(nextSettings.focusLongBreakMinutes)
+        "focusLongBreakSeconds",
+        String(nextSettings.focusLongBreakSeconds)
       );
       this.upsertSetting(
-        "focusShortBreakMinutes",
-        String(nextSettings.focusShortBreakMinutes)
+        "focusShortBreakSeconds",
+        String(nextSettings.focusShortBreakSeconds)
       );
       this.upsertSetting("launchAtLogin", String(nextSettings.launchAtLogin));
       this.upsertSetting("minimizeToTray", String(nextSettings.minimizeToTray));
@@ -114,12 +122,12 @@ export class SqliteSettingsRepository {
         String(defaults.focusCyclesBeforeLongBreak)
       );
       this.upsertSetting(
-        "focusLongBreakMinutes",
-        String(defaults.focusLongBreakMinutes)
+        "focusLongBreakSeconds",
+        String(defaults.focusLongBreakSeconds)
       );
       this.upsertSetting(
-        "focusShortBreakMinutes",
-        String(defaults.focusShortBreakMinutes)
+        "focusShortBreakSeconds",
+        String(defaults.focusShortBreakSeconds)
       );
       this.upsertSetting("launchAtLogin", String(defaults.launchAtLogin));
       this.upsertSetting("minimizeToTray", String(defaults.minimizeToTray));

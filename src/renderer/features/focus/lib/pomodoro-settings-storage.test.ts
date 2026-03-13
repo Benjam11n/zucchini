@@ -38,8 +38,8 @@ describe("pomodoro settings storage", () => {
     const settings = {
       focusCyclesBeforeLongBreak: 4,
       focusDefaultDurationSeconds: 1500,
-      focusLongBreakMinutes: 15,
-      focusShortBreakMinutes: 5,
+      focusLongBreakSeconds: 15 * 60,
+      focusShortBreakSeconds: 5 * 60,
     };
 
     writePomodoroTimerSettings(settings);
@@ -54,8 +54,8 @@ describe("pomodoro settings storage", () => {
       JSON.stringify({
         focusCyclesBeforeLongBreak: 4,
         focusDefaultDurationSeconds: 1500,
-        focusLongBreakMinutes: 3,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 3 * 60,
+        focusShortBreakSeconds: 5 * 60,
       })
     );
 

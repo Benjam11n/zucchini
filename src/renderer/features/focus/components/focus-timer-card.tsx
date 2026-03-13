@@ -1,26 +1,20 @@
 import {
   Minus,
+  Plus,
   Pause,
   Play,
   RotateCcw,
   Settings2,
   SkipForward,
-  Plus,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FocusEvent } from "react";
 
 import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card";
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  clampFocusDurationMs,
-  splitFocusDurationMs,
-} from "@/renderer/features/focus/lib/focus-timer.constants";
-import {
-  MS_PER_MINUTE,
-  MS_PER_SECOND,
-  SECONDS_PER_MINUTE,
-} from "@/renderer/shared/lib/time";
+import { clampFocusDurationMs } from "@/renderer/features/focus/lib/focus-timer.constants";
+import { MS_PER_MINUTE, MS_PER_SECOND } from "@/renderer/shared/lib/time";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -30,12 +24,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/ui/card";
+import {
+  formatDurationInputValue,
+  normalizeDurationInputValue,
+} from "@/renderer/shared/ui/duration-input";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 interface FocusTimerCardProps {
-  focusLongBreakMinutes: number;
+  focusLongBreakSeconds: number;
   focusCyclesBeforeLongBreak: number;
-  focusShortBreakMinutes: number;
+  focusShortBreakSeconds: number;
   onCycleChange: (focusCyclesBeforeLongBreak: number) => void;
   pomodoroSettings: PomodoroTimerSettings;
   timerState: PersistedFocusTimerState;
@@ -103,18 +101,14 @@ function getCycleChipLabel(focusCyclesBeforeLongBreak: number): string {
     : `${focusCyclesBeforeLongBreak} sessions`;
 }
 
-function padTimerPart(value: number): string {
-  return value.toString().padStart(2, "0");
-}
-
-function sanitizeTimerInput(value: string): string {
+function sanitizeTimerPart(value: string): string {
   return value.replaceAll(/\D/g, "").slice(0, 2);
 }
 
 export function FocusTimerCard({
-  focusLongBreakMinutes,
+  focusLongBreakSeconds,
   focusCyclesBeforeLongBreak,
-  focusShortBreakMinutes,
+  focusShortBreakSeconds,
   onCycleChange,
   pomodoroSettings,
   timerState,
@@ -144,51 +138,72 @@ export function FocusTimerCard({
   );
 
   const canEditDuration = isIdle && !isBreak;
-  const durationParts = splitFocusDurationMs(timerState.focusDurationMs);
   const [displayMinutes, displaySeconds] = formatTimerLabel(
     timerState.remainingMs
   ).split(":");
-  const [minutesInput, setMinutesInput] = useState(() =>
-    padTimerPart(durationParts.minutes)
-  );
-  const [secondsInput, setSecondsInput] = useState(() =>
-    padTimerPart(durationParts.seconds)
-  );
   const primaryActionLabel = isPaused ? "Resume" : "Start";
   const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
+  const durationEditorRef = useRef<HTMLDivElement | null>(null);
+  const [durationDraft, setDurationDraft] = useState(() => {
+    const [minutesInput, secondsInput] = formatTimerLabel(
+      timerState.focusDurationMs
+    ).split(":");
+
+    return {
+      minutesInput,
+      secondsInput,
+    };
+  });
 
   useEffect(() => {
-    setMinutesInput(padTimerPart(durationParts.minutes));
-    setSecondsInput(padTimerPart(durationParts.seconds));
-  }, [durationParts.minutes, durationParts.seconds]);
+    if (!canEditDuration) {
+      return;
+    }
 
-  const commitDuration = (
-    nextMinutesInput = minutesInput,
-    nextSecondsInput = secondsInput
-  ) => {
-    const parsedMinutes = Number.parseInt(nextMinutesInput, 10);
-    const parsedSeconds = Number.parseInt(nextSecondsInput, 10);
-    const normalizedMinutes = Number.isNaN(parsedMinutes)
-      ? durationParts.minutes
-      : Math.min(60, Math.max(0, parsedMinutes));
-    const normalizedSeconds = Number.isNaN(parsedSeconds)
-      ? durationParts.seconds
-      : Math.min(59, Math.max(0, parsedSeconds));
-    const durationMs = clampFocusDurationMs(
-      (normalizedMinutes * SECONDS_PER_MINUTE +
-        (normalizedMinutes === 60 ? 0 : normalizedSeconds)) *
-        MS_PER_SECOND
-    );
-    const normalizedParts = splitFocusDurationMs(durationMs);
+    const [minutesInput, secondsInput] = formatTimerLabel(
+      timerState.focusDurationMs
+    ).split(":");
+    setDurationDraft({
+      minutesInput,
+      secondsInput,
+    });
+  }, [canEditDuration, timerState.focusDurationMs]);
 
-    setMinutesInput(padTimerPart(normalizedParts.minutes));
-    setSecondsInput(padTimerPart(normalizedParts.seconds));
+  const commitDuration = (durationSeconds: number) => {
+    const durationMs = clampFocusDurationMs(durationSeconds * MS_PER_SECOND);
 
     if (canEditDuration) {
       onDurationChange(durationMs);
     }
 
     return durationMs;
+  };
+
+  const commitDraftDuration = () => {
+    const nextDurationSeconds = normalizeDurationInputValue(
+      durationDraft.minutesInput,
+      durationDraft.secondsInput,
+      1,
+      60 * 60
+    );
+
+    return commitDuration(
+      nextDurationSeconds === null
+        ? Math.round(timerState.focusDurationMs / MS_PER_SECOND)
+        : nextDurationSeconds
+    );
+  };
+
+  const handleDraftBlur = (event: FocusEvent<HTMLInputElement>) => {
+    const nextFocusedElement = event.relatedTarget;
+    if (
+      nextFocusedElement instanceof HTMLElement &&
+      durationEditorRef.current?.contains(nextFocusedElement)
+    ) {
+      return;
+    }
+
+    commitDraftDuration();
   };
 
   return (
@@ -232,30 +247,32 @@ export function FocusTimerCard({
           <div className="w-full max-w-[48rem] rounded-[1.75rem] border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               {canEditDuration ? (
-                <>
+                <div ref={durationEditorRef} className="contents">
                   <div className="flex justify-end overflow-visible">
                     <input
                       aria-label="Focus minutes"
                       className="w-[2.6ch] overflow-visible bg-transparent pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       inputMode="numeric"
-                      onBlur={() => {
-                        commitDuration();
-                      }}
+                      onBlur={handleDraftBlur}
                       onChange={(event) => {
-                        setMinutesInput(
-                          sanitizeTimerInput(event.currentTarget.value)
+                        const nextMinutesInput = sanitizeTimerPart(
+                          event.currentTarget.value
                         );
+                        setDurationDraft((currentDraft) => ({
+                          ...currentDraft,
+                          minutesInput: nextMinutesInput,
+                        }));
                       }}
                       onFocus={(event) => {
                         event.currentTarget.select();
                       }}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") {
-                          commitDuration();
+                          commitDraftDuration();
                           event.currentTarget.blur();
                         }
                       }}
-                      value={minutesInput}
+                      value={durationDraft.minutesInput}
                     />
                   </div>
                   <span className="text-center text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground/70">
@@ -264,29 +281,31 @@ export function FocusTimerCard({
                   <div className="flex justify-start overflow-visible">
                     <input
                       aria-label="Focus seconds"
-                      className="w-[2.6ch] overflow-visible pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      className="w-[2.6ch] overflow-visible bg-transparent pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       inputMode="numeric"
-                      onBlur={() => {
-                        commitDuration();
-                      }}
+                      onBlur={handleDraftBlur}
                       onChange={(event) => {
-                        setSecondsInput(
-                          sanitizeTimerInput(event.currentTarget.value)
+                        const nextSecondsInput = sanitizeTimerPart(
+                          event.currentTarget.value
                         );
+                        setDurationDraft((currentDraft) => ({
+                          ...currentDraft,
+                          secondsInput: nextSecondsInput,
+                        }));
                       }}
                       onFocus={(event) => {
                         event.currentTarget.select();
                       }}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") {
-                          commitDuration();
+                          commitDraftDuration();
                           event.currentTarget.blur();
                         }
                       }}
-                      value={secondsInput}
+                      value={durationDraft.secondsInput}
                     />
                   </div>
-                </>
+                </div>
               ) : (
                 <>
                   <div className="flex justify-end">
@@ -323,8 +342,8 @@ export function FocusTimerCard({
                   Quick breaks
                 </p>
                 <p className="mt-1.5 text-sm font-medium">
-                  {focusShortBreakMinutes}m short · {focusLongBreakMinutes}m
-                  long
+                  {formatDurationInputValue(focusShortBreakSeconds)} short ·{" "}
+                  {formatDurationInputValue(focusLongBreakSeconds)} long
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Next break: {nextBreakVariant}
@@ -381,7 +400,20 @@ export function FocusTimerCard({
                   return;
                 }
 
-                onStart(commitDuration());
+                const nextDurationSeconds = normalizeDurationInputValue(
+                  durationDraft.minutesInput,
+                  durationDraft.secondsInput,
+                  1,
+                  60 * 60
+                );
+
+                onStart(
+                  commitDuration(
+                    nextDurationSeconds === null
+                      ? Math.round(timerState.focusDurationMs / MS_PER_SECOND)
+                      : nextDurationSeconds
+                  )
+                );
               }}
             >
               <Play className="size-4" />

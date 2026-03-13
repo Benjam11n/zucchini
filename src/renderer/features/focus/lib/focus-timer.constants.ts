@@ -19,17 +19,3 @@ export function clampFocusDurationMs(durationMs: number): number {
 export function focusDurationSecondsToMs(durationSeconds: number): number {
   return clampFocusDurationMs(durationSeconds * MS_PER_SECOND);
 }
-
-export function splitFocusDurationMs(durationMs: number): {
-  minutes: number;
-  seconds: number;
-} {
-  const totalSeconds = Math.ceil(
-    clampFocusDurationMs(durationMs) / MS_PER_SECOND
-  );
-
-  return {
-    minutes: Math.floor(totalSeconds / 60),
-    seconds: totalSeconds % 60,
-  };
-}

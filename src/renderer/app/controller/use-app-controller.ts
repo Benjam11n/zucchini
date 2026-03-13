@@ -448,8 +448,8 @@ function useAppLifecycleEffects({
     savedPomodoroSettings,
     savedPomodoroSettings?.focusDefaultDurationSeconds,
     savedPomodoroSettings?.focusCyclesBeforeLongBreak,
-    savedPomodoroSettings?.focusLongBreakMinutes,
-    savedPomodoroSettings?.focusShortBreakMinutes,
+    savedPomodoroSettings?.focusLongBreakSeconds,
+    savedPomodoroSettings?.focusShortBreakSeconds,
   ]);
 
   useApplyThemeMode({

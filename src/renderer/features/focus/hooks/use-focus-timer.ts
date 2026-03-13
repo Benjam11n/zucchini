@@ -20,7 +20,7 @@ import {
   subscribeToPomodoroTimerSettings,
 } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
+import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
@@ -242,9 +242,9 @@ export function useFocusTimer({
               createRunningBreakTimerState({
                 breakDurationMs:
                   (shouldStartLongBreak
-                    ? pomodoroSettingsRef.current.focusLongBreakMinutes
-                    : pomodoroSettingsRef.current.focusShortBreakMinutes) *
-                  MS_PER_MINUTE,
+                    ? pomodoroSettingsRef.current.focusLongBreakSeconds
+                    : pomodoroSettingsRef.current.focusShortBreakSeconds) *
+                  MS_PER_SECOND,
                 breakVariant: shouldStartLongBreak ? "long" : "short",
                 completedFocusCycles,
                 focusDurationMs: currentState.focusDurationMs,

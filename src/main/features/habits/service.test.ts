@@ -95,8 +95,8 @@ class FakeRepository implements HabitRepository {
   settings: AppSettings = {
     focusCyclesBeforeLongBreak: 4,
     focusDefaultDurationSeconds: 1500,
-    focusLongBreakMinutes: 15,
-    focusShortBreakMinutes: 5,
+    focusLongBreakSeconds: 15 * 60,
+    focusShortBreakSeconds: 5 * 60,
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,
@@ -485,8 +485,8 @@ function createCompleteOnboardingInput(): CompleteOnboardingInput {
     settings: {
       focusCyclesBeforeLongBreak: 4,
       focusDefaultDurationSeconds: 1500,
-      focusLongBreakMinutes: 15,
-      focusShortBreakMinutes: 5,
+      focusLongBreakSeconds: 15 * 60,
+      focusShortBreakSeconds: 5 * 60,
       launchAtLogin: false,
       minimizeToTray: false,
       reminderEnabled: true,

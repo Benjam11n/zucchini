@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import {
   isValidFocusDurationSeconds,
-  isValidFocusBreakMinutes,
+  isValidFocusBreakDurationSeconds,
   isValidFocusCyclesBeforeLongBreak,
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
@@ -76,12 +76,19 @@ export const appSettingsSchema = z
       .refine(isValidFocusDurationSeconds, {
         message: "Focus duration must be between 1 second and 60 minutes.",
       }),
-    focusLongBreakMinutes: z.number().int().refine(isValidFocusBreakMinutes, {
-      message: "Long break minutes must be between 1 and 60.",
-    }),
-    focusShortBreakMinutes: z.number().int().refine(isValidFocusBreakMinutes, {
-      message: "Short break minutes must be between 1 and 60.",
-    }),
+    focusLongBreakSeconds: z
+      .number()
+      .int()
+      .refine(isValidFocusBreakDurationSeconds, {
+        message: "Long break duration must be between 1 second and 60 minutes.",
+      }),
+    focusShortBreakSeconds: z
+      .number()
+      .int()
+      .refine(isValidFocusBreakDurationSeconds, {
+        message:
+          "Short break duration must be between 1 second and 60 minutes.",
+      }),
     launchAtLogin: z.boolean(),
     minimizeToTray: z.boolean(),
     reminderEnabled: z.boolean(),
@@ -101,12 +108,12 @@ export const appSettingsSchema = z
   })
   .strict()
   .superRefine((settings, context) => {
-    if (settings.focusLongBreakMinutes < settings.focusShortBreakMinutes) {
+    if (settings.focusLongBreakSeconds < settings.focusShortBreakSeconds) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "Long break minutes must be greater than or equal to short break minutes.",
-        path: ["focusLongBreakMinutes"],
+          "Long break duration must be greater than or equal to short break duration.",
+        path: ["focusLongBreakSeconds"],
       });
     }
   });

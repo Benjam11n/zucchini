@@ -55,7 +55,7 @@ function createRoadmapSegments(
 
     if (focusIndex < settings.focusCyclesBeforeLongBreak) {
       segments.push({
-        durationMs: settings.focusShortBreakMinutes * 60_000,
+        durationMs: settings.focusShortBreakSeconds * 1000,
         key: `short-break-${focusIndex}`,
         label: "Short break",
         tone: "shortBreak",
@@ -64,7 +64,7 @@ function createRoadmapSegments(
   }
 
   segments.push({
-    durationMs: settings.focusLongBreakMinutes * 60_000,
+    durationMs: settings.focusLongBreakSeconds * 1000,
     key: "long-break",
     label: "Long break",
     tone: "longBreak",

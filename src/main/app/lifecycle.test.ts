@@ -10,8 +10,8 @@ describe("buildLoginItemSettings()", () => {
       buildLoginItemSettings({
         focusCyclesBeforeLongBreak: 4,
         focusDefaultDurationSeconds: 1500,
-        focusLongBreakMinutes: 15,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 15 * 60,
+        focusShortBreakSeconds: 5 * 60,
         launchAtLogin: false,
         minimizeToTray: true,
         reminderEnabled: true,
@@ -31,8 +31,8 @@ describe("buildLoginItemSettings()", () => {
       buildLoginItemSettings({
         focusCyclesBeforeLongBreak: 4,
         focusDefaultDurationSeconds: 1500,
-        focusLongBreakMinutes: 15,
-        focusShortBreakMinutes: 5,
+        focusLongBreakSeconds: 15 * 60,
+        focusShortBreakSeconds: 5 * 60,
         launchAtLogin: true,
         minimizeToTray: true,
         reminderEnabled: true,

@@ -8,30 +8,30 @@ export type ThemeMode = "system" | "light" | "dark";
 export interface PomodoroTimerSettings {
   focusDefaultDurationSeconds: number;
   focusCyclesBeforeLongBreak: number;
-  focusLongBreakMinutes: number;
-  focusShortBreakMinutes: number;
+  focusLongBreakSeconds: number;
+  focusShortBreakSeconds: number;
 }
 
 const DEFAULT_REMINDER_TIME = "20:30";
 export const DEFAULT_REMINDER_SNOOZE_MINUTES = 15;
 export const DEFAULT_FOCUS_DURATION_SECONDS = 25 * 60;
-export const DEFAULT_FOCUS_SHORT_BREAK_MINUTES = 5;
-export const DEFAULT_FOCUS_LONG_BREAK_MINUTES = 15;
-export const DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK = 4;
+const DEFAULT_FOCUS_SHORT_BREAK_SECONDS = 5 * 60;
+const DEFAULT_FOCUS_LONG_BREAK_SECONDS = 15 * 60;
+const DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK = 4;
 const MIN_REMINDER_SNOOZE_MINUTES = 1;
 const MAX_REMINDER_SNOOZE_MINUTES = 240;
 const MIN_FOCUS_DURATION_SECONDS = 1;
 const MAX_FOCUS_DURATION_SECONDS = 60 * 60;
-const MIN_FOCUS_BREAK_MINUTES = 1;
-const MAX_FOCUS_BREAK_MINUTES = 60;
+const MIN_FOCUS_BREAK_SECONDS = 1;
+const MAX_FOCUS_BREAK_SECONDS = 60 * 60;
 const MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK = 1;
 const MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK = 12;
 
 export interface AppSettings {
   focusDefaultDurationSeconds: PomodoroTimerSettings["focusDefaultDurationSeconds"];
   focusCyclesBeforeLongBreak: PomodoroTimerSettings["focusCyclesBeforeLongBreak"];
-  focusLongBreakMinutes: PomodoroTimerSettings["focusLongBreakMinutes"];
-  focusShortBreakMinutes: PomodoroTimerSettings["focusShortBreakMinutes"];
+  focusLongBreakSeconds: PomodoroTimerSettings["focusLongBreakSeconds"];
+  focusShortBreakSeconds: PomodoroTimerSettings["focusShortBreakSeconds"];
   launchAtLogin: boolean;
   minimizeToTray: boolean;
   reminderEnabled: boolean;
@@ -45,8 +45,8 @@ export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
   return {
     focusCyclesBeforeLongBreak: DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK,
     focusDefaultDurationSeconds: DEFAULT_FOCUS_DURATION_SECONDS,
-    focusLongBreakMinutes: DEFAULT_FOCUS_LONG_BREAK_MINUTES,
-    focusShortBreakMinutes: DEFAULT_FOCUS_SHORT_BREAK_MINUTES,
+    focusLongBreakSeconds: DEFAULT_FOCUS_LONG_BREAK_SECONDS,
+    focusShortBreakSeconds: DEFAULT_FOCUS_SHORT_BREAK_SECONDS,
   };
 }
 
@@ -68,15 +68,15 @@ export function getPomodoroTimerSettings(
     AppSettings,
     | "focusDefaultDurationSeconds"
     | "focusCyclesBeforeLongBreak"
-    | "focusLongBreakMinutes"
-    | "focusShortBreakMinutes"
+    | "focusLongBreakSeconds"
+    | "focusShortBreakSeconds"
   >
 ): PomodoroTimerSettings {
   return {
     focusCyclesBeforeLongBreak: settings.focusCyclesBeforeLongBreak,
     focusDefaultDurationSeconds: settings.focusDefaultDurationSeconds,
-    focusLongBreakMinutes: settings.focusLongBreakMinutes,
-    focusShortBreakMinutes: settings.focusShortBreakMinutes,
+    focusLongBreakSeconds: settings.focusLongBreakSeconds,
+    focusShortBreakSeconds: settings.focusShortBreakSeconds,
   };
 }
 
@@ -119,11 +119,11 @@ export function isValidFocusDurationSeconds(value: number): boolean {
   );
 }
 
-export function isValidFocusBreakMinutes(value: number): boolean {
+export function isValidFocusBreakDurationSeconds(value: number): boolean {
   return (
     Number.isInteger(value) &&
-    value >= MIN_FOCUS_BREAK_MINUTES &&
-    value <= MAX_FOCUS_BREAK_MINUTES
+    value >= MIN_FOCUS_BREAK_SECONDS &&
+    value <= MAX_FOCUS_BREAK_SECONDS
   );
 }
 
@@ -141,9 +141,9 @@ export function isValidPomodoroTimerSettings(
   return (
     isValidFocusDurationSeconds(settings.focusDefaultDurationSeconds) &&
     isValidFocusCyclesBeforeLongBreak(settings.focusCyclesBeforeLongBreak) &&
-    isValidFocusBreakMinutes(settings.focusLongBreakMinutes) &&
-    isValidFocusBreakMinutes(settings.focusShortBreakMinutes) &&
-    settings.focusLongBreakMinutes >= settings.focusShortBreakMinutes
+    isValidFocusBreakDurationSeconds(settings.focusLongBreakSeconds) &&
+    isValidFocusBreakDurationSeconds(settings.focusShortBreakSeconds) &&
+    settings.focusLongBreakSeconds >= settings.focusShortBreakSeconds
   );
 }
 
