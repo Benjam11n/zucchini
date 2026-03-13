@@ -18,6 +18,8 @@ import {
 } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
+import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
@@ -74,7 +76,7 @@ export function FocusWidget() {
   const setTimerState = useFocusStore((state) => state.setTimerState);
   const todayState = useFocusWidgetSnapshot();
   const categoryProgress = getHabitCategoryProgress(todayState?.habits ?? []);
-  const [systemTheme, setSystemTheme] = useState<"dark" | "light">("light");
+  const systemTheme = useSystemTheme();
   const [storedPomodoroSettings, setStoredPomodoroSettings] = useState(() =>
     readPomodoroTimerSettings()
   );
@@ -96,20 +98,6 @@ export function FocusWidget() {
     };
   }, []);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncSystemTheme = () => {
-      setSystemTheme(mediaQuery.matches ? "dark" : "light");
-    };
-
-    syncSystemTheme();
-    mediaQuery.addEventListener("change", syncSystemTheme);
-
-    return () => {
-      mediaQuery.removeEventListener("change", syncSystemTheme);
-    };
-  }, []);
-
   useEffect(
     () =>
       subscribeToPomodoroTimerSettings((nextPomodoroSettings) => {
@@ -118,13 +106,10 @@ export function FocusWidget() {
     []
   );
 
-  useEffect(() => {
-    const preferredTheme = todayState?.settings.themeMode ?? "system";
-    const resolvedTheme =
-      preferredTheme === "system" ? systemTheme : preferredTheme;
-
-    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  }, [systemTheme, todayState?.settings.themeMode]);
+  useApplyThemeMode({
+    systemTheme,
+    themeMode: todayState?.settings.themeMode ?? "system",
+  });
 
   const isBreak = timerState.phase === "break";
   const isIdle = timerState.status === "idle";

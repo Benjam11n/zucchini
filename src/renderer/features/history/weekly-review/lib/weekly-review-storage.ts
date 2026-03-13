@@ -1,4 +1,8 @@
-const WEEKLY_REVIEW_STORAGE_KEY = "zucchini_weekly_review";
+import {
+  readJsonStorage,
+  STORAGE_KEYS,
+  writeJsonStorage,
+} from "@/renderer/shared/lib/storage";
 
 interface PersistedWeeklyReviewState {
   lastSeenWeeklyReviewStart: string | null;
@@ -19,30 +23,18 @@ export function isPersistedWeeklyReviewState(
 }
 
 export function readLastSeenWeeklyReviewStart(): string | null {
-  try {
-    const rawValue = localStorage.getItem(WEEKLY_REVIEW_STORAGE_KEY);
-    if (!rawValue) {
-      return null;
-    }
-
-    const parsedValue = JSON.parse(rawValue) as unknown;
-    return isPersistedWeeklyReviewState(parsedValue)
-      ? parsedValue.lastSeenWeeklyReviewStart
-      : null;
-  } catch {
-    return null;
-  }
+  const parsedValue = readJsonStorage(STORAGE_KEYS.weeklyReview);
+  return isPersistedWeeklyReviewState(parsedValue)
+    ? parsedValue.lastSeenWeeklyReviewStart
+    : null;
 }
 
 export function writeLastSeenWeeklyReviewStart(weekStart: string): void {
-  try {
-    localStorage.setItem(
-      WEEKLY_REVIEW_STORAGE_KEY,
-      JSON.stringify({
-        lastSeenWeeklyReviewStart: weekStart,
-      } satisfies PersistedWeeklyReviewState)
-    );
-  } catch {
+  if (
+    !writeJsonStorage(STORAGE_KEYS.weeklyReview, {
+      lastSeenWeeklyReviewStart: weekStart,
+    } satisfies PersistedWeeklyReviewState)
+  ) {
     // Ignore storage failures; weekly review spotlight memory is best-effort.
   }
 }

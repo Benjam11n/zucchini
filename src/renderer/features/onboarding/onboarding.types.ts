@@ -1,5 +1,7 @@
 import type { AppSettings } from "@/shared/domain/settings";
 
+export type OnboardingStep = "edit" | "pick" | "reminders";
+
 export interface OnboardingReminderDraft {
   reminderEnabled: boolean;
   reminderTime: string;

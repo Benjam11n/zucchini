@@ -1,11 +1,15 @@
+import {
+  readJsonStorage,
+  STORAGE_KEYS,
+  subscribeToStorageKey,
+  writeJsonStorage,
+} from "@/renderer/shared/lib/storage";
+
 import type { PersistedFocusTimerState } from "../focus.types";
 import {
   clampFocusDurationMs,
   DEFAULT_FOCUS_DURATION_MS,
 } from "./focus-timer.constants";
-
-const FOCUS_TIMER_STORAGE_KEY = "zucchini_focus_timer";
-const FOCUS_TIMER_STORAGE_EVENT = "storage";
 
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === "string";
@@ -108,22 +112,13 @@ export function isPersistedFocusTimerState(
 }
 
 export function readFocusTimerState(): PersistedFocusTimerState | null {
-  try {
-    const rawValue = localStorage.getItem(FOCUS_TIMER_STORAGE_KEY);
-    if (!rawValue) {
-      return null;
-    }
-
-    return parsePersistedFocusTimerState(JSON.parse(rawValue) as unknown);
-  } catch {
-    return null;
-  }
+  return parsePersistedFocusTimerState(
+    readJsonStorage(STORAGE_KEYS.focusTimer)
+  );
 }
 
 export function writeFocusTimerState(value: PersistedFocusTimerState): void {
-  try {
-    localStorage.setItem(FOCUS_TIMER_STORAGE_KEY, JSON.stringify(value));
-  } catch {
+  if (!writeJsonStorage(STORAGE_KEYS.focusTimer, value)) {
     // Ignore storage failures; timer restore is best effort UI state.
   }
 }
@@ -131,26 +126,7 @@ export function writeFocusTimerState(value: PersistedFocusTimerState): void {
 export function subscribeToFocusTimerState(
   onChange: (value: PersistedFocusTimerState | null) => void
 ): () => void {
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key !== FOCUS_TIMER_STORAGE_KEY) {
-      return;
-    }
-
-    if (!event.newValue) {
-      onChange(null);
-      return;
-    }
-
-    try {
-      onChange(parsePersistedFocusTimerState(JSON.parse(event.newValue)));
-    } catch {
-      onChange(null);
-    }
-  };
-
-  window.addEventListener(FOCUS_TIMER_STORAGE_EVENT, handleStorage);
-
-  return () => {
-    window.removeEventListener(FOCUS_TIMER_STORAGE_EVENT, handleStorage);
-  };
+  return subscribeToStorageKey(STORAGE_KEYS.focusTimer, (value) => {
+    onChange(parsePersistedFocusTimerState(value));
+  });
 }

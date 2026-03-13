@@ -1,6 +1,9 @@
 import type { PersistedTodayUiState } from "@/renderer/features/today/today.types";
-
-const LAST_STATE_STORAGE_KEY = "zucchini_last_state";
+import {
+  readJsonStorage,
+  STORAGE_KEYS,
+  writeJsonStorage,
+} from "@/renderer/shared/lib/storage";
 
 export function isPersistedTodayUiState(
   value: unknown
@@ -20,23 +23,12 @@ export function isPersistedTodayUiState(
 }
 
 export function readLastUiState(): PersistedTodayUiState | null {
-  try {
-    const rawValue = localStorage.getItem(LAST_STATE_STORAGE_KEY);
-    if (!rawValue) {
-      return null;
-    }
-
-    const parsedValue = JSON.parse(rawValue) as unknown;
-    return isPersistedTodayUiState(parsedValue) ? parsedValue : null;
-  } catch {
-    return null;
-  }
+  const parsedValue = readJsonStorage(STORAGE_KEYS.todayUiState);
+  return isPersistedTodayUiState(parsedValue) ? parsedValue : null;
 }
 
 export function writeLastUiState(value: PersistedTodayUiState): void {
-  try {
-    localStorage.setItem(LAST_STATE_STORAGE_KEY, JSON.stringify(value));
-  } catch {
+  if (!writeJsonStorage(STORAGE_KEYS.todayUiState, value)) {
     // Ignore storage failures; popup history is only best-effort UI memory.
   }
 }

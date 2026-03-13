@@ -1,11 +1,14 @@
 import {
+  readJsonStorage,
+  STORAGE_KEYS,
+  subscribeToStorageKey,
+  writeJsonStorage,
+} from "@/renderer/shared/lib/storage";
+import {
   createDefaultPomodoroTimerSettings,
   isValidPomodoroTimerSettings,
 } from "@/shared/domain/settings";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
-
-const POMODORO_SETTINGS_STORAGE_KEY = "zucchini_pomodoro_settings";
-const POMODORO_SETTINGS_STORAGE_EVENT = "storage";
 
 function parsePomodoroTimerSettings(
   value: unknown
@@ -39,27 +42,15 @@ export function getDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
 }
 
 export function readPomodoroTimerSettings(): PomodoroTimerSettings | null {
-  try {
-    const rawValue = localStorage.getItem(POMODORO_SETTINGS_STORAGE_KEY);
-    if (!rawValue) {
-      return null;
-    }
-
-    return parsePomodoroTimerSettings(JSON.parse(rawValue) as unknown);
-  } catch {
-    return null;
-  }
+  return parsePomodoroTimerSettings(
+    readJsonStorage(STORAGE_KEYS.pomodoroSettings)
+  );
 }
 
 export function writePomodoroTimerSettings(
   settings: PomodoroTimerSettings
 ): void {
-  try {
-    localStorage.setItem(
-      POMODORO_SETTINGS_STORAGE_KEY,
-      JSON.stringify(settings)
-    );
-  } catch {
+  if (!writeJsonStorage(STORAGE_KEYS.pomodoroSettings, settings)) {
     // Ignore storage failures; saved settings remain available via IPC.
   }
 }
@@ -67,28 +58,7 @@ export function writePomodoroTimerSettings(
 export function subscribeToPomodoroTimerSettings(
   onChange: (settings: PomodoroTimerSettings | null) => void
 ): () => void {
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key !== POMODORO_SETTINGS_STORAGE_KEY) {
-      return;
-    }
-
-    if (!event.newValue) {
-      onChange(null);
-      return;
-    }
-
-    try {
-      onChange(
-        parsePomodoroTimerSettings(JSON.parse(event.newValue) as unknown)
-      );
-    } catch {
-      onChange(null);
-    }
-  };
-
-  window.addEventListener(POMODORO_SETTINGS_STORAGE_EVENT, handleStorage);
-
-  return () => {
-    window.removeEventListener(POMODORO_SETTINGS_STORAGE_EVENT, handleStorage);
-  };
+  return subscribeToStorageKey(STORAGE_KEYS.pomodoroSettings, (value) => {
+    onChange(parsePomodoroTimerSettings(value));
+  });
 }

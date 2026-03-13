@@ -27,6 +27,8 @@ import {
 import type { SettingsFieldErrors } from "@/renderer/features/settings/settings.types";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
+import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
@@ -34,6 +36,7 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 import { appActions } from "./app-actions";
 import type { AppControllerState } from "./app-controller.types";
+import { useTabStoreSelector } from "./use-tab-store-selector";
 
 const EMPTY_HISTORY: AppControllerState["history"] = [];
 const EMPTY_FOCUS_SESSIONS: AppControllerState["focusSessions"] = [];
@@ -86,7 +89,7 @@ function useWeeklyReviewState() {
   );
 }
 
-function useHistoryState() {
+function useNonSettingsHistoryState() {
   const tab = useUiStore((state) => state.tab);
 
   return useHistoryStore(
@@ -104,52 +107,28 @@ function useHistoryState() {
 }
 
 function useHistoryPageState() {
-  const tab = useUiStore((state) => state.tab);
-
-  return useWeeklyReviewStore(
-    useShallow((state) =>
-      tab === "history"
-        ? {
-            selectedWeeklyReview: state.selectedWeeklyReview,
-            weeklyReviewError: state.weeklyReviewError,
-          }
-        : null
-    )
-  );
+  return useTabStoreSelector("history", useWeeklyReviewStore, (state) => ({
+    selectedWeeklyReview: state.selectedWeeklyReview,
+    weeklyReviewError: state.weeklyReviewError,
+  }));
 }
 
 function useFocusPageState() {
-  const tab = useUiStore((state) => state.tab);
-
-  return useFocusStore(
-    useShallow((state) =>
-      tab === "focus"
-        ? {
-            focusSaveErrorMessage: state.focusSaveErrorMessage,
-            focusSessions: state.focusSessions,
-            focusSessionsLoadError: state.focusSessionsLoadError,
-            focusSessionsPhase: state.focusSessionsPhase,
-            timerState: state.timerState,
-          }
-        : null
-    )
-  );
+  return useTabStoreSelector("focus", useFocusStore, (state) => ({
+    focusSaveErrorMessage: state.focusSaveErrorMessage,
+    focusSessions: state.focusSessions,
+    focusSessionsLoadError: state.focusSessionsLoadError,
+    focusSessionsPhase: state.focusSessionsPhase,
+    timerState: state.timerState,
+  }));
 }
 
 function useSettingsPageState() {
-  const tab = useUiStore((state) => state.tab);
-
-  return useSettingsStore(
-    useShallow((state) =>
-      tab === "settings"
-        ? {
-            settingsFieldErrors: state.settingsFieldErrors,
-            settingsSaveErrorMessage: state.settingsSaveErrorMessage,
-            settingsSavePhase: state.settingsSavePhase,
-          }
-        : null
-    )
-  );
+  return useTabStoreSelector("settings", useSettingsStore, (state) => ({
+    settingsFieldErrors: state.settingsFieldErrors,
+    settingsSaveErrorMessage: state.settingsSaveErrorMessage,
+    settingsSavePhase: state.settingsSavePhase,
+  }));
 }
 
 function getResolvedFocusState(
@@ -166,7 +145,7 @@ function getResolvedFocusState(
 }
 
 function getResolvedHistoryState(
-  historyState: ReturnType<typeof useHistoryState>
+  historyState: ReturnType<typeof useNonSettingsHistoryState>
 ) {
   return {
     history: historyState?.history ?? EMPTY_HISTORY,
@@ -456,18 +435,8 @@ function useAppLifecycleEffects({
   ]);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncSystemTheme = () => {
-      setSystemTheme(mediaQuery.matches ? "dark" : "light");
-    };
-
-    syncSystemTheme();
-    mediaQuery.addEventListener("change", syncSystemTheme);
-
-    return () => {
-      mediaQuery.removeEventListener("change", syncSystemTheme);
-    };
-  }, [setSystemTheme]);
+    setSystemTheme(systemTheme);
+  }, [setSystemTheme, systemTheme]);
 
   useEffect(() => {
     if (!savedPomodoroSettings) {
@@ -483,22 +452,19 @@ function useAppLifecycleEffects({
     savedPomodoroSettings?.focusShortBreakMinutes,
   ]);
 
-  useEffect(() => {
-    const preferredTheme =
-      (settingsDraft ?? todayState?.settings)?.themeMode ?? "system";
-    const resolvedTheme =
-      preferredTheme === "system" ? systemTheme : preferredTheme;
-
-    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  }, [settingsDraft, systemTheme, todayState]);
+  useApplyThemeMode({
+    systemTheme,
+    themeMode: (settingsDraft ?? todayState?.settings)?.themeMode ?? "system",
+  });
 }
 
 export function useAppController() {
   const tab = useUiStore((state) => state.tab);
+  const systemTheme = useSystemTheme();
   const actions = useAppControllerActions();
   const coreState = useAppControllerCoreState();
   const weeklyReviewState = useWeeklyReviewState();
-  const historyState = useHistoryState();
+  const historyState = useNonSettingsHistoryState();
   const focusPageState = useFocusPageState();
   const historyPageState = useHistoryPageState();
   const settingsPageState = useSettingsPageState();
@@ -526,7 +492,7 @@ export function useAppController() {
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
     setSystemTheme: actions.setSystemTheme,
     settingsDraft: coreState.settingsDraft,
-    systemTheme: coreState.systemTheme,
+    systemTheme,
     todayState: coreState.todayState,
     weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
     weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
