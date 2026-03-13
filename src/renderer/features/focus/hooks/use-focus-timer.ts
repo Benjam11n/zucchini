@@ -18,11 +18,11 @@ import {
   subscribeToPomodoroTimerSettings,
 } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 const LEASE_TTL_MS = 2500;
-const MS_PER_MINUTE = 60 * 1000;
 
 function createCycleId(): string {
   if ("randomUUID" in crypto) {

@@ -1,4 +1,5 @@
 import type { HistoryStatus } from "@/renderer/features/history/history-status";
+import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -7,7 +8,7 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
-export type WeeklyReviewPhase = "error" | "idle" | "loading" | "ready";
+export type WeeklyReviewPhase = AsyncPhase;
 
 export interface HistoryPageProps {
   history: HistoryDay[];

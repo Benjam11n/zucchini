@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import type { AppTab } from "@/renderer/app/app.types";
+import { getSystemTheme } from "@/renderer/shared/lib/theme";
 import type { ThemeMode } from "@/shared/domain/settings";
 
 export interface UiStoreState {
@@ -8,12 +9,6 @@ export interface UiStoreState {
   tab: AppTab;
   setSystemTheme: (systemTheme: ThemeMode) => void;
   setTab: (tab: AppTab) => void;
-}
-
-function getSystemTheme(): ThemeMode {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
 }
 
 function getInitialUiState(): Pick<UiStoreState, "systemTheme" | "tab"> {

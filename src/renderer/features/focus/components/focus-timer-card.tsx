@@ -16,6 +16,11 @@ import {
   clampFocusDurationMs,
   splitFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer.constants";
+import {
+  MS_PER_MINUTE,
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from "@/renderer/shared/lib/time";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -126,9 +131,9 @@ export function FocusTimerCard({
   const isIdle = timerState.status === "idle";
   const isPaused = timerState.status === "paused";
   const isRunning = timerState.status === "running";
-  const isLastMinute = isRunning && timerState.remainingMs <= 60 * 1000;
+  const isLastMinute = isRunning && timerState.remainingMs <= MS_PER_MINUTE;
   const isBreakFinalMinute =
-    isBreak && isRunning && timerState.remainingMs <= 60 * 1000;
+    isBreak && isRunning && timerState.remainingMs <= MS_PER_MINUTE;
   const phaseBadge = getPhaseBadge(timerState, isBreak, isBreakFinalMinute);
   const timerDisplayColorClass = isLastMinute
     ? "text-amber-300"
@@ -170,9 +175,9 @@ export function FocusTimerCard({
       ? durationParts.seconds
       : Math.min(59, Math.max(0, parsedSeconds));
     const durationMs = clampFocusDurationMs(
-      (normalizedMinutes * 60 +
+      (normalizedMinutes * SECONDS_PER_MINUTE +
         (normalizedMinutes === 60 ? 0 : normalizedSeconds)) *
-        1000
+        MS_PER_SECOND
     );
     const normalizedParts = splitFocusDurationMs(durationMs);
 

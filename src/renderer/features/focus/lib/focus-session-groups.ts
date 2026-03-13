@@ -1,6 +1,5 @@
+import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import type { FocusSession } from "@/shared/domain/focus-session";
-
-const MS_PER_MINUTE = 60 * 1000;
 const RUN_GAP_THRESHOLD_MINUTES = 30;
 const RUN_GAP_THRESHOLD_MS = RUN_GAP_THRESHOLD_MINUTES * MS_PER_MINUTE;
 

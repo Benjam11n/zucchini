@@ -20,6 +20,7 @@ import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
+import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
@@ -115,7 +116,7 @@ export function FocusWidget() {
   const isIdle = timerState.status === "idle";
   const isPaused = timerState.status === "paused";
   const isRunning = timerState.status === "running";
-  const isLastMinute = isRunning && timerState.remainingMs <= 60 * 1000;
+  const isLastMinute = isRunning && timerState.remainingMs <= MS_PER_MINUTE;
   const canStart = isIdle || isPaused;
   const canReset = !isIdle;
   let timerLabelColorClass = "text-foreground";

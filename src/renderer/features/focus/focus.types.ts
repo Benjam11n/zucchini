@@ -1,10 +1,11 @@
 import type { SettingsSavePhase } from "@/renderer/features/settings/settings.types";
+import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export type FocusTimerPhase = "focus" | "break";
 export type FocusTimerStatus = "idle" | "running" | "paused";
-export type FocusSessionsPhase = "error" | "idle" | "loading" | "ready";
+export type FocusSessionsPhase = AsyncPhase;
 export type FocusBreakVariant = "short" | "long";
 
 export interface PersistedFocusTimerState {
