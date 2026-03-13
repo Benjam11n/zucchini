@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
-import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
+import {
+  createIdleFocusTimerState,
+  createRunningBreakTimerState,
+  createRunningFocusTimerState,
+} from "@/renderer/features/focus/lib/focus-timer-state";
 import {
   resetFocusStore,
   useFocusStore,
@@ -77,5 +81,51 @@ describe("focus tab", () => {
       remainingMs: 45 * 60 * 1000 + 30 * 1000,
       status: "running",
     });
+  });
+
+  it("shows the break badge and final-minute cue", () => {
+    resetFocusStore();
+    useFocusStore
+      .getState()
+      .setTimerState(
+        createRunningBreakTimerState(
+          25 * 60 * 1000,
+          new Date("2026-03-08T09:00:00.000Z")
+        )
+      );
+
+    render(<FocusPageHarness />);
+
+    expect(screen.getByText("Break")).toBeInTheDocument();
+
+    act(() => {
+      useFocusStore.getState().setTimerState({
+        ...useFocusStore.getState().timerState,
+        remainingMs: 60_000,
+      });
+    });
+
+    expect(screen.getByText("1 min left")).toBeInTheDocument();
+  });
+
+  it("uses amber timer text during the last minute", () => {
+    resetFocusStore();
+    useFocusStore
+      .getState()
+      .setTimerState(
+        createRunningFocusTimerState(new Date("2026-03-08T09:00:00.000Z"))
+      );
+
+    render(<FocusPageHarness />);
+
+    act(() => {
+      useFocusStore.getState().setTimerState({
+        ...useFocusStore.getState().timerState,
+        remainingMs: 60_000,
+      });
+    });
+
+    expect(screen.getByText("01")).toHaveClass("text-amber-300");
+    expect(screen.getByText("00")).toHaveClass("text-amber-300");
   });
 });

@@ -89,6 +89,7 @@ describe("registerIpcHandlers()", () => {
   it("serializes validation errors with details", async () => {
     resetHandlers();
     registerIpcHandlers({
+      broadcastFocusSessionRecorded: vi.fn(),
       focusTimerCoordinator: createFocusTimerCoordinator(),
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
@@ -120,6 +121,7 @@ describe("registerIpcHandlers()", () => {
     });
 
     registerIpcHandlers({
+      broadcastFocusSessionRecorded: vi.fn(),
       focusTimerCoordinator: createFocusTimerCoordinator(),
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
@@ -142,6 +144,7 @@ describe("registerIpcHandlers()", () => {
   it("serializes unknown errors as internal errors", async () => {
     resetHandlers();
     registerIpcHandlers({
+      broadcastFocusSessionRecorded: vi.fn(),
       focusTimerCoordinator: createFocusTimerCoordinator(),
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
@@ -166,6 +169,7 @@ describe("registerIpcHandlers()", () => {
     const service = createService();
 
     registerIpcHandlers({
+      broadcastFocusSessionRecorded: vi.fn(),
       focusTimerCoordinator: createFocusTimerCoordinator(),
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
@@ -188,6 +192,7 @@ describe("registerIpcHandlers()", () => {
   it("passes validated focus session payloads through to the service", async () => {
     resetHandlers();
     const service = createService();
+    const broadcastFocusSessionRecorded = vi.fn();
     service.recordFocusSession.mockReturnValue({
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
@@ -197,6 +202,7 @@ describe("registerIpcHandlers()", () => {
     });
 
     registerIpcHandlers({
+      broadcastFocusSessionRecorded,
       focusTimerCoordinator: createFocusTimerCoordinator(),
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),
@@ -223,6 +229,10 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(service.recordFocusSession).toHaveBeenCalledWith(payload);
+    expect(broadcastFocusSessionRecorded).toHaveBeenCalledWith({
+      ...payload,
+      id: 1,
+    });
   });
 
   it("routes focus timer leadership requests to the coordinator", async () => {
@@ -230,6 +240,7 @@ describe("registerIpcHandlers()", () => {
     const focusTimerCoordinator = createFocusTimerCoordinator();
 
     registerIpcHandlers({
+      broadcastFocusSessionRecorded: vi.fn(),
       focusTimerCoordinator,
       onResizeFocusWidget: vi.fn(),
       onSettingsChanged: vi.fn(),

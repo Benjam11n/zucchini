@@ -4,6 +4,10 @@ import type {
   FocusSessionsPhase,
   FocusTodaySummary,
 } from "@/renderer/features/focus/focus.types";
+import {
+  formatFocusMinutes,
+  getFocusMinutesLabel,
+} from "@/renderer/features/focus/lib/focus-session-format";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
@@ -25,9 +29,11 @@ export function getFocusTodaySummary(
 
   return {
     completedCount: todaySessions.length,
-    totalMinutes: todaySessions.reduce(
-      (total, session) => total + session.durationSeconds / 60,
-      0
+    totalMinutes: formatFocusMinutes(
+      todaySessions.reduce(
+        (totalSeconds, session) => totalSeconds + session.durationSeconds,
+        0
+      )
     ),
   };
 }
@@ -68,7 +74,7 @@ export function FocusSessionList({
 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
           <span>{todaySummary.completedCount} sessions today</span>
-          <span>{todaySummary.totalMinutes} focused minutes</span>
+          <span>{getFocusMinutesLabel(todaySummary.totalMinutes)}</span>
         </div>
       </CardHeader>
 
@@ -119,7 +125,7 @@ export function FocusSessionList({
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock3 className="size-4" />
-                  <span>{Math.round(session.durationSeconds / 60)} min</span>
+                  <span>{formatFocusMinutes(session.durationSeconds)} min</span>
                 </div>
               </div>
             ))}

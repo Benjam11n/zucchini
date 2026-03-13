@@ -16,6 +16,14 @@ import {
 
 import { useFocusTimer } from "./use-focus-timer";
 
+type FocusSessionRecordedListener = (session: {
+  completedAt: string;
+  completedDate: string;
+  durationSeconds: number;
+  id: number;
+  startedAt: string;
+}) => void;
+
 function createLocalStorageMock() {
   const storage = new Map<string, string>();
 
@@ -44,16 +52,33 @@ function setupFocusTimerTest() {
   });
   localStorage.clear();
   resetFocusStore();
+  let focusSessionRecordedListener: FocusSessionRecordedListener | null = null;
   Object.defineProperty(window, "habits", {
     configurable: true,
     value: {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+      onFocusSessionRecorded: vi.fn(
+        (listener: FocusSessionRecordedListener) => {
+          focusSessionRecordedListener = listener;
+          return () => {
+            focusSessionRecordedListener = null;
+          };
+        }
+      ),
       releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
       showFocusWidget: vi.fn(() => Promise.resolve()),
       showNotification: vi.fn().mockResolvedValue(42),
     },
   });
+
+  return {
+    emitFocusSessionRecorded(
+      session: Parameters<FocusSessionRecordedListener>[0]
+    ) {
+      focusSessionRecordedListener?.(session);
+    },
+  };
 }
 
 function teardownFocusTimerTest() {
@@ -118,8 +143,16 @@ describe("use focus timer", () => {
       await Promise.resolve();
     });
 
+    const persistedTimerState = localStorage.getItem("zucchini_focus_timer");
+
     expect(useFocusStore.getState().timerState.status).toBe("running");
     expect(useFocusStore.getState().timerState.remainingMs).toBe(1_500_000);
+    expect(persistedTimerState).not.toBeNull();
+    expect(JSON.parse(persistedTimerState as string)).toMatchObject({
+      cycleId: "cycle-restore",
+      remainingMs: 1_500_000,
+      status: "running",
+    });
     teardownFocusTimerTest();
   });
 
@@ -220,6 +253,50 @@ describe("use focus timer", () => {
 
     // eslint-disable-next-line vitest/prefer-called-once
     expect(window.habits.showFocusWidget).toHaveBeenCalledTimes(1);
+    teardownFocusTimerTest();
+  });
+
+  it("prepends broadcast focus sessions once per unique id", async () => {
+    const { emitFocusSessionRecorded } = setupFocusTimerTest();
+    const clearFocusSaveError = vi.fn();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+    const setFocusSaveErrorMessage = vi.fn();
+
+    renderHook(() =>
+      useFocusTimer({
+        clearFocusSaveError,
+        recordFocusSession,
+        setFocusSaveErrorMessage,
+      })
+    );
+
+    await act(async () => {
+      emitFocusSessionRecorded({
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        id: 10,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      });
+      emitFocusSessionRecorded({
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        id: 10,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      });
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().focusSessions).toStrictEqual([
+      {
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        id: 10,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      },
+    ]);
     teardownFocusTimerTest();
   });
 });

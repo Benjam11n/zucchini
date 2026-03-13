@@ -33,6 +33,7 @@ export const HABITS_IPC_CHANNELS = {
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   completeOnboarding: "habits:completeOnboarding",
   createHabit: "habits:createHabit",
+  focusSessionRecorded: "habits:focusSessionRecorded",
   getFocusSessions: "habits:getFocusSessions",
   getHistory: "habits:getHistory",
   getOnboardingStatus: "habits:getOnboardingStatus",
@@ -129,6 +130,9 @@ export interface HabitApi {
   getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
+  onFocusSessionRecorded: (
+    listener: (session: FocusSession) => void
+  ) => () => void;
   recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;

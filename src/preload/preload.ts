@@ -92,6 +92,26 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
   getWeeklyReviewOverview: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
+  onFocusSessionRecorded: (listener) => {
+    const handleFocusSessionRecorded = (
+      _event: IpcRendererEvent,
+      session: Awaited<ReturnType<HabitApi["recordFocusSession"]>>
+    ) => {
+      listener(session);
+    };
+
+    ipcRenderer.on(
+      HABITS_IPC_CHANNELS.focusSessionRecorded,
+      handleFocusSessionRecorded
+    );
+
+    return () => {
+      ipcRenderer.removeListener(
+        HABITS_IPC_CHANNELS.focusSessionRecorded,
+        handleFocusSessionRecorded
+      );
+    };
+  },
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
   releaseFocusTimerLeadership: (instanceId: string) =>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import {
@@ -67,14 +67,15 @@ export function useFocusTimer({
   const instanceIdRef = useRef(createCycleId());
   const hasSeenTimerStateRef = useRef(false);
   const previousTimerStateRef = useRef(timerState);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
     const restored = readFocusTimerState();
-    if (!restored) {
-      return;
+    if (restored) {
+      setTimerState(resolveRestoredTimerState(restored));
     }
 
-    setTimerState(resolveRestoredTimerState(restored));
+    setHasHydrated(true);
   }, [setTimerState]);
 
   useEffect(
@@ -88,8 +89,20 @@ export function useFocusTimer({
   );
 
   useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
     writeFocusTimerState(timerState);
-  }, [timerState]);
+  }, [hasHydrated, timerState]);
+
+  useEffect(
+    () =>
+      window.habits.onFocusSessionRecorded((focusSession) => {
+        useFocusStore.getState().prependFocusSession(focusSession);
+      }),
+    []
+  );
 
   useEffect(() => {
     if (!hasSeenTimerStateRef.current) {

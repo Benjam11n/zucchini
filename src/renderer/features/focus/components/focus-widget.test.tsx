@@ -4,14 +4,37 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
 
 import {
+  createRunningBreakTimerState,
+  createRunningFocusTimerState,
+} from "@/renderer/features/focus/lib/focus-timer-state";
+import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
 
 import { FocusWidget } from "./focus-widget";
 
+function createLocalStorageMock() {
+  const storage = new Map<string, string>();
+
+  return {
+    clear() {
+      storage.clear();
+    },
+    getItem(key: string) {
+      return storage.get(key) ?? null;
+    },
+    removeItem(key: string) {
+      storage.delete(key);
+    },
+    setItem(key: string, value: string) {
+      storage.set(key, value);
+    },
+  };
+}
+
 describe("focus widget", () => {
-  function setupWidgetTest() {
+  function setupWidgetTest({ renderWidget = true } = {}) {
     resetFocusStore();
     class ResizeObserverMock {
       observe() {}
@@ -30,6 +53,11 @@ describe("focus widget", () => {
         removeEventListener: vi.fn(),
       }),
     });
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: createLocalStorageMock(),
+    });
+    localStorage.clear();
     const getTodayState = vi.fn().mockResolvedValue({
       date: "2026-03-10",
       habits: [],
@@ -61,6 +89,7 @@ describe("focus widget", () => {
         claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
         claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
         getTodayState,
+        onFocusSessionRecorded: vi.fn(() => vi.fn()),
         recordFocusSession: vi.fn((_input) => Promise.resolve()),
         releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
         resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
@@ -69,7 +98,10 @@ describe("focus widget", () => {
       },
     });
 
-    render(<FocusWidget />);
+    if (renderWidget) {
+      render(<FocusWidget />);
+    }
+
     return { closeSpy, getTodayState };
   }
 
@@ -110,5 +142,90 @@ describe("focus widget", () => {
     });
     // eslint-disable-next-line vitest/prefer-called-once
     expect(closeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("restores a running timer without resetting it on widget mount", async () => {
+    setupWidgetTest({ renderWidget: false });
+    const now = new Date();
+
+    localStorage.setItem(
+      "zucchini_focus_timer",
+      JSON.stringify({
+        cycleId: "cycle-restore",
+        endsAt: new Date(now.getTime() + 1_500_000).toISOString(),
+        focusDurationMs: 1_500_000,
+        lastUpdatedAt: now.toISOString(),
+        phase: "focus",
+        remainingMs: 1_500_000,
+        startedAt: now.toISOString(),
+        status: "running",
+      })
+    );
+
+    render(<FocusWidget />);
+
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.cycleId).toBe("cycle-restore");
+      expect(useFocusStore.getState().timerState.status).toBe("running");
+      expect(useFocusStore.getState().timerState.remainingMs).toBeGreaterThan(
+        0
+      );
+    });
+  });
+
+  it("shows break status and the final-minute cue", async () => {
+    setupWidgetTest({ renderWidget: false });
+    act(() => {
+      useFocusStore
+        .getState()
+        .setTimerState(
+          createRunningBreakTimerState(25 * 60 * 1000, new Date())
+        );
+    });
+
+    render(<FocusWidget />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+
+    act(() => {
+      useFocusStore.getState().setTimerState({
+        ...useFocusStore.getState().timerState,
+        remainingMs: 60_000,
+      });
+    });
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
+  });
+
+  it("does not show a status icon during normal focus", async () => {
+    setupWidgetTest();
+
+    await waitFor(() => {
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+  });
+
+  it("uses amber timer text during the final minute of focus", () => {
+    setupWidgetTest({ renderWidget: false });
+    act(() => {
+      useFocusStore
+        .getState()
+        .setTimerState(createRunningFocusTimerState(new Date()));
+    });
+
+    render(<FocusWidget />);
+
+    act(() => {
+      useFocusStore.getState().setTimerState({
+        ...useFocusStore.getState().timerState,
+        remainingMs: 60_000,
+      });
+    });
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByText("01:00")).toHaveClass("text-amber-300");
   });
 });

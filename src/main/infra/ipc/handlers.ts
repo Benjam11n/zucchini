@@ -27,9 +27,11 @@ import {
 import type { HabitsService } from "@/main/service";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc";
+import type { FocusSession } from "@/shared/domain/focus-session";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
+  broadcastFocusSessionRecorded: (session: FocusSession) => void;
   focusTimerCoordinator: FocusTimerCoordinator;
   onResizeFocusWidget: (width: number, height: number) => void;
   onShowFocusWidget: () => void;
@@ -61,6 +63,7 @@ function registerHandler<TArgs extends unknown[], TResult>(
 }
 
 export function registerIpcHandlers({
+  broadcastFocusSessionRecorded,
   focusTimerCoordinator,
   onResizeFocusWidget,
   onShowFocusWidget,
@@ -80,9 +83,15 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
     service.getFocusSessions(validateFocusSessionLimit(limit))
   );
-  registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) =>
-    service.recordFocusSession(validateCreateFocusSessionInput(input))
-  );
+  registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) => {
+    const focusSession = service.recordFocusSession(
+      validateCreateFocusSessionInput(input)
+    );
+
+    broadcastFocusSessionRecorded(focusSession);
+
+    return focusSession;
+  });
   registerHandler(
     HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion,
     (cycleId: unknown) =>

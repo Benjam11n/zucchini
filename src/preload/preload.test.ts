@@ -93,6 +93,45 @@ describe("preload habits API", () => {
     });
   });
 
+  it("exposes focus session subscriptions through the preload bridge", async () => {
+    await loadPreloadModule();
+
+    const listener = vi.fn();
+    const unsubscribe = getHabitsApi().onFocusSessionRecorded(listener);
+
+    expect(on).toHaveBeenCalledTimes(1);
+
+    const [channel, handler] = on.mock.calls[0] as [
+      string,
+      (_event: unknown, session: unknown) => void,
+    ];
+
+    expect(channel).toBe("habits:focusSessionRecorded");
+
+    handler(
+      {},
+      {
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        id: 7,
+        startedAt: "2026-03-08T09:00:00.000Z",
+      }
+    );
+
+    expect(listener).toHaveBeenCalledWith({
+      completedAt: "2026-03-08T09:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      id: 7,
+      startedAt: "2026-03-08T09:00:00.000Z",
+    });
+
+    unsubscribe();
+
+    expect(removeListener).toHaveBeenCalledTimes(1);
+  });
+
   it("exposes update status subscriptions through the preload bridge", async () => {
     await loadPreloadModule();
 

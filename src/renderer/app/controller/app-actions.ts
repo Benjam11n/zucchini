@@ -319,12 +319,7 @@ async function selectWeeklyReview(weekStart: string) {
 
 async function recordFocusSession(input: CreateFocusSessionInput) {
   const focusSession = await window.habits.recordFocusSession(input);
-
-  unstable_batchedUpdates(() => {
-    useFocusStore.getState().prependFocusSession(focusSession);
-    useFocusStore.getState().setFocusSaveErrorMessage(null);
-  });
-
+  useFocusStore.getState().setFocusSaveErrorMessage(null);
   return focusSession;
 }
 

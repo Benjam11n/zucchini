@@ -34,4 +34,32 @@ describe("focus session list", () => {
       totalMinutes: 75,
     });
   });
+
+  it("rounds sub-minute totals up to a whole minute", () => {
+    expect(
+      getFocusTodaySummary(
+        [createFocusSession(1, "2026-03-08", 1)],
+        "2026-03-08"
+      )
+    ).toStrictEqual({
+      completedCount: 1,
+      totalMinutes: 1,
+    });
+  });
+
+  it("returns integer minute totals instead of floats", () => {
+    expect(
+      getFocusTodaySummary(
+        [
+          createFocusSession(1, "2026-03-08", 30),
+          createFocusSession(2, "2026-03-08", 60),
+          createFocusSession(3, "2026-03-08", 90),
+        ],
+        "2026-03-08"
+      )
+    ).toStrictEqual({
+      completedCount: 3,
+      totalMinutes: 3,
+    });
+  });
 });

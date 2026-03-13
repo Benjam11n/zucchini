@@ -50,6 +50,23 @@ export function FocusTimerCard({
   const isIdle = timerState.status === "idle";
   const isPaused = timerState.status === "paused";
   const isRunning = timerState.status === "running";
+  const isLastMinute = isRunning && timerState.remainingMs <= 60 * 1000;
+  const isBreakFinalMinute =
+    isBreak && isRunning && timerState.remainingMs <= 60 * 1000;
+  let phaseBadgeVariant: "default" | "destructive" | "secondary" = "default";
+  let phaseBadgeLabel = "Focus";
+  const timerDisplayColorClass = isLastMinute
+    ? "text-amber-300"
+    : "text-foreground";
+
+  if (isBreakFinalMinute) {
+    phaseBadgeVariant = "destructive";
+    phaseBadgeLabel = "1 min left";
+  } else if (isBreak) {
+    phaseBadgeVariant = "secondary";
+    phaseBadgeLabel = "Break";
+  }
+
   const canEditDuration = isIdle && !isBreak;
   const durationParts = splitFocusDurationMs(timerState.focusDurationMs);
   const [displayMinutes, displaySeconds] = formatTimerLabel(
@@ -116,9 +133,9 @@ export function FocusTimerCard({
             </Button>
             <Badge
               className="rounded-full px-3 py-1"
-              variant={isBreak ? "secondary" : "default"}
+              variant={phaseBadgeVariant}
             >
-              {isBreak ? "Break" : "Focus"}
+              {phaseBadgeLabel}
             </Badge>
           </div>
         </div>
@@ -187,7 +204,9 @@ export function FocusTimerCard({
               ) : (
                 <>
                   <div className="flex justify-end">
-                    <p className="pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground">
+                    <p
+                      className={`pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums ${timerDisplayColorClass}`}
+                    >
                       {displayMinutes}
                     </p>
                   </div>
@@ -195,7 +214,9 @@ export function FocusTimerCard({
                     :
                   </span>
                   <div className="flex justify-start">
-                    <p className="pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground">
+                    <p
+                      className={`pl-[0.04em] text-left text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums ${timerDisplayColorClass}`}
+                    >
                       {displaySeconds}
                     </p>
                   </div>

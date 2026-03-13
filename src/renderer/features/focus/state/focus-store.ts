@@ -94,7 +94,11 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
   },
   prependFocusSession: (focusSession: FocusSession) =>
     set((state) => ({
-      focusSessions: [focusSession, ...state.focusSessions].slice(0, 30),
+      focusSessions: state.focusSessions.some(
+        (existingSession) => existingSession.id === focusSession.id
+      )
+        ? state.focusSessions
+        : [focusSession, ...state.focusSessions].slice(0, 30),
     })),
   setFocusSaveErrorMessage: (focusSaveErrorMessage) =>
     set({ focusSaveErrorMessage }),

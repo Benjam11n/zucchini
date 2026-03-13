@@ -10,10 +10,7 @@ import {
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  resetFocusStore,
-  useFocusStore,
-} from "@/renderer/features/focus/state/focus-store";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
@@ -73,10 +70,6 @@ export function FocusWidget() {
   const [systemTheme, setSystemTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
-    resetFocusStore();
-  }, []);
-
-  useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
     const previousRootOverflow = document.documentElement.style.overflow;
 
@@ -115,8 +108,16 @@ export function FocusWidget() {
   const isIdle = timerState.status === "idle";
   const isPaused = timerState.status === "paused";
   const isRunning = timerState.status === "running";
+  const isLastMinute = isRunning && timerState.remainingMs <= 60 * 1000;
   const canStart = isIdle || isPaused;
   const canReset = !isIdle;
+  let timerLabelColorClass = "text-foreground";
+
+  if (isLastMinute) {
+    timerLabelColorClass = "text-amber-300";
+  } else if (isBreak) {
+    timerLabelColorClass = "text-white/80";
+  }
 
   useEffect(() => {
     const widgetElement = widgetRef.current;
@@ -169,13 +170,13 @@ export function FocusWidget() {
         className="flex min-w-max items-center gap-2 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(8,12,10,0.96),rgba(3,7,5,0.96))] px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.85)]"
         style={DRAG_REGION_STYLE}
       >
-        <p
-          className={`min-w-[64px] pl-1 text-left text-[1.12rem] leading-none font-black tracking-tight tabular-nums ${
-            isBreak ? "text-muted-foreground" : "text-foreground"
-          }`}
-        >
-          {formatTimerLabel(timerState.remainingMs)}
-        </p>
+        <div className="flex items-center">
+          <p
+            className={`min-w-[56px] text-left text-[1.12rem] leading-none font-black tracking-tight tabular-nums ${timerLabelColorClass}`}
+          >
+            {formatTimerLabel(timerState.remainingMs)}
+          </p>
+        </div>
 
         <div
           className="flex items-center gap-1 rounded-full border border-white/8 bg-white/3 p-1"

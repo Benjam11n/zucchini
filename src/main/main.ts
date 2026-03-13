@@ -41,6 +41,8 @@ import { SqliteHabitRepository } from "@/main/repository";
 import { HabitService } from "@/main/service";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import type { FocusSession } from "@/shared/domain/focus-session";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 function getWindowBackgroundColor(): string {
@@ -84,18 +86,47 @@ let trayEnabled = false;
 let mainWindow: BrowserWindow | null = null;
 let focusWidgetWindow: BrowserWindow | null = null;
 const focusTimerCoordinator = createFocusTimerCoordinator();
+const FOCUS_WIDGET_DEFAULT_HEIGHT = 48;
+const FOCUS_WIDGET_DEFAULT_WIDTH = 188;
+const FOCUS_WIDGET_MARGIN = 12;
 
 function getFocusWidgetBounds() {
   const { workArea } = screen.getPrimaryDisplay();
-  const width = 188;
-  const height = 48;
-  const margin = 12;
 
   return {
-    height,
-    width,
-    x: workArea.x + workArea.width - width - margin,
-    y: workArea.y + margin,
+    height: FOCUS_WIDGET_DEFAULT_HEIGHT,
+    width: FOCUS_WIDGET_DEFAULT_WIDTH,
+    x:
+      workArea.x +
+      workArea.width -
+      FOCUS_WIDGET_DEFAULT_WIDTH -
+      FOCUS_WIDGET_MARGIN,
+    y: workArea.y + FOCUS_WIDGET_MARGIN,
+  };
+}
+
+function clampFocusWidgetBounds(bounds: {
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+}) {
+  const { workArea } = screen.getDisplayMatching(bounds);
+  const minX = workArea.x + FOCUS_WIDGET_MARGIN;
+  const minY = workArea.y + FOCUS_WIDGET_MARGIN;
+  const maxX = Math.max(
+    minX,
+    workArea.x + workArea.width - bounds.width - FOCUS_WIDGET_MARGIN
+  );
+  const maxY = Math.max(
+    minY,
+    workArea.y + workArea.height - bounds.height - FOCUS_WIDGET_MARGIN
+  );
+
+  return {
+    ...bounds,
+    x: Math.min(Math.max(bounds.x, minX), maxX),
+    y: Math.min(Math.max(bounds.y, minY), maxY),
   };
 }
 
@@ -105,12 +136,27 @@ function resizeFocusWidget(width: number, height: number): void {
   }
 
   const [x, y] = focusWidgetWindow.getPosition();
-  focusWidgetWindow.setBounds({
-    height,
-    width,
-    x,
-    y,
-  });
+  focusWidgetWindow.setBounds(
+    clampFocusWidgetBounds({
+      height,
+      width,
+      x,
+      y,
+    })
+  );
+}
+
+function positionFocusWidgetWindow(widgetWindow: BrowserWindow): void {
+  const bounds = widgetWindow.getBounds();
+
+  widgetWindow.setBounds(
+    clampFocusWidgetBounds({
+      height: bounds.height,
+      width: bounds.width,
+      x: bounds.x,
+      y: bounds.y,
+    })
+  );
 }
 
 function loadAppWindow(win: BrowserWindow, search = ""): void {
@@ -243,6 +289,7 @@ function showFocusWidget(): void {
       ? focusWidgetWindow
       : createFocusWidgetWindow();
 
+  positionFocusWidgetWindow(widgetWindow);
   widgetWindow.showInactive();
 }
 
@@ -265,6 +312,12 @@ function showMainWindow(): void {
 function broadcastUpdateState(state: AppUpdateState): void {
   for (const window of BrowserWindow.getAllWindows()) {
     window.webContents.send(APP_UPDATER_CHANNELS.stateChanged, state);
+  }
+}
+
+function broadcastFocusSessionRecorded(session: FocusSession): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(HABITS_IPC_CHANNELS.focusSessionRecorded, session);
   }
 }
 
@@ -317,6 +370,7 @@ void app.whenReady().then(() => {
       }
 
       registerIpcHandlers({
+        broadcastFocusSessionRecorded,
         focusTimerCoordinator,
         onResizeFocusWidget: resizeFocusWidget,
         onSettingsChanged: applyRuntimeSettings,

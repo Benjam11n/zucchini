@@ -178,6 +178,7 @@ async function setupUseAppController({
     getTodayState: vi.fn().mockResolvedValue(todayState),
     getWeeklyReview: vi.fn().mockResolvedValue(weeklyReview),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(weeklyReviewOverview),
+    onFocusSessionRecorded: vi.fn(() => vi.fn()),
     recordFocusSession: vi.fn((_input) => Promise.resolve()),
     releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
     renameHabit: vi.fn().mockResolvedValue(todayState),
