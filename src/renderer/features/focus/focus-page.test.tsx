@@ -61,6 +61,7 @@ describe("focus tab", () => {
     expect(
       screen.getByText("No completed focus sessions yet.")
     ).toBeInTheDocument();
+    expect(screen.getByText("Recent focus runs")).toBeInTheDocument();
   });
 
   it("supports start, pause, resume, and reset controls", () => {

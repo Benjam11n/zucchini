@@ -1,5 +1,3 @@
-import { Clock3 } from "lucide-react";
-
 import type {
   FocusSessionsPhase,
   FocusTodaySummary,
@@ -8,6 +6,7 @@ import {
   formatFocusMinutes,
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
+import { buildFocusRuns } from "@/renderer/features/focus/lib/focus-session-groups";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
@@ -18,6 +17,8 @@ import {
 } from "@/renderer/shared/ui/card";
 import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { FocusSession } from "@/shared/domain/focus-session";
+
+import { FocusRunList } from "./focus-run-list";
 
 export function getFocusTodaySummary(
   sessions: FocusSession[],
@@ -38,15 +39,6 @@ export function getFocusTodaySummary(
   };
 }
 
-function formatCompletedAt(value: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-  }).format(new Date(value));
-}
-
 interface FocusSessionListProps {
   phase: FocusSessionsPhase;
   sessions: FocusSession[];
@@ -63,13 +55,14 @@ export function FocusSessionList({
   onRetryLoad,
 }: FocusSessionListProps) {
   const todaySummary = getFocusTodaySummary(sessions, todayDate);
+  const runs = buildFocusRuns(sessions);
 
   return (
     <Card className="border-border/70 bg-card/95">
       <CardHeader className="gap-3">
         <div className="space-y-1">
           <CardDescription>Recent focus</CardDescription>
-          <CardTitle>Completed sessions</CardTitle>
+          <CardTitle>Recent focus runs</CardTitle>
         </div>
 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
@@ -107,29 +100,8 @@ export function FocusSessionList({
           </p>
         ) : null}
 
-        {sessions.length > 0 ? (
-          <div className="space-y-3">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3"
-              >
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">
-                    {formatCompletedAt(session.completedAt)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Completed focus block
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock3 className="size-4" />
-                  <span>{formatFocusMinutes(session.durationSeconds)} min</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        {sessions.length > 0 && runs.length > 0 ? (
+          <FocusRunList runs={runs} />
         ) : null}
       </CardContent>
     </Card>
