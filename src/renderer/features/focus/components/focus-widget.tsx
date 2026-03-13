@@ -7,9 +7,15 @@ import {
   createIdleFocusTimerState,
   createRunningFocusTimerState,
   formatTimerLabel,
+  getPomodoroFocusDurationMs,
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
+import {
+  getDefaultPomodoroTimerSettings,
+  readPomodoroTimerSettings,
+  subscribeToPomodoroTimerSettings,
+} from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { Button } from "@/renderer/shared/ui/button";
@@ -69,6 +75,13 @@ export function FocusWidget() {
   const todayState = useFocusWidgetSnapshot();
   const categoryProgress = getHabitCategoryProgress(todayState?.habits ?? []);
   const [systemTheme, setSystemTheme] = useState<"dark" | "light">("light");
+  const [storedPomodoroSettings, setStoredPomodoroSettings] = useState(() =>
+    readPomodoroTimerSettings()
+  );
+  const resolvedPomodoroSettings =
+    storedPomodoroSettings ??
+    (todayState ? getPomodoroTimerSettings(todayState.settings) : null) ??
+    getDefaultPomodoroTimerSettings();
 
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
@@ -96,6 +109,14 @@ export function FocusWidget() {
       mediaQuery.removeEventListener("change", syncSystemTheme);
     };
   }, []);
+
+  useEffect(
+    () =>
+      subscribeToPomodoroTimerSettings((nextPomodoroSettings) => {
+        setStoredPomodoroSettings(nextPomodoroSettings);
+      }),
+    []
+  );
 
   useEffect(() => {
     const preferredTheme = todayState?.settings.themeMode ?? "system";
@@ -160,9 +181,7 @@ export function FocusWidget() {
 
   useFocusTimer({
     clearFocusSaveError,
-    pomodoroSettings: todayState
-      ? getPomodoroTimerSettings(todayState.settings)
-      : null,
+    pomodoroSettings: resolvedPomodoroSettings,
     recordFocusSession: window.habits.recordFocusSession,
     setFocusSaveErrorMessage,
   });
@@ -206,7 +225,7 @@ export function FocusWidget() {
                     ? resumeFocusTimerState(timerState)
                     : createRunningFocusTimerState(
                         new Date(),
-                        timerState.focusDurationMs,
+                        getPomodoroFocusDurationMs(resolvedPomodoroSettings),
                         timerState.completedFocusCycles
                       )
                 );
@@ -240,7 +259,7 @@ export function FocusWidget() {
                 setTimerState(
                   createIdleFocusTimerState(
                     new Date(),
-                    timerState.focusDurationMs
+                    getPomodoroFocusDurationMs(resolvedPomodoroSettings)
                   )
                 );
               }}

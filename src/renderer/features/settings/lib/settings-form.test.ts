@@ -8,6 +8,7 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 const baseSettings: AppSettings = {
   focusCyclesBeforeLongBreak: 4,
+  focusDefaultDurationSeconds: 1500,
   focusLongBreakMinutes: 15,
   focusShortBreakMinutes: 5,
   launchAtLogin: false,

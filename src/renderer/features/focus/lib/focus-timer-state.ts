@@ -1,4 +1,5 @@
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 import { toDateKey } from "@/shared/utils/date";
 
 import type {
@@ -8,6 +9,7 @@ import type {
 import {
   clampFocusDurationMs,
   DEFAULT_FOCUS_DURATION_MS,
+  focusDurationSecondsToMs,
 } from "./focus-timer.constants";
 
 function createCycleId(): string {
@@ -87,6 +89,12 @@ export function createRunningBreakTimerState({
     startedAt: null,
     status: "running",
   };
+}
+
+export function getPomodoroFocusDurationMs(
+  settings: Pick<PomodoroTimerSettings, "focusDefaultDurationSeconds">
+): number {
+  return focusDurationSecondsToMs(settings.focusDefaultDurationSeconds);
 }
 
 export function pauseFocusTimerState(

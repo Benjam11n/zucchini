@@ -29,6 +29,7 @@ type FocusSessionRecordedListener = (session: {
 
 const DEFAULT_TIMER_SETTINGS = {
   focusCyclesBeforeLongBreak: 4,
+  focusDefaultDurationSeconds: 1500,
   focusLongBreakMinutes: 15,
   focusShortBreakMinutes: 5,
 };
@@ -125,6 +126,30 @@ function renderFocusTimerHook({
 }
 
 describe("use focus timer", () => {
+  it("initializes a fresh idle timer from the saved default focus duration", async () => {
+    setupFocusTimerTest();
+
+    renderFocusTimerHook({
+      pomodoroSettings: {
+        focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 30 * 60,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
+      },
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      focusDurationMs: 30 * 60 * 1000,
+      remainingMs: 30 * 60 * 1000,
+      status: "idle",
+    });
+    teardownFocusTimerTest();
+  });
+
   it("pauses and resumes using end-time math", () => {
     setupFocusTimerTest();
 
@@ -332,6 +357,50 @@ describe("use focus timer", () => {
     teardownFocusTimerTest();
   });
 
+  it("returns to idle focus with the latest saved default duration after a break", async () => {
+    setupFocusTimerTest();
+    const recordFocusSession = vi.fn().mockResolvedValue(42);
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: "short",
+      completedFocusCycles: 2,
+      cycleId: null,
+      endsAt: "2026-03-08T09:00:01.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "break",
+      remainingMs: 1000,
+      startedAt: null,
+      status: "running",
+    });
+
+    renderFocusTimerHook({
+      pomodoroSettings: {
+        focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 30 * 60,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
+      },
+      recordFocusSession,
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(recordFocusSession).not.toHaveBeenCalled();
+    expect(useFocusStore.getState().timerState).toStrictEqual(
+      createIdleFocusTimerState(
+        new Date("2026-03-08T09:00:01.000Z"),
+        30 * 60 * 1000,
+        2
+      )
+    );
+    teardownFocusTimerTest();
+  });
+
   it("uses the latest saved settings only for the next created break", async () => {
     setupFocusTimerTest();
     const clearFocusSaveError = vi.fn();
@@ -376,6 +445,7 @@ describe("use focus timer", () => {
     rerender({
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 2,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 20,
         focusShortBreakMinutes: 7,
       },
@@ -400,6 +470,7 @@ describe("use focus timer", () => {
     const recordFocusSession = vi.fn().mockResolvedValue(42);
     writePomodoroTimerSettings({
       focusCyclesBeforeLongBreak: 2,
+      focusDefaultDurationSeconds: 1500,
       focusLongBreakMinutes: 20,
       focusShortBreakMinutes: 7,
     });

@@ -5,6 +5,7 @@ import {
   createCompletedFocusSessionInput,
   createIdleFocusTimerState,
   createRunningBreakTimerState,
+  getPomodoroFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
   readFocusTimerState,
@@ -122,6 +123,40 @@ export function useFocusTimer({
 
     writeFocusTimerState(timerState);
   }, [hasHydrated, timerState]);
+
+  useEffect(() => {
+    if (
+      !hasHydrated ||
+      timerState.status !== "idle" ||
+      timerState.phase !== "focus"
+    ) {
+      return;
+    }
+
+    const nextFocusDurationMs = getPomodoroFocusDurationMs(
+      resolvedPomodoroSettings
+    );
+
+    if (timerState.focusDurationMs === nextFocusDurationMs) {
+      return;
+    }
+
+    setTimerState(
+      createIdleFocusTimerState(
+        new Date(),
+        nextFocusDurationMs,
+        timerState.completedFocusCycles
+      )
+    );
+  }, [
+    hasHydrated,
+    resolvedPomodoroSettings,
+    setTimerState,
+    timerState.completedFocusCycles,
+    timerState.focusDurationMs,
+    timerState.phase,
+    timerState.status,
+  ]);
 
   useEffect(
     () =>
@@ -250,7 +285,7 @@ export function useFocusTimer({
             .setTimerState(
               createIdleFocusTimerState(
                 now,
-                currentState.focusDurationMs,
+                getPomodoroFocusDurationMs(pomodoroSettingsRef.current),
                 currentState.breakVariant === "long"
                   ? 0
                   : currentState.completedFocusCycles

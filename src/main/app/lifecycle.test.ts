@@ -9,6 +9,7 @@ describe("buildLoginItemSettings()", () => {
     expect(
       buildLoginItemSettings({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 15,
         focusShortBreakMinutes: 5,
         launchAtLogin: false,
@@ -29,6 +30,7 @@ describe("buildLoginItemSettings()", () => {
     expect(
       buildLoginItemSettings({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 15,
         focusShortBreakMinutes: 5,
         launchAtLogin: true,

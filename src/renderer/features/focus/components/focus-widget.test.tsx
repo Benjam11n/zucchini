@@ -63,6 +63,7 @@ describe("focus widget", () => {
       habits: [],
       settings: {
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 15,
         focusShortBreakMinutes: 5,
         launchAtLogin: false,

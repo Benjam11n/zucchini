@@ -37,6 +37,7 @@ describe("pomodoro settings storage", () => {
     installLocalStorageMock();
     const settings = {
       focusCyclesBeforeLongBreak: 4,
+      focusDefaultDurationSeconds: 1500,
       focusLongBreakMinutes: 15,
       focusShortBreakMinutes: 5,
     };
@@ -52,6 +53,7 @@ describe("pomodoro settings storage", () => {
       "zucchini_pomodoro_settings",
       JSON.stringify({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 3,
         focusShortBreakMinutes: 5,
       })

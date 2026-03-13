@@ -238,15 +238,16 @@ function MainApp() {
         }
       >
         <FocusPage
+          fieldErrors={state.settingsFieldErrors}
           focusSaveErrorMessage={state.focusSaveErrorMessage}
-          focusCyclesBeforeLongBreak={
-            state.todayState.settings.focusCyclesBeforeLongBreak
-          }
           phase={state.focusSessionsPhase}
           sessions={state.focusSessions}
           sessionsLoadError={state.focusSessionsLoadError}
+          settings={state.settingsDraft ?? state.todayState.settings}
+          settingsSavePhase={state.settingsSavePhase}
           timerState={state.timerState}
           todayDate={state.todayState.date}
+          onChangeSettings={actions.handleSettingsDraftChange}
           onShowWidget={actions.handleShowFocusWidget}
           onRetryLoad={actions.handleRetryFocusLoad}
         />

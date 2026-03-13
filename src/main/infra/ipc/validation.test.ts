@@ -14,6 +14,7 @@ describe("ipc validation", () => {
     expect(
       validateAppSettings({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 15,
         focusShortBreakMinutes: 5,
         launchAtLogin: false,
@@ -35,6 +36,7 @@ describe("ipc validation", () => {
     expect(() =>
       validateAppSettings({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 15,
         focusShortBreakMinutes: 5,
         launchAtLogin: false,
@@ -48,10 +50,29 @@ describe("ipc validation", () => {
     ).toThrow(IpcValidationError);
   });
 
+  it("rejects focus durations longer than 60 minutes", () => {
+    expect(() =>
+      validateAppSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 3601,
+        focusLongBreakMinutes: 15,
+        focusShortBreakMinutes: 5,
+        launchAtLogin: false,
+        minimizeToTray: false,
+        reminderEnabled: true,
+        reminderSnoozeMinutes: 15,
+        reminderTime: "20:30",
+        themeMode: "system",
+        timezone: "Asia/Singapore",
+      })
+    ).toThrow(IpcValidationError);
+  });
+
   it("rejects long breaks shorter than short breaks", () => {
     expect(() =>
       validateAppSettings({
         focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
         focusLongBreakMinutes: 4,
         focusShortBreakMinutes: 5,
         launchAtLogin: false,
@@ -101,6 +122,7 @@ describe("ipc validation", () => {
         ],
         settings: {
           focusCyclesBeforeLongBreak: 4,
+          focusDefaultDurationSeconds: 1500,
           focusLongBreakMinutes: 15,
           focusShortBreakMinutes: 5,
           launchAtLogin: false,

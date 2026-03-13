@@ -477,6 +477,7 @@ function useAppLifecycleEffects({
     writePomodoroTimerSettings(savedPomodoroSettings);
   }, [
     savedPomodoroSettings,
+    savedPomodoroSettings?.focusDefaultDurationSeconds,
     savedPomodoroSettings?.focusCyclesBeforeLongBreak,
     savedPomodoroSettings?.focusLongBreakMinutes,
     savedPomodoroSettings?.focusShortBreakMinutes,

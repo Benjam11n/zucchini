@@ -7,6 +7,7 @@
 import { z } from "zod";
 
 import {
+  isValidFocusDurationSeconds,
   isValidFocusBreakMinutes,
   isValidFocusCyclesBeforeLongBreak,
   isValidReminderSnoozeMinutes,
@@ -67,6 +68,12 @@ export const appSettingsSchema = z
       .int()
       .refine(isValidFocusCyclesBeforeLongBreak, {
         message: "Cycles before a long break must be between 1 and 12.",
+      }),
+    focusDefaultDurationSeconds: z
+      .number()
+      .int()
+      .refine(isValidFocusDurationSeconds, {
+        message: "Focus duration must be between 1 second and 60 minutes.",
       }),
     focusLongBreakMinutes: z.number().int().refine(isValidFocusBreakMinutes, {
       message: "Long break minutes must be between 1 and 60.",

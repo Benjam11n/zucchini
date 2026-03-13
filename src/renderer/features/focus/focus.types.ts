@@ -1,4 +1,6 @@
+import type { SettingsSavePhase } from "@/renderer/features/settings/settings.types";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { AppSettings } from "@/shared/domain/settings";
 
 export type FocusTimerPhase = "focus" | "break";
 export type FocusTimerStatus = "idle" | "running" | "paused";
@@ -25,12 +27,15 @@ export interface FocusTodaySummary {
 
 export interface FocusPageProps {
   focusSaveErrorMessage: string | null;
-  focusCyclesBeforeLongBreak: number;
+  fieldErrors: Partial<Record<keyof AppSettings, string>>;
   phase: FocusSessionsPhase;
   sessions: FocusSession[];
   sessionsLoadError: Error | null;
+  settings: AppSettings;
+  settingsSavePhase: SettingsSavePhase;
   timerState: PersistedFocusTimerState;
   todayDate: string;
+  onChangeSettings: (settings: AppSettings) => void;
   onShowWidget: () => Promise<void>;
   onRetryLoad: () => Promise<void>;
 }

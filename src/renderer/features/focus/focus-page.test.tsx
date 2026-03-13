@@ -14,18 +14,35 @@ import {
 
 import { FocusPage } from "./focus-page";
 
+const settings = {
+  focusCyclesBeforeLongBreak: 4,
+  focusDefaultDurationSeconds: 1500,
+  focusLongBreakMinutes: 15,
+  focusShortBreakMinutes: 5,
+  launchAtLogin: false,
+  minimizeToTray: false,
+  reminderEnabled: true,
+  reminderSnoozeMinutes: 15,
+  reminderTime: "20:30",
+  themeMode: "system" as const,
+  timezone: "Asia/Singapore",
+};
+
 function FocusPageHarness() {
   const timerState = useFocusStore((state) => state.timerState);
 
   return (
     <FocusPage
+      fieldErrors={{}}
       focusSaveErrorMessage={null}
-      focusCyclesBeforeLongBreak={4}
       phase="ready"
       sessions={[]}
       sessionsLoadError={null}
+      settings={settings}
+      settingsSavePhase="idle"
       timerState={timerState}
       todayDate="2026-03-08"
+      onChangeSettings={vi.fn()}
       onShowWidget={vi.fn()}
       onRetryLoad={vi.fn()}
     />
@@ -38,6 +55,9 @@ describe("focus tab", () => {
     render(<FocusPageHarness />);
 
     expect(screen.getByText("Focused work timer")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Settings" })
+    ).toBeInTheDocument();
     expect(
       screen.getByText("No completed focus sessions yet.")
     ).toBeInTheDocument();
@@ -99,8 +119,8 @@ describe("focus tab", () => {
 
     render(<FocusPageHarness />);
 
-    expect(screen.getByText("Short break")).toBeInTheDocument();
-    expect(screen.getByText("Completed this set: 1/4")).toBeInTheDocument();
+    expect(screen.getAllByText("Short break").length).toBeGreaterThan(0);
+    expect(screen.getByText("Long break after 4 sessions")).toBeInTheDocument();
 
     act(() => {
       useFocusStore.getState().setTimerState({
@@ -120,8 +140,26 @@ describe("focus tab", () => {
 
     render(<FocusPageHarness />);
 
-    expect(screen.getByText("Completed this set: 3/4")).toBeInTheDocument();
     expect(screen.getByText("Next break: long")).toBeInTheDocument();
+  });
+
+  it("renders the roadmap totals for one full set", () => {
+    resetFocusStore();
+    render(<FocusPageHarness />);
+
+    expect(screen.getByText("Total set: 2h 10m")).toBeInTheDocument();
+    expect(screen.getByText("0m")).toBeInTheDocument();
+    expect(screen.getByText("2h 10m")).toBeInTheDocument();
+  });
+
+  it("opens the advanced pomodoro settings in a dialog", () => {
+    resetFocusStore();
+    render(<FocusPageHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+
+    expect(screen.getByText("Pomodoro settings")).toBeInTheDocument();
+    expect(screen.getByLabelText("Default focus minutes")).toBeInTheDocument();
   });
 
   it("uses amber timer text during the last minute", () => {

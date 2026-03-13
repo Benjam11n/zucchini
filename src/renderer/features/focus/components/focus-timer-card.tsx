@@ -1,6 +1,15 @@
-import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
+import {
+  Minus,
+  Pause,
+  Play,
+  RotateCcw,
+  Settings2,
+  SkipForward,
+  Plus,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card";
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
@@ -16,17 +25,77 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/ui/card";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 interface FocusTimerCardProps {
+  focusLongBreakMinutes: number;
   focusCyclesBeforeLongBreak: number;
+  focusShortBreakMinutes: number;
+  onCycleChange: (focusCyclesBeforeLongBreak: number) => void;
+  pomodoroSettings: PomodoroTimerSettings;
   timerState: PersistedFocusTimerState;
   onDurationChange: (focusDurationMs: number) => void;
+  onOpenPomodoroSettings: () => void;
   onPause: () => void;
   onReset: () => void;
   onResume: () => void;
   onShowWidget: () => void;
   onSkipBreak: () => void;
   onStart: (focusDurationMs: number) => void;
+}
+
+function getPhaseBadge(
+  timerState: PersistedFocusTimerState,
+  isBreak: boolean,
+  isBreakFinalMinute: boolean
+): {
+  label: string;
+  variant: "default" | "destructive" | "secondary";
+} {
+  if (isBreakFinalMinute) {
+    return {
+      label: "1 min left",
+      variant: "destructive",
+    };
+  }
+
+  if (timerState.breakVariant === "long") {
+    return {
+      label: "Long break",
+      variant: "secondary",
+    };
+  }
+
+  if (isBreak) {
+    return {
+      label: "Short break",
+      variant: "secondary",
+    };
+  }
+
+  return {
+    label: "Focus",
+    variant: "default",
+  };
+}
+
+function getNextBreakVariant(
+  timerState: PersistedFocusTimerState,
+  focusCyclesBeforeLongBreak: number
+): "long" | "short" {
+  if (timerState.phase === "break" && timerState.breakVariant === "long") {
+    return "long";
+  }
+
+  return timerState.completedFocusCycles + 1 >= focusCyclesBeforeLongBreak
+    ? "long"
+    : "short";
+}
+
+function getCycleChipLabel(focusCyclesBeforeLongBreak: number): string {
+  return focusCyclesBeforeLongBreak === 1
+    ? "Long break after 1 session"
+    : `Long break after ${focusCyclesBeforeLongBreak} sessions`;
 }
 
 function padTimerPart(value: number): string {
@@ -38,9 +107,14 @@ function sanitizeTimerInput(value: string): string {
 }
 
 export function FocusTimerCard({
+  focusLongBreakMinutes,
   focusCyclesBeforeLongBreak,
+  focusShortBreakMinutes,
+  onCycleChange,
+  pomodoroSettings,
   timerState,
   onDurationChange,
+  onOpenPomodoroSettings,
   onPause,
   onReset,
   onResume,
@@ -55,30 +129,14 @@ export function FocusTimerCard({
   const isLastMinute = isRunning && timerState.remainingMs <= 60 * 1000;
   const isBreakFinalMinute =
     isBreak && isRunning && timerState.remainingMs <= 60 * 1000;
-  let phaseBadgeVariant: "default" | "destructive" | "secondary" = "default";
-  let phaseBadgeLabel = "Focus";
+  const phaseBadge = getPhaseBadge(timerState, isBreak, isBreakFinalMinute);
   const timerDisplayColorClass = isLastMinute
     ? "text-amber-300"
     : "text-foreground";
-
-  if (isBreakFinalMinute) {
-    phaseBadgeVariant = "destructive";
-    phaseBadgeLabel = "1 min left";
-  } else if (timerState.breakVariant === "long") {
-    phaseBadgeVariant = "secondary";
-    phaseBadgeLabel = "Long break";
-  } else if (isBreak) {
-    phaseBadgeVariant = "secondary";
-    phaseBadgeLabel = "Short break";
-  }
-
-  let nextBreakVariant = "short";
-  if (timerState.phase !== "break" || timerState.breakVariant !== "long") {
-    nextBreakVariant =
-      timerState.completedFocusCycles + 1 >= focusCyclesBeforeLongBreak
-        ? "long"
-        : "short";
-  }
+  const nextBreakVariant = getNextBreakVariant(
+    timerState,
+    focusCyclesBeforeLongBreak
+  );
 
   const canEditDuration = isIdle && !isBreak;
   const durationParts = splitFocusDurationMs(timerState.focusDurationMs);
@@ -92,6 +150,7 @@ export function FocusTimerCard({
     padTimerPart(durationParts.seconds)
   );
   const primaryActionLabel = isPaused ? "Resume" : "Start";
+  const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
 
   useEffect(() => {
     setMinutesInput(padTimerPart(durationParts.minutes));
@@ -129,13 +188,22 @@ export function FocusTimerCard({
 
   return (
     <Card className="overflow-hidden border-border/60 bg-card/95">
-      <CardHeader className="gap-6 pb-0">
+      <CardHeader className="gap-4 pb-0">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <CardDescription>Pomodoro</CardDescription>
             <CardTitle>Focused work timer</CardTitle>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              className="rounded-full"
+              onClick={onOpenPomodoroSettings}
+              size="sm"
+              variant="ghost"
+            >
+              <Settings2 className="size-4" />
+              Settings
+            </Button>
             <Button
               className="rounded-full border-white/10 bg-white/3 px-4"
               onClick={onShowWidget}
@@ -146,17 +214,17 @@ export function FocusTimerCard({
             </Button>
             <Badge
               className="rounded-full px-3 py-1"
-              variant={phaseBadgeVariant}
+              variant={phaseBadge.variant}
             >
-              {phaseBadgeLabel}
+              {phaseBadge.label}
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-8 pt-6">
+      <CardContent className="space-y-5 pt-4">
         <div className="flex justify-center">
-          <div className="w-full max-w-[48rem] rounded-[2rem] border border-border/60 bg-muted/15 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="w-full max-w-[48rem] rounded-[1.75rem] border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               {canEditDuration ? (
                 <>
@@ -237,17 +305,68 @@ export function FocusTimerCard({
               )}
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-              <span>
-                Completed this set: {timerState.completedFocusCycles}/
-                {focusCyclesBeforeLongBreak}
-              </span>
-              <span>Next break: {nextBreakVariant}</span>
+            <div className="mt-4">
+              <PomodoroRoadmapCard
+                settings={pomodoroSettings}
+                timerState={timerState}
+              />
+            </div>
+
+            <div className="mt-3 grid gap-2.5 md:grid-cols-[1fr_1fr]">
+              <div className="rounded-2xl border border-border/60 bg-background/60 px-3 py-2.5">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                  Quick breaks
+                </p>
+                <p className="mt-1.5 text-sm font-medium">
+                  {focusShortBreakMinutes}m short · {focusLongBreakMinutes}m
+                  long
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Next break: {nextBreakVariant}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-border/60 bg-background/60 px-3 py-2.5">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                  Long break after
+                </p>
+                <div className="mt-1.5 flex items-center justify-between gap-2">
+                  <Button
+                    aria-label="Decrease cycles before long break"
+                    className="rounded-full"
+                    onClick={() => {
+                      onCycleChange(
+                        Math.max(1, focusCyclesBeforeLongBreak - 1)
+                      );
+                    }}
+                    size="icon-sm"
+                    variant="outline"
+                  >
+                    <Minus className="size-4" />
+                  </Button>
+                  <p className="text-center text-sm font-medium">
+                    {cycleChipLabel}
+                  </p>
+                  <Button
+                    aria-label="Increase cycles before long break"
+                    className="rounded-full"
+                    onClick={() => {
+                      onCycleChange(
+                        Math.min(12, focusCyclesBeforeLongBreak + 1)
+                      );
+                    }}
+                    size="icon-sm"
+                    variant="outline"
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-2.5">
           {isIdle || isPaused ? (
             <Button
               className="h-11 min-w-36 rounded-full px-6 text-base"

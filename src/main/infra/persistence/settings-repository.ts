@@ -27,6 +27,9 @@ export class SqliteSettingsRepository {
         focusCyclesBeforeLongBreak: Number(
           map.get("focusCyclesBeforeLongBreak")
         ),
+        focusDefaultDurationSeconds: Number(
+          map.get("focusDefaultDurationSeconds")
+        ),
         focusLongBreakMinutes: Number(map.get("focusLongBreakMinutes")),
         focusShortBreakMinutes: Number(map.get("focusShortBreakMinutes")),
         launchAtLogin: map.get("launchAtLogin") === "true",
@@ -66,6 +69,10 @@ export class SqliteSettingsRepository {
   ): AppSettings {
     this.client.run("saveSettings", () => {
       this.upsertSetting(
+        "focusDefaultDurationSeconds",
+        String(nextSettings.focusDefaultDurationSeconds)
+      );
+      this.upsertSetting(
         "focusCyclesBeforeLongBreak",
         String(nextSettings.focusCyclesBeforeLongBreak)
       );
@@ -98,6 +105,10 @@ export class SqliteSettingsRepository {
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
       const defaults = createDefaultAppSettings(timezone);
+      this.upsertSetting(
+        "focusDefaultDurationSeconds",
+        String(defaults.focusDefaultDurationSeconds)
+      );
       this.upsertSetting(
         "focusCyclesBeforeLongBreak",
         String(defaults.focusCyclesBeforeLongBreak)

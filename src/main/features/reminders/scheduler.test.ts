@@ -36,6 +36,7 @@ vi.mock<typeof Notifications>(import("./notifications"), () => ({
 
 const DEFAULT_SETTINGS: AppSettings = {
   focusCyclesBeforeLongBreak: 4,
+  focusDefaultDurationSeconds: 1500,
   focusLongBreakMinutes: 15,
   focusShortBreakMinutes: 5,
   launchAtLogin: false,

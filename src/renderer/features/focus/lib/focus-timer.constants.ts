@@ -1,4 +1,6 @@
-export const DEFAULT_FOCUS_DURATION_MS = 25 * 60 * 1000;
+import { DEFAULT_FOCUS_DURATION_SECONDS } from "@/shared/domain/settings";
+
+export const DEFAULT_FOCUS_DURATION_MS = DEFAULT_FOCUS_DURATION_SECONDS * 1000;
 const MIN_FOCUS_DURATION_MS = 1000;
 const MAX_FOCUS_DURATION_MS = 60 * 60 * 1000;
 
@@ -7,6 +9,10 @@ export function clampFocusDurationMs(durationMs: number): number {
     MAX_FOCUS_DURATION_MS,
     Math.max(MIN_FOCUS_DURATION_MS, Math.round(durationMs / 1000) * 1000)
   );
+}
+
+export function focusDurationSecondsToMs(durationSeconds: number): number {
+  return clampFocusDurationMs(durationSeconds * 1000);
 }
 
 export function splitFocusDurationMs(durationMs: number): {

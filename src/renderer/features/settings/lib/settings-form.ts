@@ -16,6 +16,7 @@ export function areAppSettingsEqual(
   }
 
   return (
+    left.focusDefaultDurationSeconds === right.focusDefaultDurationSeconds &&
     left.focusCyclesBeforeLongBreak === right.focusCyclesBeforeLongBreak &&
     left.focusLongBreakMinutes === right.focusLongBreakMinutes &&
     left.focusShortBreakMinutes === right.focusShortBreakMinutes &&
