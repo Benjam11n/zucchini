@@ -165,8 +165,14 @@ function MainApp() {
   let renderedPage = (
     <TodayPage
       history={state.history}
+      onArchiveHabit={actions.handleArchiveHabit}
+      onCreateHabit={actions.handleCreateHabit}
+      onRenameHabit={actions.handleRenameHabit}
+      onReorderHabits={actions.handleReorderHabits}
       state={state.todayState}
       onToggleHabit={actions.handleToggleHabit}
+      onUpdateHabitCategory={actions.handleUpdateHabitCategory}
+      onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
     />
   );
 

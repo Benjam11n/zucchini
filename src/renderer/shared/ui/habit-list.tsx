@@ -26,6 +26,7 @@ interface HabitListCardProps {
   title: string;
   icon?: LucideIcon;
   description?: ReactNode;
+  headerActions?: ReactNode;
   progressValue?: number;
   progressLabel?: ReactNode;
   children: ReactNode;
@@ -35,6 +36,7 @@ export function HabitListCard({
   title,
   icon: Icon,
   description,
+  headerActions,
   progressValue,
   progressLabel,
   children,
@@ -55,20 +57,25 @@ export function HabitListCard({
                 </CardDescription>
               )}
             </div>
-            {progressLabel && (
-              <AnimatePresence initial={false} mode="popLayout">
-                <m.span
-                  key={String(progressLabel)}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-muted-foreground tabular-nums shrink-0 mt-1"
-                  exit={{ opacity: 0, y: -8 }}
-                  initial={{ opacity: 0, y: 8 }}
-                  transition={microTransition}
-                >
-                  {progressLabel}
-                </m.span>
-              </AnimatePresence>
-            )}
+            {headerActions || progressLabel ? (
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                {headerActions}
+                {progressLabel && (
+                  <AnimatePresence initial={false} mode="popLayout">
+                    <m.span
+                      key={String(progressLabel)}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs text-muted-foreground tabular-nums"
+                      exit={{ opacity: 0, y: -8 }}
+                      initial={{ opacity: 0, y: 8 }}
+                      transition={microTransition}
+                    >
+                      {progressLabel}
+                    </m.span>
+                  </AnimatePresence>
+                )}
+              </div>
+            ) : null}
           </div>
           {progressValue !== undefined && (
             <Progress className="h-1 mt-1" value={progressValue} />

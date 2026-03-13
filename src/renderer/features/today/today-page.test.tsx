@@ -1,0 +1,109 @@
+// @vitest-environment jsdom
+
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
+import type * as StreakCardModule from "@/renderer/features/today/components/streak-card";
+import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
+import type * as TodayPopupStackModule from "@/renderer/features/today/components/today-popup-stack";
+import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { HistoryDay } from "@/shared/domain/history";
+
+import { TodayPage } from "./today-page";
+
+vi.mock<typeof TodayHistoryCarouselModule>(
+  import("@/renderer/features/today/components/today-history-carousel"),
+  () => ({
+    TodayHistoryCarousel: () => <div>history carousel</div>,
+  })
+);
+
+vi.mock<typeof StreakCardModule>(
+  import("@/renderer/features/today/components/streak-card"),
+  () => ({
+    StreakCard: (() => (
+      <div>streak card</div>
+    )) as unknown as typeof StreakCardModule.StreakCard,
+  })
+);
+
+vi.mock<typeof LongerHabitChecklistModule>(
+  import("@/renderer/features/today/components/longer-habit-checklist"),
+  () => ({
+    LongerHabitChecklist: () => <div>longer habits</div>,
+  })
+);
+
+vi.mock<typeof TodayPopupStackModule>(
+  import("@/renderer/features/today/components/today-popup-stack"),
+  () => ({
+    TodayPopupStack: (() => (
+      <div />
+    )) as unknown as typeof TodayPopupStackModule.TodayPopupStack,
+  })
+);
+
+vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
+  useTodayPopups: () => [],
+}));
+
+const history: HistoryDay[] = [];
+
+const state: TodayState = {
+  date: "2026-03-13",
+  habits: [
+    {
+      category: "productivity",
+      completed: false,
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 1,
+      isArchived: false,
+      name: "Plan top task",
+      sortOrder: 0,
+    },
+  ],
+  settings: {
+    focusCyclesBeforeLongBreak: 4,
+    focusDefaultDurationSeconds: 25 * 60,
+    focusLongBreakSeconds: 15 * 60,
+    focusShortBreakSeconds: 5 * 60,
+    launchAtLogin: false,
+    minimizeToTray: false,
+    reminderEnabled: true,
+    reminderSnoozeMinutes: 15,
+    reminderTime: "20:30",
+    themeMode: "system",
+    timezone: "Asia/Singapore",
+  },
+  streak: {
+    availableFreezes: 1,
+    bestStreak: 5,
+    currentStreak: 3,
+    lastEvaluatedDate: "2026-03-12",
+  },
+};
+
+describe("today page", () => {
+  it("opens in-flow habit management from the daily checklist", () => {
+    render(
+      <TodayPage
+        history={history}
+        onArchiveHabit={vi.fn(() => Promise.resolve())}
+        onCreateHabit={vi.fn(() => Promise.resolve())}
+        onRenameHabit={vi.fn(() => Promise.resolve())}
+        onReorderHabits={vi.fn(() => Promise.resolve())}
+        state={state}
+        onToggleHabit={vi.fn()}
+        onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
+        onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Manage" }));
+
+    expect(screen.getByText("Manage habits")).toBeInTheDocument();
+    expect(screen.getByText("Add a habit")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Plan top task")).toBeInTheDocument();
+  });
+});

@@ -1,9 +1,3 @@
-import {
-  AnimatePresence,
-  domAnimation,
-  LazyMotion,
-  LayoutGroup,
-} from "framer-motion";
 import { ListTodo } from "lucide-react";
 
 import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
@@ -15,8 +9,7 @@ import {
   CardTitle,
 } from "@/renderer/shared/ui/card";
 
-import { HabitRowEditor } from "./habit-row-editor";
-import { NewHabitForm } from "./new-habit-form";
+import { HabitManagementContent } from "./habit-management-content";
 
 export function HabitManagementCard({
   habits,
@@ -37,27 +30,15 @@ export function HabitManagementCard({
         </div>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <LazyMotion features={domAnimation}>
-          <LayoutGroup>
-            <AnimatePresence initial={false}>
-              {habits.map((habit, index) => (
-                <HabitRowEditor
-                  key={habit.id}
-                  habit={habit}
-                  habits={habits}
-                  index={index}
-                  onArchiveHabit={onArchiveHabit}
-                  onRenameHabit={onRenameHabit}
-                  onReorderHabits={onReorderHabits}
-                  onUpdateHabitCategory={onUpdateHabitCategory}
-                  onUpdateHabitFrequency={onUpdateHabitFrequency}
-                />
-              ))}
-            </AnimatePresence>
-          </LayoutGroup>
-
-          <NewHabitForm onCreateHabit={onCreateHabit} />
-        </LazyMotion>
+        <HabitManagementContent
+          habits={habits}
+          onArchiveHabit={onArchiveHabit}
+          onCreateHabit={onCreateHabit}
+          onRenameHabit={onRenameHabit}
+          onReorderHabits={onReorderHabits}
+          onUpdateHabitCategory={onUpdateHabitCategory}
+          onUpdateHabitFrequency={onUpdateHabitFrequency}
+        />
       </CardContent>
     </Card>
   );

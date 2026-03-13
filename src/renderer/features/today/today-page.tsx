@@ -12,6 +12,7 @@ import { memo, useMemo } from "react";
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
 import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
 import { StreakCard } from "@/renderer/features/today/components/streak-card";
+import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { TodayPopupStack } from "@/renderer/features/today/components/today-popup-stack";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
@@ -21,16 +22,46 @@ import {
 } from "@/renderer/shared/lib/motion";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 
 interface TodayPageProps {
   history: HistoryDay[];
+  onArchiveHabit: (habitId: number) => Promise<void>;
+  onCreateHabit: (
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency
+  ) => Promise<void>;
+  onRenameHabit: (habitId: number, name: string) => Promise<void>;
+  onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
+  onUpdateHabitCategory: (
+    habitId: number,
+    category: HabitCategory
+  ) => Promise<void>;
+  onUpdateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency
+  ) => Promise<void>;
 }
 
-function TodayPageComponent({ history, state, onToggleHabit }: TodayPageProps) {
+function TodayPageComponent({
+  history,
+  onArchiveHabit,
+  onCreateHabit,
+  onRenameHabit,
+  onReorderHabits,
+  state,
+  onToggleHabit,
+  onUpdateHabitCategory,
+  onUpdateHabitFrequency,
+}: TodayPageProps) {
   const { categoryProgress, completedCount, dailyHabits, periodicHabits } =
     useMemo(() => {
       const nextDailyHabits: HabitWithStatus[] = [];
@@ -85,6 +116,17 @@ function TodayPageComponent({ history, state, onToggleHabit }: TodayPageProps) {
               icon={ListChecks}
               completedCount={completedCount}
               emptyMessage="No daily habits yet. Add one in Settings to power the rings and streak."
+              headerActions={
+                <TodayHabitManagerDialog
+                  habits={state.habits}
+                  onArchiveHabit={onArchiveHabit}
+                  onCreateHabit={onCreateHabit}
+                  onRenameHabit={onRenameHabit}
+                  onReorderHabits={onReorderHabits}
+                  onUpdateHabitCategory={onUpdateHabitCategory}
+                  onUpdateHabitFrequency={onUpdateHabitFrequency}
+                />
+              }
               habits={dailyHabits}
               onToggleHabit={onToggleHabit}
             />

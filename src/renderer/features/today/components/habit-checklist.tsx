@@ -1,6 +1,7 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
+import type { ReactNode } from "react";
 
 import {
   HABIT_CATEGORY_ICONS,
@@ -16,6 +17,7 @@ interface HabitChecklistProps {
   onToggleHabit: (habitId: number) => void;
   completedCount: number;
   emptyMessage?: string;
+  headerActions?: ReactNode;
   title?: string;
   icon?: React.ElementType;
 }
@@ -30,6 +32,7 @@ function HabitChecklistComponent({
   onToggleHabit,
   completedCount,
   emptyMessage = "Add habits in Settings to get started.",
+  headerActions,
   title = "Today",
   icon: Icon,
 }: HabitChecklistProps) {
@@ -72,6 +75,7 @@ function HabitChecklistComponent({
         progressLabel={
           totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined
         }
+        headerActions={headerActions}
         progressValue={
           totalHabits > 0
             ? Math.round((completedCount / totalHabits) * 100)
