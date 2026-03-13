@@ -1,19 +1,15 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { Dumbbell, Utensils, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  HABIT_CATEGORY_ICONS,
+  HABIT_CATEGORY_UI,
+} from "@/renderer/shared/lib/habit-categories";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import { HabitListCard, HabitListItem } from "@/renderer/shared/ui/habit-list";
 import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
-
-const CATEGORY_ICONS: Record<HabitCategory, React.ElementType> = {
-  fitness: Dumbbell,
-  nutrition: Utensils,
-  productivity: Zap,
-};
 
 interface HabitChecklistProps {
   habits: HabitWithStatus[];
@@ -95,7 +91,7 @@ function HabitChecklistComponent({
 
         {habitsByCategory.map((category) => {
           const ui = HABIT_CATEGORY_UI[category.value];
-          const CategoryIcon = CATEGORY_ICONS[category.value];
+          const CategoryIcon = HABIT_CATEGORY_ICONS[category.value];
 
           return (
             <m.div

@@ -1,6 +1,15 @@
+import { Dumbbell, Utensils, Zap } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
 import type { HabitCategory } from "@/shared/domain/habit";
 
 import { RING_COLORS } from "./ring-colors";
+
+export const HABIT_CATEGORY_ICONS: Record<HabitCategory, LucideIcon> = {
+  fitness: Dumbbell,
+  nutrition: Utensils,
+  productivity: Zap,
+};
 
 /**
  * Light-mode tints are intentionally muted — the ring colours (#A3F900, #04C7DD)

@@ -9,7 +9,10 @@ import {
 } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  HABIT_CATEGORY_ICONS,
+  HABIT_CATEGORY_UI,
+} from "@/renderer/shared/lib/habit-categories";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Card, CardContent } from "@/renderer/shared/ui/card";
@@ -116,6 +119,7 @@ export function HistoryDayPanel({
               <CardContent className="grid gap-4 p-4">
                 {selectedDay.categoryProgress.map((progress) => {
                   const categoryUi = HABIT_CATEGORY_UI[progress.category];
+                  const CategoryIcon = HABIT_CATEGORY_ICONS[progress.category];
 
                   return (
                     <m.div
@@ -125,13 +129,23 @@ export function HistoryDayPanel({
                       transition={microTransition}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span
-                          className={cn(
-                            "text-xs font-semibold tracking-[0.18em] uppercase",
-                            categoryUi.textClassName
-                          )}
-                        >
-                          {progress.category}
+                        <span className="flex items-center gap-2">
+                          <CategoryIcon
+                            aria-hidden="true"
+                            className={cn(
+                              "size-3.5 shrink-0",
+                              categoryUi.textClassName
+                            )}
+                            data-testid={`history-category-icon-${progress.category}`}
+                          />
+                          <span
+                            className={cn(
+                              "text-xs font-semibold tracking-[0.18em] uppercase",
+                              categoryUi.textClassName
+                            )}
+                          >
+                            {progress.category}
+                          </span>
                         </span>
                         <span className="text-sm font-semibold text-foreground">
                           {progress.completed}/{progress.total}
