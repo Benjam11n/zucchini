@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 
 import type { FocusSession } from "@/shared/domain/focus-session";
@@ -68,7 +68,7 @@ describe("focus session list", () => {
     });
   });
 
-  it("renders grouped focus runs with timeline-backed session details", () => {
+  it("renders grouped focus runs with compact cards and expandable details", () => {
     render(
       createElement(FocusSessionList, {
         onRetryLoad: vi.fn(),
@@ -106,16 +106,17 @@ describe("focus session list", () => {
       .closest("[data-slot='card']") as HTMLElement;
 
     expect(sessionListCard).toHaveTextContent(
-      /3 sessions today[\s\S]*1h 20m window[\s\S]*3 sessions/
+      /3 sessions today[\s\S]*70 focused minutes[\s\S]*1h 20m window[\s\S]*3 sessions/
     );
-    expect(sessionListCard).toHaveTextContent(
-      /25 min[\s\S]*25 min[\s\S]*5m gap[\s\S]*20 min/
-    );
-    expect(screen.getAllByText("70 focused minutes")).toHaveLength(2);
-    expect(screen.getAllByText("25 min")).toHaveLength(2);
-    expect(
-      screen.getByLabelText("Focus timeline for 3 sessions")
-    ).toBeInTheDocument();
+    expect(sessionListCard).toHaveTextContent(/Show details/);
+    expect(screen.getAllByLabelText("5 minute break")).toHaveLength(2);
+    expect(screen.queryByText("5m gap")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show details" }));
+
+    const runCard = screen.getByTestId("focus-run-card");
+
+    expect(runCard).toHaveTextContent(/Hide details[\s\S]*25 min[\s\S]*5m gap/);
   });
 
   it("keeps newer runs before older runs", () => {

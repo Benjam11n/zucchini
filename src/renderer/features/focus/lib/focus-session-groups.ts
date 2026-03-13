@@ -13,15 +13,31 @@ export interface FocusSessionView {
   startMinuteOfDay: number;
 }
 
-export interface FocusRunTimelineSegment {
-  completedAt: string;
-  durationSeconds: number;
+interface FocusRunTimelineSegmentBase {
   endOffsetMinutes: number;
-  id: number;
+  id: string;
+  kind: "break" | "session";
   startOffsetMinutes: number;
-  startedAt: string;
   widthPercent: number;
 }
+
+export interface FocusRunSessionTimelineSegment extends FocusRunTimelineSegmentBase {
+  completedAt: string;
+  durationSeconds: number;
+  id: `${number}`;
+  kind: "session";
+  startedAt: string;
+}
+
+export interface FocusRunBreakTimelineSegment extends FocusRunTimelineSegmentBase {
+  durationMinutes: number;
+  id: `break-${number}-${number}`;
+  kind: "break";
+}
+
+export type FocusRunTimelineSegment =
+  | FocusRunBreakTimelineSegment
+  | FocusRunSessionTimelineSegment;
 
 export interface FocusRunView {
   completedAt: string;
@@ -116,24 +132,62 @@ function buildRunView(sessions: FocusSessionView[]): FocusRunView {
     sessionCount: sortedSessions.length,
     sessions: sortedSessions,
     startedAt: firstSession.startedAt,
-    timelineSegments: sortedSessions.map((session) => {
+    timelineSegments: sortedSessions.flatMap((session, index) => {
       const segmentStartMinutes =
         (Date.parse(session.startedAt) - runStartMs) / MS_PER_MINUTE;
       const segmentEndMinutes =
         (Date.parse(session.completedAt) - runStartMs) / MS_PER_MINUTE;
+      const segments: FocusRunTimelineSegment[] = [
+        {
+          completedAt: session.completedAt,
+          durationSeconds: session.durationSeconds,
+          endOffsetMinutes: segmentEndMinutes,
+          id: `${session.id}`,
+          kind: "session",
+          startOffsetMinutes: segmentStartMinutes,
+          startedAt: session.startedAt,
+          widthPercent: Math.max(
+            (segmentEndMinutes - segmentStartMinutes) / runSpanMinutes,
+            0.04
+          ),
+        } satisfies FocusRunSessionTimelineSegment,
+      ];
 
-      return {
-        completedAt: session.completedAt,
-        durationSeconds: session.durationSeconds,
-        endOffsetMinutes: segmentEndMinutes,
-        id: session.id,
-        startOffsetMinutes: segmentStartMinutes,
-        startedAt: session.startedAt,
+      const nextSession = sortedSessions[index + 1];
+
+      if (!nextSession) {
+        return segments;
+      }
+
+      const breakStartMinutes = segmentEndMinutes;
+      const breakEndMinutes =
+        (Date.parse(nextSession.startedAt) - runStartMs) / MS_PER_MINUTE;
+      const breakDurationMinutes = Math.max(
+        0,
+        Math.round(
+          (Date.parse(nextSession.startedAt) -
+            Date.parse(session.completedAt)) /
+            MS_PER_MINUTE
+        )
+      );
+
+      if (breakDurationMinutes <= 0 || breakEndMinutes <= breakStartMinutes) {
+        return segments;
+      }
+
+      segments.push({
+        durationMinutes: breakDurationMinutes,
+        endOffsetMinutes: breakEndMinutes,
+        id: `break-${session.id}-${nextSession.id}`,
+        kind: "break",
+        startOffsetMinutes: breakStartMinutes,
         widthPercent: Math.max(
-          (segmentEndMinutes - segmentStartMinutes) / runSpanMinutes,
-          0.04
+          (breakEndMinutes - breakStartMinutes) / runSpanMinutes,
+          0.02
         ),
-      };
+      } satisfies FocusRunBreakTimelineSegment);
+
+      return segments;
     }),
     totalDurationSeconds,
   };

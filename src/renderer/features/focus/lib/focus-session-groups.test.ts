@@ -163,15 +163,37 @@ describe("focus session groups", () => {
     ]);
 
     expect(run?.runSpanMinutes).toBe(105);
-    expect(
-      run?.timelineSegments.map((segment) => ({
-        end: segment.endOffsetMinutes,
-        start: segment.startOffsetMinutes,
-      }))
-    ).toStrictEqual([
-      { end: 25, start: 0 },
-      { end: 75, start: 50 },
-      { end: 105, start: 85 },
+    expect(run?.timelineSegments).toMatchObject([
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 25,
+        kind: "session",
+        startOffsetMinutes: 0,
+      },
+      {
+        durationMinutes: 25,
+        endOffsetMinutes: 50,
+        kind: "break",
+        startOffsetMinutes: 25,
+      },
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 75,
+        kind: "session",
+        startOffsetMinutes: 50,
+      },
+      {
+        durationMinutes: 10,
+        endOffsetMinutes: 85,
+        kind: "break",
+        startOffsetMinutes: 75,
+      },
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 105,
+        kind: "session",
+        startOffsetMinutes: 85,
+      },
     ]);
     expect(
       run?.timelineSegments.every((segment) => segment.widthPercent > 0)
