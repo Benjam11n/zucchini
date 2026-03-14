@@ -62,3 +62,33 @@ bun run knip
 
 Use `bun run typecheck` when you want a quick TypeScript-only validation, and
 `bun run react-doctor` after meaningful React changes.
+
+## Test Data Fixtures
+
+Generate local SQLite fixtures for manual smoke testing and larger local data
+loads:
+
+```bash
+bun run testdata:generate:medium
+bun run testdata:generate:stress
+```
+
+You can also choose a preset explicitly:
+
+```bash
+bun run testdata:generate -- --preset medium --overwrite
+bun run testdata:generate -- --preset stress --overwrite
+```
+
+Generated databases are written to:
+
+- `src/test/fixtures/db/zucchini-medium.db`
+- `src/test/fixtures/db/zucchini-stress.db`
+
+These `.db` files are intentionally not committed to git. Regenerate them when
+needed, then import them through Zucchini's existing Settings > Backups & data
+flow.
+
+- Use `medium` for everyday smoke testing and normal-scale local checks.
+- Use `stress` when you want a much heavier history, review, and focus-session
+  dataset.

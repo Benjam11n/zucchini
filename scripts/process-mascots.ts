@@ -1,12 +1,16 @@
 import { access, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { Icns, IcnsImage } from "@fiahfy/icns";
 import type { OSType } from "@fiahfy/icns";
 import pngToIco from "png-to-ico";
 import sharp from "sharp";
 
-const rootDir = path.resolve(import.meta.dir, "..");
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".."
+);
 const mascotDir = path.join(rootDir, "public", "mascot");
 const buildDir = path.join(rootDir, "build");
 const iconSourceCandidates = [

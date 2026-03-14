@@ -1,13 +1,31 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { Effect } from "effect";
-import { app } from "electron";
 
 import { schema } from "./schema";
+
+const require = createRequire(import.meta.url);
+
+function getElectronApp(): {
+  getPath: (name: "userData") => string;
+} | null {
+  try {
+    const electron = require("electron") as {
+      app?: {
+        getPath: (name: "userData") => string;
+      };
+    };
+
+    return electron.app ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export class DatabaseError extends Error {
   override cause: unknown;
@@ -25,12 +43,33 @@ export class DatabaseError extends Error {
 
 export type DrizzleDatabase = BetterSQLite3Database<typeof schema>;
 
+export interface SqliteDatabaseClientOptions {
+  databasePath?: string;
+}
+
 export class SqliteDatabaseClient {
   private database: Database.Database | null = null;
   private drizzleDb: DrizzleDatabase | null = null;
+  private readonly databasePath?: string;
+
+  constructor(options: SqliteDatabaseClientOptions = {}) {
+    this.databasePath = options.databasePath;
+  }
 
   getDatabasePath(): string {
-    const userData = app.getPath("userData");
+    if (this.databasePath) {
+      fs.mkdirSync(path.dirname(this.databasePath), { recursive: true });
+      return this.databasePath;
+    }
+
+    const electronApp = getElectronApp();
+    if (!electronApp) {
+      throw new Error(
+        "Electron app paths are unavailable. Pass an explicit databasePath."
+      );
+    }
+
+    const userData = electronApp.getPath("userData");
     fs.mkdirSync(userData, { recursive: true });
     return path.join(userData, "zucchini.db");
   }

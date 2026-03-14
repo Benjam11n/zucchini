@@ -23,6 +23,7 @@
   },
   "include": [
     "src",
+    "scripts",
     "vite.config.ts",
     "drizzle.config.ts",
     "electron-builder.config.ts"

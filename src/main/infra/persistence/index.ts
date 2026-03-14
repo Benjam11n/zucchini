@@ -27,6 +27,10 @@ export interface SettledHistoryOptions {
   uncapped?: boolean;
 }
 
+export interface SqliteHabitRepositoryOptions {
+  databasePath?: string;
+}
+
 export interface HabitRepository {
   initializeSchema(): void;
   runInTransaction<A>(label: string, execute: () => A): A;
@@ -82,21 +86,29 @@ export interface HabitRepository {
 }
 
 export class SqliteHabitRepository implements HabitRepository {
-  private readonly client = new SqliteDatabaseClient();
-  private readonly habitsRepository = new SqliteHabitsRepository(this.client);
-  private readonly historyRepository = new SqliteHistoryRepository(
-    this.client,
-    this.habitsRepository
-  );
-  private readonly focusSessionRepository = new SqliteFocusSessionRepository(
-    this.client
-  );
-  private readonly settingsRepository = new SqliteSettingsRepository(
-    this.client
-  );
-  private readonly reminderRuntimeStateRepository =
-    new SqliteReminderRuntimeStateRepository(this.client);
-  private readonly streakRepository = new SqliteStreakRepository(this.client);
+  private readonly client: SqliteDatabaseClient;
+  private readonly habitsRepository: SqliteHabitsRepository;
+  private readonly historyRepository: SqliteHistoryRepository;
+  private readonly focusSessionRepository: SqliteFocusSessionRepository;
+  private readonly settingsRepository: SqliteSettingsRepository;
+  private readonly reminderRuntimeStateRepository: SqliteReminderRuntimeStateRepository;
+  private readonly streakRepository: SqliteStreakRepository;
+
+  constructor(options: SqliteHabitRepositoryOptions = {}) {
+    this.client = new SqliteDatabaseClient({
+      databasePath: options.databasePath,
+    });
+    this.habitsRepository = new SqliteHabitsRepository(this.client);
+    this.historyRepository = new SqliteHistoryRepository(
+      this.client,
+      this.habitsRepository
+    );
+    this.focusSessionRepository = new SqliteFocusSessionRepository(this.client);
+    this.settingsRepository = new SqliteSettingsRepository(this.client);
+    this.reminderRuntimeStateRepository =
+      new SqliteReminderRuntimeStateRepository(this.client);
+    this.streakRepository = new SqliteStreakRepository(this.client);
+  }
 
   initializeSchema(): void {
     runMigrations(this.client);

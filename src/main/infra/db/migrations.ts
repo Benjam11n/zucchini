@@ -1,18 +1,39 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { app } from "electron";
 
 import type { SqliteDatabaseClient } from "./sqlite-client";
 
+const require = createRequire(import.meta.url);
+
+function getElectronApp(): {
+  getAppPath: () => string;
+} | null {
+  try {
+    const electron = require("electron") as {
+      app?: {
+        getAppPath: () => string;
+      };
+    };
+
+    return electron.app ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function resolveMigrationsFolder(): string {
-  const candidates = [
-    path.join(process.cwd(), "drizzle"),
-    path.join(app.getAppPath(), "drizzle"),
-    path.join(__dirname, "../drizzle"),
-  ];
+  const candidates = [path.join(process.cwd(), "drizzle")];
+
+  const electronApp = getElectronApp();
+  if (electronApp) {
+    candidates.push(path.join(electronApp.getAppPath(), "drizzle"));
+  }
+
+  candidates.push(path.join(__dirname, "../drizzle"));
 
   for (const candidate of candidates) {
     if (fs.existsSync(path.join(candidate, "meta", "_journal.json"))) {
