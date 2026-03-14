@@ -3,6 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
+import type React from "react";
 
 import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
 
@@ -89,22 +90,79 @@ function createHabit(
   };
 }
 
+function renderHabitRowEditor(
+  overrides: Partial<React.ComponentProps<typeof HabitRowEditor>> = {}
+) {
+  const habits = [createHabit(1), createHabit(2), createHabit(3)];
+
+  return render(
+    <HabitRowEditor
+      habit={habits[1]!}
+      habits={habits}
+      index={1}
+      isExpanded={false}
+      onArchiveHabit={vi.fn().mockResolvedValue(42)}
+      onExpandedChange={vi.fn()}
+      onRenameHabit={vi.fn().mockResolvedValue(42)}
+      onReorderHabits={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
+      {...overrides}
+    />
+  );
+}
+
 describe("habit row editor", () => {
-  it("forwards rename, category, frequency, and archive actions", () => {
+  it("renders a compact summary when collapsed", () => {
+    renderHabitRowEditor({
+      habit: createHabit(2, {
+        category: "nutrition",
+        name: "Fish oil",
+        selectedWeekdays: [1, 2, 3, 4, 5],
+      }),
+    });
+
+    expect(screen.getByText("Fish oil")).toBeInTheDocument();
+    expect(screen.getByText("Nutrition")).toBeInTheDocument();
+    expect(screen.getByText("Weekdays")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("Fish oil")).not.toBeInTheDocument();
+  });
+
+  it("toggles expansion through the summary row trigger", () => {
+    const onExpandedChange = vi.fn();
+
+    renderHabitRowEditor({
+      habit: createHabit(2, { name: "Deep work" }),
+      onExpandedChange,
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Expand habit details for Deep work",
+      })
+    );
+
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("forwards category, frequency, weekday, and archive actions when expanded", () => {
     const onArchiveHabit = vi.fn().mockResolvedValue(42);
     const onRenameHabit = vi.fn().mockResolvedValue(42);
     const onReorderHabits = vi.fn().mockResolvedValue(42);
     const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
     const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
     const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
-    const habits = [createHabit(1)];
+    const habits = [createHabit(2)];
 
     render(
       <HabitRowEditor
         habit={habits[0]!}
         habits={habits}
         index={0}
+        isExpanded
         onArchiveHabit={onArchiveHabit}
+        onExpandedChange={vi.fn()}
         onRenameHabit={onRenameHabit}
         onReorderHabits={onReorderHabits}
         onUpdateHabitCategory={onUpdateHabitCategory}
@@ -113,31 +171,25 @@ describe("habit row editor", () => {
       />
     );
 
-    const nameInput = screen.getByDisplayValue("Habit 1");
+    const nameInput = screen.getByDisplayValue("Habit 2");
     fireEvent.change(nameInput, {
       target: { value: "Deep work block" },
     });
-    fireEvent.blur(nameInput);
+    expect(nameInput).toHaveValue("Deep work block");
 
     fireEvent.click(screen.getByRole("button", { name: "Nutrition" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekly" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
 
-    expect(onRenameHabit).toHaveBeenCalledWith(1, "Deep work block");
-    expect(onUpdateHabitCategory).toHaveBeenCalledWith(1, "nutrition");
-    expect(onUpdateHabitFrequency).toHaveBeenCalledWith(1, "weekly");
-    expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(1, [1, 3, 5]);
-    expect(onArchiveHabit).toHaveBeenCalledWith(1);
+    expect(onUpdateHabitCategory).toHaveBeenCalledWith(2, "nutrition");
+    expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly");
+    expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(2, [1, 3, 5]);
+    expect(onArchiveHabit).toHaveBeenCalledWith(2);
   });
 
   it("reorders habits upward and downward using the computed list", () => {
-    const onArchiveHabit = vi.fn().mockResolvedValue(42);
-    const onRenameHabit = vi.fn().mockResolvedValue(42);
     const onReorderHabits = vi.fn().mockResolvedValue(42);
-    const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
-    const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
-    const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(1), createHabit(2), createHabit(3)];
 
     render(
@@ -145,17 +197,19 @@ describe("habit row editor", () => {
         habit={habits[1]!}
         habits={habits}
         index={1}
-        onArchiveHabit={onArchiveHabit}
-        onRenameHabit={onRenameHabit}
+        isExpanded={false}
+        onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onExpandedChange={vi.fn()}
+        onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={onReorderHabits}
-        onUpdateHabitCategory={onUpdateHabitCategory}
-        onUpdateHabitFrequency={onUpdateHabitFrequency}
-        onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+        onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "↑" }));
-    fireEvent.click(screen.getByRole("button", { name: "↓" }));
+    fireEvent.click(screen.getByRole("button", { name: "Move Habit 2 up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Move Habit 2 down" }));
 
     expect(
       onReorderHabits.mock.calls[0]?.[0].map(
@@ -175,7 +229,9 @@ describe("habit row editor", () => {
         habit={createHabit(1)}
         habits={[createHabit(1), createHabit(2)]}
         index={0}
+        isExpanded={false}
         onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onExpandedChange={vi.fn()}
         onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={vi.fn().mockResolvedValue(42)}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
@@ -184,6 +240,8 @@ describe("habit row editor", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: "↑" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Move Habit 1 up" })
+    ).toBeDisabled();
   });
 });

@@ -31,7 +31,7 @@ export function TodayHabitManagerDialog(props: HabitManagementCardProps) {
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-h-[88vh] overflow-y-auto">
+        <DialogContent className="flex max-h-[88vh] flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Manage habits</DialogTitle>
             <DialogDescription className="pb-2">
@@ -40,8 +40,10 @@ export function TodayHabitManagerDialog(props: HabitManagementCardProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-3 px-6 pb-6">
-            <HabitManagementContent {...props} />
+          <div className="min-h-0 overflow-y-auto px-6 pb-6">
+            <div className="grid gap-3">
+              <HabitManagementContent {...props} />
+            </div>
           </div>
         </DialogContent>
       </Dialog>

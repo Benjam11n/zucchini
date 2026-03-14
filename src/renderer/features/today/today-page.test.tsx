@@ -105,6 +105,6 @@ describe("today page", () => {
 
     expect(screen.getByText("Manage habits")).toBeInTheDocument();
     expect(screen.getByText("Add a habit")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Plan top task")).toBeInTheDocument();
+    expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
   });
 });

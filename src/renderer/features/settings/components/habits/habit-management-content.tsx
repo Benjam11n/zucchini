@@ -4,6 +4,7 @@ import {
   LazyMotion,
   LayoutGroup,
 } from "framer-motion";
+import { useState } from "react";
 
 import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
 
@@ -20,28 +21,38 @@ export function HabitManagementContent({
   onUpdateHabitFrequency,
   onUpdateHabitWeekdays,
 }: HabitManagementCardProps) {
+  const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
+
   return (
     <LazyMotion features={domAnimation}>
-      <LayoutGroup>
-        <AnimatePresence initial={false}>
-          {habits.map((habit, index) => (
-            <HabitRowEditor
-              key={habit.id}
-              habit={habit}
-              habits={habits}
-              index={index}
-              onArchiveHabit={onArchiveHabit}
-              onRenameHabit={onRenameHabit}
-              onReorderHabits={onReorderHabits}
-              onUpdateHabitCategory={onUpdateHabitCategory}
-              onUpdateHabitFrequency={onUpdateHabitFrequency}
-              onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-            />
-          ))}
-        </AnimatePresence>
-      </LayoutGroup>
+      <div className="sticky top-0 z-10 pb-3">
+        <NewHabitForm onCreateHabit={onCreateHabit} />
+      </div>
 
-      <NewHabitForm onCreateHabit={onCreateHabit} />
+      <div className="grid gap-3">
+        <LayoutGroup>
+          <AnimatePresence initial={false}>
+            {habits.map((habit, index) => (
+              <HabitRowEditor
+                key={habit.id}
+                habit={habit}
+                habits={habits}
+                index={index}
+                isExpanded={expandedHabitId === habit.id}
+                onArchiveHabit={onArchiveHabit}
+                onExpandedChange={(open) => {
+                  setExpandedHabitId(open ? habit.id : null);
+                }}
+                onRenameHabit={onRenameHabit}
+                onReorderHabits={onReorderHabits}
+                onUpdateHabitCategory={onUpdateHabitCategory}
+                onUpdateHabitFrequency={onUpdateHabitFrequency}
+                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+              />
+            ))}
+          </AnimatePresence>
+        </LayoutGroup>
+      </div>
     </LazyMotion>
   );
 }
