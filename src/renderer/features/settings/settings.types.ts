@@ -4,8 +4,8 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
-import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 export type SettingsSavePhase =
   | "idle"

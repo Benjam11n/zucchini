@@ -1,12 +1,16 @@
+function resolveMascotAsset(filename: string): string {
+  return new URL(`../../../../public/mascot/${filename}`, import.meta.url).href;
+}
+
 export const MASCOTS = {
-  base: "/mascot/mascot-base.png",
-  celebrate: "/mascot/mascot-celebrate.png",
-  determined: "/mascot/mascot-determined.png",
-  flame: "/mascot/mascot-flame.png",
-  freeze: "/mascot/mascot-freeze.png",
-  icon: "/mascot/mascot-icon.jpeg",
-  loading: "/mascot/mascot-loading.png",
-  reminder: "/mascot/mascot-reminder.png",
-  sad: "/mascot/mascot-sad.png",
-  sleepy: "/mascot/mascot-sleepy.png",
+  base: resolveMascotAsset("mascot-base.png"),
+  celebrate: resolveMascotAsset("mascot-celebrate.png"),
+  determined: resolveMascotAsset("mascot-determined.png"),
+  flame: resolveMascotAsset("mascot-flame.png"),
+  freeze: resolveMascotAsset("mascot-freeze.png"),
+  icon: resolveMascotAsset("mascot-icon.jpeg"),
+  loading: resolveMascotAsset("mascot-loading.png"),
+  reminder: resolveMascotAsset("mascot-reminder.png"),
+  sad: resolveMascotAsset("mascot-sad.png"),
+  sleepy: resolveMascotAsset("mascot-sleepy.png"),
 } as const;

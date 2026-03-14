@@ -2,7 +2,6 @@ import {
   IpcValidationError,
   validateAppSettings,
   validateCreateFocusSessionInput,
-  validateCompleteOnboardingInput,
   validateFocusSessionLimit,
   validateNotificationIconFilename,
   validateReorderHabitIds,
@@ -110,30 +109,15 @@ describe("ipc validation", () => {
     ]);
   });
 
-  it("rejects invalid onboarding payloads", () => {
+  it("rejects invalid starter pack payloads", () => {
     expect(() =>
-      validateCompleteOnboardingInput({
-        habits: [
-          {
-            category: "productivity",
-            frequency: "daily",
-            name: "",
-          },
-        ],
-        settings: {
-          focusCyclesBeforeLongBreak: 4,
-          focusDefaultDurationSeconds: 1500,
-          focusLongBreakSeconds: 15 * 60,
-          focusShortBreakSeconds: 5 * 60,
-          launchAtLogin: false,
-          minimizeToTray: false,
-          reminderEnabled: true,
-          reminderSnoozeMinutes: 15,
-          reminderTime: "20:30",
-          themeMode: "system",
-          timezone: "Asia/Singapore",
+      validateStarterPackApply([
+        {
+          category: "productivity",
+          frequency: "daily",
+          name: "",
         },
-      })
+      ])
     ).toThrow(IpcValidationError);
   });
 

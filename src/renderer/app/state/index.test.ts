@@ -1,10 +1,6 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { HistoryDay } from "@/shared/domain/history";
-import type {
-  CompleteOnboardingInput,
-  OnboardingStatus,
-} from "@/shared/domain/onboarding";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 function createTodayState(): TodayState {
@@ -93,18 +89,8 @@ function createFocusSession(
   };
 }
 
-function createOnboardingStatus(
-  overrides: Partial<OnboardingStatus> = {}
-): OnboardingStatus {
-  return {
-    completedAt: null,
-    isComplete: false,
-    ...overrides,
-  };
-}
-
 describe("app store actions", () => {
-  async function setup(onboardingStatus = createOnboardingStatus()) {
+  async function setup() {
     vi.resetModules();
     vi.unstubAllGlobals();
     const getHistoryMock = vi.fn((limit?: number) =>
@@ -114,7 +100,6 @@ describe("app store actions", () => {
           : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
       )
     );
-    const getOnboardingStatusMock = vi.fn().mockResolvedValue(onboardingStatus);
     const getFocusSessionsMock = vi
       .fn()
       .mockResolvedValue([createFocusSession(1)]);
@@ -122,26 +107,6 @@ describe("app store actions", () => {
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
     const renameHabitMock = vi.fn().mockResolvedValue(createTodayState());
-    const completeOnboardingMock = vi.fn().mockResolvedValue({
-      ...createTodayState(),
-      habits: [
-        {
-          category: "productivity",
-          completed: false,
-          createdAt: "2026-03-10T00:00:00.000Z",
-          frequency: "daily",
-          id: 1,
-          isArchived: false,
-          name: "Plan top 3 tasks",
-          sortOrder: 0,
-        },
-      ],
-      settings: {
-        ...createTodayState().settings,
-        reminderTime: "21:15",
-      },
-    });
-    const skipOnboardingMock = vi.fn().mockImplementation(async () => {});
     const applyStarterPackMock = vi.fn().mockResolvedValue({
       ...createTodayState(),
       habits: [
@@ -161,16 +126,13 @@ describe("app store actions", () => {
     vi.stubGlobal("window", {
       habits: {
         applyStarterPack: applyStarterPackMock,
-        completeOnboarding: completeOnboardingMock,
         getFocusSessions: getFocusSessionsMock,
         getHistory: getHistoryMock,
-        getOnboardingStatus: getOnboardingStatusMock,
         getTodayState: getTodayStateMock,
         getWeeklyReview: getWeeklyReviewMock,
         getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
         recordFocusSession: vi.fn().mockResolvedValue(createFocusSession(2)),
         renameHabit: renameHabitMock,
-        skipOnboarding: skipOnboardingMock,
       },
       matchMedia: vi.fn().mockReturnValue({
         addEventListener: vi.fn(),
@@ -190,8 +152,6 @@ describe("app store actions", () => {
       await import("@/renderer/features/history/state/history-store");
     const { resetWeeklyReviewStore, useWeeklyReviewStore } =
       await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
-    const { resetOnboardingStore, useOnboardingStore } =
-      await import("@/renderer/features/onboarding/state/onboarding-store");
     const { resetSettingsStore, useSettingsStore } =
       await import("@/renderer/features/settings/state/settings-store");
     const { resetTodayStore, useTodayStore } =
@@ -200,7 +160,6 @@ describe("app store actions", () => {
     resetBootStore();
     resetFocusStore();
     resetHistoryStore();
-    resetOnboardingStore();
     resetSettingsStore();
     resetTodayStore();
     resetUiStore();
@@ -209,17 +168,13 @@ describe("app store actions", () => {
     return {
       actions: appActions,
       applyStarterPackMock,
-      completeOnboardingMock,
       getFocusSessionsMock,
       getHistoryMock,
-      getOnboardingStatusMock,
       getWeeklyReviewOverviewMock,
-      skipOnboardingMock,
       stores: {
         useBootStore,
         useFocusStore,
         useHistoryStore,
-        useOnboardingStore,
         useSettingsStore,
         useTodayStore,
         useUiStore,
@@ -272,82 +227,17 @@ describe("app store actions", () => {
     });
   });
 
-  it("opens onboarding after boot when there are zero habits and onboarding is incomplete", async () => {
-    const { actions, getHistoryMock, stores } = await setup(
-      createOnboardingStatus()
-    );
+  it("loads recent history and today state during boot", async () => {
+    const { actions, getHistoryMock, stores } = await setup();
 
     await actions.bootApp();
 
     expect(getHistoryMock).toHaveBeenCalledWith(14);
-    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeTruthy();
+    expect(stores.useTodayStore.getState().todayState?.date).toBe("2026-03-10");
   });
 
-  it("does not open onboarding after boot when onboarding was already completed", async () => {
-    const { actions, stores } = await setup(
-      createOnboardingStatus({
-        completedAt: "2026-03-09T08:00:00.000Z",
-        isComplete: true,
-      })
-    );
-
-    await actions.bootApp();
-
-    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
-  });
-
-  it("completes onboarding and refreshes today state", async () => {
-    const { actions, completeOnboardingMock, stores } = await setup(
-      createOnboardingStatus()
-    );
-    await actions.bootApp();
-
-    const input: CompleteOnboardingInput = {
-      habits: [
-        {
-          category: "productivity",
-          frequency: "daily",
-          name: "Plan top 3 tasks",
-        },
-      ],
-      settings: {
-        ...createTodayState().settings,
-        reminderTime: "21:15",
-      },
-    };
-
-    await actions.handleCompleteOnboarding(input);
-
-    expect(completeOnboardingMock).toHaveBeenCalledWith(input);
-    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
-    expect(
-      stores.useTodayStore.getState().todayState?.settings.reminderTime
-    ).toBe("21:15");
-  });
-
-  it("skips onboarding and prevents it from reappearing on reload", async () => {
-    const completedStatus = createOnboardingStatus({
-      completedAt: "2026-03-10T08:00:00.000Z",
-      isComplete: true,
-    });
-    const { actions, getOnboardingStatusMock, skipOnboardingMock, stores } =
-      await setup(createOnboardingStatus());
-    await actions.bootApp();
-    getOnboardingStatusMock.mockResolvedValue(completedStatus);
-
-    await actions.handleSkipOnboarding();
-
-    expect(skipOnboardingMock).toHaveBeenCalledWith();
-    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
-  });
-
-  it("applies a starter pack from settings and refreshes today state without reopening onboarding", async () => {
-    const completedStatus = createOnboardingStatus({
-      completedAt: "2026-03-09T08:00:00.000Z",
-      isComplete: true,
-    });
-    const { actions, applyStarterPackMock, stores } =
-      await setup(completedStatus);
+  it("applies a starter pack from settings and refreshes today state", async () => {
+    const { actions, applyStarterPackMock, stores } = await setup();
     await actions.bootApp();
 
     await actions.handleApplyStarterPack([
@@ -368,13 +258,10 @@ describe("app store actions", () => {
     expect(stores.useTodayStore.getState().todayState?.habits[0]?.name).toBe(
       "20-minute walk"
     );
-    expect(stores.useOnboardingStore.getState().isOnboardingOpen).toBeFalsy();
   });
 
   it("loads full history after switching to the history tab", async () => {
-    const { actions, getHistoryMock, stores } = await setup(
-      createOnboardingStatus()
-    );
+    const { actions, getHistoryMock, stores } = await setup();
     await actions.bootApp();
 
     actions.handleTabChange("history");
@@ -390,7 +277,7 @@ describe("app store actions", () => {
   });
 
   it("keeps using full history after a mutation once the history tab has been opened", async () => {
-    const { actions, getHistoryMock } = await setup(createOnboardingStatus());
+    const { actions, getHistoryMock } = await setup();
     await actions.bootApp();
 
     actions.handleTabChange("history");

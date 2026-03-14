@@ -6,7 +6,7 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type { StarterPackHabitDraft } from "@/shared/domain/onboarding";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 import { habits } from "../db/schema";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";

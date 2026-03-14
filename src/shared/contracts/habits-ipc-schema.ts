@@ -139,13 +139,6 @@ export const appSettingsSchema = z
     }
   });
 
-export const completeOnboardingInputSchema = z
-  .object({
-    habits: starterPackApplySchema,
-    settings: appSettingsSchema,
-  })
-  .strict();
-
 export const reorderHabitIdsSchema = z
   .array(habitIdSchema)
   .superRefine((habitIds, context) => {

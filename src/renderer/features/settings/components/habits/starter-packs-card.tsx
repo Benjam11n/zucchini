@@ -20,7 +20,7 @@ import {
 import type {
   StarterPackHabitDraft,
   StarterPackId,
-} from "@/shared/domain/onboarding";
+} from "@/shared/domain/starter-pack";
 
 interface StarterPacksCardProps {
   onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;

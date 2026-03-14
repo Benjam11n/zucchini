@@ -1,7 +1,7 @@
 import type {
   StarterPackHabitDraft,
   StarterPackId,
-} from "@/shared/domain/onboarding";
+} from "@/shared/domain/starter-pack";
 
 export type StarterPackChoice = StarterPackId | "blank";
 

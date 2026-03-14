@@ -1,16 +1,9 @@
-/**
- * Shared onboarding definitions and starter-pack content.
- *
- * The onboarding flow uses this file to know which starter packs exist, what
- * habits they create, and what data is required to mark onboarding complete.
- */
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
   normalizeHabitWeekdays,
 } from "./habit";
 import type { HabitCategory, HabitFrequency, HabitWeekday } from "./habit";
-import type { AppSettings } from "./settings";
 
 export const STARTER_PACK_IDS = [
   "morning-routine",
@@ -32,16 +25,6 @@ export interface StarterPackDefinition {
   habits: StarterPackHabitDraft[];
   id: StarterPackId;
   label: string;
-}
-
-export interface OnboardingStatus {
-  completedAt: string | null;
-  isComplete: boolean;
-}
-
-export interface CompleteOnboardingInput {
-  habits: StarterPackHabitDraft[];
-  settings: AppSettings;
 }
 
 export const STARTER_PACK_DEFINITIONS: StarterPackDefinition[] = [

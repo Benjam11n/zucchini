@@ -15,12 +15,8 @@ import type {
 } from "@/shared/domain/habit";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
-import type {
-  CompleteOnboardingInput,
-  OnboardingStatus,
-  StarterPackHabitDraft,
-} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
@@ -114,10 +110,6 @@ class FakeRepository implements HabitRepository {
     lastReminderSentAt: null,
     snoozedUntil: null,
   };
-  onboardingStatus: OnboardingStatus = {
-    completedAt: null,
-    isComplete: false,
-  };
   focusSessions: FocusSession[] = [];
   seedDefaultsCalls = 0;
   transactionLabels: string[] = [];
@@ -135,19 +127,6 @@ class FakeRepository implements HabitRepository {
   }
   seedDefaults(): void {
     this.seedDefaultsCalls += 1;
-  }
-
-  getOnboardingStatus(): OnboardingStatus {
-    return { ...this.onboardingStatus };
-  }
-
-  markOnboardingComplete(completedAt: string): OnboardingStatus {
-    this.onboardingStatus = {
-      completedAt,
-      isComplete: true,
-    };
-
-    return this.getOnboardingStatus();
   }
 
   getHabits(): Habit[] {
@@ -511,36 +490,6 @@ class FakeRepository implements HabitRepository {
   }
 }
 
-function createCompleteOnboardingInput(): CompleteOnboardingInput {
-  return {
-    habits: [
-      {
-        category: "productivity",
-        frequency: "daily",
-        name: "Plan top 3 tasks",
-      },
-      {
-        category: "fitness",
-        frequency: "weekly",
-        name: "Workout session",
-      },
-    ],
-    settings: {
-      focusCyclesBeforeLongBreak: 4,
-      focusDefaultDurationSeconds: 1500,
-      focusLongBreakSeconds: 15 * 60,
-      focusShortBreakSeconds: 5 * 60,
-      launchAtLogin: false,
-      minimizeToTray: false,
-      reminderEnabled: true,
-      reminderSnoozeMinutes: 15,
-      reminderTime: "21:15",
-      themeMode: "system",
-      timezone: "America/New_York",
-    },
-  };
-}
-
 describe("habitService rollover", () => {
   it("uses a freeze for the first missed closed day and resets on the next missed day", () => {
     const repository = new FakeRepository();
@@ -684,68 +633,8 @@ describe("habit categories", () => {
   });
 });
 
-describe("onboarding setup", () => {
-  it("completes onboarding by saving settings, creating habits, and marking onboarding complete", () => {
-    const repository = new FakeRepository();
-    repository.habits = [];
-    const service = new HabitService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    const todayState = service.completeOnboarding(
-      createCompleteOnboardingInput()
-    );
-
-    expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
-      "Plan top 3 tasks",
-      "Workout session",
-    ]);
-    expect(todayState.settings.reminderTime).toBe("21:15");
-    expect(repository.onboardingStatus.isComplete).toBeTruthy();
-  });
-
-  it("supports a start-blank completion path", () => {
-    const repository = new FakeRepository();
-    repository.habits = [];
-    const service = new HabitService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    const todayState = service.completeOnboarding({
-      habits: [],
-      settings: {
-        ...repository.settings,
-        reminderEnabled: false,
-      },
-    });
-
-    expect(todayState.habits).toStrictEqual([]);
-    expect(todayState.settings.reminderEnabled).toBeFalsy();
-    expect(repository.onboardingStatus.completedAt).toBe(
-      "2026-03-08T09:00:00.000Z"
-    );
-  });
-
-  it("marks onboarding complete when skipped", () => {
-    const repository = new FakeRepository();
-    repository.habits = [];
-    const service = new HabitService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.skipOnboarding();
-
-    expect(repository.onboardingStatus).toStrictEqual({
-      completedAt: "2026-03-08T09:00:00.000Z",
-      isComplete: true,
-    });
-    expect(repository.habits).toHaveLength(0);
-  });
-
-  it("applies a starter pack without marking onboarding complete", () => {
+describe("starter packs", () => {
+  it("applies a starter pack to the existing dashboard", () => {
     const repository = new FakeRepository();
     repository.habits = [
       {
@@ -793,7 +682,6 @@ describe("onboarding setup", () => {
     expect(todayState.habits.map((habit) => habit.sortOrder)).toStrictEqual([
       0, 1, 2,
     ]);
-    expect(repository.onboardingStatus.isComplete).toBeFalsy();
   });
 });
 

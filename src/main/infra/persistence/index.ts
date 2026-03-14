@@ -10,11 +10,8 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
-import type {
-  OnboardingStatus,
-  StarterPackHabitDraft,
-} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import { runMigrations } from "../db/migrations";
@@ -35,8 +32,6 @@ export interface HabitRepository {
   initializeSchema(): void;
   runInTransaction<A>(label: string, execute: () => A): A;
   seedDefaults(nowIso: string, timezone: string): void;
-  getOnboardingStatus(): OnboardingStatus;
-  markOnboardingComplete(completedAt: string): OnboardingStatus;
   getHabits(): Habit[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
@@ -119,14 +114,6 @@ export class SqliteHabitRepository implements HabitRepository {
   seedDefaults(_nowIso: string, timezone: string): void {
     this.streakRepository.ensureInitialized();
     this.settingsRepository.seedDefaults(timezone);
-  }
-
-  getOnboardingStatus(): OnboardingStatus {
-    return this.settingsRepository.getOnboardingStatus();
-  }
-
-  markOnboardingComplete(completedAt: string): OnboardingStatus {
-    return this.settingsRepository.markOnboardingComplete(completedAt);
   }
 
   getHabits(): Habit[] {

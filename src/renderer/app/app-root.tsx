@@ -2,8 +2,7 @@
  * Top-level React application composition.
  *
  * This file decides which major screen to show, lazy-loads heavier tabs, and
- * turns controller state into the app shell, onboarding takeover, and loading
- * or error states.
+ * turns controller state into the app shell plus loading or error states.
  */
 import { lazy, Suspense } from "react";
 
@@ -42,12 +41,6 @@ const SettingsPage = lazy(async () => {
   const module = await import("@/renderer/features/settings/settings-page");
 
   return { default: module.SettingsPage };
-});
-const OnboardingTakeover = lazy(async () => {
-  const module =
-    await import("@/renderer/features/onboarding/onboarding-takeover");
-
-  return { default: module.OnboardingTakeover };
 });
 const WeeklyReviewSpotlightDialog = lazy(async () => {
   const module =
@@ -139,27 +132,6 @@ function MainApp() {
 
   if (!state.todayState) {
     return null;
-  }
-
-  if (state.isOnboardingOpen) {
-    return (
-      <Suspense
-        fallback={
-          <LoadingStateCard
-            description="Preparing your onboarding flow."
-            title="Loading setup"
-          />
-        }
-      >
-        <OnboardingTakeover
-          baseSettings={state.todayState.settings}
-          error={state.onboardingError}
-          phase={state.onboardingPhase}
-          onComplete={actions.handleCompleteOnboarding}
-          onSkip={actions.handleSkipOnboarding}
-        />
-      </Suspense>
-    );
   }
 
   let renderedPage = (

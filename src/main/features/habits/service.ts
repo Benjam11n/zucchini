@@ -27,13 +27,9 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
-import { cloneStarterPackHabits } from "@/shared/domain/onboarding";
-import type {
-  CompleteOnboardingInput,
-  OnboardingStatus,
-  StarterPackHabitDraft,
-} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
+import { cloneStarterPackHabits } from "@/shared/domain/starter-pack";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -54,7 +50,6 @@ function normalizeStarterPackHabits(
 
 export interface HabitsService {
   initialize(): void;
-  getOnboardingStatus(): OnboardingStatus;
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getFocusSessions(limit?: number): FocusSession[];
@@ -65,8 +60,6 @@ export interface HabitsService {
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
-  completeOnboarding(input: CompleteOnboardingInput): TodayState;
-  skipOnboarding(): void;
   applyStarterPack(habits: StarterPackHabitDraft[]): TodayState;
   createHabit(
     name: string,
@@ -146,13 +139,6 @@ export class HabitService implements HabitsService {
     );
     this.syncRollingState();
     this.initialized = true;
-  }
-
-  getOnboardingStatus(): OnboardingStatus {
-    this.initialize();
-    return this.repository.runInTransaction("getOnboardingStatus", () =>
-      this.repository.getOnboardingStatus()
-    );
   }
 
   getTodayState(): TodayState {
@@ -293,42 +279,6 @@ export class HabitService implements HabitsService {
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
     this.initialize();
     this.repository.saveReminderRuntimeState(state);
-  }
-
-  completeOnboarding(input: CompleteOnboardingInput): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("completeOnboarding", () => {
-      this.syncRollingState();
-      const settings = this.repository.saveSettings(
-        input.settings,
-        this.clock.timezone()
-      );
-      const normalizedHabits = normalizeStarterPackHabits(input.habits);
-      const nowIso = this.clock.now().toISOString();
-
-      if (normalizedHabits.length > 0) {
-        this.repository.appendHabits(
-          normalizedHabits,
-          nowIso,
-          this.clock.todayKey()
-        );
-      }
-
-      this.repository.markOnboardingComplete(nowIso);
-      const todayState = buildTodayState(this.repository, this.clock);
-
-      return {
-        ...todayState,
-        settings,
-      };
-    });
-  }
-
-  skipOnboarding(): void {
-    this.initialize();
-    this.repository.runInTransaction("skipOnboarding", () => {
-      this.repository.markOnboardingComplete(this.clock.now().toISOString());
-    });
   }
 
   applyStarterPack(habits: StarterPackHabitDraft[]): TodayState {

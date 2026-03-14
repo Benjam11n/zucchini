@@ -2,11 +2,11 @@ import {
   cloneStarterPackHabits,
   getStarterPackDefinition,
   STARTER_PACK_DEFINITIONS,
-} from "@/shared/domain/onboarding";
+} from "@/shared/domain/starter-pack";
 import type {
   StarterPackHabitDraft,
   StarterPackId,
-} from "@/shared/domain/onboarding";
+} from "@/shared/domain/starter-pack";
 
 import type {
   EditableStarterPackHabitDraft,

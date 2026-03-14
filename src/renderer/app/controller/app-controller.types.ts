@@ -10,7 +10,6 @@ import type {
 import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { HistoryDay } from "@/shared/domain/history";
-import type { OnboardingStatus } from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -29,11 +28,7 @@ export interface AppControllerState {
   historyLoadError: HabitsIpcError | null;
   historyScope: "full" | "recent";
   isHistoryLoading: boolean;
-  isOnboardingOpen: boolean;
   isWeeklyReviewSpotlightOpen: boolean;
-  onboardingError: HabitsIpcError | null;
-  onboardingPhase: "idle" | "submitting";
-  onboardingStatus: OnboardingStatus | null;
   selectedWeeklyReview: WeeklyReview | null;
   settingsDraft: AppSettings | null;
   settingsFieldErrors: SettingsFieldErrors;

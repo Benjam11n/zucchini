@@ -2,7 +2,6 @@ import type { ZodType } from "zod";
 
 import {
   appSettingsSchema,
-  completeOnboardingInputSchema,
   createFocusSessionInputSchema,
   dateKeySchema,
   focusSessionLimitSchema,
@@ -28,11 +27,8 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type {
-  CompleteOnboardingInput,
-  StarterPackHabitDraft,
-} from "@/shared/domain/onboarding";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 export class IpcValidationError extends Error {
   readonly details: string[];
@@ -133,12 +129,6 @@ export const validateReorderHabitIds = createValidator(
 export const validateStarterPackApply = createValidator<
   StarterPackHabitDraft[]
 >("starter pack habits", starterPackApplySchema);
-
-export const validateCompleteOnboardingInput =
-  createValidator<CompleteOnboardingInput>(
-    "complete onboarding",
-    completeOnboardingInputSchema
-  );
 
 export const validateNotificationTitle = createValidator(
   "notification title",

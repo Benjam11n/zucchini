@@ -6,7 +6,6 @@ import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
-import { useOnboardingStore } from "@/renderer/features/onboarding/state/onboarding-store";
 import type {
   SettingsFieldErrors,
   SettingsSavePhase,
@@ -23,11 +22,8 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
-import type {
-  CompleteOnboardingInput,
-  StarterPackHabitDraft,
-} from "@/shared/domain/onboarding";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
+import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 const RECENT_HISTORY_LIMIT = 14;
 
@@ -60,10 +56,9 @@ async function reloadAll(
     historyScope === "recent"
       ? window.habits.getHistory(RECENT_HISTORY_LIMIT)
       : window.habits.getHistory();
-  const [todayState, history, onboardingStatus] = await Promise.all([
+  const [todayState, history] = await Promise.all([
     Promise.resolve(nextTodayState ?? window.habits.getTodayState()),
     historyPromise,
-    window.habits.getOnboardingStatus(),
   ]);
 
   unstable_batchedUpdates(() => {
@@ -72,11 +67,6 @@ async function reloadAll(
       historyLoadError: null,
       historyScope,
       isHistoryLoading: false,
-    });
-    useOnboardingStore.setState({
-      isOnboardingOpen:
-        todayState.habits.length === 0 && !onboardingStatus.isComplete,
-      onboardingStatus,
     });
     useSettingsStore.setState((state) => ({
       settingsDraft: state.settingsDraft ?? todayState.settings,
@@ -108,12 +98,6 @@ async function bootApp() {
           historyScope: "recent",
           isHistoryLoading: false,
         });
-        useOnboardingStore.setState({
-          isOnboardingOpen: false,
-          onboardingError: null,
-          onboardingPhase: "idle",
-          onboardingStatus: null,
-        });
         useSettingsStore.setState({
           settingsDraft: null,
         });
@@ -143,10 +127,6 @@ async function bootApp() {
   });
 }
 
-function clearOnboardingError() {
-  useOnboardingStore.getState().clearOnboardingError();
-}
-
 function clearSettingsFeedback() {
   useSettingsStore.getState().clearSettingsFeedback();
 }
@@ -165,35 +145,6 @@ async function handleApplyStarterPack(habits: StarterPackHabitDraft[]) {
 
 async function handleArchiveHabit(habitId: number) {
   await refreshToday(window.habits.archiveHabit(habitId));
-}
-
-async function handleCompleteOnboarding(input: CompleteOnboardingInput) {
-  await runAsyncTask(() => window.habits.completeOnboarding(input), {
-    mapError: toHabitsIpcError,
-    onError: (onboardingError) => {
-      useOnboardingStore.setState({
-        onboardingError,
-        onboardingPhase: "idle",
-      });
-    },
-    onStart: () => {
-      useOnboardingStore.setState({
-        onboardingError: null,
-        onboardingPhase: "submitting",
-      });
-    },
-    onSuccess: async (nextTodayState) => {
-      await reloadAll(nextTodayState);
-      useOnboardingStore.setState({
-        onboardingError: null,
-        onboardingPhase: "idle",
-      });
-      useSettingsStore.setState({
-        settingsDraft: nextTodayState.settings,
-      });
-    },
-    rethrow: true,
-  });
 }
 
 async function handleCreateHabit(
@@ -220,32 +171,6 @@ async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
   await refreshToday(
     window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
   );
-}
-
-async function handleSkipOnboarding() {
-  await runAsyncTask(() => window.habits.skipOnboarding(), {
-    mapError: toHabitsIpcError,
-    onError: (onboardingError) => {
-      useOnboardingStore.setState({
-        onboardingError,
-        onboardingPhase: "idle",
-      });
-    },
-    onStart: () => {
-      useOnboardingStore.setState({
-        onboardingError: null,
-        onboardingPhase: "submitting",
-      });
-    },
-    onSuccess: async () => {
-      await reloadAll();
-      useOnboardingStore.setState({
-        onboardingError: null,
-        onboardingPhase: "idle",
-      });
-    },
-    rethrow: true,
-  });
 }
 
 function handleTabChange(nextTab: AppTab) {
@@ -363,17 +288,14 @@ function setSystemTheme(systemTheme: ThemeMode) {
 export const appActions = {
   bootApp,
   clearFocusSaveError,
-  clearOnboardingError,
   clearSettingsFeedback,
   dismissWeeklyReviewSpotlight,
   handleApplyStarterPack,
   handleArchiveHabit,
-  handleCompleteOnboarding,
   handleCreateHabit,
   handleRenameHabit,
   handleReorderHabits,
   handleSettingsDraftChange,
-  handleSkipOnboarding,
   handleTabChange,
   handleToggleHabit,
   handleUpdateHabitCategory,

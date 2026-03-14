@@ -5,7 +5,6 @@ import { act } from "react";
 
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
-import type { OnboardingStatus } from "@/shared/domain/onboarding";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -61,16 +60,6 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
-  };
-}
-
-function createOnboardingStatus(
-  overrides: Partial<OnboardingStatus> = {}
-): OnboardingStatus {
-  return {
-    completedAt: "2026-03-01T08:00:00.000Z",
-    isComplete: true,
-    ...overrides,
   };
 }
 
@@ -135,14 +124,12 @@ function createLocalStorageMock() {
 
 async function setupUseAppController({
   history = [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")],
-  onboardingStatus = createOnboardingStatus(),
   systemTheme = "light",
   todayState = createTodayState(),
   weeklyReview = createWeeklyReview(),
   weeklyReviewOverview = createWeeklyReviewOverview(null),
 }: {
   history?: HistoryDay[];
-  onboardingStatus?: OnboardingStatus;
   systemTheme?: "dark" | "light";
   todayState?: TodayState;
   weeklyReview?: WeeklyReview;
@@ -172,13 +159,11 @@ async function setupUseAppController({
     archiveHabit: vi.fn().mockResolvedValue(todayState),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
-    completeOnboarding: vi.fn().mockResolvedValue(todayState),
     createHabit: vi.fn().mockResolvedValue(todayState),
     getFocusSessions: vi.fn().mockResolvedValue([]),
     getHistory: vi.fn((limit?: number) =>
       Promise.resolve(limit === 14 ? history.slice(0, 2) : history)
     ),
-    getOnboardingStatus: vi.fn().mockResolvedValue(onboardingStatus),
     getTodayState: vi.fn().mockResolvedValue(todayState),
     getWeeklyReview: vi.fn().mockResolvedValue(weeklyReview),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(weeklyReviewOverview),
@@ -191,7 +176,6 @@ async function setupUseAppController({
     showFocusWidget: vi.fn(() => Promise.resolve()),
     showMainWindow: vi.fn(() => Promise.resolve()),
     showNotification: vi.fn().mockResolvedValue(42),
-    skipOnboarding: vi.fn().mockResolvedValue(42),
     toggleHabit: vi.fn().mockResolvedValue(todayState),
     updateHabitCategory: vi.fn().mockResolvedValue(todayState),
     updateHabitFrequency: vi.fn().mockResolvedValue(todayState),

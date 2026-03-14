@@ -19,7 +19,6 @@ import {
   writeLastSeenWeeklyReviewStart,
 } from "@/renderer/features/history/weekly-review/lib/weekly-review-storage";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
-import { useOnboardingStore } from "@/renderer/features/onboarding/state/onboarding-store";
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
@@ -53,14 +52,6 @@ function useAppControllerCoreState() {
       bootPhase: state.bootPhase,
     }))
   );
-  const onboardingState = useOnboardingStore(
-    useShallow((state) => ({
-      isOnboardingOpen: state.isOnboardingOpen,
-      onboardingError: state.onboardingError,
-      onboardingPhase: state.onboardingPhase,
-      onboardingStatus: state.onboardingStatus,
-    }))
-  );
   const settingsState = useSettingsStore(
     useShallow((state) => ({
       settingsDraft: state.settingsDraft,
@@ -72,7 +63,6 @@ function useAppControllerCoreState() {
 
   return {
     ...bootState,
-    ...onboardingState,
     ...settingsState,
     systemTheme,
     todayState,
@@ -179,8 +169,6 @@ function createControllerActions({
   return {
     handleApplyStarterPack: actions.handleApplyStarterPack,
     handleArchiveHabit: actions.handleArchiveHabit,
-    handleClearOnboardingError: actions.clearOnboardingError,
-    handleCompleteOnboarding: actions.handleCompleteOnboarding,
     handleCreateHabit: actions.handleCreateHabit,
     handleDismissWeeklyReviewSpotlight: () => {
       const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
@@ -198,7 +186,6 @@ function createControllerActions({
     handleRetryHistoryLoad: actions.loadFullHistory,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
-    handleSkipOnboarding: actions.handleSkipOnboarding,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
     handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
@@ -248,11 +235,7 @@ function createControllerState({
     historyLoadError: historyState.historyLoadError,
     historyScope: historyState.historyScope,
     isHistoryLoading: historyState.isHistoryLoading,
-    isOnboardingOpen: coreState.isOnboardingOpen,
     isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
-    onboardingError: coreState.onboardingError,
-    onboardingPhase: coreState.onboardingPhase,
-    onboardingStatus: coreState.onboardingStatus,
     selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
     settingsDraft: coreState.settingsDraft,
     settingsFieldErrors: settingsState.settingsFieldErrors,

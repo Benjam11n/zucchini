@@ -15,12 +15,8 @@ import type {
   HabitWithStatus,
 } from "../domain/habit";
 import type { HistoryDay } from "../domain/history";
-import type {
-  CompleteOnboardingInput,
-  OnboardingStatus,
-  StarterPackHabitDraft,
-} from "../domain/onboarding";
 import type { AppSettings } from "../domain/settings";
+import type { StarterPackHabitDraft } from "../domain/starter-pack";
 import type { StreakState } from "../domain/streak";
 import type {
   WeeklyReview,
@@ -32,12 +28,10 @@ export const HABITS_IPC_CHANNELS = {
   archiveHabit: "habits:archiveHabit",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
-  completeOnboarding: "habits:completeOnboarding",
   createHabit: "habits:createHabit",
   focusSessionRecorded: "habits:focusSessionRecorded",
   getFocusSessions: "habits:getFocusSessions",
   getHistory: "habits:getHistory",
-  getOnboardingStatus: "habits:getOnboardingStatus",
   getTodayState: "habits:getTodayState",
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
@@ -49,7 +43,6 @@ export const HABITS_IPC_CHANNELS = {
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
-  skipOnboarding: "habits:skipOnboarding",
   toggleHabit: "habits:toggleHabit",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
@@ -128,7 +121,6 @@ export interface HabitApi {
   ) => Promise<boolean>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
-  getOnboardingStatus: () => Promise<OnboardingStatus>;
   getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
@@ -161,7 +153,6 @@ export interface HabitApi {
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
   applyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<TodayState>;
-  completeOnboarding: (input: CompleteOnboardingInput) => Promise<TodayState>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;
   showNotification: (
@@ -169,6 +160,5 @@ export interface HabitApi {
     body: string,
     iconFilename?: string
   ) => Promise<void>;
-  skipOnboarding: () => Promise<void>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
 }
