@@ -103,6 +103,22 @@ function createFocusSession(
   };
 }
 
+function createDeferred<T>() {
+  let deferredResolve!: (value: T | PromiseLike<T>) => void;
+  let deferredReject!: (reason?: unknown) => void;
+  // eslint-disable-next-line promise/avoid-new
+  const promise = new Promise<T>((resolve, reject) => {
+    deferredResolve = resolve;
+    deferredReject = reject;
+  });
+
+  return {
+    promise,
+    reject: deferredReject,
+    resolve: deferredResolve,
+  };
+}
+
 describe("app store actions", () => {
   async function setup() {
     vi.resetModules();
@@ -316,7 +332,7 @@ describe("app store actions", () => {
         },
       ],
     });
-    const reorderRequest = Promise.withResolvers<TodayState>();
+    const reorderRequest = createDeferred<TodayState>();
 
     vi.stubGlobal("window", {
       ...window,
@@ -346,7 +362,7 @@ describe("app store actions", () => {
 
   it("optimistically toggles a habit before the authoritative refresh resolves", async () => {
     const { actions, stores } = await setup();
-    const pendingTodayState = Promise.withResolvers<TodayState>();
+    const pendingTodayState = createDeferred<TodayState>();
 
     vi.stubGlobal("window", {
       ...window,
