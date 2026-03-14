@@ -102,7 +102,7 @@ export function NewHabitForm({
 
   return (
     <m.div
-      className="grid w-full gap-3 self-start rounded-2xl border border-border/70 bg-card/95 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.9)] backdrop-blur sm:max-w-3xl"
+      className="grid w-full gap-3 self-start rounded-2xl border border-border/70 bg-card/95 p-4 shadow-[0_16px_32px_-28px_rgba(15,23,42,0.9)] backdrop-blur"
       layout
       transition={microTransition}
     >
