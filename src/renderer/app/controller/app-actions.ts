@@ -47,6 +47,25 @@ function updateTodayState(nextSettings: AppSettings) {
   });
 }
 
+function applyTodayState(nextTodayState: TodayState) {
+  unstable_batchedUpdates(() => {
+    useSettingsStore.setState((state) => ({
+      settingsDraft: state.settingsDraft ?? nextTodayState.settings,
+    }));
+    useTodayStore.setState({
+      todayState: nextTodayState,
+    });
+  });
+}
+
+function refreshWeeklyReviewInBackground() {
+  if (useWeeklyReviewStore.getState().weeklyReviewPhase === "idle") {
+    return;
+  }
+
+  void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+}
+
 async function reloadAll(
   nextTodayState?: TodayState,
   historyScope = useHistoryStore.getState().historyScope
@@ -80,6 +99,13 @@ async function refreshToday(mutator: Promise<TodayState>) {
   if (useWeeklyReviewStore.getState().weeklyReviewPhase !== "idle") {
     await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
   }
+}
+
+async function applyTodayMutation(mutator: Promise<TodayState>) {
+  const nextTodayState = await mutator;
+  applyTodayState(nextTodayState);
+  refreshWeeklyReviewInBackground();
+  return nextTodayState;
 }
 
 async function bootApp() {
@@ -139,11 +165,11 @@ function dismissWeeklyReviewSpotlight() {
 }
 
 async function handleArchiveHabit(habitId: number) {
-  await refreshToday(window.habits.archiveHabit(habitId));
+  await applyTodayMutation(window.habits.archiveHabit(habitId));
 }
 
 async function handleUnarchiveHabit(habitId: number) {
-  await refreshToday(window.habits.unarchiveHabit(habitId));
+  await applyTodayMutation(window.habits.unarchiveHabit(habitId));
 }
 
 async function handleCreateHabit(
@@ -152,7 +178,7 @@ async function handleCreateHabit(
   frequency: HabitFrequency,
   selectedWeekdays: HabitWeekday[] | null = null
 ) {
-  await refreshToday(
+  await applyTodayMutation(
     window.habits.createHabit(name, category, frequency, selectedWeekdays)
   );
   updateSettingsDraftFromToday();
@@ -163,13 +189,31 @@ function handleSettingsDraftChange(settingsDraft: AppSettings) {
 }
 
 async function handleRenameHabit(habitId: number, name: string) {
-  await refreshToday(window.habits.renameHabit(habitId, name));
+  await applyTodayMutation(window.habits.renameHabit(habitId, name));
 }
 
 async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
-  await refreshToday(
-    window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
-  );
+  const previousTodayState = useTodayStore.getState().todayState;
+
+  if (previousTodayState) {
+    useTodayStore.setState({
+      todayState: {
+        ...previousTodayState,
+        habits: nextHabits,
+      },
+    });
+  }
+
+  try {
+    await applyTodayMutation(
+      window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
+    );
+  } catch (error) {
+    useTodayStore.setState({
+      todayState: previousTodayState,
+    });
+    throw error;
+  }
 }
 
 function handleTabChange(nextTab: AppTab) {
@@ -196,21 +240,25 @@ async function handleUpdateHabitCategory(
   habitId: number,
   category: HabitCategory
 ) {
-  await refreshToday(window.habits.updateHabitCategory(habitId, category));
+  await applyTodayMutation(
+    window.habits.updateHabitCategory(habitId, category)
+  );
 }
 
 async function handleUpdateHabitFrequency(
   habitId: number,
   frequency: HabitFrequency
 ) {
-  await refreshToday(window.habits.updateHabitFrequency(habitId, frequency));
+  await applyTodayMutation(
+    window.habits.updateHabitFrequency(habitId, frequency)
+  );
 }
 
 async function handleUpdateHabitWeekdays(
   habitId: number,
   selectedWeekdays: HabitWeekday[] | null
 ) {
-  await refreshToday(
+  await applyTodayMutation(
     window.habits.updateHabitWeekdays(habitId, selectedWeekdays)
   );
 }

@@ -166,7 +166,7 @@ describe("app store actions", () => {
     };
   }
 
-  it("reloads weekly review data after a habit rename when weekly reviews are already loaded", async () => {
+  it("reloads weekly review data in the background after a habit rename when weekly reviews are already loaded", async () => {
     const freshWeeklyReview = createWeeklyReview("Make buried chapters video");
     const { actions, getWeeklyReviewOverviewMock, stores } = await setup();
     getWeeklyReviewOverviewMock.mockResolvedValue({
@@ -191,11 +191,13 @@ describe("app store actions", () => {
 
     await actions.handleRenameHabit(1, "Make buried chapters video");
 
-    expect(getWeeklyReviewOverviewMock).toHaveBeenCalledWith();
-    expect(
-      stores.useWeeklyReviewStore.getState().selectedWeeklyReview
-        ?.habitMetrics[0]?.name
-    ).toBe("Make buried chapters video");
+    await vi.waitFor(() => {
+      expect(getWeeklyReviewOverviewMock).toHaveBeenCalledWith();
+      expect(
+        stores.useWeeklyReviewStore.getState().selectedWeeklyReview
+          ?.habitMetrics[0]?.name
+      ).toBe("Make buried chapters video");
+    });
   });
 
   it("loads focus sessions once after switching to the focus tab", async () => {
@@ -235,7 +237,7 @@ describe("app store actions", () => {
     ).toStrictEqual(["2026-03-10", "2026-03-09"]);
   });
 
-  it("keeps using full history after a mutation once the history tab has been opened", async () => {
+  it("does not reload history after a structural habit mutation once history has been opened", async () => {
     const { actions, getHistoryMock } = await setup();
     await actions.bootApp();
 
@@ -245,6 +247,52 @@ describe("app store actions", () => {
 
     await actions.handleRenameHabit(1, "Make buried chapters");
 
-    expect(getHistoryMock).toHaveBeenLastCalledWith();
+    expect(getHistoryMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("optimistically updates the habit order before the reorder request resolves", async () => {
+    const { actions, stores } = await setup();
+    const reorderedState = createTodayState({
+      habits: [
+        {
+          ...createTodayState().habits[0]!,
+          id: 2,
+          name: "Review notes",
+          sortOrder: 0,
+        },
+        {
+          ...createTodayState().habits[0]!,
+          id: 1,
+          name: "Plan top 3 tasks",
+          sortOrder: 1,
+        },
+      ],
+    });
+    const reorderRequest = Promise.withResolvers<TodayState>();
+
+    vi.stubGlobal("window", {
+      ...window,
+      habits: {
+        ...window.habits,
+        reorderHabits: vi.fn(() => reorderRequest.promise),
+      },
+    });
+
+    stores.useTodayStore.setState({
+      todayState: reorderedState,
+    });
+
+    const nextHabits = [...reorderedState.habits].toReversed();
+    const reorderPromise = actions.handleReorderHabits(nextHabits);
+
+    expect(stores.useTodayStore.getState().todayState?.habits).toStrictEqual(
+      nextHabits
+    );
+
+    reorderRequest.resolve({
+      ...reorderedState,
+      habits: nextHabits,
+    });
+    await reorderPromise;
   });
 });
