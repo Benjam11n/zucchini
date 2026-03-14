@@ -252,6 +252,10 @@ describe("history page", () => {
     render(
       <HistoryPage
         history={history}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
         onSelectWeeklyReview={vi.fn()}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
@@ -278,6 +282,10 @@ describe("history page", () => {
     const { rerender } = render(
       <HistoryPage
         history={history}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
         onSelectWeeklyReview={onSelectWeeklyReview}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
@@ -295,6 +303,10 @@ describe("history page", () => {
     rerender(
       <HistoryPage
         history={[history[0]!]}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
         onSelectWeeklyReview={onSelectWeeklyReview}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
@@ -313,6 +325,10 @@ describe("history page", () => {
     render(
       <HistoryPage
         history={[createHistoryDay("2026-03-10")]}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
         onSelectWeeklyReview={vi.fn()}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
@@ -329,6 +345,10 @@ describe("history page", () => {
     render(
       <HistoryPage
         history={[createHistoryDay("2026-03-10")]}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
         onSelectWeeklyReview={vi.fn()}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
@@ -342,5 +362,68 @@ describe("history page", () => {
     expect(screen.getByTestId("weekly-review-hero")).toHaveTextContent(
       "2026-03-02"
     );
+  });
+
+  it("shows an explicit load older history action for the current-year view", () => {
+    const onLoadOlderHistory = vi.fn();
+
+    render(
+      <HistoryPage
+        history={[createHistoryDay("2026-03-10")]}
+        historyLoadError={null}
+        historyScope="recent"
+        isHistoryLoading={false}
+        onLoadOlderHistory={onLoadOlderHistory}
+        onSelectWeeklyReview={vi.fn()}
+        selectedWeeklyReview={null}
+        todayDate="2026-03-10"
+        weeklyReviewError={null}
+        weeklyReviewOverview={null}
+        weeklyReviewPhase="idle"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Load older history" }));
+
+    // oxlint-disable-next-line vitest/prefer-called-times
+    expect(onLoadOlderHistory).toHaveBeenCalledOnce();
+    expect(
+      screen.getByRole("combobox", { name: "Select history year" })
+    ).toBeInTheDocument();
+  });
+
+  it("filters the calendar and selected day when the year changes", () => {
+    render(
+      <HistoryPage
+        history={[
+          createHistoryDay("2026-03-10", { allCompleted: true }),
+          createHistoryDay("2025-12-31", { freezeUsed: true }),
+        ]}
+        historyLoadError={null}
+        historyScope="full"
+        isHistoryLoading={false}
+        onLoadOlderHistory={vi.fn()}
+        onSelectWeeklyReview={vi.fn()}
+        selectedWeeklyReview={null}
+        todayDate="2026-03-10"
+        weeklyReviewError={null}
+        weeklyReviewOverview={null}
+        weeklyReviewPhase="idle"
+      />
+    );
+
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Select history year" }),
+      {
+        target: { value: "2025" },
+      }
+    );
+
+    expect(screen.getByTestId("day-panel")).toHaveTextContent(
+      "2025-12-31:false"
+    );
+    expect(
+      screen.getByRole("button", { name: "Select 2025-12-31" })
+    ).toBeInTheDocument();
   });
 });

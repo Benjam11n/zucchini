@@ -12,6 +12,10 @@ export type WeeklyReviewPhase = AsyncPhase;
 
 export interface HistoryPageProps {
   history: HistoryDay[];
+  historyLoadError: HabitsIpcError | null;
+  historyScope: "full" | "recent";
+  isHistoryLoading: boolean;
+  onLoadOlderHistory: () => void;
   todayDate: string;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: HabitsIpcError | null;

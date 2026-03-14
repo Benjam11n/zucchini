@@ -41,6 +41,7 @@ import {
   tapPress,
 } from "@/renderer/shared/lib/motion";
 import { Badge } from "@/renderer/shared/ui/badge";
+import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -83,16 +84,20 @@ const WeeklyReviewTrendChart = lazy(() =>
 
 interface HistoryViewState {
   selectedDateKey: string | null;
+  selectedYear: number;
   visibleMonth: Date | undefined;
 }
 
 function createHistoryViewState(
-  history: HistoryPageProps["history"]
+  history: HistoryPageProps["history"],
+  todayDate: string
 ): HistoryViewState {
-  const fallbackDate = history[0]?.date ?? null;
+  const fallbackDate = history[0]?.date ?? todayDate;
+  const fallbackYear = Number.parseInt(fallbackDate.slice(0, 4), 10);
 
   return {
     selectedDateKey: fallbackDate,
+    selectedYear: fallbackYear,
     visibleMonth: fallbackDate ? parseDateKey(fallbackDate) : undefined,
   };
 }
@@ -114,7 +119,14 @@ function WeeklyReviewSection({
   weeklyReviewError,
   weeklyReviewOverview,
   weeklyReviewPhase,
-}: Omit<HistoryPageProps, "history">) {
+}: Pick<
+  HistoryPageProps,
+  | "onSelectWeeklyReview"
+  | "selectedWeeklyReview"
+  | "weeklyReviewError"
+  | "weeklyReviewOverview"
+  | "weeklyReviewPhase"
+>) {
   const review =
     selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
 
@@ -198,6 +210,10 @@ function WeeklyReviewSection({
 
 export function HistoryPage({
   history,
+  historyLoadError,
+  historyScope,
+  isHistoryLoading,
+  onLoadOlderHistory,
   todayDate,
   onSelectWeeklyReview,
   selectedWeeklyReview,
@@ -206,17 +222,39 @@ export function HistoryPage({
   weeklyReviewPhase,
 }: HistoryPageProps) {
   const [viewState, setViewState] = useState<HistoryViewState>(() =>
-    createHistoryViewState(history)
+    createHistoryViewState(history, todayDate)
   );
-  const stats = getHistoryStats(history);
-  const historyByDate = useMemo(() => getHistoryDayLookup(history), [history]);
+  const availableYears = useMemo(
+    () =>
+      [
+        ...new Set(
+          history.map((day) => Number.parseInt(day.date.slice(0, 4), 10))
+        ),
+      ]
+        .filter((year) => !Number.isNaN(year))
+        .toSorted((left, right) => right - left),
+    [history]
+  );
+  const filteredHistory = useMemo(
+    () =>
+      history.filter(
+        (day) =>
+          Number.parseInt(day.date.slice(0, 4), 10) === viewState.selectedYear
+      ),
+    [history, viewState.selectedYear]
+  );
+  const stats = getHistoryStats(filteredHistory);
+  const historyByDate = useMemo(
+    () => getHistoryDayLookup(filteredHistory),
+    [filteredHistory]
+  );
   const selectedDay =
     (viewState.selectedDateKey
       ? historyByDate.get(viewState.selectedDateKey)
       : null) ??
-    history[0] ??
+    filteredHistory[0] ??
     null;
-  const calendarWeeks = buildContributionWeeks(history).map((week) => ({
+  const calendarWeeks = buildContributionWeeks(filteredHistory).map((week) => ({
     ...week,
     cells: week.cells.map((cell) => ({
       completedCount: cell.completedCount,
@@ -230,11 +268,21 @@ export function HistoryPage({
   }));
 
   useEffect(() => {
-    const fallbackDate = history[0]?.date ?? null;
+    const selectedYearStillExists = availableYears.includes(
+      viewState.selectedYear
+    );
+    const nextSelectedYear = selectedYearStillExists
+      ? viewState.selectedYear
+      : (availableYears[0] ?? Number.parseInt(todayDate.slice(0, 4), 10));
+    const nextHistory = history.filter(
+      (day) => Number.parseInt(day.date.slice(0, 4), 10) === nextSelectedYear
+    );
+    const fallbackDate = nextHistory[0]?.date ?? null;
 
     if (!fallbackDate) {
       setViewState({
         selectedDateKey: null,
+        selectedYear: nextSelectedYear,
         visibleMonth: undefined,
       });
       return;
@@ -243,16 +291,22 @@ export function HistoryPage({
     setViewState((current) => ({
       selectedDateKey:
         current.selectedDateKey &&
-        history.some((day) => day.date === current.selectedDateKey)
+        nextHistory.some((day) => day.date === current.selectedDateKey)
           ? current.selectedDateKey
           : fallbackDate,
-      visibleMonth: current.visibleMonth ?? parseDateKey(fallbackDate),
+      selectedYear: nextSelectedYear,
+      visibleMonth:
+        current.visibleMonth &&
+        current.visibleMonth.getFullYear() === nextSelectedYear
+          ? current.visibleMonth
+          : parseDateKey(fallbackDate),
     }));
-  }, [history]);
+  }, [availableYears, history, todayDate, viewState.selectedYear]);
 
   const handleSelectDate = useCallback((dateKey: string) => {
     setViewState({
       selectedDateKey: dateKey,
+      selectedYear: Number.parseInt(dateKey.slice(0, 4), 10),
       visibleMonth: parseDateKey(dateKey),
     });
   }, []);
@@ -274,47 +328,6 @@ export function HistoryPage({
         initial="initial"
         variants={staggerContainerVariants}
       >
-        <m.section variants={staggerItemVariants}>
-          <Card>
-            <CardHeader className="gap-3 sm:flex sm:flex-row sm:items-end sm:justify-between">
-              <div className="space-y-1">
-                <CardDescription>History</CardDescription>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {[
-                  {
-                    className: HISTORY_METRIC_BADGE_CLASSNAMES.completionRate,
-                    label: `${stats.completionRate}% completion`,
-                  },
-                  {
-                    className: HISTORY_METRIC_BADGE_CLASSNAMES.completedDays,
-                    label: `${stats.completedDays} complete`,
-                  },
-                  {
-                    className: HISTORY_METRIC_BADGE_CLASSNAMES.freezeDays,
-                    label: `${stats.freezeDays} freeze saves`,
-                  },
-                  {
-                    className: HISTORY_METRIC_BADGE_CLASSNAMES.missedDays,
-                    label: `${stats.missedDays} missed`,
-                  },
-                ].map((statBadge) => (
-                  <m.div
-                    key={statBadge.label}
-                    whileHover={hoverLift}
-                    whileTap={tapPress}
-                  >
-                    <Badge className={statBadge.className} variant="outline">
-                      {statBadge.label}
-                    </Badge>
-                  </m.div>
-                ))}
-              </div>
-            </CardHeader>
-          </Card>
-        </m.section>
-
         <Tabs defaultValue="daily" className="w-full">
           <m.section variants={staggerItemVariants}>
             <TabsList className="mb-6 w-full rounded-2xl bg-muted/80 p-1">
@@ -336,6 +349,96 @@ export function HistoryPage({
             >
               <Card>
                 <CardContent className="space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        {
+                          className:
+                            HISTORY_METRIC_BADGE_CLASSNAMES.completionRate,
+                          label: `${stats.completionRate}% completion`,
+                        },
+                        {
+                          className:
+                            HISTORY_METRIC_BADGE_CLASSNAMES.completedDays,
+                          label: `${stats.completedDays} complete`,
+                        },
+                        {
+                          className: HISTORY_METRIC_BADGE_CLASSNAMES.freezeDays,
+                          label: `${stats.freezeDays} freeze saves`,
+                        },
+                        {
+                          className: HISTORY_METRIC_BADGE_CLASSNAMES.missedDays,
+                          label: `${stats.missedDays} missed`,
+                        },
+                      ].map((statBadge) => (
+                        <m.div
+                          key={statBadge.label}
+                          whileHover={hoverLift}
+                          whileTap={tapPress}
+                        >
+                          <Badge
+                            className={statBadge.className}
+                            variant="outline"
+                          >
+                            {statBadge.label}
+                          </Badge>
+                        </m.div>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {historyScope === "recent" ? (
+                        <Button
+                          disabled={isHistoryLoading}
+                          onClick={onLoadOlderHistory}
+                          variant="outline"
+                        >
+                          {isHistoryLoading
+                            ? "Loading older history..."
+                            : "Load older history"}
+                        </Button>
+                      ) : null}
+                      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Year</span>
+                        <select
+                          aria-label="Select history year"
+                          className="rounded-lg border border-border/60 bg-background px-3 py-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+                          onChange={(event) => {
+                            const nextYear = Number.parseInt(
+                              event.target.value,
+                              10
+                            );
+                            const fallbackDate =
+                              history.find(
+                                (day) =>
+                                  Number.parseInt(day.date.slice(0, 4), 10) ===
+                                  nextYear
+                              )?.date ?? null;
+
+                            setViewState({
+                              selectedDateKey: fallbackDate,
+                              selectedYear: nextYear,
+                              visibleMonth: fallbackDate
+                                ? parseDateKey(fallbackDate)
+                                : undefined,
+                            });
+                          }}
+                          value={viewState.selectedYear}
+                        >
+                          {availableYears.map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                  {historyLoadError && historyScope !== "full" ? (
+                    <div className="rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+                      {historyLoadError.message}
+                    </div>
+                  ) : null}
                   <GitHubCalendar weeks={calendarWeeks} />
                 </CardContent>
               </Card>
@@ -370,7 +473,6 @@ export function HistoryPage({
           <TabsContent value="weekly">
             <m.section variants={staggerItemVariants}>
               <WeeklyReviewSection
-                todayDate={todayDate}
                 onSelectWeeklyReview={onSelectWeeklyReview}
                 selectedWeeklyReview={selectedWeeklyReview}
                 weeklyReviewError={weeklyReviewError}

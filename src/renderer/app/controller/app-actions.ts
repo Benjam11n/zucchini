@@ -23,8 +23,18 @@ import type {
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
+import { parseDateKey } from "@/shared/utils/date";
 
-const RECENT_HISTORY_LIMIT = 14;
+function getCurrentYearHistoryLimit(todayDate: string): number {
+  const today = parseDateKey(todayDate);
+  const yearStart = new Date(today.getFullYear(), 0, 1);
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return Math.min(
+    366,
+    Math.floor((today.getTime() - yearStart.getTime()) / millisecondsPerDay) + 1
+  );
+}
 
 function updateSettingsDraftFromToday() {
   const { todayState } = useTodayStore.getState();
@@ -70,14 +80,13 @@ async function reloadAll(
   nextTodayState?: TodayState,
   historyScope = useHistoryStore.getState().historyScope
 ) {
-  const historyPromise =
+  const todayState = nextTodayState ?? (await window.habits.getTodayState());
+  const history =
     historyScope === "recent"
-      ? window.habits.getHistory(RECENT_HISTORY_LIMIT)
-      : window.habits.getHistory();
-  const [todayState, history] = await Promise.all([
-    Promise.resolve(nextTodayState ?? window.habits.getTodayState()),
-    historyPromise,
-  ]);
+      ? await window.habits.getHistory(
+          getCurrentYearHistoryLimit(todayState.date)
+        )
+      : await window.habits.getHistory();
 
   unstable_batchedUpdates(() => {
     useHistoryStore.setState({
@@ -225,10 +234,6 @@ function handleTabChange(nextTab: AppTab) {
 
   if (nextTab === "focus") {
     void useFocusStore.getState().loadFocusSessions();
-  }
-
-  if (nextTab === "history") {
-    void useHistoryStore.getState().loadFullHistory();
   }
 }
 

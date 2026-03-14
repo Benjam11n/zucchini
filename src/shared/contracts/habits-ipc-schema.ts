@@ -23,7 +23,7 @@ const isoTimestampSchema = z.string().datetime({
   message: "Timestamps must use ISO 8601 format.",
   offset: true,
 });
-export const historyLimitSchema = z.number().int().min(1).max(365).optional();
+export const historyLimitSchema = z.number().int().min(1).max(366).optional();
 export const focusSessionLimitSchema = z
   .number()
   .int()

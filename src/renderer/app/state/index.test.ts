@@ -95,7 +95,7 @@ describe("app store actions", () => {
     vi.unstubAllGlobals();
     const getHistoryMock = vi.fn((limit?: number) =>
       Promise.resolve(
-        limit === 14
+        limit === 69
           ? [createHistoryDay("2026-03-10")]
           : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
       )
@@ -217,11 +217,11 @@ describe("app store actions", () => {
 
     await actions.bootApp();
 
-    expect(getHistoryMock).toHaveBeenCalledWith(14);
+    expect(getHistoryMock).toHaveBeenCalledWith(69);
     expect(stores.useTodayStore.getState().todayState?.date).toBe("2026-03-10");
   });
 
-  it("loads full history after switching to the history tab", async () => {
+  it("keeps current-year history after switching to the history tab", async () => {
     const { actions, getHistoryMock, stores } = await setup();
     await actions.bootApp();
 
@@ -229,7 +229,22 @@ describe("app store actions", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 14);
+    // oxlint-disable-next-line vitest/prefer-called-times
+    expect(getHistoryMock).toHaveBeenCalledOnce();
+    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 69);
+    expect(stores.useHistoryStore.getState().historyScope).toBe("recent");
+    expect(
+      stores.useHistoryStore.getState().history.map((day) => day.date)
+    ).toStrictEqual(["2026-03-10"]);
+  });
+
+  it("loads full history only when explicitly requested", async () => {
+    const { actions, getHistoryMock, stores } = await setup();
+    await actions.bootApp();
+
+    await actions.loadFullHistory();
+
+    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 69);
     expect(getHistoryMock).toHaveBeenNthCalledWith(2);
     expect(stores.useHistoryStore.getState().historyScope).toBe("full");
     expect(
@@ -237,13 +252,11 @@ describe("app store actions", () => {
     ).toStrictEqual(["2026-03-10", "2026-03-09"]);
   });
 
-  it("does not reload history after a structural habit mutation once history has been opened", async () => {
+  it("does not reload history after a structural habit mutation once full history has been opened", async () => {
     const { actions, getHistoryMock } = await setup();
     await actions.bootApp();
 
-    actions.handleTabChange("history");
-    await Promise.resolve();
-    await Promise.resolve();
+    await actions.loadFullHistory();
 
     await actions.handleRenameHabit(1, "Make buried chapters");
 

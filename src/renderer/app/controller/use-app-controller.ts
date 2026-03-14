@@ -176,6 +176,7 @@ function createControllerActions({
       }
       actions.dismissWeeklyReviewSpotlight();
     },
+    handleLoadOlderHistory: actions.loadFullHistory,
     handleRenameHabit: actions.handleRenameHabit,
     handleReorderHabits: actions.handleReorderHabits,
     handleRetryBoot: actions.retryBoot,
