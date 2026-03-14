@@ -294,6 +294,13 @@ export class HabitService implements HabitsService {
         this.repository.getMaxSortOrder() + 1,
         this.clock.now().toISOString()
       );
+      this.repository.reorderHabits([
+        habitId,
+        ...this.repository
+          .getHabits()
+          .filter((habit) => habit.id !== habitId)
+          .map((habit) => habit.id),
+      ]);
       this.repository.ensureStatusRow(today, habitId);
       return buildTodayState(this.repository, this.clock);
     });

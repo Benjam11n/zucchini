@@ -133,4 +133,65 @@ describe("habit management content", () => {
 
     expect(screen.getByText('Restored "Habit 1".')).toBeInTheDocument();
   });
+
+  it("expands the newly created top habit after creation completes", async () => {
+    let renderCount = 0;
+    const onCreateHabit = vi.fn(async () => {});
+    const view = render(
+      <HabitManagementContent
+        habits={[createHabit(1)]}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={onCreateHabit}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={createAsyncMock()}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    renderCount += 1;
+
+    fireEvent.change(screen.getByLabelText("Name"), {
+      target: { value: "Drink water" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add habit" }));
+
+    await waitFor(() => {
+      expect(onCreateHabit).toHaveBeenCalledWith(
+        "Drink water",
+        "productivity",
+        "daily",
+        null
+      );
+    });
+
+    view.rerender(
+      <HabitManagementContent
+        habits={[
+          {
+            ...createHabit(2),
+            name: "Drink water",
+            sortOrder: 0,
+          },
+          {
+            ...createHabit(1),
+            sortOrder: 1,
+          },
+        ]}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={onCreateHabit}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={createAsyncMock()}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    expect(renderCount).toBe(1);
+    expect(screen.getByDisplayValue("Drink water")).toBeInTheDocument();
+  });
 });

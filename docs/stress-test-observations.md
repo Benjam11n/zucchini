@@ -86,7 +86,48 @@ Expected impact:
 - This should provide the largest visible UX improvement for settings-heavy
   workflows.
 
-### 2. New habits are created at the bottom of the list
+### 1a. Checking off habits on the main page is laggy
+
+Observed:
+
+- Checking off habits on the Today page still feels laggy even after the
+  structural habit-management writes were sped up.
+
+Likely cause:
+
+- `toggleHabit` still goes through the full today-state refresh path, which is
+  appropriate for correctness but expensive under larger datasets.
+- The Today page also recomputes ring, streak, and checklist state on every
+  toggle.
+
+Relevant files:
+
+- [`app-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/app-actions.ts)
+- [`service.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/habits/service.ts)
+- [`today-page.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/today/today-page.tsx)
+
+Best fix:
+
+- Keep the toggle response authoritative, but optimistically update the
+  toggled habit in the renderer immediately and reconcile with the returned
+  `TodayState` once the mutation completes.
+
+Recommended implementation:
+
+- Apply an optimistic toggle to the matching habit in `todayState`.
+- Persist via the existing main-process mutation.
+- Reconcile with the returned `TodayState` once it arrives.
+- If a mismatch occurs, trust the main-process response and overwrite the local
+  optimistic state.
+
+### 2. [x] New habits are created at the bottom of the list
+
+Status:
+
+- Completed.
+- New habits are now inserted at the top of the active list.
+- The newly created habit auto-expands in the manager so it is immediately
+  visible and editable.
 
 Observed:
 
@@ -184,7 +225,15 @@ Expected impact:
 
 - This should be the biggest performance improvement on the History page.
 
-### 4. Today-page ring carousel changes app width and drags the whole screen
+### 4. [x] Today-page ring carousel changes app width and drags the whole screen
+
+Status:
+
+- Completed in first pass.
+- The today-history carousel now uses explicit `min-w-0`, `max-w-full`, and
+  overflow clipping so the ring strip stays within its own container.
+- Horizontal overflow is contained at the carousel level instead of pushing the
+  page width outward.
 
 Observed:
 

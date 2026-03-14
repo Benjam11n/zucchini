@@ -39,7 +39,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
         <main className="min-h-screen bg-background text-foreground">
           <UpdateButton />
           <Tabs
-            className="grid min-h-screen lg:grid-cols-[96px_1fr]"
+            className="grid min-h-screen lg:grid-cols-[96px_minmax(0,1fr)]"
             onValueChange={(value) => onTabChange(value as AppTab)}
             value={tab}
           >
@@ -118,13 +118,14 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
               </div>
             </aside>
 
-            <section className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-              <div className="mx-auto w-full max-w-6xl">
-                <TabsContent className="mt-0" forceMount value={tab}>
+            <section className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+              <div className="mx-auto min-w-0 w-full max-w-6xl">
+                <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
                   <AnimatePresence initial={false} mode="wait">
                     <m.div
                       key={tab}
                       animate="animate"
+                      className="min-w-0"
                       exit="exit"
                       initial="initial"
                       variants={pageVariants}

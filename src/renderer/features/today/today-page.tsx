@@ -103,11 +103,11 @@ function TodayPageComponent({
       <>
         <m.div
           animate="animate"
-          className="grid gap-6"
+          className="grid min-w-0 gap-6"
           initial="initial"
           variants={staggerContainerVariants}
         >
-          <m.section variants={staggerItemVariants}>
+          <m.section className="min-w-0" variants={staggerItemVariants}>
             <TodayHistoryCarousel history={history} todayDate={state.date} />
           </m.section>
 

@@ -54,6 +54,9 @@ export function HabitManagementContent({
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<HabitFeedback>(null);
   const [dragState, setDragState] = useState<DragState>(null);
+  const [pendingCreatedHabitName, setPendingCreatedHabitName] = useState<
+    string | null
+  >(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
 
   useEffect(
@@ -64,6 +67,22 @@ export function HabitManagementContent({
     },
     []
   );
+
+  useEffect(() => {
+    if (!pendingCreatedHabitName) {
+      return;
+    }
+
+    const createdHabit = habits.find(
+      (habit) => habit.name === pendingCreatedHabitName
+    );
+    if (!createdHabit) {
+      return;
+    }
+
+    setExpandedHabitId(createdHabit.id);
+    setPendingCreatedHabitName(null);
+  }, [habits, pendingCreatedHabitName]);
 
   function clearFeedbackTimer() {
     if (feedbackTimeoutRef.current === null) {
@@ -167,6 +186,19 @@ export function HabitManagementContent({
     showSavedFeedback("Saved habit order.");
   }
 
+  async function handleCreateHabit(
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
+  ) {
+    const trimmedName = name.trim();
+    await onCreateHabit(name, category, frequency, selectedWeekdays);
+    if (trimmedName) {
+      setPendingCreatedHabitName(trimmedName);
+    }
+  }
+
   async function handleDrop(
     targetHabitId: number,
     position: "after" | "before"
@@ -206,7 +238,7 @@ export function HabitManagementContent({
   return (
     <LazyMotion features={domAnimation}>
       <div className="sticky top-0 z-10 pb-3">
-        <NewHabitForm onCreateHabit={onCreateHabit} />
+        <NewHabitForm onCreateHabit={handleCreateHabit} />
         {feedback ? (
           <div
             aria-live="polite"

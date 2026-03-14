@@ -523,9 +523,14 @@ describe("habit categories", () => {
 
     const todayState = service.createHabit("Drink water", "nutrition", "daily");
 
-    expect(todayState.habits.at(-1)).toMatchObject({
+    expect(todayState.habits[0]).toMatchObject({
       category: "nutrition",
       name: "Drink water",
+      sortOrder: 0,
+    });
+    expect(todayState.habits[1]).toMatchObject({
+      name: "Habit 1",
+      sortOrder: 1,
     });
   });
 

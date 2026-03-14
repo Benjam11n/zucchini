@@ -36,38 +36,44 @@ export function TodayHistoryCarousel({
 
   return (
     <>
-      <Carousel
-        opts={{
-          align: "start",
-          dragFree: true,
-        }}
-        className="w-full mb-4"
-      >
-        <CarouselContent className="ml-0">
-          {days.map((day) => {
-            const date = parseDateKey(day.date);
-            const dayOfWeek = format(date, "EEE");
+      <div className="mb-4 min-w-0 max-w-full overflow-hidden">
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+            startIndex: Math.max(days.length - 1, 0),
+          }}
+          className="min-w-0 max-w-full overflow-hidden overscroll-x-contain"
+        >
+          <CarouselContent className="ml-0">
+            {days.map((day) => {
+              const date = parseDateKey(day.date);
+              const dayOfWeek = format(date, "EEE");
 
-            return (
-              <CarouselItem key={day.date} className="pl-2 sm:pl-4 basis-auto ">
-                <button
-                  type="button"
-                  className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity p-2 rounded-2xl  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={() => setSelectedDay(day)}
+              return (
+                <CarouselItem
+                  key={day.date}
+                  className="basis-auto pl-2 sm:pl-4"
                 >
-                  <HabitActivityRingGlyph
-                    categoryProgress={day.categoryProgress}
-                    size={48}
-                  />
-                  <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase tracking-widest">
-                    {dayOfWeek}
-                  </span>
-                </button>
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-      </Carousel>
+                  <button
+                    type="button"
+                    className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl p-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => setSelectedDay(day)}
+                  >
+                    <HabitActivityRingGlyph
+                      categoryProgress={day.categoryProgress}
+                      size={48}
+                    />
+                    <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase">
+                      {dayOfWeek}
+                    </span>
+                  </button>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+      </div>
 
       <Dialog
         open={!!selectedDay}
