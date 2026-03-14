@@ -225,6 +225,7 @@ describe("use focus timer", () => {
       cycleId: "cycle-1",
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
       remainingMs: 1000,
@@ -270,6 +271,7 @@ describe("use focus timer", () => {
       cycleId: "cycle-4",
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
       remainingMs: 1000,
@@ -315,6 +317,7 @@ describe("use focus timer", () => {
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
       remainingMs: 1000,
@@ -357,6 +360,7 @@ describe("use focus timer", () => {
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
       remainingMs: 1000,
@@ -377,7 +381,13 @@ describe("use focus timer", () => {
     expect(useFocusStore.getState().timerState).toStrictEqual(
       createIdleFocusTimerState(
         new Date("2026-03-08T09:00:01.000Z"),
-        25 * 60 * 1000
+        25 * 60 * 1000,
+        0,
+        {
+          completedAt: "2026-03-08T09:00:01.000Z",
+          timerSessionId: "timer-session-long-break",
+          variant: "long",
+        }
       )
     );
     teardownFocusTimerTest();
@@ -393,6 +403,7 @@ describe("use focus timer", () => {
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
       remainingMs: 1000,
@@ -445,6 +456,7 @@ describe("use focus timer", () => {
       cycleId: "cycle-settings",
       endsAt: "2026-03-08T09:00:02.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
       remainingMs: 2000,
@@ -514,6 +526,7 @@ describe("use focus timer", () => {
       cycleId: "cycle-stored",
       endsAt: "2026-03-08T09:00:01.000Z",
       focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
       remainingMs: 1000,

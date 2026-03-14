@@ -292,22 +292,28 @@ export function useFocusTimer({
             pomodoroSettingsRef.current
           );
 
-          useFocusStore
-            .getState()
-            .setTimerState(
-              currentState.breakVariant === "long"
-                ? createIdleFocusTimerState(
-                    now,
-                    nextFocusDurationMs,
-                    nextCompletedFocusCycles
-                  )
-                : createRunningFocusTimerState(
-                    now,
-                    nextFocusDurationMs,
-                    nextCompletedFocusCycles,
+          useFocusStore.getState().setTimerState(
+            currentState.breakVariant === "long"
+              ? createIdleFocusTimerState(
+                  now,
+                  nextFocusDurationMs,
+                  nextCompletedFocusCycles,
+                  currentState.breakVariant === "long" &&
                     currentState.timerSessionId
-                  )
-            );
+                    ? {
+                        completedAt: now.toISOString(),
+                        timerSessionId: currentState.timerSessionId,
+                        variant: "long",
+                      }
+                    : null
+                )
+              : createRunningFocusTimerState(
+                  now,
+                  nextFocusDurationMs,
+                  nextCompletedFocusCycles,
+                  currentState.timerSessionId
+                )
+          );
           void notify(
             window.habits.showNotification,
             "Break complete",

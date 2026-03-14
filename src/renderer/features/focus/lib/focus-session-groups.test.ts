@@ -247,6 +247,7 @@ describe("focus session groups", () => {
         cycleId: "active-cycle",
         endsAt: "2026-03-13T09:55:00.000Z",
         focusDurationMs: 1_500_000,
+        lastCompletedBreak: null,
         lastUpdatedAt: "2026-03-13T09:30:00.000Z",
         phase: "focus",
         remainingMs: 1_500_000,
@@ -271,6 +272,58 @@ describe("focus session groups", () => {
       {
         durationMinutes: 5,
         endOffsetMinutes: 30,
+        kind: "break",
+        startOffsetMinutes: 25,
+      },
+    ]);
+  });
+
+  it("keeps the final long break in history after the set returns to idle", () => {
+    const [session] = buildFocusHistorySessions(
+      [
+        createFocusSession({
+          completedAt: "2026-03-13T09:25:00.000Z",
+          completedDate: "2026-03-13",
+          id: 1,
+          startedAt: "2026-03-13T09:00:00.000Z",
+          timerSessionId: "timer-session-final-break",
+        }),
+      ],
+      {
+        breakVariant: null,
+        completedFocusCycles: 0,
+        cycleId: null,
+        endsAt: null,
+        focusDurationMs: 1_500_000,
+        lastCompletedBreak: {
+          completedAt: "2026-03-13T09:40:00.000Z",
+          timerSessionId: "timer-session-final-break",
+          variant: "long",
+        },
+        lastUpdatedAt: "2026-03-13T09:40:00.000Z",
+        phase: "focus",
+        remainingMs: 1_500_000,
+        startedAt: null,
+        status: "idle",
+        timerSessionId: null,
+      }
+    );
+
+    expect(session).toMatchObject({
+      completedLoopCount: 1,
+      sessionSpanMinutes: 40,
+    });
+    expect(session?.timelineSegments).toMatchObject([
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 25,
+        entryKind: "completed",
+        kind: "entry",
+        startOffsetMinutes: 0,
+      },
+      {
+        durationMinutes: 15,
+        endOffsetMinutes: 40,
         kind: "break",
         startOffsetMinutes: 25,
       },

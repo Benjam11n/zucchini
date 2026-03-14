@@ -117,15 +117,31 @@ function getTrailingBreakEndMs({
   sessionId: string;
   sessionLastCompletedAt: string;
 }): number | null {
+  if (!activeTimerState) {
+    return null;
+  }
+
+  const sessionLastCompletedAtMs = Date.parse(sessionLastCompletedAt);
+
+  const completedBreak = activeTimerState.lastCompletedBreak;
   if (
-    !activeTimerState ||
+    activeTimerState.status === "idle" &&
+    completedBreak?.timerSessionId === sessionId &&
+    completedBreak.completedAt > sessionLastCompletedAt
+  ) {
+    const completedBreakEndMs = Date.parse(completedBreak.completedAt);
+
+    return completedBreakEndMs > sessionLastCompletedAtMs
+      ? completedBreakEndMs
+      : null;
+  }
+
+  if (
     activeTimerState.status !== "running" ||
     activeTimerState.timerSessionId !== sessionId
   ) {
     return null;
   }
-
-  const sessionLastCompletedAtMs = Date.parse(sessionLastCompletedAt);
 
   if (activeTimerState.phase === "focus" && activeTimerState.startedAt) {
     const activeFocusStartMs = Date.parse(activeTimerState.startedAt);

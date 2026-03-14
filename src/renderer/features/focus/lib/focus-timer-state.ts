@@ -4,6 +4,7 @@ import { toDateKey } from "@/shared/utils/date";
 
 import type {
   FocusBreakVariant,
+  PersistedCompletedBreakState,
   PersistedFocusTimerState,
 } from "../focus.types";
 import {
@@ -27,7 +28,8 @@ function resolveTimerSessionId(timerSessionId: string | null): string {
 export function createIdleFocusTimerState(
   now = new Date(),
   focusDurationMs = DEFAULT_FOCUS_DURATION_MS,
-  completedFocusCycles = 0
+  completedFocusCycles = 0,
+  lastCompletedBreak: PersistedCompletedBreakState | null = null
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
 
@@ -37,6 +39,7 @@ export function createIdleFocusTimerState(
     cycleId: null,
     endsAt: null,
     focusDurationMs: resolvedFocusDurationMs,
+    lastCompletedBreak,
     lastUpdatedAt: now.toISOString(),
     phase: "focus",
     remainingMs: resolvedFocusDurationMs,
@@ -60,6 +63,7 @@ export function createRunningFocusTimerState(
     cycleId: createCycleId(),
     endsAt: new Date(now.getTime() + resolvedFocusDurationMs).toISOString(),
     focusDurationMs: resolvedFocusDurationMs,
+    lastCompletedBreak: null,
     lastUpdatedAt: now.toISOString(),
     phase: "focus",
     remainingMs: resolvedFocusDurationMs,
@@ -92,6 +96,7 @@ export function createRunningBreakTimerState({
     cycleId: null,
     endsAt: new Date(now.getTime() + resolvedBreakDurationMs).toISOString(),
     focusDurationMs: clampFocusDurationMs(focusDurationMs),
+    lastCompletedBreak: null,
     lastUpdatedAt: now.toISOString(),
     phase: "break",
     remainingMs: resolvedBreakDurationMs,

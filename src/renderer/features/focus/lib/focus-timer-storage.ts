@@ -30,6 +30,24 @@ function isPersistedBreakVariant(value: unknown): boolean {
   );
 }
 
+function isPersistedCompletedBreakState(
+  value: unknown
+): value is NonNullable<PersistedFocusTimerState["lastCompletedBreak"]> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<
+    NonNullable<PersistedFocusTimerState["lastCompletedBreak"]>
+  >;
+
+  return (
+    typeof candidate.completedAt === "string" &&
+    typeof candidate.timerSessionId === "string" &&
+    (candidate.variant === "short" || candidate.variant === "long")
+  );
+}
+
 function isPersistedFocusTimerPhase(
   value: unknown
 ): value is "focus" | "break" {
@@ -70,6 +88,9 @@ function isValidPersistedFocusTimerState(
     isPersistedFocusTimerPhase(candidate.phase) &&
     isPersistedFocusTimerStatus(candidate.status) &&
     isNullableString(candidate.startedAt) &&
+    (candidate.lastCompletedBreak === undefined ||
+      candidate.lastCompletedBreak === null ||
+      isPersistedCompletedBreakState(candidate.lastCompletedBreak)) &&
     isOptionalNullableString(candidate.timerSessionId) &&
     isNullableString(candidate.endsAt) &&
     typeof candidate.remainingMs === "number" &&
@@ -102,6 +123,7 @@ function parsePersistedFocusTimerState(
     cycleId: candidate.cycleId,
     endsAt: candidate.endsAt,
     focusDurationMs: getPersistedFocusDurationMs(candidate),
+    lastCompletedBreak: candidate.lastCompletedBreak ?? null,
     lastUpdatedAt: candidate.lastUpdatedAt,
     phase: candidate.phase,
     remainingMs: candidate.remainingMs,

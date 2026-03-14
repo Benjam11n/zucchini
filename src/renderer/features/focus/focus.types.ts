@@ -8,12 +8,19 @@ export type FocusTimerStatus = "idle" | "running" | "paused";
 export type FocusSessionsPhase = AsyncPhase;
 export type FocusBreakVariant = "short" | "long";
 
+export interface PersistedCompletedBreakState {
+  completedAt: string;
+  timerSessionId: string;
+  variant: FocusBreakVariant;
+}
+
 export interface PersistedFocusTimerState {
   breakVariant: FocusBreakVariant | null;
   cycleId: string | null;
   completedFocusCycles: number;
   endsAt: string | null;
   focusDurationMs: number;
+  lastCompletedBreak: PersistedCompletedBreakState | null;
   lastUpdatedAt: string;
   phase: FocusTimerPhase;
   remainingMs: number;
