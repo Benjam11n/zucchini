@@ -1,7 +1,10 @@
 import { defineConfig } from "tsdown";
 
 const shared = {
-  external: ["better-sqlite3", "electron", "electron-updater"],
+  deps: {
+    alwaysBundle: [/^drizzle-orm(\/.*)?$/, "effect", "zod"],
+    neverBundle: ["better-sqlite3", "electron", "electron-updater"],
+  },
   format: "cjs" as const,
   outDir: "dist-electron",
   outExtensions: () => ({ js: ".js" }),

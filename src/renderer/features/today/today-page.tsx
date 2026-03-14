@@ -122,7 +122,7 @@ function TodayPageComponent({
             <HabitChecklist
               icon={ListChecks}
               completedCount={completedCount}
-              emptyMessage="No daily habits yet. Add one in Settings to power the rings and streak."
+              emptyMessage="No daily habits yet. Add one right now to power the rings and streak."
               headerActions={
                 <TodayHabitManagerDialog
                   habits={state.habits}

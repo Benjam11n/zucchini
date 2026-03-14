@@ -49,7 +49,10 @@ function getGitHubPublishConfig(
 
 const config: Configuration = {
   appId: "com.zucchini.habittracker",
-  asarUnpack: ["node_modules/better-sqlite3/**/*"],
+  asarUnpack: [
+    "node_modules/better-sqlite3/build/Release/*.node",
+    "node_modules/better-sqlite3/bin/*/*.node",
+  ],
   directories: {
     output: "release",
   },
@@ -59,6 +62,10 @@ const config: Configuration = {
     "dist-electron/**",
     "drizzle/**",
     "package.json",
+    "!dist-electron/**/*.map",
+    "!node_modules/better-sqlite3/build/Release/obj/**",
+    "!node_modules/better-sqlite3/deps/**",
+    "!node_modules/better-sqlite3/src/**",
   ],
   icon: "build/icon.png",
   linux: {
