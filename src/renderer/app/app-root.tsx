@@ -6,6 +6,7 @@
  */
 import { lazy, Suspense } from "react";
 
+import { AppErrorBoundary } from "@/renderer/app/app-error-boundary";
 import { useAppController } from "@/renderer/app/controller/use-app-controller";
 import { getBootErrorDisplay } from "@/renderer/app/lib/boot-errors";
 import { AppShell } from "@/renderer/app/shell/app-shell";
@@ -268,19 +269,31 @@ export default function App() {
 
   if (view === "widget") {
     return (
-      <Suspense
-        fallback={
-          <LoadingStateCard
-            description="Preparing your focus widget."
-            fullscreen
-            title="Loading widget"
-          />
-        }
+      <AppErrorBoundary
+        description="The focus widget hit an unexpected error. Reload Zucchini to continue your session."
+        title="Widget error"
       >
-        <FocusWidget />
-      </Suspense>
+        <Suspense
+          fallback={
+            <LoadingStateCard
+              description="Preparing your focus widget."
+              fullscreen
+              title="Loading widget"
+            />
+          }
+        >
+          <FocusWidget />
+        </Suspense>
+      </AppErrorBoundary>
     );
   }
 
-  return <MainApp />;
+  return (
+    <AppErrorBoundary
+      description="The app hit an unexpected error. Reload Zucchini to continue."
+      title="Unexpected app error"
+    >
+      <MainApp />
+    </AppErrorBoundary>
+  );
 }

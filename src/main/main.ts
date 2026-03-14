@@ -25,6 +25,7 @@ import { autoUpdater } from "electron-updater";
 
 import { resolveRuntimeIconPath } from "@/main/app/assets";
 import { systemClock } from "@/main/app/clock";
+import { createFatalErrorReporter } from "@/main/app/fatal-error";
 import {
   buildLoginItemSettings,
   shouldHideOnWindowClose,
@@ -460,6 +461,27 @@ async function importBackup(): Promise<boolean> {
   return true;
 }
 
+function cleanupRuntime(): void {
+  runtime?.reminders.cancel();
+  runtime?.tray.destroy();
+  runtime?.repository.close();
+}
+
+const reportFatalMainProcessError = createFatalErrorReporter({
+  appLike: app,
+  cleanup: cleanupRuntime,
+  dialogLike: dialog,
+  log: console,
+});
+
+process.on("uncaughtException", (error) => {
+  reportFatalMainProcessError("uncaughtException", error);
+});
+
+process.on("unhandledRejection", (reason) => {
+  reportFatalMainProcessError("unhandledRejection", reason);
+});
+
 function bootstrapApp(): void {
   void app.whenReady().then(() => {
     Effect.runSync(
@@ -564,9 +586,7 @@ if (acquireSingleInstanceLock(app)) {
 
 app.on("before-quit", () => {
   isQuitting = true;
-  runtime?.reminders.cancel();
-  runtime?.tray.destroy();
-  runtime?.repository.close();
+  cleanupRuntime();
 });
 
 app.on("window-all-closed", () => {
