@@ -172,6 +172,17 @@ export class SqliteHabitsRepository {
     });
   }
 
+  unarchiveHabit(habitId: number): void {
+    this.client.run("unarchiveHabit", () => {
+      this.client
+        .getDrizzle()
+        .update(habits)
+        .set({ isArchived: false })
+        .where(eq(habits.id, habitId))
+        .run();
+    });
+  }
+
   normalizeHabitOrder(): void {
     this.client.run("normalizeHabitOrder", () => {
       const activeHabits = this.getHabits();

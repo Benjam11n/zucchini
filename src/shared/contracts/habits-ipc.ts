@@ -45,6 +45,7 @@ export const HABITS_IPC_CHANNELS = {
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
   toggleHabit: "habits:toggleHabit",
+  unarchiveHabit: "habits:unarchiveHabit",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
   updateHabitWeekdays: "habits:updateHabitWeekdays",
@@ -155,6 +156,7 @@ export interface HabitApi {
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
+  unarchiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;

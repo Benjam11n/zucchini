@@ -176,8 +176,10 @@ async function setupUseAppController({
     showMainWindow: vi.fn(() => Promise.resolve()),
     showNotification: vi.fn().mockResolvedValue(42),
     toggleHabit: vi.fn().mockResolvedValue(todayState),
+    unarchiveHabit: vi.fn().mockResolvedValue(todayState),
     updateHabitCategory: vi.fn().mockResolvedValue(todayState),
     updateHabitFrequency: vi.fn().mockResolvedValue(todayState),
+    updateHabitWeekdays: vi.fn().mockResolvedValue(todayState),
     updateSettings: vi
       .fn()
       .mockImplementation((settings) => Promise.resolve(settings)),

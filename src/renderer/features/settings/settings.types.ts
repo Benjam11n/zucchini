@@ -42,6 +42,7 @@ export interface SettingsPageProps {
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
+  onUnarchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
 }
 
@@ -68,4 +69,5 @@ export interface HabitManagementCardProps {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;
+  onUnarchiveHabit: (habitId: number) => Promise<void>;
 }

@@ -1,5 +1,6 @@
 import { m } from "framer-motion";
-import { ArrowDown, ArrowUp, Archive } from "lucide-react";
+import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
+import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -7,6 +8,7 @@ import {
   SETTINGS_CATEGORY_TEXT_ON_SELECTED,
 } from "@/renderer/features/settings/components/habits/habit-category-colors";
 import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
+import { cn } from "@/renderer/shared/lib/class-names";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -31,6 +33,12 @@ import {
 } from "./habit-category-selector";
 import { reorderHabitList } from "./reorder-habits";
 
+type DragState = {
+  draggedHabitId: number;
+  overHabitId: number;
+  position: "after" | "before";
+} | null;
+
 interface HabitRowEditorProps extends Pick<
   HabitManagementCardProps,
   | "onArchiveHabit"
@@ -44,6 +52,11 @@ interface HabitRowEditorProps extends Pick<
   habits: HabitWithStatus[];
   index: number;
   isExpanded: boolean;
+  dragState: DragState;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent<HTMLDivElement>) => void;
+  onDragStart: () => void;
+  onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onExpandedChange: (open: boolean) => void;
 }
 
@@ -90,7 +103,12 @@ export function HabitRowEditor({
   habits,
   index,
   isExpanded,
+  dragState,
   onArchiveHabit,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
   onExpandedChange,
   onRenameHabit,
   onReorderHabits,
@@ -100,6 +118,11 @@ export function HabitRowEditor({
 }: HabitRowEditorProps) {
   const [draftName, setDraftName] = useState(habit.name);
   const lastCommittedNameRef = useRef(habit.name);
+  const isDragging = dragState?.draggedHabitId === habit.id;
+  const showDropBefore =
+    dragState?.overHabitId === habit.id && dragState.position === "before";
+  const showDropAfter =
+    dragState?.overHabitId === habit.id && dragState.position === "after";
 
   useEffect(() => {
     setDraftName(habit.name);
@@ -118,12 +141,30 @@ export function HabitRowEditor({
   return (
     <m.div
       animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={cn(
+        "relative rounded-2xl transition-opacity",
+        isDragging && "opacity-55"
+      )}
       exit={{ opacity: 0, scale: 0.96, y: -10 }}
       initial={{ opacity: 0, scale: 0.96, y: 12 }}
       layout
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       transition={microTransition}
       whileHover={hoverLift}
     >
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-4 top-0 h-0.5 rounded-full bg-primary transition-opacity",
+          showDropBefore ? "opacity-100" : "opacity-0"
+        )}
+      />
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-primary transition-opacity",
+          showDropAfter ? "opacity-100" : "opacity-0"
+        )}
+      />
       <Collapsible open={isExpanded} onOpenChange={onExpandedChange}>
         <Item
           className="flex-col items-stretch gap-0 overflow-hidden rounded-2xl border-border/70 bg-muted/20 p-0"
@@ -172,6 +213,22 @@ export function HabitRowEditor({
             </CollapsibleTrigger>
 
             <div className="flex shrink-0 items-center gap-1">
+              <Button
+                aria-label={`Drag to reorder ${habit.name}`}
+                className="cursor-grab active:cursor-grabbing"
+                draggable
+                onDragEnd={onDragEnd}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = "move";
+                  event.dataTransfer.setData("text/plain", String(habit.id));
+                  onDragStart();
+                }}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+              >
+                <GripVertical className="size-3.5" />
+              </Button>
               <Button
                 aria-label={`Move ${habit.name} up`}
                 disabled={index === 0}
@@ -282,8 +339,8 @@ export function HabitRowEditor({
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
                 <p className="text-xs text-muted-foreground">
-                  Reorder with the arrows, or archive this habit once it is no
-                  longer active.
+                  Drag with the grip or use the arrows, then archive once this
+                  habit is no longer active.
                 </p>
                 <Button
                   className="h-8 px-3 text-xs"

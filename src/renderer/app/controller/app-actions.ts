@@ -142,6 +142,10 @@ async function handleArchiveHabit(habitId: number) {
   await refreshToday(window.habits.archiveHabit(habitId));
 }
 
+async function handleUnarchiveHabit(habitId: number) {
+  await refreshToday(window.habits.unarchiveHabit(habitId));
+}
+
 async function handleCreateHabit(
   name: string,
   category: HabitCategory,
@@ -292,6 +296,7 @@ export const appActions = {
   handleSettingsDraftChange,
   handleTabChange,
   handleToggleHabit,
+  handleUnarchiveHabit,
   handleUpdateHabitCategory,
   handleUpdateHabitFrequency,
   handleUpdateHabitWeekdays,

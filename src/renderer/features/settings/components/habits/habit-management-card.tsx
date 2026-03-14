@@ -17,6 +17,7 @@ export function HabitManagementCard({
   onCreateHabit,
   onRenameHabit,
   onReorderHabits,
+  onUnarchiveHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
   onUpdateHabitWeekdays,
@@ -37,6 +38,7 @@ export function HabitManagementCard({
           onCreateHabit={onCreateHabit}
           onRenameHabit={onRenameHabit}
           onReorderHabits={onReorderHabits}
+          onUnarchiveHabit={onUnarchiveHabit}
           onUpdateHabitCategory={onUpdateHabitCategory}
           onUpdateHabitFrequency={onUpdateHabitFrequency}
           onUpdateHabitWeekdays={onUpdateHabitWeekdays}

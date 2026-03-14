@@ -187,6 +187,7 @@ function createControllerActions({
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
+    handleUnarchiveHabit: actions.handleUnarchiveHabit,
     handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
     handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
     handleUpdateHabitWeekdays: actions.handleUpdateHabitWeekdays,

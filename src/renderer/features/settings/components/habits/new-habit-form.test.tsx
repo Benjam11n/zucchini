@@ -6,6 +6,10 @@ import { createElement, forwardRef } from "react";
 
 import { NewHabitForm } from "./new-habit-form";
 
+function createAsyncMock() {
+  return vi.fn(() => Promise.resolve());
+}
+
 vi.mock<typeof FramerMotion>(
   import("framer-motion"),
   async (importOriginal) => {
@@ -41,7 +45,7 @@ vi.mock<typeof FramerMotion>(
 
 describe("new habit form", () => {
   it("keeps category visible by default and reveals advanced options on demand", () => {
-    render(<NewHabitForm onCreateHabit={vi.fn().mockResolvedValue()} />);
+    render(<NewHabitForm onCreateHabit={createAsyncMock()} />);
 
     expect(screen.getByText("Add a habit")).toBeInTheDocument();
     expect(screen.getByText("Category")).toBeInTheDocument();
@@ -54,7 +58,7 @@ describe("new habit form", () => {
   });
 
   it("submits using the existing defaults and restores focus to the name input", async () => {
-    const onCreateHabit = vi.fn().mockResolvedValue();
+    const onCreateHabit = createAsyncMock();
     const focusSpy = vi.spyOn(HTMLInputElement.prototype, "focus");
 
     render(<NewHabitForm onCreateHabit={onCreateHabit} />);

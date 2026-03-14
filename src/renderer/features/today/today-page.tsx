@@ -41,6 +41,7 @@ interface TodayPageProps {
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
+  onUnarchiveHabit: (habitId: number) => Promise<void>;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
   onUpdateHabitCategory: (
@@ -63,6 +64,7 @@ function TodayPageComponent({
   onCreateHabit,
   onRenameHabit,
   onReorderHabits,
+  onUnarchiveHabit,
   state,
   onToggleHabit,
   onUpdateHabitCategory,
@@ -130,6 +132,7 @@ function TodayPageComponent({
                   onCreateHabit={onCreateHabit}
                   onRenameHabit={onRenameHabit}
                   onReorderHabits={onReorderHabits}
+                  onUnarchiveHabit={onUnarchiveHabit}
                   onUpdateHabitCategory={onUpdateHabitCategory}
                   onUpdateHabitFrequency={onUpdateHabitFrequency}
                   onUpdateHabitWeekdays={onUpdateHabitWeekdays}

@@ -64,6 +64,7 @@ export interface HabitsService {
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState;
   archiveHabit(habitId: number): TodayState;
+  unarchiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
 }
 
@@ -352,6 +353,23 @@ export class HabitService implements HabitsService {
     return this.repository.runInTransaction("archiveHabit", () => {
       this.repository.archiveHabit(habitId);
       this.repository.normalizeHabitOrder();
+      this.syncRollingState();
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  unarchiveHabit(habitId: number): TodayState {
+    this.initialize();
+    return this.repository.runInTransaction("unarchiveHabit", () => {
+      this.repository.unarchiveHabit(habitId);
+      this.repository.reorderHabits([
+        ...this.repository
+          .getHabits()
+          .filter((habit) => habit.id !== habitId)
+          .map((habit) => habit.id),
+        habitId,
+      ]);
+      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
       this.syncRollingState();
       return buildTodayState(this.repository, this.clock);
     });

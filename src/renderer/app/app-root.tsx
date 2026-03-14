@@ -141,6 +141,7 @@ function MainApp() {
       onCreateHabit={actions.handleCreateHabit}
       onRenameHabit={actions.handleRenameHabit}
       onReorderHabits={actions.handleReorderHabits}
+      onUnarchiveHabit={actions.handleUnarchiveHabit}
       state={state.todayState}
       onToggleHabit={actions.handleToggleHabit}
       onUpdateHabitCategory={actions.handleUpdateHabitCategory}
@@ -255,6 +256,7 @@ function MainApp() {
           onCreateHabit={actions.handleCreateHabit}
           onRenameHabit={actions.handleRenameHabit}
           onReorderHabits={actions.handleReorderHabits}
+          onUnarchiveHabit={actions.handleUnarchiveHabit}
           onUpdateHabitCategory={actions.handleUpdateHabitCategory}
           onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
           onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}

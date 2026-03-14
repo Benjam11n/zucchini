@@ -97,11 +97,16 @@ function renderHabitRowEditor(
 
   return render(
     <HabitRowEditor
+      dragState={null}
       habit={habits[1]!}
       habits={habits}
       index={1}
       isExpanded={false}
       onArchiveHabit={vi.fn().mockResolvedValue(42)}
+      onDragEnd={vi.fn()}
+      onDragOver={vi.fn()}
+      onDragStart={vi.fn()}
+      onDrop={vi.fn()}
       onExpandedChange={vi.fn()}
       onRenameHabit={vi.fn().mockResolvedValue(42)}
       onReorderHabits={vi.fn().mockResolvedValue(42)}
@@ -157,11 +162,16 @@ describe("habit row editor", () => {
 
     render(
       <HabitRowEditor
+        dragState={null}
         habit={habits[0]!}
         habits={habits}
         index={0}
         isExpanded
         onArchiveHabit={onArchiveHabit}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
         onExpandedChange={vi.fn()}
         onRenameHabit={onRenameHabit}
         onReorderHabits={onReorderHabits}
@@ -194,11 +204,16 @@ describe("habit row editor", () => {
 
     render(
       <HabitRowEditor
+        dragState={null}
         habit={habits[1]!}
         habits={habits}
         index={1}
         isExpanded={false}
         onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
         onExpandedChange={vi.fn()}
         onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={onReorderHabits}
@@ -226,11 +241,16 @@ describe("habit row editor", () => {
   it("disables the upward reorder control for the first habit", () => {
     render(
       <HabitRowEditor
+        dragState={null}
         habit={createHabit(1)}
         habits={[createHabit(1), createHabit(2)]}
         index={0}
         isExpanded={false}
         onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
         onExpandedChange={vi.fn()}
         onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={vi.fn().mockResolvedValue(42)}

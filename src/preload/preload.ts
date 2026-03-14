@@ -138,6 +138,8 @@ const habitsApi: HabitApi = {
     ),
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
+  unarchiveHabit: (habitId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.unarchiveHabit, habitId),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
   updateHabitFrequency: (habitId: number, frequency: HabitFrequency) =>

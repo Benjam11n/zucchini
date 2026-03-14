@@ -412,6 +412,13 @@ class FakeRepository implements HabitRepository {
     }
   }
 
+  unarchiveHabit(habitId: number): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (habit) {
+      habit.isArchived = false;
+    }
+  }
+
   normalizeHabitOrder(): void {
     this.getHabits().forEach((habit, index) => {
       habit.sortOrder = index;
@@ -608,6 +615,32 @@ describe("habit categories", () => {
     const todayState = service.reorderHabits([1, 999]);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
+  });
+
+  it("restores an archived habit to the end of the active list", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: true,
+      name: "Habit 2",
+      sortOrder: 1,
+    });
+
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.unarchiveHabit(2);
+
+    expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
+    expect(repository.habits.find((habit) => habit.id === 2)).toMatchObject({
+      isArchived: false,
+      sortOrder: 1,
+    });
   });
 });
 
@@ -868,6 +901,27 @@ describe("habitService transactions", () => {
     service.archiveHabit(1);
 
     expect(repository.transactionLabels).toContain("archiveHabit");
+  });
+
+  it("wraps unarchiveHabit in a repository transaction", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: true,
+      name: "Habit 2",
+      sortOrder: 1,
+    });
+    const service = new HabitService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.unarchiveHabit(2);
+
+    expect(repository.transactionLabels).toContain("unarchiveHabit");
   });
 
   it("wraps reorderHabits in a repository transaction", () => {

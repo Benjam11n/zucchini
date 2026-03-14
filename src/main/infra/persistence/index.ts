@@ -76,6 +76,7 @@ export interface HabitRepository {
     selectedWeekdays: HabitWeekday[] | null
   ): void;
   archiveHabit(habitId: number): void;
+  unarchiveHabit(habitId: number): void;
   normalizeHabitOrder(): void;
   reorderHabits(habitIds: number[]): void;
 }
@@ -266,6 +267,10 @@ export class SqliteHabitRepository implements HabitRepository {
 
   archiveHabit(habitId: number): void {
     this.habitsRepository.archiveHabit(habitId);
+  }
+
+  unarchiveHabit(habitId: number): void {
+    this.habitsRepository.unarchiveHabit(habitId);
   }
 
   normalizeHabitOrder(): void {

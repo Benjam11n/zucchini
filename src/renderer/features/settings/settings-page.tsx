@@ -141,6 +141,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onCreateHabit={props.onCreateHabit}
                 onRenameHabit={props.onRenameHabit}
                 onReorderHabits={props.onReorderHabits}
+                onUnarchiveHabit={props.onUnarchiveHabit}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}

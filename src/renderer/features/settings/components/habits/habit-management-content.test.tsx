@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
-import type { ReactNode } from "react";
 
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { HabitManagementContent } from "./habit-management-content";
+
+function createAsyncMock() {
+  return vi.fn(() => Promise.resolve());
+}
 
 vi.mock<typeof FramerMotion>(
   import("framer-motion"),
@@ -16,10 +19,6 @@ vi.mock<typeof FramerMotion>(
 
     return {
       ...actual,
-      AnimatePresence: ({ children }: { children: ReactNode }) => children,
-      LayoutGroup: ({ children }: { children: ReactNode }) => children,
-      LazyMotion: ({ children }: { children: ReactNode }) => children,
-      domAnimation: {},
       m: new Proxy(
         {},
         {
@@ -65,13 +64,14 @@ describe("habit management content", () => {
     render(
       <HabitManagementContent
         habits={[createHabit(1), createHabit(2)]}
-        onArchiveHabit={vi.fn().mockResolvedValue()}
-        onCreateHabit={vi.fn().mockResolvedValue()}
-        onRenameHabit={vi.fn().mockResolvedValue()}
-        onReorderHabits={vi.fn().mockResolvedValue()}
-        onUpdateHabitCategory={vi.fn().mockResolvedValue()}
-        onUpdateHabitFrequency={vi.fn().mockResolvedValue()}
-        onUpdateHabitWeekdays={vi.fn().mockResolvedValue()}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={createAsyncMock()}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={createAsyncMock()}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
 
@@ -92,5 +92,45 @@ describe("habit management content", () => {
 
     expect(screen.queryByDisplayValue("Habit 1")).not.toBeInTheDocument();
     expect(screen.getByDisplayValue("Habit 2")).toBeInTheDocument();
+  });
+
+  it("shows undo feedback after archiving and restores on undo", async () => {
+    const onArchiveHabit = createAsyncMock();
+    const onUnarchiveHabit = createAsyncMock();
+
+    render(
+      <HabitManagementContent
+        habits={[createHabit(1)]}
+        onArchiveHabit={onArchiveHabit}
+        onCreateHabit={createAsyncMock()}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={createAsyncMock()}
+        onUnarchiveHabit={onUnarchiveHabit}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Expand habit details for Habit 1",
+      })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+
+    await waitFor(() => {
+      expect(onArchiveHabit).toHaveBeenCalledWith(1);
+    });
+
+    expect(screen.getByText('Archived "Habit 1".')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+    await waitFor(() => {
+      expect(onUnarchiveHabit).toHaveBeenCalledWith(1);
+    });
+
+    expect(screen.getByText('Restored "Habit 1".')).toBeInTheDocument();
   });
 });

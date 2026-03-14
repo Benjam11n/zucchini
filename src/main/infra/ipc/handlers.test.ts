@@ -64,6 +64,7 @@ function createService() {
     reorderHabits: vi.fn(),
     saveReminderRuntimeState: vi.fn(),
     toggleHabit: vi.fn(),
+    unarchiveHabit: vi.fn(),
     updateHabitCategory: vi.fn(),
     updateHabitFrequency: vi.fn(),
     updateHabitWeekdays: vi.fn(),

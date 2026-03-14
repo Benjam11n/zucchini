@@ -196,6 +196,9 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.archiveHabit, (habitId: unknown) =>
     service.archiveHabit(validateHabitId(habitId))
   );
+  registerHandler(HABITS_IPC_CHANNELS.unarchiveHabit, (habitId: unknown) =>
+    service.unarchiveHabit(validateHabitId(habitId))
+  );
   registerHandler(HABITS_IPC_CHANNELS.reorderHabits, (habitIds: unknown) =>
     service.reorderHabits(validateReorderHabitIds(habitIds))
   );
