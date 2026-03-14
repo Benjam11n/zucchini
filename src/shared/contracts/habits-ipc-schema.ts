@@ -66,21 +66,6 @@ export const habitWeekdaysSchema = z
     }
   });
 
-const starterPackHabitDraftSchema = z
-  .object({
-    category: habitCategorySchema,
-    frequency: habitFrequencySchema,
-    name: habitNameSchema,
-    selectedWeekdays: habitWeekdaysSchema.nullish(),
-  })
-  .strict();
-
-export const starterPackApplySchema = z
-  .array(starterPackHabitDraftSchema)
-  .max(12, {
-    message: "Starter packs can contain at most 12 habits.",
-  });
-
 const themeModeSchema = z.enum(["system", "light", "dark"]);
 
 export const appSettingsSchema = z

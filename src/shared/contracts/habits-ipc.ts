@@ -16,7 +16,6 @@ import type {
 } from "../domain/habit";
 import type { HistoryDay } from "../domain/history";
 import type { AppSettings } from "../domain/settings";
-import type { StarterPackHabitDraft } from "../domain/starter-pack";
 import type { StreakState } from "../domain/streak";
 import type {
   WeeklyReview,
@@ -24,7 +23,6 @@ import type {
 } from "../domain/weekly-review";
 
 export const HABITS_IPC_CHANNELS = {
-  applyStarterPack: "habits:applyStarterPack",
   archiveHabit: "habits:archiveHabit",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
@@ -152,7 +150,6 @@ export interface HabitApi {
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
-  applyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<TodayState>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;
   showNotification: (

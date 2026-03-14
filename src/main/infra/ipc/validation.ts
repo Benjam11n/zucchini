@@ -19,7 +19,6 @@ import {
   notificationIconFilenameSchema,
   notificationTitleSchema,
   reorderHabitIdsSchema,
-  starterPackApplySchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
@@ -28,7 +27,6 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 export class IpcValidationError extends Error {
   readonly details: string[];
@@ -125,10 +123,6 @@ export const validateReorderHabitIds = createValidator(
   "habit order",
   reorderHabitIdsSchema
 );
-
-export const validateStarterPackApply = createValidator<
-  StarterPackHabitDraft[]
->("starter pack habits", starterPackApplySchema);
 
 export const validateNotificationTitle = createValidator(
   "notification title",

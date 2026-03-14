@@ -167,7 +167,6 @@ function createControllerActions({
   weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
 }) {
   return {
-    handleApplyStarterPack: actions.handleApplyStarterPack,
     handleArchiveHabit: actions.handleArchiveHabit,
     handleCreateHabit: actions.handleCreateHabit,
     handleDismissWeeklyReviewSpotlight: () => {

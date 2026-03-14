@@ -142,7 +142,7 @@ export function NewHabitForm({
                 className="h-10"
                 id="new-habit"
                 onChange={(event) => setNewHabitName(event.target.value)}
-                placeholder="Drink water"
+                placeholder="Eat zucchini..."
                 required
                 type="text"
                 value={newHabitName}

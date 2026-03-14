@@ -107,25 +107,9 @@ describe("app store actions", () => {
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
     const renameHabitMock = vi.fn().mockResolvedValue(createTodayState());
-    const applyStarterPackMock = vi.fn().mockResolvedValue({
-      ...createTodayState(),
-      habits: [
-        {
-          category: "fitness",
-          completed: false,
-          createdAt: "2026-03-10T00:00:00.000Z",
-          frequency: "daily",
-          id: 1,
-          isArchived: false,
-          name: "20-minute walk",
-          sortOrder: 0,
-        },
-      ],
-    });
 
     vi.stubGlobal("window", {
       habits: {
-        applyStarterPack: applyStarterPackMock,
         getFocusSessions: getFocusSessionsMock,
         getHistory: getHistoryMock,
         getTodayState: getTodayStateMock,
@@ -167,7 +151,6 @@ describe("app store actions", () => {
 
     return {
       actions: appActions,
-      applyStarterPackMock,
       getFocusSessionsMock,
       getHistoryMock,
       getWeeklyReviewOverviewMock,
@@ -234,30 +217,6 @@ describe("app store actions", () => {
 
     expect(getHistoryMock).toHaveBeenCalledWith(14);
     expect(stores.useTodayStore.getState().todayState?.date).toBe("2026-03-10");
-  });
-
-  it("applies a starter pack from settings and refreshes today state", async () => {
-    const { actions, applyStarterPackMock, stores } = await setup();
-    await actions.bootApp();
-
-    await actions.handleApplyStarterPack([
-      {
-        category: "fitness",
-        frequency: "daily",
-        name: "20-minute walk",
-      },
-    ]);
-
-    expect(applyStarterPackMock).toHaveBeenCalledWith([
-      {
-        category: "fitness",
-        frequency: "daily",
-        name: "20-minute walk",
-      },
-    ]);
-    expect(stores.useTodayStore.getState().todayState?.habits[0]?.name).toBe(
-      "20-minute walk"
-    );
   });
 
   it("loads full history after switching to the history tab", async () => {

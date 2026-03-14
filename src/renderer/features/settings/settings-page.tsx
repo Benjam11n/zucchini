@@ -12,7 +12,6 @@ import { PomodoroSettingsCard } from "@/renderer/features/settings/components/ge
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
 import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
-import { StarterPacksCard } from "@/renderer/features/settings/components/habits/starter-packs-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import {
   staggerContainerVariants,
@@ -86,17 +85,17 @@ export function SettingsPage(props: SettingsPageProps) {
                 <Bell className="size-4" />
                 General
               </TabsTrigger>
-              <TabsTrigger className="flex-1" value="appearance">
-                <Palette className="size-4" />
-                Appearance
+              <TabsTrigger className="flex-1" value="habits">
+                <ListTodo className="size-4" />
+                Habits
               </TabsTrigger>
               <TabsTrigger className="flex-1" value="pomodoro">
                 <TimerReset className="size-4" />
                 Pomodoro
               </TabsTrigger>
-              <TabsTrigger className="flex-1" value="habits">
-                <ListTodo className="size-4" />
-                Habits
+              <TabsTrigger className="flex-1" value="appearance">
+                <Palette className="size-4" />
+                Appearance
               </TabsTrigger>
             </TabsList>
           </m.section>
@@ -133,7 +132,7 @@ export function SettingsPage(props: SettingsPageProps) {
           </TabsContent>
 
           <TabsContent value="habits">
-            <m.div className="grid gap-6" variants={staggerItemVariants}>
+            <m.section variants={staggerItemVariants}>
               <HabitManagementCard
                 habits={props.habits}
                 onArchiveHabit={props.onArchiveHabit}
@@ -144,8 +143,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
               />
-              <StarterPacksCard onApplyStarterPack={props.onApplyStarterPack} />
-            </m.div>
+            </m.section>
           </TabsContent>
         </Tabs>
       </m.div>

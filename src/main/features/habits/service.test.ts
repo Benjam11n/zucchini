@@ -16,7 +16,6 @@ import type {
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
@@ -374,27 +373,6 @@ class FakeRepository implements HabitRepository {
     return id;
   }
 
-  appendHabits(
-    habitDrafts: readonly StarterPackHabitDraft[],
-    createdAt: string,
-    date: string
-  ): number[] {
-    const startingSortOrder = this.getMaxSortOrder() + 1;
-
-    return habitDrafts.map((habit, index) => {
-      const habitId = this.insertHabit(
-        habit.name,
-        habit.category,
-        habit.frequency,
-        habit.selectedWeekdays ?? null,
-        startingSortOrder + index,
-        createdAt
-      );
-      this.ensureStatusRow(date, habitId);
-      return habitId;
-    });
-  }
-
   renameHabit(habitId: number, name: string): void {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
@@ -630,58 +608,6 @@ describe("habit categories", () => {
     const todayState = service.reorderHabits([1, 999]);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
-  });
-});
-
-describe("starter packs", () => {
-  it("applies a starter pack to the existing dashboard", () => {
-    const repository = new FakeRepository();
-    repository.habits = [
-      {
-        category: "productivity",
-        createdAt: "2026-03-01T00:00:00.000Z",
-        frequency: "daily",
-        id: 1,
-        isArchived: false,
-        name: "Existing habit",
-        sortOrder: 0,
-      },
-      {
-        category: "fitness",
-        createdAt: "2026-03-01T00:00:00.000Z",
-        frequency: "daily",
-        id: 2,
-        isArchived: true,
-        name: "Archived habit",
-        sortOrder: 1,
-      },
-    ];
-    const service = new HabitService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    const todayState = service.applyStarterPack([
-      {
-        category: "nutrition",
-        frequency: "daily",
-        name: "Protein-forward meal",
-      },
-      {
-        category: "productivity",
-        frequency: "weekly",
-        name: "Review upcoming week",
-      },
-    ]);
-
-    expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
-      "Existing habit",
-      "Protein-forward meal",
-      "Review upcoming week",
-    ]);
-    expect(todayState.habits.map((habit) => habit.sortOrder)).toStrictEqual([
-      0, 1, 2,
-    ]);
   });
 });
 

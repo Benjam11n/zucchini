@@ -251,7 +251,6 @@ function MainApp() {
           saveErrorMessage={state.settingsSaveErrorMessage}
           savePhase={state.settingsSavePhase}
           onArchiveHabit={actions.handleArchiveHabit}
-          onApplyStarterPack={actions.handleApplyStarterPack}
           onChange={actions.handleSettingsDraftChange}
           onCreateHabit={actions.handleCreateHabit}
           onRenameHabit={actions.handleRenameHabit}

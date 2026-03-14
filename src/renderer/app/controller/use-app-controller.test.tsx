@@ -155,7 +155,6 @@ async function setupUseAppController({
   };
 
   const habits = {
-    applyStarterPack: vi.fn().mockResolvedValue(todayState),
     archiveHabit: vi.fn().mockResolvedValue(todayState),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),

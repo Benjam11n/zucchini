@@ -5,7 +5,6 @@ import {
   validateFocusSessionLimit,
   validateNotificationIconFilename,
   validateReorderHabitIds,
-  validateStarterPackApply,
 } from "./validation";
 
 describe("ipc validation", () => {
@@ -89,36 +88,6 @@ describe("ipc validation", () => {
     expect(() => validateReorderHabitIds([1, 1, 2])).toThrow(
       IpcValidationError
     );
-  });
-
-  it("accepts valid starter pack payloads", () => {
-    expect(
-      validateStarterPackApply([
-        {
-          category: "productivity",
-          frequency: "daily",
-          name: "Plan top 3 tasks",
-        },
-      ])
-    ).toStrictEqual([
-      {
-        category: "productivity",
-        frequency: "daily",
-        name: "Plan top 3 tasks",
-      },
-    ]);
-  });
-
-  it("rejects invalid starter pack payloads", () => {
-    expect(() =>
-      validateStarterPackApply([
-        {
-          category: "productivity",
-          frequency: "daily",
-          name: "",
-        },
-      ])
-    ).toThrow(IpcValidationError);
   });
 
   it("rejects unsafe notification icon filenames", () => {

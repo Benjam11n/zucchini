@@ -23,7 +23,6 @@ import type {
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 const RECENT_HISTORY_LIMIT = 14;
 
@@ -137,10 +136,6 @@ function clearFocusSaveError() {
 
 function dismissWeeklyReviewSpotlight() {
   useWeeklyReviewStore.getState().dismissWeeklyReviewSpotlight();
-}
-
-async function handleApplyStarterPack(habits: StarterPackHabitDraft[]) {
-  await refreshToday(window.habits.applyStarterPack(habits));
 }
 
 async function handleArchiveHabit(habitId: number) {
@@ -290,7 +285,6 @@ export const appActions = {
   clearFocusSaveError,
   clearSettingsFeedback,
   dismissWeeklyReviewSpotlight,
-  handleApplyStarterPack,
   handleArchiveHabit,
   handleCreateHabit,
   handleRenameHabit,

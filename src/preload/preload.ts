@@ -32,7 +32,6 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 async function invokeHabits<T>(
   channel: string,
@@ -63,8 +62,6 @@ async function invokeUpdater<T>(channel: string): Promise<T> {
 }
 
 const habitsApi: HabitApi = {
-  applyStarterPack: (habits: StarterPackHabitDraft[]) =>
-    invokeHabits(HABITS_IPC_CHANNELS.applyStarterPack, habits),
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
   claimFocusTimerCycleCompletion: (cycleId: string) =>

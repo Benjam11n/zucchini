@@ -22,7 +22,6 @@ import {
   validateNotificationIconFilename,
   validateNotificationTitle,
   validateReorderHabitIds,
-  validateStarterPackApply,
 } from "@/main/infra/ipc/validation";
 import type { HabitsService } from "@/main/service";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
@@ -137,9 +136,6 @@ export function registerIpcHandlers({
     onSettingsChanged(nextSettings);
     return nextSettings;
   });
-  registerHandler(HABITS_IPC_CHANNELS.applyStarterPack, (habits: unknown) =>
-    service.applyStarterPack(validateStarterPackApply(habits))
-  );
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
     (

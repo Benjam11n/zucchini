@@ -5,7 +5,6 @@ import type {
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 export type SettingsSavePhase =
   | "idle"
@@ -44,7 +43,6 @@ export interface SettingsPageProps {
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
-  onApplyStarterPack: (habits: StarterPackHabitDraft[]) => Promise<void>;
 }
 
 export interface HabitManagementCardProps {

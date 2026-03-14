@@ -44,7 +44,6 @@ const defaultSettings: AppSettings = {
 
 function createService() {
   return {
-    applyStarterPack: vi.fn(),
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
     getFocusSessions: vi.fn(() => []),

@@ -11,7 +11,6 @@ import type {
   HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import { runMigrations } from "../db/migrations";
@@ -69,11 +68,6 @@ export interface HabitRepository {
     sortOrder: number,
     createdAt: string
   ): number;
-  appendHabits(
-    habitDrafts: readonly StarterPackHabitDraft[],
-    createdAt: string,
-    date: string
-  ): number[];
   renameHabit(habitId: number, name: string): void;
   updateHabitCategory(habitId: number, category: HabitCategory): void;
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): void;
@@ -233,24 +227,6 @@ export class SqliteHabitRepository implements HabitRepository {
       sortOrder,
       createdAt
     );
-  }
-
-  appendHabits(
-    habitDrafts: readonly StarterPackHabitDraft[],
-    createdAt: string,
-    date: string
-  ): number[] {
-    const habitIds = this.habitsRepository.insertHabits(
-      habitDrafts,
-      createdAt,
-      this.habitsRepository.getMaxSortOrder() + 1
-    );
-
-    habitIds.forEach((habitId) => {
-      this.historyRepository.ensureStatusRow(date, habitId);
-    });
-
-    return habitIds;
   }
 
   renameHabit(habitId: number, name: string): void {

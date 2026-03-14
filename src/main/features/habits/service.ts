@@ -28,8 +28,6 @@ import type {
 } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
-import { cloneStarterPackHabits } from "@/shared/domain/starter-pack";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -39,14 +37,6 @@ import {
   getPreviousCompletedIsoWeek,
   startOfIsoWeek,
 } from "@/shared/utils/date";
-
-function normalizeStarterPackHabits(
-  habits: readonly StarterPackHabitDraft[]
-): StarterPackHabitDraft[] {
-  return cloneStarterPackHabits(habits).filter(
-    (habit) => habit.name.length > 0
-  );
-}
 
 export interface HabitsService {
   initialize(): void;
@@ -60,7 +50,6 @@ export interface HabitsService {
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
-  applyStarterPack(habits: StarterPackHabitDraft[]): TodayState;
   createHabit(
     name: string,
     category: HabitCategory,
@@ -279,23 +268,6 @@ export class HabitService implements HabitsService {
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
     this.initialize();
     this.repository.saveReminderRuntimeState(state);
-  }
-
-  applyStarterPack(habits: StarterPackHabitDraft[]): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("applyStarterPack", () => {
-      this.syncRollingState();
-      const normalizedHabits = normalizeStarterPackHabits(habits);
-      if (normalizedHabits.length > 0) {
-        this.repository.appendHabits(
-          normalizedHabits,
-          this.clock.now().toISOString(),
-          this.clock.todayKey()
-        );
-      }
-
-      return buildTodayState(this.repository, this.clock);
-    });
   }
 
   createHabit(

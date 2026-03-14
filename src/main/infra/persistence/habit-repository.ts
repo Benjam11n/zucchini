@@ -6,7 +6,6 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type { StarterPackHabitDraft } from "@/shared/domain/starter-pack";
 
 import { habits } from "../db/schema";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
@@ -108,34 +107,6 @@ export class SqliteHabitsRepository {
 
       return result.id;
     });
-  }
-
-  insertHabits(
-    habitDrafts: readonly StarterPackHabitDraft[],
-    createdAt: string,
-    startingSortOrder: number
-  ): number[] {
-    return this.client.run("insertHabits", () =>
-      habitDrafts.map((habit, index) => {
-        const result = this.client
-          .getDrizzle()
-          .insert(habits)
-          .values({
-            category: habit.category,
-            createdAt,
-            frequency: habit.frequency,
-            name: habit.name,
-            selectedWeekdays: null,
-            sortOrder: startingSortOrder + index,
-          })
-          .returning({
-            id: habits.id,
-          })
-          .get();
-
-        return result.id;
-      })
-    );
   }
 
   renameHabit(habitId: number, name: string): void {
