@@ -27,12 +27,15 @@ export const HABITS_IPC_CHANNELS = {
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   createHabit: "habits:createHabit",
+  exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
   getFocusSessions: "habits:getFocusSessions",
   getHistory: "habits:getHistory",
   getTodayState: "habits:getTodayState",
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
+  importBackup: "habits:importBackup",
+  openDataFolder: "habits:openDataFolder",
   recordFocusSession: "habits:recordFocusSession",
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
   renameHabit: "habits:renameHabit",
@@ -117,14 +120,17 @@ export interface HabitApi {
     instanceId: string,
     ttlMs: number
   ) => Promise<boolean>;
+  exportBackup: () => Promise<string | null>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
+  importBackup: () => Promise<boolean>;
   onFocusSessionRecorded: (
     listener: (session: FocusSession) => void
   ) => () => void;
+  openDataFolder: () => Promise<string>;
   recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;

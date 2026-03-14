@@ -31,6 +31,9 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
   broadcastFocusSessionRecorded: (session: FocusSession) => void;
+  onExportBackup: () => Promise<string | null>;
+  onImportBackup: () => Promise<boolean>;
+  onOpenDataFolder: () => Promise<string>;
   focusTimerCoordinator: FocusTimerCoordinator;
   onResizeFocusWidget: (width: number, height: number) => void;
   onShowFocusWidget: () => void;
@@ -64,6 +67,9 @@ function registerHandler<TArgs extends unknown[], TResult>(
 export function registerIpcHandlers({
   broadcastFocusSessionRecorded,
   focusTimerCoordinator,
+  onExportBackup,
+  onImportBackup,
+  onOpenDataFolder,
   onResizeFocusWidget,
   onShowFocusWidget,
   onShowMainWindow,
@@ -122,6 +128,9 @@ export function registerIpcHandlers({
     onShowFocusWidget()
   );
   registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
+  registerHandler(HABITS_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
+  registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
+  registerHandler(HABITS_IPC_CHANNELS.importBackup, () => onImportBackup());
   registerHandler(HABITS_IPC_CHANNELS.getHistory, (limit?: unknown) =>
     service.getHistory(validateHistoryLimit(limit))
   );

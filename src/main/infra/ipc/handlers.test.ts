@@ -79,6 +79,24 @@ function createFocusTimerCoordinator() {
   };
 }
 
+function createRegisterOptions(
+  overrides: Partial<Parameters<typeof registerIpcHandlers>[0]> = {}
+): Parameters<typeof registerIpcHandlers>[0] {
+  return {
+    broadcastFocusSessionRecorded: vi.fn(),
+    focusTimerCoordinator: createFocusTimerCoordinator(),
+    onExportBackup: vi.fn(() => Promise.resolve(null)),
+    onImportBackup: vi.fn(() => Promise.resolve(false)),
+    onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
+    onResizeFocusWidget: vi.fn(),
+    onSettingsChanged: vi.fn(),
+    onShowFocusWidget: vi.fn(),
+    onShowMainWindow: vi.fn(),
+    service: createService(),
+    ...overrides,
+  };
+}
+
 describe("registerIpcHandlers()", () => {
   function resetHandlers(): void {
     handlers.clear();
@@ -86,15 +104,7 @@ describe("registerIpcHandlers()", () => {
 
   it("serializes validation errors with details", async () => {
     resetHandlers();
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded: vi.fn(),
-      focusTimerCoordinator: createFocusTimerCoordinator(),
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service: createService(),
-    });
+    registerIpcHandlers(createRegisterOptions());
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.toggleHabit);
 
@@ -118,15 +128,7 @@ describe("registerIpcHandlers()", () => {
       throw new DatabaseError("getTodayState", new Error("sqlite locked"));
     });
 
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded: vi.fn(),
-      focusTimerCoordinator: createFocusTimerCoordinator(),
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service,
-    });
+    registerIpcHandlers(createRegisterOptions({ service }));
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
 
@@ -141,15 +143,7 @@ describe("registerIpcHandlers()", () => {
 
   it("serializes unknown errors as internal errors", async () => {
     resetHandlers();
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded: vi.fn(),
-      focusTimerCoordinator: createFocusTimerCoordinator(),
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service: createService(),
-    });
+    registerIpcHandlers(createRegisterOptions());
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
 
@@ -166,15 +160,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     const service = createService();
 
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded: vi.fn(),
-      focusTimerCoordinator: createFocusTimerCoordinator(),
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service,
-    });
+    registerIpcHandlers(createRegisterOptions({ service }));
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.getHistory);
 
@@ -201,15 +187,12 @@ describe("registerIpcHandlers()", () => {
       timerSessionId: "timer-session-1",
     });
 
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded,
-      focusTimerCoordinator: createFocusTimerCoordinator(),
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service,
-    });
+    registerIpcHandlers(
+      createRegisterOptions({
+        broadcastFocusSessionRecorded,
+        service,
+      })
+    );
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.recordFocusSession);
     const payload = {
@@ -241,15 +224,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     const focusTimerCoordinator = createFocusTimerCoordinator();
 
-    registerIpcHandlers({
-      broadcastFocusSessionRecorded: vi.fn(),
-      focusTimerCoordinator,
-      onResizeFocusWidget: vi.fn(),
-      onSettingsChanged: vi.fn(),
-      onShowFocusWidget: vi.fn(),
-      onShowMainWindow: vi.fn(),
-      service: createService(),
-    });
+    registerIpcHandlers(createRegisterOptions({ focusTimerCoordinator }));
 
     const handler = handlers.get(HABITS_IPC_CHANNELS.claimFocusTimerLeadership);
 
@@ -263,5 +238,69 @@ describe("registerIpcHandlers()", () => {
       "widget-1",
       2500
     );
+  });
+
+  it("routes the open data folder action to the provided callback", async () => {
+    resetHandlers();
+    const onOpenDataFolder = vi.fn(() => Promise.resolve("/tmp/zucchini"));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onOpenDataFolder,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.openDataFolder)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: "/tmp/zucchini",
+      ok: true,
+    });
+    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
+    expect(onOpenDataFolder).toHaveBeenCalledOnce();
+  });
+
+  it("routes the export backup action to the provided callback", async () => {
+    resetHandlers();
+    const onExportBackup = vi.fn(() =>
+      Promise.resolve("/tmp/zucchini-backup.db")
+    );
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onExportBackup,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.exportBackup)?.({} as IpcMainInvokeEvent)
+    ).resolves.toStrictEqual({
+      data: "/tmp/zucchini-backup.db",
+      ok: true,
+    });
+    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
+    expect(onExportBackup).toHaveBeenCalledOnce();
+  });
+
+  it("routes the import backup action to the provided callback", async () => {
+    resetHandlers();
+    const onImportBackup = vi.fn(() => Promise.resolve(true));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onImportBackup,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.importBackup)?.({} as IpcMainInvokeEvent)
+    ).resolves.toStrictEqual({
+      data: true,
+      ok: true,
+    });
+    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
+    expect(onImportBackup).toHaveBeenCalledOnce();
   });
 });

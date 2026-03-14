@@ -29,6 +29,12 @@ export class SqliteDatabaseClient {
   private database: Database.Database | null = null;
   private drizzleDb: DrizzleDatabase | null = null;
 
+  getDatabasePath(): string {
+    const userData = app.getPath("userData");
+    fs.mkdirSync(userData, { recursive: true });
+    return path.join(userData, "zucchini.db");
+  }
+
   run<A>(label: string, execute: () => A): A {
     return Effect.runSync(
       Effect.try({
@@ -49,9 +55,7 @@ export class SqliteDatabaseClient {
 
   getSqlite(): Database.Database {
     if (!this.database) {
-      const userData = app.getPath("userData");
-      fs.mkdirSync(userData, { recursive: true });
-      this.database = new Database(path.join(userData, "zucchini.db"));
+      this.database = new Database(this.getDatabasePath());
     }
 
     return this.database;
@@ -63,5 +67,38 @@ export class SqliteDatabaseClient {
     }
 
     return this.drizzleDb;
+  }
+
+  async exportBackup(destinationPath: string): Promise<void> {
+    await this.getSqlite().backup(destinationPath);
+  }
+
+  replaceDatabase(sourcePath: string): void {
+    const databasePath = this.getDatabasePath();
+
+    if (path.resolve(sourcePath) === path.resolve(databasePath)) {
+      return;
+    }
+
+    this.close();
+
+    for (const sidecarPath of [`${databasePath}-shm`, `${databasePath}-wal`]) {
+      if (fs.existsSync(sidecarPath)) {
+        fs.rmSync(sidecarPath);
+      }
+    }
+
+    fs.copyFileSync(sourcePath, databasePath);
+  }
+
+  close(): void {
+    this.drizzleDb = null;
+
+    if (!this.database) {
+      return;
+    }
+
+    this.database.close();
+    this.database = null;
   }
 }

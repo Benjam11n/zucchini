@@ -206,4 +206,41 @@ describe("preload habits API", () => {
 
     expect(invoke).toHaveBeenCalledWith("app-updater:check");
   });
+
+  it("invokes export backup through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: "/tmp/zucchini-backup.db",
+      ok: true,
+    });
+
+    await expect(getHabitsApi().exportBackup()).resolves.toBe(
+      "/tmp/zucchini-backup.db"
+    );
+    expect(invoke).toHaveBeenCalledWith("habits:exportBackup");
+  });
+
+  it("invokes open data folder through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: "/tmp/zucchini",
+      ok: true,
+    });
+
+    await expect(getHabitsApi().openDataFolder()).resolves.toBe(
+      "/tmp/zucchini"
+    );
+    expect(invoke).toHaveBeenCalledWith("habits:openDataFolder");
+  });
+
+  it("invokes import backup through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: true,
+      ok: true,
+    });
+
+    await expect(getHabitsApi().importBackup()).resolves.toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("habits:importBackup");
+  });
 });

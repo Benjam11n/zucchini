@@ -101,6 +101,22 @@ export class SqliteHabitRepository implements HabitRepository {
     runMigrations(this.client);
   }
 
+  getDatabasePath(): string {
+    return this.client.getDatabasePath();
+  }
+
+  async exportBackup(destinationPath: string): Promise<void> {
+    await this.client.exportBackup(destinationPath);
+  }
+
+  replaceDatabase(sourcePath: string): void {
+    this.client.replaceDatabase(sourcePath);
+  }
+
+  close(): void {
+    this.client.close();
+  }
+
   runInTransaction<A>(label: string, execute: () => A): A {
     return this.client.transaction(label, execute);
   }

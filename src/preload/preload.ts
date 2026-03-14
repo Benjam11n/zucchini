@@ -85,6 +85,7 @@ const habitsApi: HabitApi = {
       frequency,
       selectedWeekdays
     ),
+  exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getFocusSessions: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
   getHistory: (limit?: number) =>
@@ -94,6 +95,7 @@ const habitsApi: HabitApi = {
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
   getWeeklyReviewOverview: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
+  importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
   onFocusSessionRecorded: (listener) => {
     const handleFocusSessionRecorded = (
       _event: IpcRendererEvent,
@@ -114,6 +116,7 @@ const habitsApi: HabitApi = {
       );
     };
   },
+  openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
   releaseFocusTimerLeadership: (instanceId: string) =>

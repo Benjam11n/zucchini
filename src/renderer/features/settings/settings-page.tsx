@@ -8,6 +8,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
 
 import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
+import { DataManagementSettingsCard } from "@/renderer/features/settings/components/general/data-management-settings-card";
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
 import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
@@ -108,6 +109,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 settings={props.settings}
               />
               <UpdateSettingsCard />
+              <DataManagementSettingsCard />
             </m.div>
           </TabsContent>
 

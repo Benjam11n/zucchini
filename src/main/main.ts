@@ -13,11 +13,13 @@ import { Effect } from "effect";
 import {
   app,
   BrowserWindow,
+  dialog,
   ipcMain,
   nativeImage,
   nativeTheme,
   powerMonitor,
   screen,
+  shell,
 } from "electron";
 import { autoUpdater } from "electron-updater";
 
@@ -321,7 +323,8 @@ function broadcastFocusSessionRecorded(session: FocusSession): void {
   }
 }
 
-const service = new HabitService(new SqliteHabitRepository(), systemClock);
+const repository = new SqliteHabitRepository();
+const service = new HabitService(repository, systemClock);
 const reminders = createReminderScheduler({
   clock: systemClock,
   getTodayState: () => service.getTodayState(),
@@ -359,6 +362,68 @@ function warmAppRuntime(): void {
   }, 0);
 }
 
+async function openDataFolder(): Promise<string> {
+  service.initialize();
+
+  const dataFolderPath = path.dirname(repository.getDatabasePath());
+  const errorMessage = await shell.openPath(dataFolderPath);
+
+  if (errorMessage.length > 0) {
+    throw new Error(errorMessage);
+  }
+
+  return dataFolderPath;
+}
+
+async function exportBackup(): Promise<string | null> {
+  service.initialize();
+
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    defaultPath: path.basename(
+      `zucchini-backup-${systemClock.todayKey().replaceAll("-", "")}.db`
+    ),
+    filters: [
+      {
+        extensions: ["db", "sqlite", "sqlite3"],
+        name: "Zucchini backups",
+      },
+    ],
+    title: "Export Zucchini backup",
+  });
+
+  if (canceled || !filePath) {
+    return null;
+  }
+
+  await repository.exportBackup(filePath);
+  return filePath;
+}
+
+async function importBackup(): Promise<boolean> {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    filters: [
+      {
+        extensions: ["db", "sqlite", "sqlite3"],
+        name: "Zucchini backups",
+      },
+    ],
+    properties: ["openFile"],
+    title: "Import Zucchini backup",
+  });
+
+  const [selectedBackupPath] = filePaths;
+
+  if (canceled || !selectedBackupPath) {
+    return false;
+  }
+
+  repository.replaceDatabase(selectedBackupPath);
+  app.relaunch();
+  isQuitting = true;
+  app.quit();
+  return true;
+}
+
 void app.whenReady().then(() => {
   Effect.runSync(
     Effect.sync(() => {
@@ -372,6 +437,9 @@ void app.whenReady().then(() => {
       registerIpcHandlers({
         broadcastFocusSessionRecorded,
         focusTimerCoordinator,
+        onExportBackup: exportBackup,
+        onImportBackup: importBackup,
+        onOpenDataFolder: openDataFolder,
         onResizeFocusWidget: resizeFocusWidget,
         onSettingsChanged: applyRuntimeSettings,
         onShowFocusWidget: showFocusWidget,
