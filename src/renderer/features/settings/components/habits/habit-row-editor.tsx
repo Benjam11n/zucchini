@@ -24,7 +24,11 @@ import {
   HABIT_FREQUENCY_DEFINITIONS,
   HABIT_WEEKDAY_DEFINITIONS,
 } from "@/shared/domain/habit";
-import type { Habit, HabitWeekday } from "@/shared/domain/habit";
+import type {
+  Habit,
+  HabitWeekday,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
 
 import {
   HabitCategorySelector,

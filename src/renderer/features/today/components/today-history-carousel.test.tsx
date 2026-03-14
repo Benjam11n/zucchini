@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { render } from "@testing-library/react";
-import type { ReactNode } from "react";
+import type { ComponentProps } from "react";
 
 import type * as CarouselModule from "@/renderer/shared/ui/carousel";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -14,17 +14,18 @@ vi.mock<typeof CarouselModule>(import("@/renderer/shared/ui/carousel"), () => ({
   Carousel: ({
     children,
     opts,
-  }: {
-    children: ReactNode;
-    opts?: { startIndex?: number };
-  }) => {
+  }: ComponentProps<typeof CarouselModule.Carousel>) => {
     carouselSpy(opts);
     return <div>{children}</div>;
   },
-  CarouselContent: ({ children }: { children: ReactNode }) => (
+  CarouselContent: ({
+    children,
+  }: ComponentProps<typeof CarouselModule.CarouselContent>) => (
     <div>{children}</div>
   ),
-  CarouselItem: ({ children }: { children: ReactNode }) => (
+  CarouselItem: ({
+    children,
+  }: ComponentProps<typeof CarouselModule.CarouselItem>) => (
     <div>{children}</div>
   ),
 }));

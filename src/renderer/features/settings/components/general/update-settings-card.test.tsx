@@ -8,7 +8,7 @@ import { UpdateSettingsCard } from "./update-settings-card";
 
 const IDLE_UPDATE_STATE: AppUpdateState = {
   availableVersion: null,
-  currentVersion: "0.1.1-beta.4",
+  currentVersion: "0.1.1-beta.5",
   errorMessage: null,
   progressPercent: null,
   status: "idle",
@@ -41,7 +41,7 @@ describe("update settings card", () => {
       screen.findByRole("button", { name: /check for updates/i })
     ).resolves.toBeInTheDocument();
     expect(
-      screen.getByText("Current version 0.1.1-beta.4.")
+      screen.getByText("Current version 0.1.1-beta.5.")
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
