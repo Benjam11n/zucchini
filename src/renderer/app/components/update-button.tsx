@@ -9,7 +9,12 @@ import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 function shouldRenderUpdateButton(state: AppUpdateState): boolean {
-  return state.status !== "unavailable";
+  return (
+    state.status === "available" ||
+    state.status === "downloaded" ||
+    state.status === "downloading" ||
+    (state.status === "error" && state.availableVersion !== null)
+  );
 }
 
 function getButtonCopy(state: AppUpdateState): {
@@ -30,29 +35,11 @@ function getButtonCopy(state: AppUpdateState): {
     };
   }
 
-  if (state.status === "checking") {
-    return {
-      actionLabel: "Checking for updates",
-      detailLabel: `Current version ${state.currentVersion}`,
-    };
-  }
-
   if (state.status === "error") {
     return {
-      actionLabel:
-        state.availableVersion === null ? "Check for updates" : "Retry update",
+      actionLabel: "Retry update",
       detailLabel:
-        state.errorMessage ??
-        (state.availableVersion === null
-          ? `Current version ${state.currentVersion}`
-          : `Version ${state.availableVersion} is available`),
-    };
-  }
-
-  if (state.status === "idle") {
-    return {
-      actionLabel: "Check for updates",
-      detailLabel: `Current version ${state.currentVersion}`,
+        state.errorMessage ?? `Version ${state.availableVersion} is available`,
     };
   }
 
@@ -76,10 +63,6 @@ function getButtonIcon({
   }
 
   if (status === "error") {
-    return <RotateCcw className="size-4" />;
-  }
-
-  if (status === "idle") {
     return <RotateCcw className="size-4" />;
   }
 
@@ -182,7 +165,6 @@ export function UpdateButton() {
   async function handleClick(): Promise<void> {
     if (
       viewState.state === null ||
-      viewState.state.status === "checking" ||
       viewState.state.status === "downloading" ||
       viewState.state.status === "unavailable"
     ) {
@@ -203,10 +185,7 @@ export function UpdateButton() {
           viewState.state.availableVersion !== null)
       ) {
         await window.updater.downloadUpdate();
-        return;
       }
-
-      await window.updater.checkForUpdates();
     } catch (error) {
       dispatch({
         actionError:
@@ -223,7 +202,6 @@ export function UpdateButton() {
   }
 
   const { actionLabel, detailLabel } = getButtonCopy(viewState.state);
-  const isChecking = viewState.state.status === "checking";
   const isDownloading = viewState.state.status === "downloading";
   const isRestartReady = viewState.state.status === "downloaded";
 
@@ -243,7 +221,7 @@ export function UpdateButton() {
                 ? "bg-secondary text-secondary-foreground"
                 : "bg-card text-card-foreground hover:bg-card/90"
             )}
-            disabled={viewState.isPending || isChecking || isDownloading}
+            disabled={viewState.isPending || isDownloading}
             onClick={() => {
               void handleClick();
             }}

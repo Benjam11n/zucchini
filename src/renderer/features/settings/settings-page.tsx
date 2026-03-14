@@ -10,6 +10,7 @@ import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
 import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
+import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
 import { StarterPacksCard } from "@/renderer/features/settings/components/habits/starter-packs-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
@@ -101,13 +102,14 @@ export function SettingsPage(props: SettingsPageProps) {
           </m.section>
 
           <TabsContent value="general">
-            <m.section variants={staggerItemVariants}>
+            <m.div className="grid gap-6" variants={staggerItemVariants}>
               <ReminderSettingsCard
                 fieldErrors={props.fieldErrors}
                 onChange={props.onChange}
                 settings={props.settings}
               />
-            </m.section>
+              <UpdateSettingsCard />
+            </m.div>
           </TabsContent>
 
           <TabsContent value="pomodoro">

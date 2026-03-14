@@ -4,11 +4,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
-import { UpdateButton } from "./update-button";
+import { UpdateSettingsCard } from "./update-settings-card";
 
 const IDLE_UPDATE_STATE: AppUpdateState = {
   availableVersion: null,
-  currentVersion: "0.1.1-beta.1",
+  currentVersion: "0.1.1-beta.2",
   errorMessage: null,
   progressPercent: null,
   status: "idle",
@@ -31,54 +31,40 @@ function setUpdaterState(state: AppUpdateState) {
   return window.updater;
 }
 
-describe("update button", () => {
-  it("stays hidden while the updater is idle", async () => {
+describe("update settings card", () => {
+  it("shows the manual check action in settings while idle", async () => {
     const updater = setUpdaterState(IDLE_UPDATE_STATE);
 
-    render(<UpdateButton />);
-
-    await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.getState).toHaveBeenCalledTimes(1);
-    });
-
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-  });
-
-  it("renders when an update is available to download", async () => {
-    const updater = setUpdaterState({
-      ...IDLE_UPDATE_STATE,
-      availableVersion: "0.1.1-beta.3",
-      status: "available",
-    });
-
-    render(<UpdateButton />);
+    render(<UpdateSettingsCard />);
 
     await expect(
-      screen.findByRole("button", { name: /download update/i })
+      screen.findByRole("button", { name: /check for updates/i })
     ).resolves.toBeInTheDocument();
+    expect(
+      screen.getByText("Current version 0.1.1-beta.2.")
+    ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /download update/i }));
+    fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
 
     await waitFor(() => {
       // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.downloadUpdate).toHaveBeenCalledTimes(1);
+      expect(updater.checkForUpdates).toHaveBeenCalledTimes(1);
     });
   });
 
-  it("stays hidden when the updater is unavailable", async () => {
+  it("stays hidden when updater support is unavailable", async () => {
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
       status: "unavailable",
     });
 
-    render(<UpdateButton />);
+    render(<UpdateSettingsCard />);
 
     await waitFor(() => {
       // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
       expect(updater.getState).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.queryByText("App updates")).not.toBeInTheDocument();
   });
 });
