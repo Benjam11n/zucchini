@@ -3,7 +3,7 @@ import type { FocusSession } from "@/shared/domain/focus-session";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
-function createTodayState(): TodayState {
+function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   return {
     date: "2026-03-10",
     habits: [],
@@ -26,6 +26,7 @@ function createTodayState(): TodayState {
       currentStreak: 2,
       lastEvaluatedDate: "2026-03-09",
     },
+    ...overrides,
   };
 }
 
@@ -107,6 +108,22 @@ describe("app store actions", () => {
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
     const renameHabitMock = vi.fn().mockResolvedValue(createTodayState());
+    const toggleHabitMock = vi.fn().mockResolvedValue(
+      createTodayState({
+        habits: [
+          {
+            category: "productivity",
+            completed: true,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 1,
+            isArchived: false,
+            name: "Plan top 3 tasks",
+            sortOrder: 0,
+          },
+        ],
+      })
+    );
 
     vi.stubGlobal("window", {
       habits: {
@@ -117,6 +134,7 @@ describe("app store actions", () => {
         getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
         recordFocusSession: vi.fn().mockResolvedValue(createFocusSession(2)),
         renameHabit: renameHabitMock,
+        toggleHabit: toggleHabitMock,
       },
       matchMedia: vi.fn().mockReturnValue({
         addEventListener: vi.fn(),
@@ -163,6 +181,7 @@ describe("app store actions", () => {
         useUiStore,
         useWeeklyReviewStore,
       },
+      toggleHabitMock,
     };
   }
 
@@ -307,5 +326,101 @@ describe("app store actions", () => {
       habits: nextHabits,
     });
     await reorderPromise;
+  });
+
+  it("optimistically toggles a habit before the authoritative refresh resolves", async () => {
+    const { actions, stores } = await setup();
+    const pendingTodayState = Promise.withResolvers<TodayState>();
+
+    vi.stubGlobal("window", {
+      ...window,
+      habits: {
+        ...window.habits,
+        toggleHabit: vi.fn(() => pendingTodayState.promise),
+      },
+    });
+
+    stores.useTodayStore.setState({
+      todayState: createTodayState({
+        habits: [
+          {
+            category: "productivity",
+            completed: false,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 1,
+            isArchived: false,
+            name: "Plan top 3 tasks",
+            sortOrder: 0,
+          },
+        ],
+      }),
+    });
+
+    const togglePromise = actions.handleToggleHabit(1);
+
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeTruthy();
+
+    pendingTodayState.resolve(
+      createTodayState({
+        habits: [
+          {
+            category: "productivity",
+            completed: true,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 1,
+            isArchived: false,
+            name: "Plan top 3 tasks",
+            sortOrder: 0,
+          },
+        ],
+      })
+    );
+
+    await togglePromise;
+
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeTruthy();
+  });
+
+  it("restores the previous today state when an optimistic toggle fails", async () => {
+    const { actions, stores } = await setup();
+    const toggleError = new Error("toggle failed");
+
+    vi.stubGlobal("window", {
+      ...window,
+      habits: {
+        ...window.habits,
+        toggleHabit: vi.fn().mockRejectedValue(toggleError),
+      },
+    });
+
+    const initialTodayState = createTodayState({
+      habits: [
+        {
+          category: "productivity",
+          completed: false,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 1,
+          isArchived: false,
+          name: "Plan top 3 tasks",
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    stores.useTodayStore.setState({
+      todayState: initialTodayState,
+    });
+
+    await expect(actions.handleToggleHabit(1)).rejects.toThrow("toggle failed");
+    expect(stores.useTodayStore.getState().todayState).toStrictEqual(
+      initialTodayState
+    );
   });
 });

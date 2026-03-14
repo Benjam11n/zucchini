@@ -86,7 +86,17 @@ Expected impact:
 - This should provide the largest visible UX improvement for settings-heavy
   workflows.
 
-### 1a. Checking off habits on the main page is laggy
+### 1a. [x] Checking off habits on the main page is laggy
+
+Status:
+
+- Completed.
+- Habit toggles now flip the targeted habit locally in the renderer before the
+  main-process refresh resolves.
+- The returned `TodayState` remains authoritative and reconciles the optimistic
+  state once the mutation completes.
+- Failed toggles restore the previous renderer state instead of leaving the UI
+  in a mismatched state.
 
 Observed:
 

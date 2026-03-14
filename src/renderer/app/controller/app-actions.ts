@@ -238,7 +238,35 @@ function handleTabChange(nextTab: AppTab) {
 }
 
 async function handleToggleHabit(habitId: number) {
-  await refreshToday(window.habits.toggleHabit(habitId));
+  const previousTodayState = useTodayStore.getState().todayState;
+  const hasHabitToToggle = previousTodayState?.habits.some(
+    (habit) => habit.id === habitId
+  );
+
+  if (previousTodayState && hasHabitToToggle) {
+    useTodayStore.setState({
+      todayState: {
+        ...previousTodayState,
+        habits: previousTodayState.habits.map((habit) =>
+          habit.id === habitId
+            ? { ...habit, completed: !habit.completed }
+            : habit
+        ),
+      },
+    });
+  }
+
+  try {
+    await refreshToday(window.habits.toggleHabit(habitId));
+  } catch (error) {
+    if (previousTodayState && hasHabitToToggle) {
+      useTodayStore.setState({
+        todayState: previousTodayState,
+      });
+    }
+
+    throw error;
+  }
 }
 
 async function handleUpdateHabitCategory(
