@@ -194,4 +194,16 @@ describe("preload habits API", () => {
       name: "AppUpdaterIpcError",
     });
   });
+
+  it("invokes the manual update check through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: undefined,
+      ok: true,
+    });
+
+    await expect(getUpdaterApi().checkForUpdates()).resolves.toBeUndefined();
+
+    expect(invoke).toHaveBeenCalledWith("app-updater:check");
+  });
 });

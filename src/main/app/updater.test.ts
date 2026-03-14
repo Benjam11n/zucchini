@@ -101,6 +101,14 @@ describe("registerAppUpdater()", () => {
     expect(updater.quitAndInstall).toHaveBeenCalledTimes(1);
   });
 
+  it("registers a manual check handler when updates are supported", async () => {
+    const { handlers, updater } = createController();
+
+    await handlers.get(APP_UPDATER_CHANNELS.checkForUpdates)?.();
+
+    expect(updater.checkForUpdates).toHaveBeenCalledTimes(1);
+  });
+
   it("broadcasts state changes from updater events", () => {
     const { broadcastState, updater } = createController();
 

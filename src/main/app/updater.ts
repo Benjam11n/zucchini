@@ -181,6 +181,18 @@ export function registerAppUpdater({
   }
 
   handleIpc(APP_UPDATER_CHANNELS.getState, () => state);
+  handleIpc(APP_UPDATER_CHANNELS.checkForUpdates, async () => {
+    if (
+      !supportsAutoUpdates ||
+      state.status === "available" ||
+      state.status === "downloaded" ||
+      state.status === "downloading"
+    ) {
+      return;
+    }
+
+    await checkForUpdates();
+  });
   handleIpc(APP_UPDATER_CHANNELS.downloadUpdate, async () => {
     if (
       !supportsAutoUpdates ||

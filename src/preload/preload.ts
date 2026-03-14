@@ -156,6 +156,7 @@ const habitsApi: HabitApi = {
 };
 
 const updaterApi: AppUpdaterApi = {
+  checkForUpdates: () => invokeUpdater(APP_UPDATER_CHANNELS.checkForUpdates),
   downloadUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.downloadUpdate),
   getState: () => invokeUpdater<AppUpdateState>(APP_UPDATER_CHANNELS.getState),
   installUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.installUpdate),

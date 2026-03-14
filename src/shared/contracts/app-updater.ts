@@ -1,4 +1,5 @@
 export const APP_UPDATER_CHANNELS = {
+  checkForUpdates: "app-updater:check",
   downloadUpdate: "app-updater:download",
   getState: "app-updater:getState",
   installUpdate: "app-updater:install",
@@ -44,6 +45,7 @@ export interface AppUpdateState {
 }
 
 export interface AppUpdaterApi {
+  checkForUpdates: () => Promise<void>;
   downloadUpdate: () => Promise<void>;
   getState: () => Promise<AppUpdateState>;
   installUpdate: () => Promise<void>;
