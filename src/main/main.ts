@@ -30,6 +30,10 @@ import {
   shouldHideOnWindowClose,
   shouldQuitWhenAllWindowsClosed,
 } from "@/main/app/lifecycle";
+import {
+  acquireSingleInstanceLock,
+  registerSecondInstanceHandler,
+} from "@/main/app/single-instance";
 import { createAppTray } from "@/main/app/tray";
 import {
   registerAppUpdater,
@@ -83,14 +87,30 @@ function applyLoginItemSettings(settings: AppSettings): void {
   app.setLoginItemSettings(buildLoginItemSettings(settings));
 }
 
+interface AppRuntime {
+  reminders: ReturnType<typeof createReminderScheduler>;
+  repository: SqliteHabitRepository;
+  service: HabitService;
+  tray: ReturnType<typeof createAppTray>;
+}
+
 let isQuitting = false;
 let trayEnabled = false;
 let mainWindow: BrowserWindow | null = null;
 let focusWidgetWindow: BrowserWindow | null = null;
+let runtime: AppRuntime | null = null;
 const focusTimerCoordinator = createFocusTimerCoordinator();
 const FOCUS_WIDGET_DEFAULT_HEIGHT = 48;
 const FOCUS_WIDGET_DEFAULT_WIDTH = 188;
 const FOCUS_WIDGET_MARGIN = 12;
+
+function getRuntime(): AppRuntime {
+  if (!runtime) {
+    throw new Error("App runtime is not initialized.");
+  }
+
+  return runtime;
+}
 
 function getFocusWidgetBounds() {
   const { workArea } = screen.getPrimaryDisplay();
@@ -323,27 +343,38 @@ function broadcastFocusSessionRecorded(session: FocusSession): void {
   }
 }
 
-const repository = new SqliteHabitRepository();
-const service = new HabitService(repository, systemClock);
-const reminders = createReminderScheduler({
-  clock: systemClock,
-  getTodayState: () => service.getTodayState(),
-  loadState: () => service.getReminderRuntimeState(),
-  saveState: (state) => {
-    service.saveReminderRuntimeState(state);
-  },
-});
-const tray = createAppTray({
-  onOpen: showMainWindow,
-  onOpenWidget: showFocusWidget,
-  onQuit: () => {
-    isQuitting = true;
-    app.quit();
-  },
-  onSnooze: (settings) => reminders.snooze(settings),
-});
+function createRuntime(): AppRuntime {
+  const repository = new SqliteHabitRepository();
+  const service = new HabitService(repository, systemClock);
+  const reminders = createReminderScheduler({
+    clock: systemClock,
+    getTodayState: () => service.getTodayState(),
+    loadState: () => service.getReminderRuntimeState(),
+    saveState: (state) => {
+      service.saveReminderRuntimeState(state);
+    },
+  });
+  const tray = createAppTray({
+    onOpen: showMainWindow,
+    onOpenWidget: showFocusWidget,
+    onQuit: () => {
+      isQuitting = true;
+      app.quit();
+    },
+    onSnooze: (settings) => reminders.snooze(settings),
+  });
+
+  return {
+    reminders,
+    repository,
+    service,
+    tray,
+  };
+}
 
 function applyRuntimeSettings(settings: AppSettings): void {
+  const { reminders, tray } = getRuntime();
+
   applyLoginItemSettings(settings);
   reminders.schedule(settings);
   applyThemeMode(settings.themeMode);
@@ -354,7 +385,7 @@ function applyRuntimeSettings(settings: AppSettings): void {
 function warmAppRuntime(): void {
   setTimeout(() => {
     try {
-      const today = service.getTodayState();
+      const today = getRuntime().service.getTodayState();
       applyRuntimeSettings(today.settings);
     } catch (error) {
       console.error("Failed to warm app runtime.", error);
@@ -363,6 +394,8 @@ function warmAppRuntime(): void {
 }
 
 async function openDataFolder(): Promise<string> {
+  const { repository, service } = getRuntime();
+
   service.initialize();
 
   const dataFolderPath = path.dirname(repository.getDatabasePath());
@@ -376,6 +409,8 @@ async function openDataFolder(): Promise<string> {
 }
 
 async function exportBackup(): Promise<string | null> {
+  const { repository, service } = getRuntime();
+
   service.initialize();
 
   const { canceled, filePath } = await dialog.showSaveDialog({
@@ -400,6 +435,7 @@ async function exportBackup(): Promise<string | null> {
 }
 
 async function importBackup(): Promise<boolean> {
+  const { repository } = getRuntime();
   const { canceled, filePaths } = await dialog.showOpenDialog({
     filters: [
       {
@@ -424,90 +460,113 @@ async function importBackup(): Promise<boolean> {
   return true;
 }
 
-void app.whenReady().then(() => {
-  Effect.runSync(
-    Effect.sync(() => {
-      if (process.platform === "darwin" && app.dock) {
-        const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
-        if (!icon.isEmpty()) {
-          app.dock.setIcon(icon);
+function bootstrapApp(): void {
+  void app.whenReady().then(() => {
+    Effect.runSync(
+      Effect.sync(() => {
+        const nextRuntime = createRuntime();
+        runtime = nextRuntime;
+
+        if (process.platform === "darwin" && app.dock) {
+          const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
+          if (!icon.isEmpty()) {
+            app.dock.setIcon(icon);
+          }
         }
+
+        registerIpcHandlers({
+          broadcastFocusSessionRecorded,
+          focusTimerCoordinator,
+          onExportBackup: exportBackup,
+          onImportBackup: importBackup,
+          onOpenDataFolder: openDataFolder,
+          onResizeFocusWidget: resizeFocusWidget,
+          onSettingsChanged: applyRuntimeSettings,
+          onShowFocusWidget: showFocusWidget,
+          onShowMainWindow: showMainWindow,
+          service: nextRuntime.service,
+        });
+
+        const appUpdater = registerAppUpdater({
+          broadcastState: broadcastUpdateState,
+          currentVersion: app.getVersion(),
+          handleIpc: (channel, handler) => {
+            ipcMain.handle(channel, async () => {
+              try {
+                return {
+                  data: await handler(),
+                  ok: true,
+                };
+              } catch (error) {
+                console.error("App updater IPC failed.", error);
+
+                return {
+                  error: serializeAppUpdaterIpcError(),
+                  ok: false,
+                };
+              }
+            });
+          },
+          log: console,
+          scheduleInterval: globalThis.setInterval,
+          scheduleTimeout: globalThis.setTimeout,
+          supportMode: resolveAppUpdateSupportMode({
+            appIsPackaged: app.isPackaged,
+            hasConfigFile: existsSync(
+              path.join(process.resourcesPath, "app-update.yml")
+            ),
+            hasDevConfigFile: existsSync(
+              path.join(app.getAppPath(), "dev-app-update.yml")
+            ),
+            platform: process.platform,
+          }),
+          updater: autoUpdater,
+        });
+
+        createWindow();
+        createFocusWidgetWindow();
+        warmAppRuntime();
+        appUpdater.start();
+      })
+    );
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+        return;
       }
 
-      registerIpcHandlers({
-        broadcastFocusSessionRecorded,
-        focusTimerCoordinator,
-        onExportBackup: exportBackup,
-        onImportBackup: importBackup,
-        onOpenDataFolder: openDataFolder,
-        onResizeFocusWidget: resizeFocusWidget,
-        onSettingsChanged: applyRuntimeSettings,
-        onShowFocusWidget: showFocusWidget,
-        onShowMainWindow: showMainWindow,
-        service,
-      });
+      showMainWindow();
+    });
 
-      const appUpdater = registerAppUpdater({
-        broadcastState: broadcastUpdateState,
-        currentVersion: app.getVersion(),
-        handleIpc: (channel, handler) => {
-          ipcMain.handle(channel, async () => {
-            try {
-              return {
-                data: await handler(),
-                ok: true,
-              };
-            } catch (error) {
-              console.error("App updater IPC failed.", error);
+    powerMonitor.on("resume", () => {
+      const { reminders, service } = getRuntime();
+      reminders.schedule(service.getTodayState().settings);
+    });
+  });
+}
 
-              return {
-                error: serializeAppUpdaterIpcError(),
-                ok: false,
-              };
-            }
-          });
-        },
-        log: console,
-        scheduleInterval: globalThis.setInterval,
-        scheduleTimeout: globalThis.setTimeout,
-        supportMode: resolveAppUpdateSupportMode({
-          appIsPackaged: app.isPackaged,
-          hasConfigFile: existsSync(
-            path.join(process.resourcesPath, "app-update.yml")
-          ),
-          hasDevConfigFile: existsSync(
-            path.join(app.getAppPath(), "dev-app-update.yml")
-          ),
-          platform: process.platform,
-        }),
-        updater: autoUpdater,
-      });
-
-      createWindow();
-      createFocusWidgetWindow();
-      warmAppRuntime();
-      appUpdater.start();
-    })
-  );
-
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+if (acquireSingleInstanceLock(app)) {
+  registerSecondInstanceHandler(app, () => {
+    if (app.isReady()) {
+      showMainWindow();
       return;
     }
 
-    showMainWindow();
+    void app.whenReady().then(() => {
+      showMainWindow();
+    });
   });
-
-  powerMonitor.on("resume", () => {
-    reminders.schedule(service.getTodayState().settings);
-  });
-});
+  bootstrapApp();
+} else {
+  app.quit();
+}
 
 app.on("before-quit", () => {
   isQuitting = true;
-  reminders.cancel();
-  tray.destroy();
+  runtime?.reminders.cancel();
+  runtime?.tray.destroy();
+  runtime?.repository.close();
 });
 
 app.on("window-all-closed", () => {

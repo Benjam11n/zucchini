@@ -7,5 +7,7 @@ marketing-focused root README.
 
 - [Development](./development.md): local setup, scripts, architecture, and
   quality checks.
+- [Production Hardening](./operations/production-hardening.md): production
+  safety priorities and implementation notes.
 - [Release Operations](./operations/releasing.md): packaging and GitHub Release
   workflow details.
