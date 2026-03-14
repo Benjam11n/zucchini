@@ -1,4 +1,10 @@
-import { Download, FolderOpen, HardDriveDownload, Upload } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  FolderOpen,
+  HardDriveDownload,
+  Upload,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/renderer/shared/ui/button";
@@ -178,9 +184,20 @@ export function DataManagementSettingsCard() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-            Importing a backup replaces the current `zucchini.db` on this
-            device.
+          <div
+            className="flex items-start gap-3 rounded-2xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+            role="alert"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-medium">
+                This replaces your current local data.
+              </p>
+              <p className="leading-snug text-destructive/85">
+                Importing a backup overwrites the current `zucchini.db` on this
+                device.
+              </p>
+            </div>
           </div>
 
           <DialogFooter>
