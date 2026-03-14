@@ -88,6 +88,7 @@ const habitsApi: HabitApi = {
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getFocusSessions: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
+  getHabits: () => invokeHabits(HABITS_IPC_CHANNELS.getHabits),
   getHistory: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getHistory, limit),
   getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),

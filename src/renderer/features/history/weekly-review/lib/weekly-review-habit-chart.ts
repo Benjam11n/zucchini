@@ -1,8 +1,8 @@
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
+const CHART_MAX_VIEWPORT_HEIGHT = 420;
 const CHART_MIN_HEIGHT = 240;
 const CHART_ROW_HEIGHT = 36;
-const MAX_VISIBLE_HABIT_ROWS = 10;
 const Y_AXIS_LABEL_LENGTH = 18;
 
 export interface WeeklyReviewHabitChartRow {
@@ -18,7 +18,7 @@ export interface WeeklyReviewHabitChartRow {
 
 export interface WeeklyReviewHabitChartState {
   chartHeight: number;
-  remainingHabits: WeeklyReviewHabitChartRow[];
+  viewportHeight: number;
   visibleHabits: WeeklyReviewHabitChartRow[];
 }
 
@@ -66,22 +66,21 @@ export function buildWeeklyReviewHabitChartState(
       return left.name.localeCompare(right.name);
     });
 
-  const visibleHabits = rankedHabits.slice(0, MAX_VISIBLE_HABIT_ROWS);
-  const remainingHabits = rankedHabits.slice(MAX_VISIBLE_HABIT_ROWS);
+  const chartHeight = Math.max(
+    CHART_MIN_HEIGHT,
+    rankedHabits.length * CHART_ROW_HEIGHT
+  );
 
   return {
-    chartHeight: Math.max(
-      CHART_MIN_HEIGHT,
-      visibleHabits.length * CHART_ROW_HEIGHT
-    ),
-    remainingHabits,
-    visibleHabits,
+    chartHeight,
+    viewportHeight: Math.min(CHART_MAX_VIEWPORT_HEIGHT, chartHeight),
+    visibleHabits: rankedHabits,
   };
 }
 
 export const weeklyReviewHabitChartConstants = {
+  CHART_MAX_VIEWPORT_HEIGHT,
   CHART_MIN_HEIGHT,
   CHART_ROW_HEIGHT,
-  MAX_VISIBLE_HABIT_ROWS,
   Y_AXIS_LABEL_LENGTH,
 } as const;

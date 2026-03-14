@@ -23,6 +23,7 @@ import {
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
@@ -32,6 +33,7 @@ import type { HistoryDay } from "@/shared/domain/history";
 
 interface TodayPageProps {
   history: HistoryDay[];
+  managedHabits: Habit[];
   onArchiveHabit: (habitId: number) => Promise<void>;
   onCreateHabit: (
     name: string,
@@ -40,7 +42,7 @@ interface TodayPageProps {
     selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
-  onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
+  onReorderHabits: (habits: Habit[]) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
@@ -60,6 +62,7 @@ interface TodayPageProps {
 
 function TodayPageComponent({
   history,
+  managedHabits,
   onArchiveHabit,
   onCreateHabit,
   onRenameHabit,
@@ -127,7 +130,7 @@ function TodayPageComponent({
               emptyMessage="No daily habits yet. Add one right now to power the rings and streak."
               headerActions={
                 <TodayHabitManagerDialog
-                  habits={state.habits}
+                  habits={managedHabits}
                   onArchiveHabit={onArchiveHabit}
                   onCreateHabit={onCreateHabit}
                   onRenameHabit={onRenameHabit}

@@ -24,7 +24,7 @@ import {
   HABIT_FREQUENCY_DEFINITIONS,
   HABIT_WEEKDAY_DEFINITIONS,
 } from "@/shared/domain/habit";
-import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
+import type { Habit, HabitWeekday } from "@/shared/domain/habit";
 
 import {
   HabitCategorySelector,
@@ -32,6 +32,8 @@ import {
   HabitWeekdaySelector,
 } from "./habit-category-selector";
 import { reorderHabitList } from "./reorder-habits";
+
+const HABIT_DRAG_DATA_TYPE = "text/plain";
 
 type DragState = {
   draggedHabitId: number;
@@ -48,8 +50,8 @@ interface HabitRowEditorProps extends Pick<
   | "onUpdateHabitFrequency"
   | "onUpdateHabitWeekdays"
 > {
-  habit: HabitWithStatus;
-  habits: HabitWithStatus[];
+  habit: Habit;
+  habits: Habit[];
   index: number;
   isExpanded: boolean;
   dragState: DragState;
@@ -66,7 +68,7 @@ const CATEGORY_LABELS = Object.fromEntries(
 
 const FREQUENCY_LABELS = Object.fromEntries(
   HABIT_FREQUENCY_DEFINITIONS.map(({ label, value }) => [value, label])
-) as Record<HabitWithStatus["frequency"], string>;
+) as Record<Habit["frequency"], string>;
 
 const WEEKDAY_LABELS = Object.fromEntries(
   HABIT_WEEKDAY_DEFINITIONS.map(({ label, value }) => [value, label])
@@ -76,7 +78,7 @@ const WEEKDAYS: HabitWeekday[] = HABIT_WEEKDAY_DEFINITIONS.map(
   ({ value }) => value
 );
 
-function getCadenceSummary(habit: HabitWithStatus): string {
+function getCadenceSummary(habit: Habit): string {
   if (habit.frequency !== "daily") {
     return FREQUENCY_LABELS[habit.frequency];
   }
@@ -220,7 +222,10 @@ export function HabitRowEditor({
                 onDragEnd={onDragEnd}
                 onDragStart={(event) => {
                   event.dataTransfer.effectAllowed = "move";
-                  event.dataTransfer.setData("text/plain", String(habit.id));
+                  event.dataTransfer.setData(
+                    HABIT_DRAG_DATA_TYPE,
+                    String(habit.id)
+                  );
                   onDragStart();
                 }}
                 size="icon-sm"

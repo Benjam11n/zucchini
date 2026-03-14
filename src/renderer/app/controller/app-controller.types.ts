@@ -9,6 +9,7 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
@@ -29,6 +30,7 @@ export interface AppControllerState {
   historyScope: "full" | "recent";
   isHistoryLoading: boolean;
   isWeeklyReviewSpotlightOpen: boolean;
+  managedHabits: Habit[];
   selectedWeeklyReview: WeeklyReview | null;
   settingsDraft: AppSettings | null;
   settingsFieldErrors: SettingsFieldErrors;

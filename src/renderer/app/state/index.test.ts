@@ -1,5 +1,6 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
@@ -42,6 +43,18 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
+  };
+}
+
+function createManagedHabit(id = 1): Habit {
+  return {
+    category: "productivity",
+    createdAt: "2026-03-01T00:00:00.000Z",
+    frequency: "daily",
+    id,
+    isArchived: false,
+    name: `Habit ${id}`,
+    sortOrder: id - 1,
   };
 }
 
@@ -104,6 +117,7 @@ describe("app store actions", () => {
     const getFocusSessionsMock = vi
       .fn()
       .mockResolvedValue([createFocusSession(1)]);
+    const getHabitsMock = vi.fn().mockResolvedValue([createManagedHabit(1)]);
     const getTodayStateMock = vi.fn().mockResolvedValue(createTodayState());
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
@@ -128,6 +142,7 @@ describe("app store actions", () => {
     vi.stubGlobal("window", {
       habits: {
         getFocusSessions: getFocusSessionsMock,
+        getHabits: getHabitsMock,
         getHistory: getHistoryMock,
         getTodayState: getTodayStateMock,
         getWeeklyReview: getWeeklyReviewMock,
@@ -170,6 +185,7 @@ describe("app store actions", () => {
     return {
       actions: appActions,
       getFocusSessionsMock,
+      getHabitsMock,
       getHistoryMock,
       getWeeklyReviewOverviewMock,
       stores: {

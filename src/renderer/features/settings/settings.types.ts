@@ -1,8 +1,8 @@
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
-  HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -17,7 +17,7 @@ export type SettingsFieldErrors = Partial<Record<keyof AppSettings, string>>;
 
 export interface SettingsPageProps {
   fieldErrors: SettingsFieldErrors;
-  habits: HabitWithStatus[];
+  habits: Habit[];
   settings: AppSettings;
   saveErrorMessage: string | null;
   savePhase: SettingsSavePhase;
@@ -43,11 +43,11 @@ export interface SettingsPageProps {
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
-  onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
+  onReorderHabits: (habits: Habit[]) => Promise<void>;
 }
 
 export interface HabitManagementCardProps {
-  habits: HabitWithStatus[];
+  habits: Habit[];
   onArchiveHabit: (habitId: number) => Promise<void>;
   onCreateHabit: (
     name: string,
@@ -56,7 +56,7 @@ export interface HabitManagementCardProps {
     selectedWeekdays?: HabitWeekday[] | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
-  onReorderHabits: (habits: HabitWithStatus[]) => Promise<void>;
+  onReorderHabits: (habits: Habit[]) => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory

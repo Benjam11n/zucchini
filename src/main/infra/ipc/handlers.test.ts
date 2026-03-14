@@ -47,6 +47,7 @@ function createService() {
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
     getFocusSessions: vi.fn(() => []),
+    getHabits: vi.fn(() => []),
     getHistory: vi.fn(() => []),
     getReminderRuntimeState: vi.fn(),
     getTodayState: vi.fn(() => {

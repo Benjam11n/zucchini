@@ -7,6 +7,7 @@ import type * as StreakCardModule from "@/renderer/features/today/components/str
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type * as TodayPopupStackModule from "@/renderer/features/today/components/today-popup-stack";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 
 import { TodayPage } from "./today-page";
@@ -48,6 +49,17 @@ vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
 }));
 
 const history: HistoryDay[] = [];
+const managedHabits: Habit[] = [
+  {
+    category: "productivity",
+    createdAt: "2026-03-01T00:00:00.000Z",
+    frequency: "daily",
+    id: 1,
+    isArchived: false,
+    name: "Plan top task",
+    sortOrder: 0,
+  },
+];
 
 const state: TodayState = {
   date: "2026-03-13",
@@ -89,6 +101,7 @@ describe("today page", () => {
     render(
       <TodayPage
         history={history}
+        managedHabits={managedHabits}
         onArchiveHabit={vi.fn(() => Promise.resolve())}
         onCreateHabit={vi.fn(() => Promise.resolve())}
         onRenameHabit={vi.fn(() => Promise.resolve())}

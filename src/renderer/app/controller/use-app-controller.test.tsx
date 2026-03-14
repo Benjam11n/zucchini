@@ -4,6 +4,7 @@ import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { act } from "react";
 
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
   WeeklyReview,
@@ -60,6 +61,19 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
+  };
+}
+
+function createManagedHabit(overrides: Partial<Habit> = {}): Habit {
+  return {
+    category: "productivity",
+    createdAt: "2026-03-01T00:00:00.000Z",
+    frequency: "daily",
+    id: 1,
+    isArchived: false,
+    name: "Plan top 3 tasks",
+    sortOrder: 0,
+    ...overrides,
   };
 }
 
@@ -160,6 +174,7 @@ async function setupUseAppController({
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     createHabit: vi.fn().mockResolvedValue(todayState),
     getFocusSessions: vi.fn().mockResolvedValue([]),
+    getHabits: vi.fn().mockResolvedValue([createManagedHabit()]),
     getHistory: vi.fn((limit?: number) =>
       Promise.resolve(limit === 14 ? history.slice(0, 2) : history)
     ),

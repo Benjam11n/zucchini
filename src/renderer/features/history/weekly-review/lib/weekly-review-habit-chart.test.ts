@@ -57,7 +57,7 @@ describe("weekly review habit chart ranking", () => {
     const state = buildWeeklyReviewHabitChartState(
       Array.from(
         {
-          length: weeklyReviewHabitChartConstants.MAX_VISIBLE_HABIT_ROWS + 2,
+          length: 12,
         },
         (_value, index) =>
           createHabitMetric({
@@ -70,10 +70,10 @@ describe("weekly review habit chart ranking", () => {
       () => "var(--ring-productivity)"
     );
 
-    expect(state.visibleHabits).toHaveLength(
-      weeklyReviewHabitChartConstants.MAX_VISIBLE_HABIT_ROWS
+    expect(state.visibleHabits).toHaveLength(12);
+    expect(state.viewportHeight).toBe(
+      weeklyReviewHabitChartConstants.CHART_MAX_VIEWPORT_HEIGHT
     );
-    expect(state.remainingHabits).toHaveLength(2);
   });
 
   it("truncates long y-axis labels and keeps a compact minimum height", () => {

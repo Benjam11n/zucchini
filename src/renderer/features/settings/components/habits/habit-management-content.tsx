@@ -17,9 +17,10 @@ import type {
 
 import { HabitRowEditor } from "./habit-row-editor";
 import { NewHabitForm } from "./new-habit-form";
-import { reorderHabitListByIndex } from "./reorder-habits";
+import { reorderHabitListByDropPosition } from "./reorder-habits";
 
 const FEEDBACK_TIMEOUT_MS = 2200;
+const HABIT_DRAG_DATA_TYPE = "text/plain";
 const UNDO_TIMEOUT_MS = 5000;
 
 type HabitFeedback =
@@ -200,32 +201,22 @@ export function HabitManagementContent({
   }
 
   async function handleDrop(
+    draggedHabitId: number | null,
     targetHabitId: number,
     position: "after" | "before"
   ) {
-    if (!dragState) {
+    const resolvedDraggedHabitId = draggedHabitId ?? dragState?.draggedHabitId;
+
+    if (!resolvedDraggedHabitId) {
       return;
     }
 
-    const sourceIndex = habits.findIndex(
-      (habit) => habit.id === dragState.draggedHabitId
+    const nextHabits = reorderHabitListByDropPosition(
+      habits,
+      resolvedDraggedHabitId,
+      targetHabitId,
+      position
     );
-    const targetIndex = habits.findIndex((habit) => habit.id === targetHabitId);
-
-    if (sourceIndex === -1 || targetIndex === -1) {
-      setDragState(null);
-      return;
-    }
-
-    let nextIndex = targetIndex;
-
-    if (position === "before") {
-      nextIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-    } else if (sourceIndex >= targetIndex) {
-      nextIndex = targetIndex + 1;
-    }
-
-    const nextHabits = reorderHabitListByIndex(habits, sourceIndex, nextIndex);
     setDragState(null);
 
     if (nextHabits === habits) {
@@ -320,7 +311,16 @@ export function HabitManagementContent({
                   const midpoint = bounds.top + bounds.height / 2;
                   const position =
                     event.clientY < midpoint ? "before" : "after";
-                  void handleDrop(habit.id, position);
+                  const draggedHabitId = Number.parseInt(
+                    event.dataTransfer.getData(HABIT_DRAG_DATA_TYPE),
+                    10
+                  );
+
+                  void handleDrop(
+                    Number.isNaN(draggedHabitId) ? null : draggedHabitId,
+                    habit.id,
+                    position
+                  );
                 }}
                 onExpandedChange={(open) => {
                   setExpandedHabitId(open ? habit.id : null);

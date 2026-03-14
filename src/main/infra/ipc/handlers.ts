@@ -85,6 +85,7 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
     service.getFocusSessions(validateFocusSessionLimit(limit))
   );
+  registerHandler(HABITS_IPC_CHANNELS.getHabits, () => service.getHabits());
   registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) => {
     const focusSession = service.recordFocusSession(
       validateCreateFocusSessionInput(input)

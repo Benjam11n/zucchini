@@ -137,6 +137,7 @@ function MainApp() {
   let renderedPage = (
     <TodayPage
       history={state.history}
+      managedHabits={state.managedHabits}
       onArchiveHabit={actions.handleArchiveHabit}
       onCreateHabit={actions.handleCreateHabit}
       onRenameHabit={actions.handleRenameHabit}
@@ -221,7 +222,7 @@ function MainApp() {
       >
         <SettingsPage
           fieldErrors={state.settingsFieldErrors}
-          habits={state.todayState.habits}
+          habits={state.managedHabits}
           settings={state.settingsDraft ?? state.todayState.settings}
           saveErrorMessage={state.settingsSaveErrorMessage}
           savePhase={state.settingsSavePhase}

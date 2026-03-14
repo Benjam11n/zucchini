@@ -22,6 +22,7 @@ import {
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
@@ -40,6 +41,7 @@ import {
 
 export interface HabitsService {
   initialize(): void;
+  getHabits(): Habit[];
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
   getFocusSessions(limit?: number): FocusSession[];
@@ -129,6 +131,13 @@ export class HabitService implements HabitsService {
     );
     this.syncRollingState();
     this.initialized = true;
+  }
+
+  getHabits(): Habit[] {
+    this.initialize();
+    return this.repository.runInTransaction("getHabits", () =>
+      this.repository.getHabits()
+    );
   }
 
   getTodayState(): TodayState {

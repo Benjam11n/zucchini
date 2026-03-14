@@ -17,10 +17,10 @@ import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
-  HabitWithStatus,
 } from "@/shared/domain/habit";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 import { parseDateKey } from "@/shared/utils/date";
@@ -57,12 +57,40 @@ function updateTodayState(nextSettings: AppSettings) {
   });
 }
 
-function applyTodayState(nextTodayState: TodayState) {
+function reorderVisibleTodayHabits(
+  nextManagedHabits: Habit[],
+  currentTodayState: TodayState | null
+): TodayState | null {
+  if (!currentTodayState) {
+    return currentTodayState;
+  }
+
+  const todayHabitById = new Map(
+    currentTodayState.habits.map((habit) => [habit.id, habit])
+  );
+
+  return {
+    ...currentTodayState,
+    habits: nextManagedHabits
+      .filter((habit) => todayHabitById.has(habit.id))
+      .map((habit) => ({
+        ...todayHabitById.get(habit.id)!,
+        sortOrder: habit.sortOrder,
+      })),
+  };
+}
+
+function applyTodayState(
+  nextTodayState: TodayState,
+  nextManagedHabits?: Habit[]
+) {
   unstable_batchedUpdates(() => {
     useSettingsStore.setState((state) => ({
       settingsDraft: state.settingsDraft ?? nextTodayState.settings,
     }));
     useTodayStore.setState({
+      managedHabits:
+        nextManagedHabits ?? useTodayStore.getState().managedHabits,
       todayState: nextTodayState,
     });
   });
@@ -81,6 +109,7 @@ async function reloadAll(
   historyScope = useHistoryStore.getState().historyScope
 ) {
   const todayState = nextTodayState ?? (await window.habits.getTodayState());
+  const managedHabits = await window.habits.getHabits();
   const history =
     historyScope === "recent"
       ? await window.habits.getHistory(
@@ -98,7 +127,10 @@ async function reloadAll(
     useSettingsStore.setState((state) => ({
       settingsDraft: state.settingsDraft ?? todayState.settings,
     }));
-    useTodayStore.setState({ todayState });
+    useTodayStore.setState({
+      managedHabits,
+      todayState,
+    });
   });
 }
 
@@ -112,7 +144,8 @@ async function refreshToday(mutator: Promise<TodayState>) {
 
 async function applyTodayMutation(mutator: Promise<TodayState>) {
   const nextTodayState = await mutator;
-  applyTodayState(nextTodayState);
+  const managedHabits = await window.habits.getHabits();
+  applyTodayState(nextTodayState, managedHabits);
   refreshWeeklyReviewInBackground();
   return nextTodayState;
 }
@@ -136,6 +169,7 @@ async function bootApp() {
           settingsDraft: null,
         });
         useTodayStore.setState({
+          managedHabits: [],
           todayState: null,
         });
         useWeeklyReviewStore.setState({
@@ -201,17 +235,14 @@ async function handleRenameHabit(habitId: number, name: string) {
   await applyTodayMutation(window.habits.renameHabit(habitId, name));
 }
 
-async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
+async function handleReorderHabits(nextHabits: Habit[]) {
   const previousTodayState = useTodayStore.getState().todayState;
+  const previousManagedHabits = useTodayStore.getState().managedHabits;
 
-  if (previousTodayState) {
-    useTodayStore.setState({
-      todayState: {
-        ...previousTodayState,
-        habits: nextHabits,
-      },
-    });
-  }
+  useTodayStore.setState({
+    managedHabits: nextHabits,
+    todayState: reorderVisibleTodayHabits(nextHabits, previousTodayState),
+  });
 
   try {
     await applyTodayMutation(
@@ -219,6 +250,7 @@ async function handleReorderHabits(nextHabits: HabitWithStatus[]) {
     );
   } catch (error) {
     useTodayStore.setState({
+      managedHabits: previousManagedHabits,
       todayState: previousTodayState,
     });
     throw error;

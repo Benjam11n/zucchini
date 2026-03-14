@@ -9,6 +9,7 @@ import type {
   FocusSession,
 } from "../domain/focus-session";
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
@@ -30,6 +31,7 @@ export const HABITS_IPC_CHANNELS = {
   exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
   getFocusSessions: "habits:getFocusSessions",
+  getHabits: "habits:getHabits",
   getHistory: "habits:getHistory",
   getTodayState: "habits:getTodayState",
   getWeeklyReview: "habits:getWeeklyReview",
@@ -123,6 +125,7 @@ export interface HabitApi {
   ) => Promise<boolean>;
   exportBackup: () => Promise<string | null>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
+  getHabits: () => Promise<Habit[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;

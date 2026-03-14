@@ -1,6 +1,10 @@
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-import { reorderHabitList } from "./reorder-habits";
+import {
+  reorderHabitList,
+  reorderHabitListByDropPosition,
+  reorderHabitListByIndex,
+} from "./reorder-habits";
 
 function createHabit(id: number): HabitWithStatus {
   return {
@@ -29,5 +33,31 @@ describe("reorderHabitList()", () => {
 
     expect(reorderHabitList(habits, 1, -1)).toBe(habits);
     expect(reorderHabitList(habits, 3, 1)).toBe(habits);
+  });
+
+  it("rewrites sortOrder values to match the reordered positions", () => {
+    const habits = [createHabit(1), createHabit(2), createHabit(3)];
+
+    expect(
+      reorderHabitListByIndex(habits, 0, 2).map((habit) => habit.sortOrder)
+    ).toStrictEqual([0, 1, 2]);
+    expect(
+      reorderHabitListByIndex(habits, 0, 2).map((habit) => habit.id)
+    ).toStrictEqual([2, 3, 1]);
+  });
+
+  it("reorders by drag-and-drop position and normalizes sort orders", () => {
+    const habits = [createHabit(1), createHabit(2), createHabit(3)];
+
+    expect(
+      reorderHabitListByDropPosition(habits, 1, 3, "after").map(
+        (habit) => habit.id
+      )
+    ).toStrictEqual([2, 3, 1]);
+    expect(
+      reorderHabitListByDropPosition(habits, 1, 3, "after").map(
+        (habit) => habit.sortOrder
+      )
+    ).toStrictEqual([0, 1, 2]);
   });
 });

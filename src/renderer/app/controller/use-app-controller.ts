@@ -39,6 +39,7 @@ import { useTabStoreSelector } from "./use-tab-store-selector";
 
 const EMPTY_HISTORY: AppControllerState["history"] = [];
 const EMPTY_FOCUS_SESSIONS: AppControllerState["focusSessions"] = [];
+const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
 function useAppControllerActions() {
@@ -60,9 +61,11 @@ function useAppControllerCoreState() {
   );
   const systemTheme = useUiStore((state) => state.systemTheme);
   const todayState = useTodayStore((state) => state.todayState);
+  const managedHabits = useTodayStore((state) => state.managedHabits);
 
   return {
     ...bootState,
+    managedHabits,
     ...settingsState,
     systemTheme,
     todayState,
@@ -237,6 +240,7 @@ function createControllerState({
     historyScope: historyState.historyScope,
     isHistoryLoading: historyState.isHistoryLoading,
     isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
+    managedHabits: coreState.managedHabits ?? EMPTY_MANAGED_HABITS,
     selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
     settingsDraft: coreState.settingsDraft,
     settingsFieldErrors: settingsState.settingsFieldErrors,
