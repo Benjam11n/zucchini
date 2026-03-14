@@ -34,7 +34,7 @@ export function TodayHabitManagerDialog(props: HabitManagementCardProps) {
         <DialogContent className="max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Manage habits</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="pb-2">
               Add new habits and adjust names, categories, frequencies, or
               ordering without leaving today&apos;s flow.
             </DialogDescription>
