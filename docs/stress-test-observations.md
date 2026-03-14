@@ -168,7 +168,16 @@ Alternative if top insertion feels too aggressive:
 - Insert directly below the new-habit form, which is usually equivalent in
   practice.
 
-### 3. History page loading is extremely laggy
+### 3. [x] History page loading is extremely laggy
+
+Status:
+
+- Completed.
+- History now boots with the current year's timeline instead of a tiny recent
+  slice or the full archive.
+- Entering the History tab no longer forces a full-history fetch.
+- Older history now loads only from an explicit user action in the History
+  header.
 
 Observed:
 
@@ -210,6 +219,14 @@ Specific recommendation for the contribution graph:
 - This is a good product decision, not just a performance compromise.
 - It matches user expectation for a GitHub-style year view and reduces both
   render cost and cognitive load.
+- The next refinement should be year-by-year loading rather than a single
+  "load all older history" action.
+- A practical shape is:
+  - current year loads by default
+  - selecting an unloaded year fetches just that year's summary payload
+  - day detail still loads only for the selected date
+- This keeps the year selector fast even for long-lived datasets and avoids
+  paying the cost of the full archive up front.
 
 Suggested API shape:
 
