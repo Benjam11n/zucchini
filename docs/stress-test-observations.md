@@ -298,7 +298,17 @@ Expected impact:
 
 - Fixes the layout jump and makes the ring strip feel like an isolated control.
 
-### 5. Weekly review habit-completion graph is too tall
+### 5. [x] Weekly review habit-completion graph is too tall
+
+Status:
+
+- Completed.
+- The chart now caps the plotted habits to a compact top slice instead of
+  growing without bound.
+- Per-row density and y-axis label width are tighter, which keeps the chart
+  height under control.
+- Remaining habits move into a secondary compact list below the chart rather
+  than forcing the plot itself to sprawl vertically.
 
 Observed:
 

@@ -1,6 +1,8 @@
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
+import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";
 import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import { Badge } from "@/renderer/shared/ui/badge";
 import {
   Card,
   CardContent,
@@ -30,32 +32,30 @@ interface WeeklyReviewHabitChartImplProps {
 export function WeeklyReviewHabitChartImpl({
   habitMetrics,
 }: WeeklyReviewHabitChartImplProps) {
-  const chartData = habitMetrics.map((metric) => ({
-    category: metric.category,
-    color: HABIT_CATEGORY_UI[metric.category].ringColor,
-    completionRate: metric.completionRate,
-    name: metric.name,
-    opportunities: metric.opportunities,
-  }));
+  const { chartHeight, remainingHabits, visibleHabits } =
+    buildWeeklyReviewHabitChartState(
+      habitMetrics,
+      (category) => HABIT_CATEGORY_UI[category].ringColor
+    );
 
   return (
     <Card className="border-border/60 bg-card/90">
       <CardHeader>
         <CardTitle>Habit completion</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="grid gap-4">
         <ChartContainer
           className="p-2"
           config={chartConfig}
           style={{
-            height: `${Math.max(280, chartData.length * 52)}px`,
+            height: `${chartHeight}px`,
           }}
         >
           <ChartResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={chartData}
+              data={visibleHabits}
               layout="vertical"
-              margin={{ left: 12, right: 18 }}
+              margin={{ left: 4, right: 12 }}
             >
               <CartesianGrid
                 horizontal={false}
@@ -71,11 +71,11 @@ export function WeeklyReviewHabitChartImpl({
               />
               <YAxis
                 axisLine={false}
-                dataKey="name"
-                tick={{ fontSize: 12 }}
+                dataKey="shortName"
+                tick={{ fontSize: 11 }}
                 tickLine={false}
                 type="category"
-                width={128}
+                width={104}
               />
               <ChartTooltip
                 content={
@@ -91,13 +91,40 @@ export function WeeklyReviewHabitChartImpl({
                 name="Habit completion"
                 radius={[0, 12, 12, 0]}
               >
-                {chartData.map((entry) => (
+                {visibleHabits.map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
           </ChartResponsiveContainer>
         </ChartContainer>
+        {remainingHabits.length > 0 ? (
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">More habits</p>
+              <Badge variant="outline">{remainingHabits.length} more</Badge>
+            </div>
+            <div className="grid max-h-52 gap-2 overflow-y-auto pr-1">
+              {remainingHabits.map((habit) => (
+                <div
+                  key={habit.habitId}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-foreground">
+                      {habit.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {habit.missedOpportunities} missed of{" "}
+                      {habit.opportunities} chances
+                    </p>
+                  </div>
+                  <Badge variant="outline">{habit.completionRate}%</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
