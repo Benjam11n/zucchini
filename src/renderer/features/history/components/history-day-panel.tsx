@@ -132,27 +132,23 @@ export function HistoryDayPanel({
                         <span className="flex items-center gap-2">
                           <CategoryIcon
                             aria-hidden="true"
-                            className={cn(
-                              "size-3.5 shrink-0",
-                              categoryUi.textClassName
-                            )}
+                            className="size-3 shrink-0 opacity-60"
                             data-testid={`history-category-icon-${progress.category}`}
+                            style={{ color: categoryUi.ringColor }}
                           />
                           <span
-                            className={cn(
-                              "text-xs font-semibold tracking-[0.18em] uppercase",
-                              categoryUi.textClassName
-                            )}
+                            className="text-[0.68rem] tracking-[0.14em] uppercase"
+                            style={{ color: categoryUi.ringColor }}
                           >
                             {progress.category}
                           </span>
                         </span>
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
                           {progress.completed}/{progress.total}
                         </span>
                       </div>
                       <Progress
-                        className="mt-2 h-2 bg-muted/60"
+                        className="mt-1.5 h-1.5 bg-muted/60"
                         indicatorClassName={categoryUi.progressClassName}
                         value={progress.progress}
                       />
