@@ -184,19 +184,21 @@ export function DataManagementSettingsCard() {
             </DialogDescription>
           </DialogHeader>
 
-          <div
-            className="flex items-start gap-3 rounded-2xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
-            role="alert"
-          >
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            <div className="space-y-1">
-              <p className="font-medium">
-                This replaces your current local data.
-              </p>
-              <p className="leading-snug text-destructive/85">
-                Importing a backup overwrites the current `zucchini.db` on this
-                device.
-              </p>
+          <div className="px-6 py-4">
+            <div
+              className="flex items-start gap-3 rounded-2xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+              role="alert"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">
+                  This replaces your current local data.
+                </p>
+                <p className="leading-snug text-destructive/85">
+                  Importing a backup overwrites the current `zucchini.db` on
+                  this device.
+                </p>
+              </div>
             </div>
           </div>
 
