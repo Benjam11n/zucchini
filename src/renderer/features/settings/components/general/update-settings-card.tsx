@@ -94,7 +94,10 @@ function getActionLabel(state: AppUpdateState): string {
 
 function getStatusCopy(state: AppUpdateState): string {
   if (state.status === "downloaded") {
-    return `Version ${state.availableVersion} is ready to install.`;
+    return (
+      state.errorMessage ??
+      `Version ${state.availableVersion} is ready to install.`
+    );
   }
 
   if (state.status === "downloading") {

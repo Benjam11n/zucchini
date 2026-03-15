@@ -1,9 +1,8 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import { Download, Rocket, RotateCcw } from "lucide-react";
+import { Download, Rocket, RotateCcw, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 
-import { cn } from "@/renderer/shared/lib/class-names";
 import { Button } from "@/renderer/shared/ui/button";
 import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
@@ -24,7 +23,8 @@ function getButtonCopy(state: AppUpdateState): {
   if (state.status === "downloaded") {
     return {
       actionLabel: "Restart to update",
-      detailLabel: `Version ${state.availableVersion} is ready`,
+      detailLabel:
+        state.errorMessage ?? `Version ${state.availableVersion} is ready`,
     };
   }
 
@@ -122,6 +122,75 @@ function updateButtonViewReducer(
   }
 }
 
+function UpdateButtonBanner({
+  actionLabel,
+  detailLabel,
+  disabled,
+  icon,
+  onAction,
+}: {
+  actionLabel: string;
+  detailLabel: string;
+  disabled: boolean;
+  icon: ReactNode;
+  onAction: () => Promise<void>;
+}) {
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  if (isDismissed) {
+    return null;
+  }
+
+  return (
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        <m.div
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
+          exit={{ opacity: 0, x: -16, y: 16 }}
+          initial={{ opacity: 0, x: -16, y: 16 }}
+        >
+          <div className="pointer-events-auto relative">
+            <Button
+              aria-label="Dismiss update notification"
+              className="absolute top-3 right-3 z-10 rounded-full text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setIsDismissed(true);
+              }}
+              size="icon-xs"
+              variant="ghost"
+            >
+              <X className="size-3.5" />
+            </Button>
+
+            <Button
+              className="h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 bg-card px-4 py-3 pr-12 text-left text-card-foreground shadow-lg backdrop-blur-sm hover:bg-card/90"
+              disabled={disabled}
+              onClick={() => {
+                void onAction();
+              }}
+              variant="outline"
+            >
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                {icon}
+              </span>
+
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-semibold tracking-tight">
+                  {actionLabel}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {detailLabel}
+                </span>
+              </span>
+            </Button>
+          </div>
+        </m.div>
+      </AnimatePresence>
+    </LazyMotion>
+  );
+}
+
 export function UpdateButton() {
   const [viewState, dispatch] = useReducer(
     updateButtonViewReducer,
@@ -202,50 +271,25 @@ export function UpdateButton() {
   }
 
   const { actionLabel, detailLabel } = getButtonCopy(viewState.state);
+  const dismissalKey = [
+    viewState.state.status,
+    viewState.state.availableVersion,
+    viewState.state.errorMessage,
+  ].join(":");
   const isDownloading = viewState.state.status === "downloading";
-  const isRestartReady = viewState.state.status === "downloaded";
 
   return (
-    <LazyMotion features={domAnimation}>
-      <AnimatePresence>
-        <m.div
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
-          exit={{ opacity: 0, x: -16, y: 16 }}
-          initial={{ opacity: 0, x: -16, y: 16 }}
-        >
-          <Button
-            className={cn(
-              "pointer-events-auto h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 px-4 py-3 text-left shadow-lg backdrop-blur-sm",
-              isRestartReady
-                ? "bg-secondary text-secondary-foreground"
-                : "bg-card text-card-foreground hover:bg-card/90"
-            )}
-            disabled={viewState.isPending || isDownloading}
-            onClick={() => {
-              void handleClick();
-            }}
-            variant={isRestartReady ? "secondary" : "outline"}
-          >
-            <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-              {getButtonIcon({
-                isDownloading,
-                isPending: viewState.isPending,
-                status: viewState.state.status,
-              })}
-            </span>
-
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-semibold tracking-tight">
-                {actionLabel}
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
-                {viewState.actionError ?? detailLabel}
-              </span>
-            </span>
-          </Button>
-        </m.div>
-      </AnimatePresence>
-    </LazyMotion>
+    <UpdateButtonBanner
+      key={dismissalKey}
+      actionLabel={actionLabel}
+      detailLabel={viewState.actionError ?? detailLabel}
+      disabled={viewState.isPending || isDownloading}
+      icon={getButtonIcon({
+        isDownloading,
+        isPending: viewState.isPending,
+        status: viewState.state.status,
+      })}
+      onAction={handleClick}
+    />
   );
 }
