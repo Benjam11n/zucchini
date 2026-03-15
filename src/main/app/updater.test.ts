@@ -99,6 +99,30 @@ describe("registerAppUpdater()", () => {
     await handlers.get(APP_UPDATER_CHANNELS.installUpdate)?.();
 
     expect(updater.quitAndInstall).toHaveBeenCalledTimes(1);
+    expect(updater.quitAndInstall).toHaveBeenCalledWith(false, true);
+  });
+
+  it("keeps the restart state when install invocation fails", () => {
+    const { broadcastState, handlers, updater } = createController();
+
+    updater.emit("update-downloaded", {
+      version: "0.2.0",
+    });
+    updater.quitAndInstall.mockImplementation(() => {
+      throw new Error("install failed");
+    });
+
+    expect(() => {
+      handlers.get(APP_UPDATER_CHANNELS.installUpdate)?.();
+    }).toThrow("install failed");
+
+    expect(broadcastState).toHaveBeenLastCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: "Zucchini could not complete the update action.",
+      progressPercent: 100,
+      status: "downloaded",
+    });
   });
 
   it("registers a manual check handler when updates are supported", async () => {
@@ -142,6 +166,23 @@ describe("registerAppUpdater()", () => {
       errorMessage: "Zucchini could not complete the update action.",
       progressPercent: null,
       status: "error",
+    });
+  });
+
+  it("keeps downloaded updates restartable after updater errors", () => {
+    const { broadcastState, updater } = createController();
+
+    updater.emit("update-downloaded", {
+      version: "0.2.0",
+    });
+    updater.emit("error", new Error("install failed"));
+
+    expect(broadcastState).toHaveBeenLastCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: "Zucchini could not complete the update action.",
+      progressPercent: 100,
+      status: "downloaded",
     });
   });
 

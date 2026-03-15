@@ -46,7 +46,7 @@ export interface AutoUpdaterLike {
     event: AppUpdaterEventName,
     listener: (...args: unknown[]) => void
   ) => void;
-  quitAndInstall: () => void;
+  quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void;
 }
 
 interface RegisterAppUpdaterOptions {
@@ -87,6 +87,15 @@ function toRoundedProgress(percent: number): number {
 
 function toErrorMessage(): string {
   return SAFE_UPDATE_ERROR_MESSAGE;
+}
+
+function toDownloadedErrorState(state: AppUpdateState): AppUpdateState {
+  return {
+    ...state,
+    errorMessage: toErrorMessage(),
+    progressPercent: 100,
+    status: "downloaded",
+  };
 }
 
 export function resolveAppUpdateSupportMode({
@@ -208,7 +217,13 @@ export function registerAppUpdater({
       return;
     }
 
-    updater.quitAndInstall();
+    try {
+      updater.quitAndInstall(false, true);
+    } catch (error) {
+      log.error("Failed to install the downloaded update.", error);
+      setState(toDownloadedErrorState(state));
+      throw error;
+    }
   });
 
   if (!supportsAutoUpdates) {
@@ -282,6 +297,11 @@ export function registerAppUpdater({
         progressPercent: null,
         status: "idle",
       });
+      return;
+    }
+
+    if (state.status === "downloaded") {
+      setState(toDownloadedErrorState(state));
       return;
     }
 

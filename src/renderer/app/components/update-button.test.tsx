@@ -66,6 +66,53 @@ describe("update button", () => {
     });
   });
 
+  it("uses the default surface for restart-ready updates and can be dismissed", async () => {
+    const updater = setUpdaterState({
+      ...IDLE_UPDATE_STATE,
+      availableVersion: "0.1.1-beta.6",
+      status: "downloaded",
+    });
+
+    render(<UpdateButton />);
+
+    const restartButton = await screen.findByRole("button", {
+      name: /restart to update/i,
+    });
+
+    expect(restartButton).toHaveAttribute("data-variant", "outline");
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /dismiss update notification/i,
+      })
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /restart to update/i })
+    ).not.toBeInTheDocument();
+
+    expect(updater.installUpdate).not.toHaveBeenCalled();
+  });
+
+  it("installs downloaded updates when the banner is clicked", async () => {
+    const updater = setUpdaterState({
+      ...IDLE_UPDATE_STATE,
+      availableVersion: "0.1.1-beta.6",
+      status: "downloaded",
+    });
+
+    render(<UpdateButton />);
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /restart to update/i })
+    );
+
+    await waitFor(() => {
+      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
+      expect(updater.installUpdate).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("stays hidden when the updater is unavailable", async () => {
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
