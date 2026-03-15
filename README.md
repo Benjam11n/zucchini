@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./build/icon.png" alt="Zucchini logo" width="120" />
+  <img src="./public/mascot/mascot-icon.jpeg" alt="Zucchini logo" width="120" />
 </p>
 
 # Zucchini
