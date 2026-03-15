@@ -11,6 +11,7 @@ function setHabitsApi() {
     claimFocusTimerLeadership: vi.fn(),
     createHabit: vi.fn(),
     exportBackup: vi.fn(() => Promise.resolve("/tmp/zucchini-backup.db")),
+    getDesktopNotificationStatus: vi.fn(),
     getFocusSessions: vi.fn(),
     getHistory: vi.fn(),
     getTodayState: vi.fn(),

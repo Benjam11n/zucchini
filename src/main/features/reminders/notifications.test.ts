@@ -3,12 +3,38 @@ import type * as ElectronModule from "electron";
 import type * as AssetsModule from "@/main/app/assets";
 
 import {
+  getDesktopNotificationStatus,
   showCatchUpReminder,
   showIncompleteReminder,
   showMidnightWarning,
   showMissedReminderWarning,
   showSnoozedReminder,
 } from "./notifications";
+
+type MacNotificationState =
+  | "DO_NOT_DISTURB"
+  | "SESSION_ON_CONSOLE_KEY"
+  | "SESSION_SCREEN_IS_LOCKED"
+  | "UNKNOWN"
+  | "UNKNOWN_ERROR";
+
+type WindowsNotificationState =
+  | "QUNS_ACCEPTS_NOTIFICATIONS"
+  | "QUNS_APP"
+  | "QUNS_BUSY"
+  | "QUNS_NOT_PRESENT"
+  | "QUNS_PRESENTATION_MODE"
+  | "QUNS_QUIET_TIME"
+  | "QUNS_RUNNING_D3D_FULL_SCREEN"
+  | "UNKNOWN_ERROR";
+
+interface MacNotificationStateModule {
+  getNotificationState: () => Promise<MacNotificationState>;
+}
+
+interface WindowsNotificationStateModule {
+  getNotificationState: () => WindowsNotificationState;
+}
 
 const notificationState = vi.hoisted(() => ({
   lastNotification: null as null | {
@@ -18,6 +44,16 @@ const notificationState = vi.hoisted(() => ({
   },
   supported: true,
   throwOnShow: false,
+}));
+
+const macNotificationState = vi.hoisted(() => ({
+  current: "SESSION_ON_CONSOLE_KEY" as MacNotificationState,
+  throwOnRead: false,
+}));
+
+const windowsNotificationState = vi.hoisted(() => ({
+  current: "QUNS_ACCEPTS_NOTIFICATIONS" as WindowsNotificationState,
+  throwOnRead: false,
 }));
 
 vi.mock<typeof ElectronModule>(import("electron"), () => ({
@@ -61,15 +97,56 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
   } as unknown as typeof ElectronModule.nativeImage,
 }));
 
+vi.mock<MacNotificationStateModule>(import("macos-notification-state"), () => ({
+  getNotificationState: () => {
+    if (macNotificationState.throwOnRead) {
+      throw new Error("mac notification state unavailable");
+    }
+
+    return Promise.resolve(macNotificationState.current);
+  },
+}));
+
+vi.mock<WindowsNotificationStateModule>(
+  import("windows-notification-state"),
+  () => ({
+    getNotificationState: () => {
+      if (windowsNotificationState.throwOnRead) {
+        throw new Error("windows notification state unavailable");
+      }
+
+      return windowsNotificationState.current;
+    },
+  })
+);
+
 vi.mock<typeof AssetsModule>(import("@/main/app/assets"), () => ({
   resolveMascotAssetPath: (filename: string) => `/mocked/${filename}`,
 }));
 
+const originalPlatform = process.platform;
+
+function setPlatform(platform: NodeJS.Platform): void {
+  Object.defineProperty(process, "platform", {
+    configurable: true,
+    value: platform,
+  });
+}
+
+function resetState(): void {
+  notificationState.lastNotification = null;
+  notificationState.supported = true;
+  notificationState.throwOnShow = false;
+  macNotificationState.current = "SESSION_ON_CONSOLE_KEY";
+  macNotificationState.throwOnRead = false;
+  windowsNotificationState.current = "QUNS_ACCEPTS_NOTIFICATIONS";
+  windowsNotificationState.throwOnRead = false;
+  setPlatform(originalPlatform);
+}
+
 describe("notifications", () => {
   it("uses the reminder mascot for incomplete reminders", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
-    notificationState.throwOnShow = false;
+    resetState();
     showIncompleteReminder();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -83,9 +160,7 @@ describe("notifications", () => {
   });
 
   it("uses the sleepy mascot for midnight warnings", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
-    notificationState.throwOnShow = false;
+    resetState();
     showMidnightWarning();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -99,9 +174,7 @@ describe("notifications", () => {
   });
 
   it("shows a catch-up reminder when the scheduled reminder was missed", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
-    notificationState.throwOnShow = false;
+    resetState();
     showCatchUpReminder();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -115,9 +188,7 @@ describe("notifications", () => {
   });
 
   it("shows the missed reminder warning with the sleepy mascot", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
-    notificationState.throwOnShow = false;
+    resetState();
     showMissedReminderWarning();
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -131,9 +202,7 @@ describe("notifications", () => {
   });
 
   it("includes the snooze duration in snoozed reminders", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
-    notificationState.throwOnShow = false;
+    resetState();
     showSnoozedReminder(15);
 
     expect(notificationState.lastNotification).toMatchObject({
@@ -147,9 +216,8 @@ describe("notifications", () => {
   });
 
   it("does not show notifications when the platform does not support them", () => {
-    notificationState.lastNotification = null;
+    resetState();
     notificationState.supported = false;
-    notificationState.throwOnShow = false;
 
     showIncompleteReminder();
 
@@ -157,11 +225,96 @@ describe("notifications", () => {
   });
 
   it("swallows notification show failures", () => {
-    notificationState.lastNotification = null;
-    notificationState.supported = true;
+    resetState();
     notificationState.throwOnShow = true;
 
     expect(() => showIncompleteReminder()).not.toThrow();
     expect(notificationState.lastNotification).toBeNull();
+  });
+
+  it("returns unsupported when desktop notifications are not supported", async () => {
+    resetState();
+    notificationState.supported = false;
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unsupported",
+      reason: "unsupported-platform",
+    });
+  });
+
+  it("maps macOS do not disturb to a blocked status", async () => {
+    resetState();
+    setPlatform("darwin");
+    macNotificationState.current = "DO_NOT_DISTURB";
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "blocked",
+      reason: "do-not-disturb",
+    });
+  });
+
+  it("maps macOS active console sessions to unknown", async () => {
+    resetState();
+    setPlatform("darwin");
+    macNotificationState.current = "SESSION_ON_CONSOLE_KEY";
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+  });
+
+  it("maps macOS lookup failures to unknown", async () => {
+    resetState();
+    setPlatform("darwin");
+    macNotificationState.throwOnRead = true;
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+  });
+
+  it("maps Windows quiet time to a blocked status", async () => {
+    resetState();
+    setPlatform("win32");
+    windowsNotificationState.current = "QUNS_QUIET_TIME";
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "blocked",
+      reason: "quiet-time",
+    });
+  });
+
+  it("maps Windows accepts notifications to unknown", async () => {
+    resetState();
+    setPlatform("win32");
+    windowsNotificationState.current = "QUNS_ACCEPTS_NOTIFICATIONS";
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+  });
+
+  it("maps Windows lookup failures to unknown", async () => {
+    resetState();
+    setPlatform("win32");
+    windowsNotificationState.throwOnRead = true;
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+  });
+
+  it("returns unsupported on Linux", async () => {
+    resetState();
+    setPlatform("linux");
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unsupported",
+      reason: "unsupported-platform",
+    });
   });
 });

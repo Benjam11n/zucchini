@@ -30,6 +30,7 @@ export const HABITS_IPC_CHANNELS = {
   createHabit: "habits:createHabit",
   exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
+  getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
   getFocusSessions: "habits:getFocusSessions",
   getHabits: "habits:getHabits",
   getHistory: "habits:getHistory",
@@ -117,6 +118,29 @@ export interface TodayState {
   settings: AppSettings;
 }
 
+export type DesktopNotificationAvailability =
+  | "available"
+  | "blocked"
+  | "unsupported"
+  | "unknown";
+
+export type DesktopNotificationReason =
+  | "app-busy"
+  | "do-not-disturb"
+  | "full-screen-app"
+  | "other-app-active"
+  | "platform-error"
+  | "presentation-mode"
+  | "quiet-time"
+  | "session-locked"
+  | "unsupported-platform"
+  | null;
+
+export interface DesktopNotificationStatus {
+  availability: DesktopNotificationAvailability;
+  reason: DesktopNotificationReason;
+}
+
 export interface HabitApi {
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
@@ -124,6 +148,7 @@ export interface HabitApi {
     ttlMs: number
   ) => Promise<boolean>;
   exportBackup: () => Promise<string | null>;
+  getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
   getHabits: () => Promise<Habit[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;

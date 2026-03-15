@@ -1,6 +1,7 @@
 import type * as ElectronModule from "electron";
 import type { IpcMain, IpcMainInvokeEvent } from "electron";
 
+import type * as NotificationsModule from "@/main/features/reminders/notifications";
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -27,6 +28,19 @@ vi.mock<typeof ElectronModule>(import("electron"), () => ({
     ),
   } as unknown as IpcMain,
 }));
+
+vi.mock<typeof NotificationsModule>(
+  import("@/main/features/reminders/notifications"),
+  () => ({
+    getDesktopNotificationStatus: vi.fn(() =>
+      Promise.resolve({
+        availability: "available" as const,
+        reason: null,
+      })
+    ),
+    showDesktopNotification: vi.fn(),
+  })
+);
 
 const defaultSettings: AppSettings = {
   focusCyclesBeforeLongBreak: 4,
@@ -173,6 +187,23 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(service.getHistory).toHaveBeenCalledWith(14);
+  });
+
+  it("returns desktop notification status through IPC", async () => {
+    resetHandlers();
+    registerIpcHandlers(createRegisterOptions());
+
+    const handler = handlers.get(
+      HABITS_IPC_CHANNELS.getDesktopNotificationStatus
+    );
+
+    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
+      data: {
+        availability: "available",
+        reason: null,
+      },
+      ok: true,
+    });
   });
 
   it("passes validated focus session payloads through to the service", async () => {

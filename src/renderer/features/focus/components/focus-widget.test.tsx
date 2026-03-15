@@ -92,6 +92,7 @@ describe("focus widget", () => {
       value: {
         claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
         claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+        getDesktopNotificationStatus: vi.fn(),
         getTodayState,
         onFocusSessionRecorded: vi.fn(() => vi.fn()),
         recordFocusSession: vi.fn((_input) => Promise.resolve()),

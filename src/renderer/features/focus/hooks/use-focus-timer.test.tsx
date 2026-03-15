@@ -70,6 +70,7 @@ function setupFocusTimerTest() {
     value: {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+      getDesktopNotificationStatus: vi.fn(),
       onFocusSessionRecorded: vi.fn(
         (listener: FocusSessionRecordedListener) => {
           focusSessionRecordedListener = listener;

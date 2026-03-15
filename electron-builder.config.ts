@@ -52,6 +52,8 @@ const config: Configuration = {
   asarUnpack: [
     "node_modules/better-sqlite3/build/Release/*.node",
     "node_modules/better-sqlite3/bin/*/*.node",
+    "node_modules/macos-notification-state/build/Release/*.node",
+    "node_modules/windows-notification-state/build/Release/*.node",
   ],
   directories: {
     output: "release",

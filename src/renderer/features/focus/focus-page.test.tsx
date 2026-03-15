@@ -59,6 +59,7 @@ function installHabitsMock() {
   Object.defineProperty(window, "habits", {
     configurable: true,
     value: {
+      getDesktopNotificationStatus: vi.fn(),
       recordFocusSession: vi.fn(() => Promise.resolve()),
     },
   });

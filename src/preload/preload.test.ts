@@ -4,7 +4,11 @@ import type * as ElectronModule from "electron";
 import type { ContextBridge, IpcRenderer } from "electron";
 
 import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
-import type { HabitApi, TodayState } from "@/shared/contracts/habits-ipc";
+import type {
+  DesktopNotificationStatus,
+  HabitApi,
+  TodayState,
+} from "@/shared/contracts/habits-ipc";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();
@@ -218,6 +222,23 @@ describe("preload habits API", () => {
       "/tmp/zucchini-backup.db"
     );
     expect(invoke).toHaveBeenCalledWith("habits:exportBackup");
+  });
+
+  it("invokes desktop notification status through the preload bridge", async () => {
+    await loadPreloadModule();
+    const status: DesktopNotificationStatus = {
+      availability: "blocked",
+      reason: "do-not-disturb",
+    };
+    invoke.mockResolvedValue({
+      data: status,
+      ok: true,
+    });
+
+    await expect(
+      getHabitsApi().getDesktopNotificationStatus()
+    ).resolves.toStrictEqual(status);
+    expect(invoke).toHaveBeenCalledWith("habits:getDesktopNotificationStatus");
   });
 
   it("invokes open data folder through the preload bridge", async () => {

@@ -86,6 +86,8 @@ const habitsApi: HabitApi = {
       selectedWeekdays
     ),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
+  getDesktopNotificationStatus: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
   getFocusSessions: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
   getHabits: () => invokeHabits(HABITS_IPC_CHANNELS.getHabits),

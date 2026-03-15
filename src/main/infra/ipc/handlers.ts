@@ -1,7 +1,10 @@
 import { ipcMain } from "electron";
 
 import type { FocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
-import { showDesktopNotification } from "@/main/features/reminders/notifications";
+import {
+  getDesktopNotificationStatus,
+  showDesktopNotification,
+} from "@/main/features/reminders/notifications";
 import { serializeIpcError } from "@/main/infra/ipc/errors";
 import {
   validateAppSettings,
@@ -78,6 +81,9 @@ export function registerIpcHandlers({
 }: RegisterIpcHandlersOptions): void {
   registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
+  );
+  registerHandler(HABITS_IPC_CHANNELS.getDesktopNotificationStatus, () =>
+    getDesktopNotificationStatus()
   );
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))

@@ -173,6 +173,9 @@ async function setupUseAppController({
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     createHabit: vi.fn().mockResolvedValue(todayState),
+    getDesktopNotificationStatus: vi
+      .fn()
+      .mockResolvedValue({ availability: "available", reason: null }),
     getFocusSessions: vi.fn().mockResolvedValue([]),
     getHabits: vi.fn().mockResolvedValue([createManagedHabit()]),
     getHistory: vi.fn((limit?: number) =>
