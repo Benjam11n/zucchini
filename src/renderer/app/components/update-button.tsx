@@ -1,11 +1,18 @@
-import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import { Download, Rocket, RotateCcw, X } from "lucide-react";
+import { Download, Rocket, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useReducer, useState } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/renderer/shared/ui/button";
 import { Spinner } from "@/renderer/shared/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
+
+const UPDATE_TOAST_ID = "app-update";
 
 function shouldRenderUpdateButton(state: AppUpdateState): boolean {
   return (
@@ -18,34 +25,46 @@ function shouldRenderUpdateButton(state: AppUpdateState): boolean {
 
 function getButtonCopy(state: AppUpdateState): {
   actionLabel: string;
+  descriptionLabel: string;
   detailLabel: string;
+  titleLabel: string;
 } {
   if (state.status === "downloaded") {
     return {
       actionLabel: "Restart to update",
+      descriptionLabel:
+        state.errorMessage ?? `Version ${state.availableVersion} is ready`,
       detailLabel:
         state.errorMessage ?? `Version ${state.availableVersion} is ready`,
+      titleLabel: "Update ready",
     };
   }
 
   if (state.status === "downloading") {
     return {
       actionLabel: "Downloading update",
+      descriptionLabel: `Version ${state.availableVersion} is downloading`,
       detailLabel: `${state.progressPercent ?? 0}% complete`,
+      titleLabel: "Downloading update",
     };
   }
 
   if (state.status === "error") {
     return {
       actionLabel: "Retry update",
+      descriptionLabel:
+        state.errorMessage ?? `Version ${state.availableVersion} is available`,
       detailLabel:
         state.errorMessage ?? `Version ${state.availableVersion} is available`,
+      titleLabel: "Update failed",
     };
   }
 
   return {
     actionLabel: "Download update",
+    descriptionLabel: `Version ${state.availableVersion} is available`,
     detailLabel: `Version ${state.availableVersion} is available`,
+    titleLabel: "Update available",
   };
 }
 
@@ -122,79 +141,13 @@ function updateButtonViewReducer(
   }
 }
 
-function UpdateButtonBanner({
-  actionLabel,
-  detailLabel,
-  disabled,
-  icon,
-  onAction,
-}: {
-  actionLabel: string;
-  detailLabel: string;
-  disabled: boolean;
-  icon: ReactNode;
-  onAction: () => Promise<void>;
-}) {
-  const [isDismissed, setIsDismissed] = useState(false);
-
-  if (isDismissed) {
-    return null;
-  }
-
-  return (
-    <LazyMotion features={domAnimation}>
-      <AnimatePresence>
-        <m.div
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          className="pointer-events-none fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6"
-          exit={{ opacity: 0, x: -16, y: 16 }}
-          initial={{ opacity: 0, x: -16, y: 16 }}
-        >
-          <div className="pointer-events-auto relative">
-            <Button
-              aria-label="Dismiss update notification"
-              className="absolute top-3 right-3 z-10 rounded-full text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                setIsDismissed(true);
-              }}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <X className="size-3.5" />
-            </Button>
-
-            <Button
-              className="h-auto min-w-60 justify-start gap-3 rounded-2xl border border-border/80 bg-card px-4 py-3 pr-12 text-left text-card-foreground shadow-lg backdrop-blur-sm hover:bg-card/90"
-              disabled={disabled}
-              onClick={() => {
-                void onAction();
-              }}
-              variant="outline"
-            >
-              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                {icon}
-              </span>
-
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-semibold tracking-tight">
-                  {actionLabel}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {detailLabel}
-                </span>
-              </span>
-            </Button>
-          </div>
-        </m.div>
-      </AnimatePresence>
-    </LazyMotion>
-  );
-}
-
 export function UpdateButton() {
   const [viewState, dispatch] = useReducer(
     updateButtonViewReducer,
     INITIAL_UPDATE_BUTTON_STATE
+  );
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(
+    () => new Set()
   );
 
   useEffect(() => {
@@ -231,6 +184,11 @@ export function UpdateButton() {
     };
   }, []);
 
+  const handleDismiss = (dismissalKey: string) => {
+    setDismissedKeys((currentKeys) => new Set([...currentKeys, dismissalKey]));
+    toast.dismiss(UPDATE_TOAST_ID);
+  };
+
   async function handleClick(): Promise<void> {
     if (
       viewState.state === null ||
@@ -266,30 +224,76 @@ export function UpdateButton() {
     }
   }
 
-  if (viewState.state === null || !shouldRenderUpdateButton(viewState.state)) {
-    return null;
-  }
+  const dismissToast = useEffectEvent((dismissalKey: string) => {
+    handleDismiss(dismissalKey);
+  });
 
-  const { actionLabel, detailLabel } = getButtonCopy(viewState.state);
-  const dismissalKey = [
-    viewState.state.status,
-    viewState.state.availableVersion,
-    viewState.state.errorMessage,
-  ].join(":");
-  const isDownloading = viewState.state.status === "downloading";
+  const runToastAction = useEffectEvent(() => {
+    void handleClick();
+  });
 
-  return (
-    <UpdateButtonBanner
-      key={dismissalKey}
-      actionLabel={actionLabel}
-      detailLabel={viewState.actionError ?? detailLabel}
-      disabled={viewState.isPending || isDownloading}
-      icon={getButtonIcon({
+  const visibleState = useMemo(() => {
+    if (
+      viewState.state === null ||
+      !shouldRenderUpdateButton(viewState.state)
+    ) {
+      return null;
+    }
+
+    const dismissalKey = [
+      viewState.state.status,
+      viewState.state.availableVersion,
+      viewState.state.errorMessage,
+    ].join(":");
+
+    if (dismissedKeys.has(dismissalKey)) {
+      return null;
+    }
+
+    return {
+      dismissalKey,
+      state: viewState.state,
+    };
+  }, [dismissedKeys, viewState.state]);
+
+  useEffect(() => {
+    if (visibleState === null) {
+      toast.dismiss(UPDATE_TOAST_ID);
+      return;
+    }
+
+    const { actionLabel, descriptionLabel, detailLabel, titleLabel } =
+      getButtonCopy(visibleState.state);
+    const isDownloading = visibleState.state.status === "downloading";
+
+    toast(titleLabel, {
+      action:
+        isDownloading || viewState.isPending
+          ? undefined
+          : {
+              label: actionLabel,
+              onClick: () => {
+                runToastAction();
+              },
+            },
+      cancel: {
+        label: "Dismiss",
+        onClick: () => {
+          dismissToast(visibleState.dismissalKey);
+        },
+      },
+      description:
+        viewState.actionError ??
+        (isDownloading ? detailLabel : descriptionLabel),
+      duration: Number.POSITIVE_INFINITY,
+      icon: getButtonIcon({
         isDownloading,
         isPending: viewState.isPending,
-        status: viewState.state.status,
-      })}
-      onAction={handleClick}
-    />
-  );
+        status: visibleState.state.status,
+      }),
+      id: UPDATE_TOAST_ID,
+    });
+  }, [viewState.actionError, viewState.isPending, visibleState]);
+
+  return null;
 }

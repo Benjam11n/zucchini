@@ -1,10 +1,25 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import type * as SonnerModule from "sonner";
+import { toast } from "sonner";
 
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 import { UpdateButton } from "./update-button";
+
+const sonnerState = vi.hoisted(() => ({
+  dismissToastMock: vi.fn(),
+  messageToastMock: vi.fn(),
+  toastMock: vi.fn(),
+}));
+
+vi.mock<typeof SonnerModule>(import("sonner"), () => ({
+  toast: Object.assign(sonnerState.toastMock, {
+    dismiss: sonnerState.dismissToastMock,
+    message: sonnerState.messageToastMock,
+  }) as unknown as typeof toast,
+}));
 
 const IDLE_UPDATE_STATE: AppUpdateState = {
   availableVersion: null,
@@ -33,6 +48,9 @@ function setUpdaterState(state: AppUpdateState) {
 
 describe("update button", () => {
   it("stays hidden while the updater is idle", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState(IDLE_UPDATE_STATE);
 
     render(<UpdateButton />);
@@ -43,9 +61,13 @@ describe("update button", () => {
     });
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(toast.dismiss).toHaveBeenCalledWith("app-update");
   });
 
-  it("renders when an update is available to download", async () => {
+  it("shows a toast when an update is available to download", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
       availableVersion: "0.1.1-beta.3",
@@ -54,11 +76,25 @@ describe("update button", () => {
 
     render(<UpdateButton />);
 
-    await expect(
-      screen.findByRole("button", { name: /download update/i })
-    ).resolves.toBeInTheDocument();
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          action: expect.objectContaining({
+            label: "Download update",
+          }),
+          description: "Version 0.1.1-beta.3 is available",
+        })
+      );
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: /download update/i }));
+    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.action as {
+      onClick: (event: never) => void;
+    };
+
+    act(() => {
+      action.onClick({} as never);
+    });
 
     await waitFor(() => {
       // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
@@ -66,7 +102,10 @@ describe("update button", () => {
     });
   });
 
-  it("uses the default surface for restart-ready updates and can be dismissed", async () => {
+  it("shows a restart toast for downloaded updates and can be dismissed", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
       availableVersion: "0.1.1-beta.6",
@@ -75,26 +114,36 @@ describe("update button", () => {
 
     render(<UpdateButton />);
 
-    const restartButton = await screen.findByRole("button", {
-      name: /restart to update/i,
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(
+        "Update ready",
+        expect.objectContaining({
+          action: expect.objectContaining({
+            label: "Restart to update",
+          }),
+          cancel: expect.objectContaining({
+            label: "Dismiss",
+          }),
+        })
+      );
     });
 
-    expect(restartButton).toHaveAttribute("data-variant", "outline");
+    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.cancel as {
+      onClick: (event: never) => void;
+    };
 
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: /dismiss update notification/i,
-      })
-    );
-
-    expect(
-      screen.queryByRole("button", { name: /restart to update/i })
-    ).not.toBeInTheDocument();
+    act(() => {
+      cancel.onClick({} as never);
+    });
 
     expect(updater.installUpdate).not.toHaveBeenCalled();
+    expect(toast.dismiss).toHaveBeenCalledWith("app-update");
   });
 
-  it("installs downloaded updates when the banner is clicked", async () => {
+  it("installs downloaded updates when the toast action is clicked", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
       availableVersion: "0.1.1-beta.6",
@@ -103,9 +152,29 @@ describe("update button", () => {
 
     render(<UpdateButton />);
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: /restart to update/i })
-    );
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith(
+        "Update ready",
+        expect.objectContaining({
+          action: expect.objectContaining({
+            label: "Restart to update",
+          }),
+          cancel: expect.objectContaining({
+            label: "Dismiss",
+          }),
+          description: "Version 0.1.1-beta.6 is ready",
+          id: "app-update",
+        })
+      );
+    });
+
+    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.action as {
+      onClick: (event: never) => void;
+    };
+
+    act(() => {
+      action.onClick({} as never);
+    });
 
     await waitFor(() => {
       // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
@@ -114,6 +183,9 @@ describe("update button", () => {
   });
 
   it("stays hidden when the updater is unavailable", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
       status: "unavailable",

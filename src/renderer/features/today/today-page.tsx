@@ -3,7 +3,7 @@
  *
  * This screen turns today's habit state into the daily flow the user sees:
  * recent history, streak summary, daily checklist, longer-cycle habits, and
- * celebration popups.
+ * celebration toasts.
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { ListChecks } from "lucide-react";
@@ -14,7 +14,6 @@ import { LongerHabitChecklist } from "@/renderer/features/today/components/longe
 import { StreakCard } from "@/renderer/features/today/components/streak-card";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
-import { TodayPopupStack } from "@/renderer/features/today/components/today-popup-stack";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
 import {
   staggerContainerVariants,
@@ -99,66 +98,62 @@ function TodayPageComponent({
         periodicHabits: nextPeriodicHabits,
       };
     }, [state.habits]);
-  const popups = useTodayPopups({ state });
+  useTodayPopups({ state });
 
   return (
     <LazyMotion features={domAnimation}>
-      <>
-        <m.div
-          animate="animate"
-          className="grid min-w-0 gap-6"
-          initial="initial"
-          variants={staggerContainerVariants}
-        >
-          <m.section className="min-w-0" variants={staggerItemVariants}>
-            <TodayHistoryCarousel history={history} todayDate={state.date} />
-          </m.section>
+      <m.div
+        animate="animate"
+        className="grid min-w-0 gap-6"
+        initial="initial"
+        variants={staggerContainerVariants}
+      >
+        <m.section className="min-w-0" variants={staggerItemVariants}>
+          <TodayHistoryCarousel history={history} todayDate={state.date} />
+        </m.section>
 
-          <m.section variants={staggerItemVariants}>
-            <StreakCard
-              availableFreezes={state.streak.availableFreezes}
-              currentStreak={state.streak.currentStreak}
-              categoryProgress={categoryProgress}
-              dateLabel={state.date}
-            />
-          </m.section>
+        <m.section variants={staggerItemVariants}>
+          <StreakCard
+            availableFreezes={state.streak.availableFreezes}
+            currentStreak={state.streak.currentStreak}
+            categoryProgress={categoryProgress}
+            dateLabel={state.date}
+          />
+        </m.section>
 
+        <m.section variants={staggerItemVariants}>
+          <HabitChecklist
+            icon={ListChecks}
+            completedCount={completedCount}
+            emptyMessage="No daily habits yet. Add one right now to power the rings and streak."
+            headerActions={
+              <TodayHabitManagerDialog
+                habits={managedHabits}
+                onArchiveHabit={onArchiveHabit}
+                onCreateHabit={onCreateHabit}
+                onRenameHabit={onRenameHabit}
+                onReorderHabits={onReorderHabits}
+                onUnarchiveHabit={onUnarchiveHabit}
+                onUpdateHabitCategory={onUpdateHabitCategory}
+                onUpdateHabitFrequency={onUpdateHabitFrequency}
+                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+              />
+            }
+            habits={dailyHabits}
+            onToggleHabit={onToggleHabit}
+          />
+        </m.section>
+
+        {periodicHabits.length > 0 ? (
           <m.section variants={staggerItemVariants}>
-            <HabitChecklist
-              icon={ListChecks}
-              completedCount={completedCount}
-              emptyMessage="No daily habits yet. Add one right now to power the rings and streak."
-              headerActions={
-                <TodayHabitManagerDialog
-                  habits={managedHabits}
-                  onArchiveHabit={onArchiveHabit}
-                  onCreateHabit={onCreateHabit}
-                  onRenameHabit={onRenameHabit}
-                  onReorderHabits={onReorderHabits}
-                  onUnarchiveHabit={onUnarchiveHabit}
-                  onUpdateHabitCategory={onUpdateHabitCategory}
-                  onUpdateHabitFrequency={onUpdateHabitFrequency}
-                  onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                />
-              }
-              habits={dailyHabits}
+            <LongerHabitChecklist
+              dateKey={state.date}
+              habits={periodicHabits}
               onToggleHabit={onToggleHabit}
             />
           </m.section>
-
-          {periodicHabits.length > 0 ? (
-            <m.section variants={staggerItemVariants}>
-              <LongerHabitChecklist
-                dateKey={state.date}
-                habits={periodicHabits}
-                onToggleHabit={onToggleHabit}
-              />
-            </m.section>
-          ) : null}
-        </m.div>
-
-        <TodayPopupStack popups={popups} />
-      </>
+        ) : null}
+      </m.div>
     </LazyMotion>
   );
 }

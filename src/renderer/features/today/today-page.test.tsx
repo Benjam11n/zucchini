@@ -5,7 +5,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
 import type * as StreakCardModule from "@/renderer/features/today/components/streak-card";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
-import type * as TodayPopupStackModule from "@/renderer/features/today/components/today-popup-stack";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -35,17 +34,8 @@ vi.mock<typeof LongerHabitChecklistModule>(
   })
 );
 
-vi.mock<typeof TodayPopupStackModule>(
-  import("@/renderer/features/today/components/today-popup-stack"),
-  () => ({
-    TodayPopupStack: (() => (
-      <div />
-    )) as unknown as typeof TodayPopupStackModule.TodayPopupStack,
-  })
-);
-
 vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
-  useTodayPopups: () => [],
+  useTodayPopups: vi.fn(),
 }));
 
 const history: HistoryDay[] = [];

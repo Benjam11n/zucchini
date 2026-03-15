@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/ui/card";
+import { Toaster } from "@/renderer/shared/ui/sonner";
 import { Spinner } from "@/renderer/shared/ui/spinner";
 
 const FocusWidget = lazy(async () => {
@@ -293,7 +294,10 @@ export default function App() {
       description="The app hit an unexpected error. Reload Zucchini to continue."
       title="Unexpected app error"
     >
-      <MainApp />
+      <>
+        <MainApp />
+        <Toaster />
+      </>
     </AppErrorBoundary>
   );
 }

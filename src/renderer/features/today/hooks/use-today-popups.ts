@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
-import type { PopupEvent } from "@/renderer/features/today/today.types";
 import { MASCOTS } from "@/renderer/shared/assets/mascots";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isDailyHabit } from "@/shared/domain/habit";
@@ -13,34 +13,32 @@ interface UseTodayPopupsOptions {
   state: TodayState;
 }
 
-export function useTodayPopups({ state }: UseTodayPopupsOptions): PopupEvent[] {
+export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
   const dailyHabits = state.habits.filter(isDailyHabit);
   const completedCount = dailyHabits.filter((habit) => habit.completed).length;
   const halfwayThreshold = Math.ceil(dailyHabits.length / 2);
 
-  const [popups, setPopups] = useState<PopupEvent[]>([]);
   const initializedRef = useRef(false);
-  const popupTimeoutIdsRef = useRef<number[]>([]);
   const previousDailyProgressRef = useRef({
     completedCount,
     date: state.date,
   });
 
   const addPopup = (mascot: string, title: string, message: string) => {
-    const id = crypto.randomUUID();
-    setPopups((prev) => [...prev, { id, mascot, message, title }]);
-
-    const timeoutId = window.setTimeout(() => {
-      setPopups((prev) => prev.filter((popup) => popup.id !== id));
-      popupTimeoutIdsRef.current = popupTimeoutIdsRef.current.filter(
-        (existingId) => existingId !== timeoutId
-      );
-    }, POPUP_TIMEOUT_MS);
-    popupTimeoutIdsRef.current.push(timeoutId);
-
     const iconFilename = mascot.startsWith("/mascot/")
       ? mascot.replace("/mascot/", "")
       : undefined;
+
+    toast(title, {
+      description: message,
+      duration: POPUP_TIMEOUT_MS,
+      icon: createElement("img", {
+        alt: "",
+        className: "size-12 shrink-0 rounded-xl object-contain",
+        src: mascot,
+      }),
+    });
+
     void window.habits.showNotification(title, message, iconFilename);
   };
 
@@ -118,16 +116,4 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): PopupEvent[] {
       streak: state.streak,
     });
   }, [completedCount, state.date, state.streak]);
-
-  useEffect(
-    () => () => {
-      for (const timeoutId of popupTimeoutIdsRef.current) {
-        clearTimeout(timeoutId);
-      }
-      popupTimeoutIdsRef.current = [];
-    },
-    []
-  );
-
-  return popups;
 }
