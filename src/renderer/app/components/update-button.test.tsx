@@ -108,7 +108,7 @@ describe("update button", () => {
     sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
-      availableVersion: "0.1.1-beta.6",
+      availableVersion: "0.1.1-beta.7",
       status: "downloaded",
     });
 
@@ -146,7 +146,7 @@ describe("update button", () => {
     sonnerState.messageToastMock.mockClear();
     const updater = setUpdaterState({
       ...IDLE_UPDATE_STATE,
-      availableVersion: "0.1.1-beta.6",
+      availableVersion: "0.1.1-beta.7",
       status: "downloaded",
     });
 
@@ -162,7 +162,7 @@ describe("update button", () => {
           cancel: expect.objectContaining({
             label: "Dismiss",
           }),
-          description: "Version 0.1.1-beta.6 is ready",
+          description: "Version 0.1.1-beta.7 is ready",
           id: "app-update",
         })
       );
