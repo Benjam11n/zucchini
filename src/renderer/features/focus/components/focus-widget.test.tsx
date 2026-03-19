@@ -34,6 +34,19 @@ function createLocalStorageMock() {
 }
 
 describe("focus widget", () => {
+  function dispatchShortcut(code: string, key: string) {
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          code,
+          key,
+        })
+      );
+    });
+  }
+
   function setupWidgetTest({ renderWidget = true } = {}) {
     resetFocusStore();
     class ResizeObserverMock {
@@ -150,6 +163,29 @@ describe("focus widget", () => {
     });
     // eslint-disable-next-line vitest/prefer-called-once
     expect(closeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports keyboard shortcuts for start, pause, resume, and reset", async () => {
+    const { getTodayState } = setupWidgetTest();
+
+    await waitFor(() => {
+      expect(getTodayState.mock.calls[0]).toStrictEqual([]);
+    });
+
+    dispatchShortcut("Space", " ");
+    expect(useFocusStore.getState().timerState.status).toBe("running");
+
+    dispatchShortcut("Space", " ");
+    expect(useFocusStore.getState().timerState.status).toBe("paused");
+
+    dispatchShortcut("Space", " ");
+    expect(useFocusStore.getState().timerState.status).toBe("running");
+
+    dispatchShortcut("KeyR", "r");
+
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.status).toBe("idle");
+    });
   });
 
   it("restores a running timer without resetting it on widget mount", async () => {

@@ -19,6 +19,7 @@ import {
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
+import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { Button } from "@/renderer/shared/ui/button";
@@ -63,6 +64,10 @@ function useFocusWidgetSnapshot() {
   }, []);
 
   return todayState;
+}
+
+function handleClose() {
+  window.close();
 }
 
 export function FocusWidget() {
@@ -127,6 +132,34 @@ export function FocusWidget() {
     timerLabelColorClass = "text-white/80";
   }
 
+  function handleStartOrResume() {
+    clearFocusSaveError();
+    setTimerState(
+      isPaused
+        ? resumeFocusTimerState(timerState)
+        : createRunningFocusTimerState(
+            new Date(),
+            getPomodoroFocusDurationMs(resolvedPomodoroSettings),
+            timerState.completedFocusCycles
+          )
+    );
+  }
+
+  function handlePause() {
+    setTimerState(pauseFocusTimerState(timerState));
+  }
+
+  function handleReset() {
+    void resetFocusTimerSession({
+      clearFocusSaveError,
+      focusDurationMs: getPomodoroFocusDurationMs(resolvedPomodoroSettings),
+      recordFocusSession: window.habits.recordFocusSession,
+      setFocusSaveErrorMessage,
+      setTimerState,
+      timerState,
+    });
+  }
+
   useEffect(() => {
     const widgetElement = widgetRef.current;
     if (!widgetElement) {
@@ -164,6 +197,27 @@ export function FocusWidget() {
       resizeObserver.disconnect();
     };
   }, [canReset, canStart, timerState.remainingMs]);
+
+  useKeyboardShortcut({
+    code: "Space",
+    enabled: canStart || isRunning,
+    handler: () => {
+      if (canStart) {
+        handleStartOrResume();
+        return;
+      }
+
+      if (isRunning) {
+        handlePause();
+      }
+    },
+  });
+
+  useKeyboardShortcut({
+    code: "KeyR",
+    enabled: canReset,
+    handler: handleReset,
+  });
 
   useFocusTimer({
     clearFocusSaveError,
@@ -204,18 +258,7 @@ export function FocusWidget() {
             <Button
               aria-label={isPaused ? "Resume timer" : "Start timer"}
               className="rounded-full"
-              onClick={() => {
-                clearFocusSaveError();
-                setTimerState(
-                  isPaused
-                    ? resumeFocusTimerState(timerState)
-                    : createRunningFocusTimerState(
-                        new Date(),
-                        getPomodoroFocusDurationMs(resolvedPomodoroSettings),
-                        timerState.completedFocusCycles
-                      )
-                );
-              }}
+              onClick={handleStartOrResume}
               size="icon-xs"
             >
               <Play className="size-3.5" />
@@ -226,9 +269,7 @@ export function FocusWidget() {
             <Button
               aria-label="Pause timer"
               className="rounded-full"
-              onClick={() => {
-                setTimerState(pauseFocusTimerState(timerState));
-              }}
+              onClick={handlePause}
               size="icon-xs"
               variant="secondary"
             >
@@ -240,18 +281,7 @@ export function FocusWidget() {
             <Button
               aria-label="Reset timer"
               className="rounded-full"
-              onClick={() => {
-                void resetFocusTimerSession({
-                  clearFocusSaveError,
-                  focusDurationMs: getPomodoroFocusDurationMs(
-                    resolvedPomodoroSettings
-                  ),
-                  recordFocusSession: window.habits.recordFocusSession,
-                  setFocusSaveErrorMessage,
-                  setTimerState,
-                  timerState,
-                });
-              }}
+              onClick={handleReset}
               size="icon-xs"
               variant="ghost"
             >
@@ -270,9 +300,7 @@ export function FocusWidget() {
         <Button
           aria-label="Close widget"
           className="rounded-full"
-          onClick={() => {
-            window.close();
-          }}
+          onClick={handleClose}
           size="icon-xs"
           style={NO_DRAG_REGION_STYLE}
           variant="ghost"
