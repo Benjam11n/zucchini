@@ -50,6 +50,10 @@ export function NewHabitForm({
   const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
 
   useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
     if (!shouldRestoreFocus) {
       return;
     }
