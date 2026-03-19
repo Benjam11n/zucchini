@@ -142,6 +142,13 @@ async function refreshToday(mutator: Promise<TodayState>) {
   }
 }
 
+async function refreshForNewDay() {
+  await reloadAll(undefined, useHistoryStore.getState().historyScope);
+  if (useWeeklyReviewStore.getState().weeklyReviewPhase !== "idle") {
+    await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+  }
+}
+
 async function applyTodayMutation(mutator: Promise<TodayState>) {
   const nextTodayState = await mutator;
   const managedHabits = await window.habits.getHabits();
@@ -419,6 +426,7 @@ export const appActions = {
   loadWeeklyReviewOverview,
   openWeeklyReviewSpotlight,
   recordFocusSession,
+  refreshForNewDay,
   retryBoot,
   selectWeeklyReview,
   setFocusSaveErrorMessage,

@@ -32,6 +32,7 @@ import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
+import { toDateKey } from "@/shared/utils/date";
 
 import { appActions } from "./app-actions";
 import type { AppControllerState } from "./app-controller.types";
@@ -41,6 +42,12 @@ const EMPTY_HISTORY: AppControllerState["history"] = [];
 const EMPTY_FOCUS_SESSIONS: AppControllerState["focusSessions"] = [];
 const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
+
+function getMillisecondsUntilNextLocalDay(now = new Date()): number {
+  const nextMidnight = new Date(now);
+  nextMidnight.setHours(24, 0, 0, 0);
+  return Math.max(nextMidnight.getTime() - now.getTime(), 1);
+}
 
 function useAppControllerActions() {
   return appActions;
@@ -362,6 +369,7 @@ function useAppLifecycleEffects({
   bootPhase,
   loadWeeklyReviewOverview,
   openWeeklyReviewSpotlight,
+  refreshForNewDay,
   setSystemTheme,
   settingsDraft,
   systemTheme,
@@ -377,6 +385,9 @@ function useAppLifecycleEffects({
   openWeeklyReviewSpotlight: ReturnType<
     typeof useAppControllerActions
   >["openWeeklyReviewSpotlight"];
+  refreshForNewDay: ReturnType<
+    typeof useAppControllerActions
+  >["refreshForNewDay"];
   setSystemTheme: ReturnType<typeof useAppControllerActions>["setSystemTheme"];
   settingsDraft: AppSettings | null;
   systemTheme: ReturnType<typeof useAppControllerCoreState>["systemTheme"];
@@ -426,6 +437,52 @@ function useAppLifecycleEffects({
   useEffect(() => {
     setSystemTheme(systemTheme);
   }, [setSystemTheme, systemTheme]);
+
+  useEffect(() => {
+    if (bootPhase !== "ready" || !todayState?.date) {
+      return;
+    }
+
+    let midnightTimer: number | null = null;
+
+    const maybeRefreshForNewDay = () => {
+      if (todayState.date === toDateKey(new Date())) {
+        return;
+      }
+
+      void refreshForNewDay();
+    };
+
+    const scheduleNextRefresh = () => {
+      midnightTimer = window.setTimeout(() => {
+        maybeRefreshForNewDay();
+      }, getMillisecondsUntilNextLocalDay());
+    };
+
+    const handleWindowFocus = () => {
+      maybeRefreshForNewDay();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        maybeRefreshForNewDay();
+      }
+    };
+
+    maybeRefreshForNewDay();
+    scheduleNextRefresh();
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      if (midnightTimer !== null) {
+        window.clearTimeout(midnightTimer);
+      }
+
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [bootPhase, refreshForNewDay, todayState?.date]);
 
   useEffect(() => {
     if (!savedPomodoroSettings) {
@@ -479,6 +536,7 @@ export function useAppController() {
     bootPhase: coreState.bootPhase,
     loadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
+    refreshForNewDay: actions.refreshForNewDay,
     setSystemTheme: actions.setSystemTheme,
     settingsDraft: coreState.settingsDraft,
     systemTheme,
