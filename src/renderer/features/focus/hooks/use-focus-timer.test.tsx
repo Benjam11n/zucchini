@@ -305,6 +305,10 @@ describe("use focus timer", () => {
       status: "running",
       timerSessionId: "timer-session-4",
     });
+    expect(window.habits.showNotification).toHaveBeenCalledWith(
+      "Focus set complete",
+      "Time for a long break."
+    );
     teardownFocusTimerTest();
   });
 
@@ -390,6 +394,10 @@ describe("use focus timer", () => {
           variant: "long",
         }
       )
+    );
+    expect(window.habits.showNotification).toHaveBeenCalledWith(
+      "Long break complete",
+      "Pomodoro set finished."
     );
     teardownFocusTimerTest();
   });
@@ -556,7 +564,7 @@ describe("use focus timer", () => {
       status: "running",
     });
     expect(window.habits.showNotification).toHaveBeenCalledWith(
-      "Focus complete",
+      "Focus set complete",
       "Time for a long break."
     );
     teardownFocusTimerTest();

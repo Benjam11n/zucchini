@@ -63,6 +63,36 @@ async function notify(
   }
 }
 
+function getFocusCompleteNotification(shouldStartLongBreak: boolean): {
+  body: string;
+  title: string;
+} {
+  return shouldStartLongBreak
+    ? {
+        body: "Time for a long break.",
+        title: "Focus set complete",
+      }
+    : {
+        body: "Time for a short break.",
+        title: "Focus complete",
+      };
+}
+
+function getBreakCompleteNotification(isLongBreak: boolean): {
+  body: string;
+  title: string;
+} {
+  return isLongBreak
+    ? {
+        body: "Pomodoro set finished.",
+        title: "Long break complete",
+      }
+    : {
+        body: "Back to focused work.",
+        title: "Break complete",
+      };
+}
+
 export function useFocusTimer({
   clearFocusSaveError,
   pomodoroSettings,
@@ -259,13 +289,14 @@ export function useFocusTimer({
               );
 
             if (claimedCompletion) {
+              const notification =
+                getFocusCompleteNotification(shouldStartLongBreak);
+
               clearFocusSaveError();
               void notify(
                 window.habits.showNotification,
-                "Focus complete",
-                shouldStartLongBreak
-                  ? "Time for a long break."
-                  : "Time for a short break."
+                notification.title,
+                notification.body
               );
               void recordFocusSession(
                 createCompletedFocusSessionInput(
@@ -290,6 +321,9 @@ export function useFocusTimer({
           );
           const nextFocusDurationMs = getPomodoroFocusDurationMs(
             pomodoroSettingsRef.current
+          );
+          const notification = getBreakCompleteNotification(
+            currentState.breakVariant === "long"
           );
 
           useFocusStore.getState().setTimerState(
@@ -316,8 +350,8 @@ export function useFocusTimer({
           );
           void notify(
             window.habits.showNotification,
-            "Break complete",
-            "Back to focused work."
+            notification.title,
+            notification.body
           );
           return;
         }
