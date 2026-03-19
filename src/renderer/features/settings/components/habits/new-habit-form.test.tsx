@@ -44,6 +44,15 @@ vi.mock<typeof FramerMotion>(
 );
 
 describe("new habit form", () => {
+  it("focuses the name input when the form opens", () => {
+    const focusSpy = vi.spyOn(HTMLInputElement.prototype, "focus");
+
+    render(<NewHabitForm onCreateHabit={createAsyncMock()} />);
+
+    expect(focusSpy).toHaveBeenCalledWith();
+    focusSpy.mockRestore();
+  });
+
   it("keeps category visible by default and reveals advanced options on demand", () => {
     render(<NewHabitForm onCreateHabit={createAsyncMock()} />);
 
@@ -62,6 +71,8 @@ describe("new habit form", () => {
     const focusSpy = vi.spyOn(HTMLInputElement.prototype, "focus");
 
     render(<NewHabitForm onCreateHabit={onCreateHabit} />);
+
+    focusSpy.mockClear();
 
     fireEvent.change(screen.getByLabelText("Name"), {
       target: { value: "Drink water" },
@@ -85,7 +96,7 @@ describe("new habit form", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       'Added "Drink water".'
     );
-    expect(focusSpy).toHaveBeenCalledWith();
+    expect(focusSpy.mock.calls).toStrictEqual([[]]);
     focusSpy.mockRestore();
   });
 });
