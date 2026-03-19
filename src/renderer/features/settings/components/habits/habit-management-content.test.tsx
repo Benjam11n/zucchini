@@ -131,7 +131,9 @@ describe("habit management content", () => {
       expect(onUnarchiveHabit).toHaveBeenCalledWith(1);
     });
 
-    expect(screen.getByText('Restored "Habit 1".')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Restored "Habit 1".')).toBeInTheDocument();
+    });
   });
 
   it("expands the newly created top habit after creation completes", async () => {

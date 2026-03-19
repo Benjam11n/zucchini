@@ -73,9 +73,11 @@ describe("data management settings card", () => {
       // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
       expect(habits.exportBackup).toHaveBeenCalledOnce();
     });
-    expect(
-      screen.getByText(/backup exported as zucchini-backup\.db/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/backup exported as zucchini-backup\.db/i)
+      ).toBeInTheDocument();
+    });
   });
 
   it("warns before importing a backup", async () => {

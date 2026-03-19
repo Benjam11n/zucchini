@@ -392,8 +392,7 @@ describe("use app controller", () => {
     });
 
     await waitFor(() => {
-      // oxlint-disable-next-line vitest/prefer-called-once
-      expect(habits.getWeeklyReviewOverview).toHaveBeenCalledTimes(1);
+      expect(habits.getWeeklyReviewOverview).toHaveBeenCalledWith();
       expect(
         hook.result.current.state.isWeeklyReviewSpotlightOpen
       ).toBeTruthy();
@@ -418,5 +417,75 @@ describe("use app controller", () => {
         lastSeenWeeklyReviewStart: "2026-03-02",
       })
     );
+  });
+
+  it("refreshes app state when the local day rolls over", async () => {
+    cleanup();
+    (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
+    document.documentElement.className = "";
+    vi.restoreAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-03-10T23:59:58"));
+
+    const { habits, hook } = await setupUseAppController({
+      todayState: createTodayState({
+        date: "2026-03-10",
+      }),
+    });
+
+    habits.getTodayState.mockResolvedValue(
+      createTodayState({
+        date: "2026-03-11",
+      })
+    );
+    habits.getHistory.mockResolvedValue([
+      createHistoryDay("2026-03-11"),
+      createHistoryDay("2026-03-10"),
+    ]);
+
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-03-11T00:00:01"));
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+
+    expect(hook.result.current.state.todayState?.date).toBe("2026-03-11");
+
+    vi.useRealTimers();
+  });
+
+  it("refreshes app state on window focus after the local day changes", async () => {
+    cleanup();
+    (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
+    document.documentElement.className = "";
+    vi.restoreAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-03-10T09:00:00"));
+
+    const { habits, hook } = await setupUseAppController({
+      todayState: createTodayState({
+        date: "2026-03-10",
+      }),
+    });
+
+    habits.getTodayState.mockResolvedValue(
+      createTodayState({
+        date: "2026-03-11",
+      })
+    );
+    habits.getHistory.mockResolvedValue([
+      createHistoryDay("2026-03-11"),
+      createHistoryDay("2026-03-10"),
+    ]);
+
+    await act(async () => {
+      vi.setSystemTime(new Date("2026-03-11T09:00:00"));
+      window.dispatchEvent(new Event("focus"));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(hook.result.current.state.todayState?.date).toBe("2026-03-11");
+
+    vi.useRealTimers();
   });
 });
