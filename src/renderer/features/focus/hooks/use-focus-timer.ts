@@ -51,6 +51,7 @@ function resolveRestoredTimerState(
   };
 }
 
+// CHECK if a function like this is needed?
 async function notify(
   showNotification: (title: string, body: string) => Promise<void>,
   title: string,
