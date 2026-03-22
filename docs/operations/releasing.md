@@ -17,6 +17,7 @@ Both installers are intentionally unsigned in this phase.
 - Push access to the repository
 - A version tag in the format `v0.1.0`
 - GitHub Actions enabled for the repository
+- `CHANGELOG.md` updated for the version being released
 
 ## Release Environment
 
@@ -39,9 +40,11 @@ When you push a tag that matches `v*`, GitHub Actions will:
 1. Run a read-only build job on Windows and macOS that checks out the code,
    installs Bun dependencies, runs `bun run audit:ci`, runs `bun run test`,
    and runs `bun run build`.
-2. Upload the built `dist` and `dist-electron` outputs from each platform as
+2. Generate release notes from commits since the previous tag and apply those
+   notes to the draft GitHub Release body.
+3. Upload the built `dist` and `dist-electron` outputs from each platform as
    workflow artifacts.
-3. Run a separate publish job on each platform that downloads the build
+4. Run a separate publish job on each platform that downloads the build
    artifacts and pushes unsigned Windows and macOS installers to a draft GitHub
    Release for that tag.
 
@@ -106,6 +109,12 @@ If you need both Windows and macOS release artifacts, build them on their
 native platforms or rely on the GitHub Actions release workflow.
 
 ## Tagging A Release
+
+Prepare the version and changelog first:
+
+```bash
+bun run changelog:release
+```
 
 Create and push a version tag:
 

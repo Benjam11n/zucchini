@@ -52,8 +52,45 @@ jobs:
             dist-electron
           if-no-files-found: error
 
-  release:
+  prepare-release:
     needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+        with:
+          bun-version: latest
+
+      - name: Generate release notes
+        run: bun run scripts/generate-changelog.mjs --tag "${{ github.ref_name }}" --output release-notes.md
+
+      - name: Create or update draft release
+        run: |
+          gh release view "${{ github.ref_name }}" >/dev/null 2>&1 || \
+            gh release create "${{ github.ref_name }}" \
+              --draft \
+              --title "Zucchini ${GITHUB_REF_NAME#v}" \
+              --notes-file release-notes.md
+
+          gh release edit "${{ github.ref_name }}" \
+            --draft \
+            --title "Zucchini ${GITHUB_REF_NAME#v}" \
+            --notes-file release-notes.md
+
+  release:
+    needs:
+      - build
+      - prepare-release
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
