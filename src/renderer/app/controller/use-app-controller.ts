@@ -1,11 +1,11 @@
-import { useUiStore } from "@/renderer/app/state/ui-store";
-import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 /**
  * Main renderer orchestration hook.
  *
  * This hook gathers state from the feature stores, runs shared lifecycle
  * effects, and returns the controller object consumed by the app shell.
  */
+import { useUiStore } from "@/renderer/app/state/ui-store";
+import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 
