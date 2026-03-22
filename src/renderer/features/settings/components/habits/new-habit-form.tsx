@@ -1,6 +1,6 @@
 import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
 import { microTransition } from "@/renderer/shared/lib/motion";
@@ -28,78 +28,137 @@ import { HabitFrequencySelector } from "./habit-frequency-selector";
 import type { HabitManagementCardProps } from "./habit-management.types";
 import { HabitWeekdaySelector } from "./habit-weekday-selector";
 
+const CREATION_FEEDBACK_TIMEOUT_MS = 2200;
+
+interface NewHabitFormState {
+  category: HabitCategory;
+  creationFeedback: string | null;
+  frequency: HabitFrequency;
+  isAdvancedOpen: boolean;
+  name: string;
+  selectedWeekdays: HabitWeekday[] | null;
+}
+
+type NewHabitFormAction =
+  | { type: "clearFeedback" }
+  | { type: "setAdvancedOpen"; value: boolean }
+  | { type: "setCategory"; value: HabitCategory }
+  | { type: "setFrequency"; value: HabitFrequency }
+  | { type: "setName"; value: string }
+  | { type: "setWeekdays"; value: HabitWeekday[] | null }
+  | { type: "submitSuccess"; createdHabitName: string };
+
+const initialState: NewHabitFormState = {
+  category: DEFAULT_HABIT_CATEGORY,
+  creationFeedback: null,
+  frequency: DEFAULT_HABIT_FREQUENCY,
+  isAdvancedOpen: false,
+  name: "",
+  selectedWeekdays: null,
+};
+
+function reducer(
+  state: NewHabitFormState,
+  action: NewHabitFormAction
+): NewHabitFormState {
+  switch (action.type) {
+    case "clearFeedback": {
+      return {
+        ...state,
+        creationFeedback: null,
+      };
+    }
+    case "setAdvancedOpen": {
+      return {
+        ...state,
+        isAdvancedOpen: action.value,
+      };
+    }
+    case "setCategory": {
+      return {
+        ...state,
+        category: action.value,
+      };
+    }
+    case "setFrequency": {
+      return {
+        ...state,
+        frequency: action.value,
+        selectedWeekdays:
+          action.value === "daily" ? state.selectedWeekdays : null,
+      };
+    }
+    case "setName": {
+      return {
+        ...state,
+        name: action.value,
+      };
+    }
+    case "setWeekdays": {
+      return {
+        ...state,
+        selectedWeekdays: action.value,
+      };
+    }
+    case "submitSuccess": {
+      return {
+        ...state,
+        category: DEFAULT_HABIT_CATEGORY,
+        creationFeedback: `Added "${action.createdHabitName}".`,
+        frequency: DEFAULT_HABIT_FREQUENCY,
+        name: "",
+        selectedWeekdays: null,
+      };
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
 export function NewHabitForm({
   onCreateHabit,
 }: Pick<HabitManagementCardProps, "onCreateHabit">) {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const feedbackTimeoutRef = useRef<number | null>(null);
-  const [newHabitName, setNewHabitName] = useState("");
-  const [newHabitCategory, setNewHabitCategory] = useState<HabitCategory>(
-    DEFAULT_HABIT_CATEGORY
-  );
-  const [newHabitFrequency, setNewHabitFrequency] = useState<HabitFrequency>(
-    DEFAULT_HABIT_FREQUENCY
-  );
-  const [newHabitSelectedWeekdays, setNewHabitSelectedWeekdays] = useState<
-    HabitWeekday[] | null
-  >(null);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [shouldRestoreFocus, setShouldRestoreFocus] = useState(false);
-  const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     nameInputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    if (!shouldRestoreFocus) {
+    if (!state.creationFeedback) {
       return;
     }
 
-    nameInputRef.current?.focus();
-    setShouldRestoreFocus(false);
-  }, [shouldRestoreFocus]);
+    const timeoutId = window.setTimeout(() => {
+      dispatch({ type: "clearFeedback" });
+    }, CREATION_FEEDBACK_TIMEOUT_MS);
 
-  useEffect(
-    () => () => {
-      if (feedbackTimeoutRef.current === null) {
-        return;
-      }
-
-      window.clearTimeout(feedbackTimeoutRef.current);
-    },
-    []
-  );
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [state.creationFeedback]);
 
   async function handleCreate(): Promise<void> {
-    if (!newHabitName.trim()) {
+    const trimmedName = state.name.trim();
+    if (!trimmedName) {
       return;
     }
 
-    const createdHabitName = newHabitName.trim();
     await onCreateHabit(
-      createdHabitName,
-      newHabitCategory,
-      newHabitFrequency,
-      newHabitFrequency === "daily"
-        ? normalizeHabitWeekdays(newHabitSelectedWeekdays)
+      trimmedName,
+      state.category,
+      state.frequency,
+      state.frequency === "daily"
+        ? normalizeHabitWeekdays(state.selectedWeekdays)
         : null
     );
-    setNewHabitName("");
-    setNewHabitCategory(DEFAULT_HABIT_CATEGORY);
-    setNewHabitFrequency(DEFAULT_HABIT_FREQUENCY);
-    setNewHabitSelectedWeekdays(null);
-    setShouldRestoreFocus(true);
-    setCreationFeedback(`Added "${createdHabitName}".`);
-
-    if (feedbackTimeoutRef.current !== null) {
-      window.clearTimeout(feedbackTimeoutRef.current);
-    }
-
-    feedbackTimeoutRef.current = window.setTimeout(() => {
-      setCreationFeedback(null);
-      feedbackTimeoutRef.current = null;
-    }, 2200);
+    dispatch({
+      createdHabitName: trimmedName,
+      type: "submitSuccess",
+    });
+    nameInputRef.current?.focus();
   }
 
   return (
@@ -108,7 +167,12 @@ export function NewHabitForm({
       layout
       transition={microTransition}
     >
-      <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+      <Collapsible
+        open={state.isAdvancedOpen}
+        onOpenChange={(value) => {
+          dispatch({ type: "setAdvancedOpen", value });
+        }}
+      >
         <form
           className="grid gap-3"
           onSubmit={(event) => {
@@ -124,7 +188,7 @@ export function NewHabitForm({
                 <ChevronDown
                   className={cn(
                     "size-4 transition-transform",
-                    isAdvancedOpen && "rotate-180"
+                    state.isAdvancedOpen && "rotate-180"
                   )}
                 />
               </Button>
@@ -143,16 +207,21 @@ export function NewHabitForm({
                 ref={nameInputRef}
                 className="h-10"
                 id="new-habit"
-                onChange={(event) => setNewHabitName(event.target.value)}
+                onChange={(event) => {
+                  dispatch({
+                    type: "setName",
+                    value: event.target.value,
+                  });
+                }}
                 placeholder="Eat zucchini..."
                 required
                 type="text"
-                value={newHabitName}
+                value={state.name}
               />
             </div>
             <Button
               className="h-10 px-4"
-              disabled={!newHabitName.trim()}
+              disabled={!state.name.trim()}
               type="submit"
             >
               <Plus className="size-4" />
@@ -168,18 +237,23 @@ export function NewHabitForm({
               className="gap-1.5"
               compact
               name="new-habit-category"
-              onChange={setNewHabitCategory}
-              selectedCategory={newHabitCategory}
+              onChange={(value) => {
+                dispatch({
+                  type: "setCategory",
+                  value,
+                });
+              }}
+              selectedCategory={state.category}
             />
           </div>
 
-          {creationFeedback ? (
+          {state.creationFeedback ? (
             <p
               aria-live="polite"
               className="text-xs font-medium text-primary"
               role="status"
             >
-              {creationFeedback}
+              {state.creationFeedback}
             </p>
           ) : null}
 
@@ -193,17 +267,17 @@ export function NewHabitForm({
                   className="gap-1.5"
                   compact
                   name="new-habit-frequency"
-                  onChange={(frequency) => {
-                    setNewHabitFrequency(frequency);
-                    if (frequency !== "daily") {
-                      setNewHabitSelectedWeekdays(null);
-                    }
+                  onChange={(value) => {
+                    dispatch({
+                      type: "setFrequency",
+                      value,
+                    });
                   }}
-                  selectedFrequency={newHabitFrequency}
+                  selectedFrequency={state.frequency}
                 />
               </div>
 
-              {newHabitFrequency === "daily" ? (
+              {state.frequency === "daily" ? (
                 <div className="grid gap-2">
                   <Label className="text-xs font-medium text-muted-foreground">
                     Applies on
@@ -212,8 +286,13 @@ export function NewHabitForm({
                     className="gap-1.5"
                     compact
                     name="new-habit-weekdays"
-                    onChange={setNewHabitSelectedWeekdays}
-                    selectedWeekdays={newHabitSelectedWeekdays}
+                    onChange={(value) => {
+                      dispatch({
+                        type: "setWeekdays",
+                        value,
+                      });
+                    }}
+                    selectedWeekdays={state.selectedWeekdays}
                   />
                 </div>
               ) : null}
