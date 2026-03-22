@@ -19,8 +19,8 @@ export function createMainWindow({
   onClosed,
   shouldHideToTray,
 }: CreateMainWindowOptions): BrowserWindow {
-  const preloadPath = path.join(__dirname, "../../preload.js");
-  const appIndexPath = path.join(__dirname, "../../dist/index.html");
+  const preloadPath = path.join(__dirname, "preload.js");
+  const appIndexPath = path.join(__dirname, "../dist/index.html");
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
     process.platform === "darwin";

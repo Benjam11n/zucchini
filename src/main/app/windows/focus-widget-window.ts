@@ -22,8 +22,8 @@ export function createFocusWidgetWindow({
   iconPath,
   onClosed,
 }: CreateFocusWidgetWindowOptions): BrowserWindow {
-  const preloadPath = path.join(__dirname, "../../preload.js");
-  const appIndexPath = path.join(__dirname, "../../dist/index.html");
+  const preloadPath = path.join(__dirname, "preload.js");
+  const appIndexPath = path.join(__dirname, "../dist/index.html");
   const bounds = getDefaultFocusWidgetBounds();
   const window = new BrowserWindow({
     alwaysOnTop: true,
