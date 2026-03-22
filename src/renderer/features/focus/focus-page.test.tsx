@@ -168,7 +168,7 @@ describe("focus tab", () => {
     expect(screen.getByText("Next break: long")).toBeInTheDocument();
   });
 
-  it("keeps the same timer session id when skipping a break", () => {
+  it("keeps the same timer session id when skipping a short break", () => {
     installHabitsMock();
     resetFocusStore();
     useFocusStore.getState().setTimerState(
@@ -184,7 +184,7 @@ describe("focus tab", () => {
 
     render(<FocusPageHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Skip break" }));
+    fireEvent.click(screen.getByRole("button", { name: "Skip short break" }));
 
     expect(useFocusStore.getState().timerState).toMatchObject({
       phase: "focus",

@@ -165,6 +165,43 @@ describe("focus widget", () => {
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("supports skipping an active short break", async () => {
+    const { getTodayState } = setupWidgetTest({ renderWidget: false });
+    const now = new Date();
+    localStorage.setItem(
+      "zucchini_focus_timer",
+      JSON.stringify(
+        createRunningBreakTimerState({
+          breakDurationMs: 5 * 60 * 1000,
+          breakVariant: "short",
+          completedFocusCycles: 1,
+          focusDurationMs: 25 * 60 * 1000,
+          now,
+          timerSessionId: "timer-session-widget-skip",
+        })
+      )
+    );
+
+    render(<FocusWidget />);
+
+    await waitFor(() => {
+      expect(getTodayState.mock.calls[0]).toStrictEqual([]);
+      expect(
+        screen.getByRole("button", { name: "Skip short break" })
+      ).toBeInTheDocument();
+    });
+
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Skip short break" }));
+    });
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      phase: "focus",
+      status: "running",
+      timerSessionId: "timer-session-widget-skip",
+    });
+  });
+
   it("supports keyboard shortcuts for start, pause, resume, and reset", async () => {
     const { getTodayState } = setupWidgetTest();
 

@@ -1,4 +1,4 @@
-import { Pause, Play, RotateCcw, X } from "lucide-react";
+import { Pause, Play, RotateCcw, SkipForward, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +10,7 @@ import {
   getPomodoroFocusDurationMs,
   pauseFocusTimerState,
   resumeFocusTimerState,
+  skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
   getDefaultPomodoroTimerSettings,
@@ -32,6 +33,28 @@ const DRAG_REGION_STYLE = { WebkitAppRegion: "drag" } as CSSProperties;
 const NO_DRAG_REGION_STYLE = {
   WebkitAppRegion: "no-drag",
 } as CSSProperties;
+
+function getSkipBreakLabel(isLongBreak: boolean): string {
+  return isLongBreak ? "Skip long break" : "Skip short break";
+}
+
+function getTimerLabelColorClass({
+  isBreak,
+  isLastMinute,
+}: {
+  isBreak: boolean;
+  isLastMinute: boolean;
+}): string {
+  if (isLastMinute) {
+    return "text-amber-300";
+  }
+
+  if (isBreak) {
+    return "text-white/80";
+  }
+
+  return "text-foreground";
+}
 
 function useFocusWidgetSnapshot() {
   const [todayState, setTodayState] = useState<TodayState | null>(null);
@@ -124,13 +147,12 @@ export function FocusWidget() {
   const isLastMinute = isRunning && timerState.remainingMs <= MS_PER_MINUTE;
   const canStart = isIdle || isPaused;
   const canReset = !isIdle;
-  let timerLabelColorClass = "text-foreground";
-
-  if (isLastMinute) {
-    timerLabelColorClass = "text-amber-300";
-  } else if (isBreak) {
-    timerLabelColorClass = "text-white/80";
-  }
+  const canSkipBreak = isBreak;
+  const skipBreakLabel = getSkipBreakLabel(timerState.breakVariant === "long");
+  const timerLabelColorClass = getTimerLabelColorClass({
+    isBreak,
+    isLastMinute,
+  });
 
   function handleStartOrResume() {
     clearFocusSaveError();
@@ -158,6 +180,17 @@ export function FocusWidget() {
       setTimerState,
       timerState,
     });
+  }
+
+  function handleSkipBreak() {
+    clearFocusSaveError();
+    setTimerState(
+      skipBreakFocusTimerState(
+        timerState,
+        getPomodoroFocusDurationMs(resolvedPomodoroSettings),
+        new Date()
+      )
+    );
   }
 
   useEffect(() => {
@@ -196,7 +229,7 @@ export function FocusWidget() {
       }
       resizeObserver.disconnect();
     };
-  }, [canReset, canStart, timerState.remainingMs]);
+  }, [canReset, canSkipBreak, canStart, timerState.remainingMs]);
 
   useKeyboardShortcut({
     code: "Space",
@@ -286,6 +319,18 @@ export function FocusWidget() {
               variant="ghost"
             >
               <RotateCcw className="size-3.5" />
+            </Button>
+          ) : null}
+
+          {canSkipBreak ? (
+            <Button
+              aria-label={skipBreakLabel}
+              className="rounded-full"
+              onClick={handleSkipBreak}
+              size="icon-xs"
+              variant="ghost"
+            >
+              <SkipForward className="size-3.5" />
             </Button>
           ) : null}
         </div>

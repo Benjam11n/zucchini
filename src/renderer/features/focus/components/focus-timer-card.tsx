@@ -141,6 +141,8 @@ export function FocusTimerCard({
   const [displayMinutes, displaySeconds] = formatTimerLabel(
     timerState.remainingMs
   ).split(":");
+  const skipBreakLabel =
+    timerState.breakVariant === "long" ? "Skip long break" : "Skip short break";
   const primaryActionLabel = isPaused ? "Resume" : "Start";
   const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
   const durationEditorRef = useRef<HTMLDivElement | null>(null);
@@ -441,7 +443,7 @@ export function FocusTimerCard({
               {isBreak ? (
                 <>
                   <SkipForward className="size-4" />
-                  Skip break
+                  {skipBreakLabel}
                 </>
               ) : (
                 <>

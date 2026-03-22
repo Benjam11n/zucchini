@@ -220,6 +220,22 @@ export function createPartialFocusSessionInput(
   };
 }
 
+export function skipBreakFocusTimerState(
+  timerState: PersistedFocusTimerState,
+  focusDurationMs: number,
+  now = new Date()
+): PersistedFocusTimerState {
+  return createRunningFocusTimerState(
+    now,
+    focusDurationMs,
+    getCompletedFocusCyclesAfterBreak(
+      timerState.breakVariant,
+      timerState.completedFocusCycles
+    ),
+    timerState.timerSessionId
+  );
+}
+
 export function setFocusTimerDuration(
   timerState: PersistedFocusTimerState,
   focusDurationMs: number,

@@ -10,11 +10,11 @@ import type { FocusPageProps } from "@/renderer/features/focus/focus.types";
 import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
   createRunningFocusTimerState,
-  getCompletedFocusCyclesAfterBreak,
   getPomodoroFocusDurationMs,
   pauseFocusTimerState,
   resumeFocusTimerState,
   setFocusTimerDuration,
+  skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
@@ -119,14 +119,10 @@ function FocusPageComponent({
           onSkipBreak={() => {
             clearFocusSaveError();
             setTimerState(
-              createRunningFocusTimerState(
-                new Date(),
+              skipBreakFocusTimerState(
+                timerState,
                 defaultFocusDurationMs,
-                getCompletedFocusCyclesAfterBreak(
-                  timerState.breakVariant,
-                  timerState.completedFocusCycles
-                ),
-                timerState.timerSessionId
+                new Date()
               )
             );
           }}

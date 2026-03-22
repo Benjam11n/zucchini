@@ -40,9 +40,16 @@ export interface FocusHistorySessionBreakTimelineSegment extends FocusHistorySes
   kind: "break";
 }
 
+export interface FocusHistorySessionPauseTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
+  durationMinutes: number;
+  id: string;
+  kind: "pause";
+}
+
 export type FocusHistorySessionTimelineSegment =
   | FocusHistorySessionBreakTimelineSegment
-  | FocusHistorySessionEntryTimelineSegment;
+  | FocusHistorySessionEntryTimelineSegment
+  | FocusHistorySessionPauseTimelineSegment;
 
 export interface FocusHistorySessionView {
   completedAt: string;
@@ -50,6 +57,7 @@ export interface FocusHistorySessionView {
   date: string;
   entries: FocusSessionEntryView[];
   hasPartialEntry: boolean;
+  hasPausedTime: boolean;
   idleGapMinutesBetweenEntries: number[];
   sessionId: string;
   sessionSpanMinutes: number;
@@ -213,6 +221,7 @@ function buildHistorySessionView(
     hasPartialEntry: sortedEntries.some(
       (entry) => entry.entryKind === "partial"
     ),
+    hasPausedTime: false,
     idleGapMinutesBetweenEntries,
     sessionId,
     sessionSpanMinutes,
@@ -221,24 +230,56 @@ function buildHistorySessionView(
       const timelineSegments = sortedEntries.flatMap((entry, index) => {
         const segmentStartMinutes =
           (Date.parse(entry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
-        const segmentEndMinutes =
+        const entryEndMinutes =
           (Date.parse(entry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
+        const focusDurationMinutes = Math.max(
+          Math.min(
+            entry.durationSeconds / 60,
+            entryEndMinutes - segmentStartMinutes
+          ),
+          0
+        );
+        const focusEndMinutes = segmentStartMinutes + focusDurationMinutes;
         const segments: FocusHistorySessionTimelineSegment[] = [
           {
             completedAt: entry.completedAt,
             durationSeconds: entry.durationSeconds,
-            endOffsetMinutes: segmentEndMinutes,
+            endOffsetMinutes: focusEndMinutes,
             entryKind: entry.entryKind,
             id: `${entry.id}`,
             kind: "entry",
             startOffsetMinutes: segmentStartMinutes,
             startedAt: entry.startedAt,
             widthPercent: Math.max(
-              (segmentEndMinutes - segmentStartMinutes) / sessionSpanMinutes,
+              (focusEndMinutes - segmentStartMinutes) / sessionSpanMinutes,
               0.04
             ),
           } satisfies FocusHistorySessionEntryTimelineSegment,
         ];
+
+        const pauseDurationMinutes = Math.max(
+          0,
+          Math.round(
+            (Date.parse(entry.completedAt) -
+              Date.parse(entry.startedAt) -
+              entry.durationSeconds * 1000) /
+              MS_PER_MINUTE
+          )
+        );
+
+        if (pauseDurationMinutes > 0 && entryEndMinutes > focusEndMinutes) {
+          segments.push({
+            durationMinutes: pauseDurationMinutes,
+            endOffsetMinutes: entryEndMinutes,
+            id: `pause-${entry.id}`,
+            kind: "pause",
+            startOffsetMinutes: focusEndMinutes,
+            widthPercent: Math.max(
+              (entryEndMinutes - focusEndMinutes) / sessionSpanMinutes,
+              0.02
+            ),
+          } satisfies FocusHistorySessionPauseTimelineSegment);
+        }
 
         const nextEntry = sortedEntries[index + 1];
 
@@ -246,7 +287,7 @@ function buildHistorySessionView(
           return segments;
         }
 
-        const breakStartMinutes = segmentEndMinutes;
+        const breakStartMinutes = entryEndMinutes;
         const breakEndMinutes =
           (Date.parse(nextEntry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
         const breakDurationMinutes = Math.max(
@@ -346,6 +387,12 @@ export function buildFocusHistorySessions(
         activeTimerState,
       })
     )
+    .map((session) => ({
+      ...session,
+      hasPausedTime: session.timelineSegments.some(
+        (segment) => segment.kind === "pause"
+      ),
+    }))
     .toSorted((left, right) => {
       const completedDifference =
         Date.parse(right.completedAt) - Date.parse(left.completedAt);

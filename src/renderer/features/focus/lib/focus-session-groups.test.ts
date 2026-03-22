@@ -230,6 +230,39 @@ describe("focus session groups", () => {
     ).toBeTruthy();
   });
 
+  it("renders paused time as its own timeline segment", () => {
+    const [session] = buildFocusHistorySessions([
+      createFocusSession({
+        completedAt: "2026-03-13T09:35:00.000Z",
+        completedDate: "2026-03-13",
+        durationSeconds: 1500,
+        id: 1,
+        startedAt: "2026-03-13T09:00:00.000Z",
+        timerSessionId: "timer-session-paused",
+      }),
+    ]);
+
+    expect(session).toMatchObject({
+      hasPausedTime: true,
+      sessionSpanMinutes: 35,
+      totalDurationSeconds: 1500,
+    });
+    expect(session?.timelineSegments).toMatchObject([
+      {
+        durationSeconds: 1500,
+        endOffsetMinutes: 25,
+        kind: "entry",
+        startOffsetMinutes: 0,
+      },
+      {
+        durationMinutes: 10,
+        endOffsetMinutes: 35,
+        kind: "pause",
+        startOffsetMinutes: 25,
+      },
+    ]);
+  });
+
   it("shows a completed short break before the next focus is persisted", () => {
     const [session] = buildFocusHistorySessions(
       [

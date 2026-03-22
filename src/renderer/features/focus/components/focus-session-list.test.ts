@@ -122,7 +122,7 @@ describe("focus session list", () => {
       .closest("[data-slot='card']") as HTMLElement;
 
     expect(sessionListCard).toHaveTextContent(
-      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*1h 20m session window[\s\S]*2 completed loops[\s\S]*Partial end/
+      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*1h 20m session window[\s\S]*2 completed loops[\s\S]*Interrupted/
     );
     expect(sessionListCard).toHaveTextContent(/Show details/);
     expect(screen.getAllByLabelText("5 minute break")).toHaveLength(2);
@@ -135,6 +135,30 @@ describe("focus session list", () => {
     expect(sessionCard).toHaveTextContent(
       /Hide details[\s\S]*25 min[\s\S]*5m gap[\s\S]*Partial · 20 min/
     );
+  });
+
+  it("shows paused time with a distinct timeline segment label", () => {
+    render(
+      createElement(FocusSessionList, {
+        onRetryLoad: vi.fn(),
+        phase: "ready",
+        sessions: [
+          createFocusSession(
+            1,
+            "2026-03-08",
+            1500,
+            "2026-03-08T09:00:00.000Z",
+            "2026-03-08T09:35:00.000Z"
+          ),
+        ],
+        sessionsLoadError: null,
+        timerState: createIdleFocusTimerState(),
+        todayDate: "2026-03-08",
+      })
+    );
+
+    expect(screen.getByText("Paused")).toBeInTheDocument();
+    expect(screen.getByLabelText("10 minute pause")).toBeInTheDocument();
   });
 
   it("keeps newer sessions before older sessions", () => {

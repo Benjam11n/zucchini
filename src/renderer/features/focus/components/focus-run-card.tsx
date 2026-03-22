@@ -66,6 +66,9 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
   const breakCount = session.idleGapMinutesBetweenEntries.filter(
     (gap) => gap > 0
   ).length;
+  const pauseCount = session.timelineSegments.filter(
+    (segment) => segment.kind === "pause"
+  ).length;
   const firstEntry = session.entries[0]!;
   const lastEntry = session.entries.at(-1)!;
 
@@ -98,7 +101,15 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
               variant="outline"
               className="rounded-full border-amber-500/40"
             >
-              Partial end
+              Interrupted
+            </Badge>
+          ) : null}
+          {session.hasPausedTime ? (
+            <Badge
+              variant="outline"
+              className="rounded-full border-slate-400/50 text-slate-600"
+            >
+              Paused
             </Badge>
           ) : null}
         </div>
@@ -119,6 +130,9 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
             {session.hasPartialEntry ? " · 1 partial entry" : ""}
             {breakCount > 0
               ? ` · ${breakCount} break${breakCount === 1 ? "" : "s"}`
+              : ""}
+            {pauseCount > 0
+              ? ` · ${pauseCount} pause${pauseCount === 1 ? "" : "s"}`
               : ""}
           </p>
         </div>
