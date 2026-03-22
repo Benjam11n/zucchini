@@ -2,12 +2,10 @@ import { create } from "zustand";
 
 import type { AppTab } from "@/renderer/app/app.types";
 import { getSystemTheme } from "@/renderer/shared/lib/theme";
-import type { ThemeMode } from "@/shared/domain/settings";
-
 export interface UiStoreState {
-  systemTheme: ThemeMode;
+  systemTheme: "dark" | "light";
   tab: AppTab;
-  setSystemTheme: (systemTheme: ThemeMode) => void;
+  setSystemTheme: (systemTheme: "dark" | "light") => void;
   setTab: (tab: AppTab) => void;
 }
 

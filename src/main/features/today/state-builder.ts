@@ -1,5 +1,5 @@
 import type { Clock } from "@/main/app/clock";
-import type { HabitRepository } from "@/main/repository";
+import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
@@ -8,7 +8,7 @@ import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
 
 export function buildTodayState(
-  repository: HabitRepository,
+  repository: AppRepository,
   clock: Clock
 ): TodayState {
   const today = clock.todayKey();

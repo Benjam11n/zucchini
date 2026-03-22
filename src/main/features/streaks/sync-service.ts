@@ -1,11 +1,11 @@
 import type { Clock } from "@/main/app/clock";
 import { createRollingStreakState } from "@/main/features/today/state-builder";
-import type { HabitRepository } from "@/main/repository";
+import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import { isDailyHabit } from "@/shared/domain/habit";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
 
 export function syncRollingState(
-  repository: HabitRepository,
+  repository: AppRepository,
   clock: Clock
 ): void {
   const today = clock.todayKey();

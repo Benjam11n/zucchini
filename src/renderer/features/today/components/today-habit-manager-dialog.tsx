@@ -2,7 +2,7 @@ import { Settings2 } from "lucide-react";
 import { useState } from "react";
 
 import { HabitManagementContent } from "@/renderer/features/settings/components/habits/habit-management-content";
-import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
+import type { HabitManagementCardProps } from "@/renderer/features/settings/components/habits/habit-management.types";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Dialog,

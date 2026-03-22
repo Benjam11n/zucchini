@@ -7,8 +7,10 @@ import type React from "react";
 
 import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
 
-import type * as SelectorsModule from "./habit-category-selector";
+import type * as CategorySelectorModule from "./habit-category-selector";
+import type * as FrequencySelectorModule from "./habit-frequency-selector";
 import { HabitRowEditor } from "./habit-row-editor";
+import type * as WeekdaySelectorModule from "./habit-weekday-selector";
 
 vi.mock<typeof FramerMotion>(
   import("framer-motion"),
@@ -43,35 +45,50 @@ vi.mock<typeof FramerMotion>(
   }
 );
 
-vi.mock<typeof SelectorsModule>(import("./habit-category-selector"), () => ({
-  HabitCategorySelector: ({
-    onChange,
-  }: {
-    onChange: (category: "fitness" | "nutrition" | "productivity") => void;
-  }) => (
-    <button onClick={() => onChange("nutrition")} type="button">
-      Nutrition
-    </button>
-  ),
-  HabitFrequencySelector: ({
-    onChange,
-  }: {
-    onChange: (frequency: "daily" | "monthly" | "weekly") => void;
-  }) => (
-    <button onClick={() => onChange("weekly")} type="button">
-      Weekly
-    </button>
-  ),
-  HabitWeekdaySelector: ({
-    onChange,
-  }: {
-    onChange: (selectedWeekdays: HabitWeekday[] | null) => void;
-  }) => (
-    <button onClick={() => onChange([1, 3, 5])} type="button">
-      Weekdays
-    </button>
-  ),
-}));
+vi.mock<typeof CategorySelectorModule>(
+  import("./habit-category-selector"),
+  () => ({
+    HabitCategorySelector: ({
+      onChange,
+    }: {
+      onChange: (category: "fitness" | "nutrition" | "productivity") => void;
+    }) => (
+      <button onClick={() => onChange("nutrition")} type="button">
+        Nutrition
+      </button>
+    ),
+  })
+);
+
+vi.mock<typeof FrequencySelectorModule>(
+  import("./habit-frequency-selector"),
+  () => ({
+    HabitFrequencySelector: ({
+      onChange,
+    }: {
+      onChange: (frequency: "daily" | "monthly" | "weekly") => void;
+    }) => (
+      <button onClick={() => onChange("weekly")} type="button">
+        Weekly
+      </button>
+    ),
+  })
+);
+
+vi.mock<typeof WeekdaySelectorModule>(
+  import("./habit-weekday-selector"),
+  () => ({
+    HabitWeekdaySelector: ({
+      onChange,
+    }: {
+      onChange: (selectedWeekdays: HabitWeekday[] | null) => void;
+    }) => (
+      <button onClick={() => onChange([1, 3, 5])} type="button">
+        Weekdays
+      </button>
+    ),
+  })
+);
 
 function createHabit(
   id: number,

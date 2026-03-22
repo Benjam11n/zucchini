@@ -12,8 +12,8 @@ import type { DailySummary } from "@/shared/domain/streak";
 
 import { dailySummary, habitPeriodStatus } from "../db/schema";
 import type { SqliteDatabaseClient } from "../db/sqlite-client";
+import type { SettledHistoryOptions } from "./app-repository";
 import type { SqliteHabitsRepository } from "./habit-repository";
-import type { SettledHistoryOptions } from "./index";
 import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";
 import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
 

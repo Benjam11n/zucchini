@@ -10,7 +10,7 @@ import {
   buildWeeklyReview,
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
-import type { HabitRepository } from "@/main/repository";
+import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type {
   CreateFocusSessionInput,
@@ -109,12 +109,12 @@ function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
   }
 }
 
-export class HabitService implements HabitsService {
-  private readonly repository: HabitRepository;
+export class HabitsApplicationService implements HabitsService {
+  private readonly repository: AppRepository;
   private readonly clock: Clock;
   private initialized = false;
 
-  constructor(repository: HabitRepository, clock: Clock) {
+  constructor(repository: AppRepository, clock: Clock) {
     this.repository = repository;
     this.clock = clock;
   }

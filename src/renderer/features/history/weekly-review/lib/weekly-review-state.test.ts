@@ -1,5 +1,5 @@
 import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
-import type { HabitApi } from "@/shared/contracts/habits-ipc";
+import type { HabitsApi } from "@/shared/contracts/habits-ipc";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -56,7 +56,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(latestReview)),
-    } satisfies Pick<HabitApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
+    } satisfies Pick<HabitsApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
 
     const result = await loadWeeklyReviewState(habitsApi, null);
 
@@ -98,7 +98,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(freshLatestReview)),
-    } satisfies Pick<HabitApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
+    } satisfies Pick<HabitsApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
 
     const result = await loadWeeklyReviewState(habitsApi, staleLatestReview);
 
@@ -128,7 +128,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(latestReview)),
-    } satisfies Pick<HabitApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
+    } satisfies Pick<HabitsApi, "getWeeklyReview" | "getWeeklyReviewOverview">;
 
     const result = await loadWeeklyReviewState(
       habitsApi,

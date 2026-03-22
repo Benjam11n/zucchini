@@ -1,0 +1,32 @@
+import type {
+  Habit,
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
+
+export interface HabitManagementCardProps {
+  habits: Habit[];
+  onArchiveHabit: (habitId: number) => Promise<void>;
+  onCreateHabit: (
+    name: string,
+    category: HabitCategory,
+    frequency: HabitFrequency,
+    selectedWeekdays?: HabitWeekday[] | null
+  ) => Promise<void>;
+  onRenameHabit: (habitId: number, name: string) => Promise<void>;
+  onReorderHabits: (habits: Habit[]) => Promise<void>;
+  onUpdateHabitCategory: (
+    habitId: number,
+    category: HabitCategory
+  ) => Promise<void>;
+  onUpdateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency
+  ) => Promise<void>;
+  onUpdateHabitWeekdays: (
+    habitId: number,
+    selectedWeekdays: HabitWeekday[] | null
+  ) => Promise<void>;
+  onUnarchiveHabit: (habitId: number) => Promise<void>;
+}

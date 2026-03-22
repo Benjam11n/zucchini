@@ -6,7 +6,6 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { Button } from "@/renderer/shared/ui/button";
 import type {
@@ -15,6 +14,7 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
+import type { HabitManagementCardProps } from "./habit-management.types";
 import { HabitRowEditor } from "./habit-row-editor";
 import { NewHabitForm } from "./new-habit-form";
 import { reorderHabitListByDropPosition } from "./reorder-habits";

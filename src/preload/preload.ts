@@ -22,7 +22,7 @@ import {
   HabitsIpcError,
 } from "@/shared/contracts/habits-ipc";
 import type {
-  HabitApi,
+  HabitsApi,
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
@@ -61,7 +61,7 @@ async function invokeUpdater<T>(channel: string): Promise<T> {
   throw new AppUpdaterIpcError(response.error);
 }
 
-const habitsApi: HabitApi = {
+const habitsApi: HabitsApi = {
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
@@ -102,7 +102,7 @@ const habitsApi: HabitApi = {
   onFocusSessionRecorded: (listener) => {
     const handleFocusSessionRecorded = (
       _event: IpcRendererEvent,
-      session: Awaited<ReturnType<HabitApi["recordFocusSession"]>>
+      session: Awaited<ReturnType<HabitsApi["recordFocusSession"]>>
     ) => {
       listener(session);
     };

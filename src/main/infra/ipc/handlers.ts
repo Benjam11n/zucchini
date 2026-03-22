@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 
 import type { FocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
+import type { HabitsService } from "@/main/features/habits/habits-application-service";
 import {
   getDesktopNotificationStatus,
   showDesktopNotification,
@@ -26,7 +27,6 @@ import {
   validateNotificationTitle,
   validateReorderHabitIds,
 } from "@/main/infra/ipc/validation";
-import type { HabitsService } from "@/main/service";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";

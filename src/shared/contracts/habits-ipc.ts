@@ -141,7 +141,7 @@ export interface DesktopNotificationStatus {
   reason: DesktopNotificationReason;
 }
 
-export interface HabitApi {
+export interface HabitsApi {
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
     instanceId: string,

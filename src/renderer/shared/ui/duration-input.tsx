@@ -48,16 +48,6 @@ export function normalizeDurationInputValue(
   return Math.min(maxSeconds, Math.max(minSeconds, totalSeconds));
 }
 
-export function formatDurationInputValue(totalSeconds: number): string {
-  const { minutes, seconds } = splitDurationSeconds(totalSeconds);
-
-  if (seconds === 0) {
-    return `${minutes}m`;
-  }
-
-  return `${minutes}:${padDurationPart(seconds)}`;
-}
-
 export function DurationInput({
   className,
   disabled = false,

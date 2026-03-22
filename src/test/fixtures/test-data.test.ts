@@ -6,8 +6,8 @@ import path from "node:path";
 import Database from "better-sqlite3";
 
 import type { Clock } from "@/main/app/clock";
-import { SqliteHabitRepository } from "@/main/repository";
-import { HabitService } from "@/main/service";
+import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
+import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import { getPreviousCompletedIsoWeek } from "@/shared/utils/date";
 import { generateTestData } from "@/test/fixtures/test-data";
@@ -254,13 +254,13 @@ describe.skipIf(!canUseFixtureDatabase())("test data generator", () => {
         today: "2026-03-14",
       });
 
-      const repository = new SqliteHabitRepository({ databasePath });
+      const repository = new SqliteAppRepository({ databasePath });
       const clock = new FakeClock(
         "2026-03-14",
         "2026-03-14T10:30:00.000Z",
         "America/Los_Angeles"
       );
-      const service = new HabitService(repository, clock);
+      const service = new HabitsApplicationService(repository, clock);
 
       const todayState = service.getTodayState();
       const history = service.getHistory(30);

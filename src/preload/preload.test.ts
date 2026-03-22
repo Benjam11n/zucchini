@@ -6,7 +6,7 @@ import type { ContextBridge, IpcRenderer } from "electron";
 import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type {
   DesktopNotificationStatus,
-  HabitApi,
+  HabitsApi,
   TodayState,
 } from "@/shared/contracts/habits-ipc";
 
@@ -38,8 +38,8 @@ describe("preload habits API", () => {
     await import("./preload");
   }
 
-  function getHabitsApi(): HabitApi {
-    return exposed.get("habits") as HabitApi;
+  function getHabitsApi(): HabitsApi {
+    return exposed.get("habits") as HabitsApi;
   }
 
   function getUpdaterApi(): AppUpdaterApi {

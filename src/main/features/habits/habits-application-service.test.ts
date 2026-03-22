@@ -1,7 +1,10 @@
 import type { Clock } from "@/main/app/clock";
+import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { HabitRepository, SettledHistoryOptions } from "@/main/repository";
-import { HabitService } from "@/main/service";
+import type {
+  AppRepository,
+  SettledHistoryOptions,
+} from "@/main/infra/persistence/app-repository";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -58,7 +61,7 @@ class FakeClock implements Clock {
   }
 }
 
-class FakeRepository implements HabitRepository {
+class FakeRepository implements AppRepository {
   failTransactionForLabel: string | null = null;
   initializeCalls = 0;
   habits: Habit[] = [
@@ -481,7 +484,7 @@ describe("habitService rollover", () => {
     repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
     repository.setStatusForDate("2026-03-07", new Map([[1, false]]));
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -516,7 +519,7 @@ describe("habitService rollover", () => {
 describe("habit categories", () => {
   it("creates habits with the selected category", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -536,7 +539,7 @@ describe("habit categories", () => {
 
   it("creates daily habits that are only due on selected weekdays", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -561,7 +564,7 @@ describe("habit categories", () => {
 
   it("updates a habit category and returns refreshed state", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -573,7 +576,7 @@ describe("habit categories", () => {
 
   it("updates a habit frequency and returns refreshed state", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -586,7 +589,7 @@ describe("habit categories", () => {
   it("removes a daily habit from today when its weekday schedule no longer includes today", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-10", new Map([[1, false]]));
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -612,7 +615,7 @@ describe("habit categories", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -634,7 +637,7 @@ describe("habit categories", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -698,7 +701,7 @@ describe("history retrieval", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -736,7 +739,7 @@ describe("history retrieval", () => {
       streakCountAfterDay: 3,
     });
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -768,7 +771,7 @@ describe("history retrieval", () => {
       });
     }
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -782,7 +785,7 @@ describe("history retrieval", () => {
 
   it("initializes storage only once across repeated reads", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -832,7 +835,7 @@ describe("weekly review retrieval", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -848,7 +851,7 @@ describe("weekly review retrieval", () => {
 
   it("wraps weekly review overview reads in a repository transaction", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -862,7 +865,7 @@ describe("weekly review retrieval", () => {
 describe("habitService transactions", () => {
   it("wraps getTodayState in a repository transaction", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -874,7 +877,7 @@ describe("habitService transactions", () => {
 
   it("wraps createHabit in a repository transaction", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -886,7 +889,7 @@ describe("habitService transactions", () => {
 
   it("wraps updateHabitFrequency in a repository transaction", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -898,7 +901,7 @@ describe("habitService transactions", () => {
 
   it("wraps archiveHabit in a repository transaction", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -919,7 +922,7 @@ describe("habitService transactions", () => {
       name: "Habit 2",
       sortOrder: 1,
     });
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -940,7 +943,7 @@ describe("habitService transactions", () => {
       name: "Habit 2",
       sortOrder: 1,
     });
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -953,7 +956,7 @@ describe("habitService transactions", () => {
   it("propagates transaction failures", () => {
     const repository = new FakeRepository();
     repository.failTransactionForLabel = "createHabit";
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -967,7 +970,7 @@ describe("habitService transactions", () => {
 describe("focus sessions", () => {
   it("records a completed focus session", () => {
     const repository = new FakeRepository();
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -992,7 +995,7 @@ describe("focus sessions", () => {
   });
 
   it("rejects invalid focus session payloads", () => {
-    const service = new HabitService(
+    const service = new HabitsApplicationService(
       new FakeRepository(),
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );

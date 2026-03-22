@@ -2,7 +2,6 @@ import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { Button } from "@/renderer/shared/ui/button";
@@ -24,11 +23,10 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-import {
-  HabitCategorySelector,
-  HabitFrequencySelector,
-  HabitWeekdaySelector,
-} from "./habit-category-selector";
+import { HabitCategorySelector } from "./habit-category-selector";
+import { HabitFrequencySelector } from "./habit-frequency-selector";
+import type { HabitManagementCardProps } from "./habit-management.types";
+import { HabitWeekdaySelector } from "./habit-weekday-selector";
 
 export function NewHabitForm({
   onCreateHabit,

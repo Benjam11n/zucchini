@@ -1,6 +1,5 @@
 import { ListTodo } from "lucide-react";
 
-import type { HabitManagementCardProps } from "@/renderer/features/settings/settings.types";
 import {
   Card,
   CardContent,
@@ -10,6 +9,7 @@ import {
 } from "@/renderer/shared/ui/card";
 
 import { HabitManagementContent } from "./habit-management-content";
+import type { HabitManagementCardProps } from "./habit-management.types";
 
 export function HabitManagementCard({
   habits,

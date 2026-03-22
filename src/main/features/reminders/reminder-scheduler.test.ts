@@ -4,7 +4,7 @@ import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type * as Notifications from "./notifications";
-import { createReminderScheduler } from "./scheduler";
+import { createReminderScheduler } from "./reminder-scheduler";
 
 const notificationState = vi.hoisted(() => ({
   catchUpReminderCount: 0,

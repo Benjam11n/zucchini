@@ -1,9 +1,9 @@
 import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
-import type { HabitApi } from "@/shared/contracts/habits-ipc";
+import type { HabitsApi } from "@/shared/contracts/habits-ipc";
 
 declare global {
   interface Window {
-    habits: HabitApi;
+    habits: HabitsApi;
     updater: AppUpdaterApi;
   }
 }

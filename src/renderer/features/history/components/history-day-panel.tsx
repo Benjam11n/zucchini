@@ -1,7 +1,7 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { CheckCircle2, Snowflake, XCircle } from "lucide-react";
 
-import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status";
+import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import {
   getActivityBadgeLabel,
   getActivityStatus,

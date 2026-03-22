@@ -1,7 +1,9 @@
-import { Pause, Play, RotateCcw, SkipForward, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls";
+import { useFocusWidgetSizeSync } from "@/renderer/features/focus/components/use-focus-widget-size-sync";
+import { useFocusWidgetSnapshot } from "@/renderer/features/focus/components/use-focus-widget-snapshot";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
@@ -18,21 +20,14 @@ import {
   subscribeToPomodoroTimerSettings,
 } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
-import { Button } from "@/renderer/shared/ui/button";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 
-const SNAPSHOT_REFRESH_MS = 30 * 1000;
 const DRAG_REGION_STYLE = { WebkitAppRegion: "drag" } as CSSProperties;
-const NO_DRAG_REGION_STYLE = {
-  WebkitAppRegion: "no-drag",
-} as CSSProperties;
 
 function getSkipBreakLabel(isLongBreak: boolean): string {
   return isLongBreak ? "Skip long break" : "Skip short break";
@@ -54,39 +49,6 @@ function getTimerLabelColorClass({
   }
 
   return "text-foreground";
-}
-
-function useFocusWidgetSnapshot() {
-  const [todayState, setTodayState] = useState<TodayState | null>(null);
-
-  useEffect(() => {
-    let disposed = false;
-
-    const loadSnapshot = async () => {
-      try {
-        const nextTodayState = await window.habits.getTodayState();
-        if (!disposed) {
-          setTodayState(nextTodayState);
-        }
-      } catch {
-        if (!disposed) {
-          setTodayState(null);
-        }
-      }
-    };
-
-    void loadSnapshot();
-    const timer = window.setInterval(() => {
-      void loadSnapshot();
-    }, SNAPSHOT_REFRESH_MS);
-
-    return () => {
-      disposed = true;
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  return todayState;
 }
 
 function handleClose() {
@@ -193,43 +155,7 @@ export function FocusWidget() {
     );
   }
 
-  useEffect(() => {
-    const widgetElement = widgetRef.current;
-    if (!widgetElement) {
-      return;
-    }
-
-    let animationFrame = 0;
-
-    const syncSize = () => {
-      animationFrame = 0;
-      const width = Math.ceil(widgetElement.getBoundingClientRect().width);
-      const height = Math.ceil(widgetElement.getBoundingClientRect().height);
-      void window.habits.resizeFocusWidget(width, height);
-    };
-
-    const scheduleSync = () => {
-      if (animationFrame !== 0) {
-        return;
-      }
-
-      animationFrame = window.requestAnimationFrame(syncSize);
-    };
-
-    scheduleSync();
-
-    const resizeObserver = new ResizeObserver(() => {
-      scheduleSync();
-    });
-    resizeObserver.observe(widgetElement);
-
-    return () => {
-      if (animationFrame !== 0) {
-        window.cancelAnimationFrame(animationFrame);
-      }
-      resizeObserver.disconnect();
-    };
-  }, [canReset, canSkipBreak, canStart, timerState.remainingMs]);
+  useFocusWidgetSizeSync(widgetRef.current);
 
   useKeyboardShortcut({
     code: "Space",
@@ -266,92 +192,23 @@ export function FocusWidget() {
         className="flex min-w-max items-center gap-2 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(8,12,10,0.96),rgba(3,7,5,0.96))] px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.85)]"
         style={DRAG_REGION_STYLE}
       >
-        <div className="flex items-center">
-          <p
-            className={`min-w-[56px] text-left text-[1.12rem] leading-none font-black tracking-tight tabular-nums ${timerLabelColorClass}`}
-          >
-            {formatTimerLabel(timerState.remainingMs)}
-          </p>
-        </div>
-
-        {isBreak ? (
-          <div
-            className="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide text-white/80 uppercase"
-            style={NO_DRAG_REGION_STYLE}
-          >
-            {timerState.breakVariant === "long" ? "Long break" : "Short break"}
-          </div>
-        ) : null}
-
-        <div
-          className="flex items-center gap-1 rounded-full border border-white/8 bg-white/3 p-1"
-          style={NO_DRAG_REGION_STYLE}
-        >
-          {canStart ? (
-            <Button
-              aria-label={isPaused ? "Resume timer" : "Start timer"}
-              className="rounded-full"
-              onClick={handleStartOrResume}
-              size="icon-xs"
-            >
-              <Play className="size-3.5" />
-            </Button>
-          ) : null}
-
-          {isRunning ? (
-            <Button
-              aria-label="Pause timer"
-              className="rounded-full"
-              onClick={handlePause}
-              size="icon-xs"
-              variant="secondary"
-            >
-              <Pause className="size-3.5" />
-            </Button>
-          ) : null}
-
-          {canReset ? (
-            <Button
-              aria-label="Reset timer"
-              className="rounded-full"
-              onClick={handleReset}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <RotateCcw className="size-3.5" />
-            </Button>
-          ) : null}
-
-          {canSkipBreak ? (
-            <Button
-              aria-label={skipBreakLabel}
-              className="rounded-full"
-              onClick={handleSkipBreak}
-              size="icon-xs"
-              variant="ghost"
-            >
-              <SkipForward className="size-3.5" />
-            </Button>
-          ) : null}
-        </div>
-
-        <div className="px-0.5" style={NO_DRAG_REGION_STYLE}>
-          <HabitActivityRingGlyph
-            categoryProgress={categoryProgress}
-            size={28}
-          />
-        </div>
-
-        <Button
-          aria-label="Close widget"
-          className="rounded-full"
-          onClick={handleClose}
-          size="icon-xs"
-          style={NO_DRAG_REGION_STYLE}
-          variant="ghost"
-        >
-          <X className="size-3.5" />
-        </Button>
+        <FocusWidgetControls
+          canReset={canReset}
+          canSkipBreak={canSkipBreak}
+          canStart={canStart}
+          categoryProgress={categoryProgress}
+          isBreak={isBreak}
+          isPaused={isPaused}
+          isRunning={isRunning}
+          onClose={handleClose}
+          onPause={handlePause}
+          onReset={handleReset}
+          onSkipBreak={handleSkipBreak}
+          onStartOrResume={handleStartOrResume}
+          skipBreakLabel={skipBreakLabel}
+          timerLabel={formatTimerLabel(timerState.remainingMs)}
+          timerLabelColorClass={timerLabelColorClass}
+        />
       </section>
     </main>
   );
