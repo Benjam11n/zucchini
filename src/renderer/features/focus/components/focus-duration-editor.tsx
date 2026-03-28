@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { useRef } from "react";
 import type { FocusEvent } from "react";
 

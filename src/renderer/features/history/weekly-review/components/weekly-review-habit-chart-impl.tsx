@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";

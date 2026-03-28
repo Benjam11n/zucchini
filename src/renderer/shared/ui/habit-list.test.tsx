@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 // @vitest-environment jsdom
 
 import { cleanup, render } from "@testing-library/react";

@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { createContext, useContext } from "react";
 import type { DayButtonProps } from "react-day-picker";

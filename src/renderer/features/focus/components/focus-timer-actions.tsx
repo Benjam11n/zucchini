@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";

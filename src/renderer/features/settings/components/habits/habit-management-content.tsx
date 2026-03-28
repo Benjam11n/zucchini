@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { domAnimation, LazyMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 

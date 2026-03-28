@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 

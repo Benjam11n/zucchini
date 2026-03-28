@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 /* eslint-disable promise/prefer-await-to-then */
 
 import { Download, RefreshCw, Rocket } from "lucide-react";

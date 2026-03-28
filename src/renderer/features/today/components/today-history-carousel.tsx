@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { format } from "date-fns";
 import { useState } from "react";
 

@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { Settings2 } from "lucide-react";
 import { useState } from "react";
 

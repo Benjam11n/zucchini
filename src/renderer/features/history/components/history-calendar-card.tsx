@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import type { HistoryCalendarContextValue } from "@/renderer/features/history/history.types";
 import { Calendar } from "@/renderer/shared/ui/calendar";
 import { Card, CardContent } from "@/renderer/shared/ui/card";

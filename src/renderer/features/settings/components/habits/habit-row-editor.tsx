@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { m } from "framer-motion";
 import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
 import type { DragEvent } from "react";

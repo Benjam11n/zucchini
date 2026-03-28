@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { ChevronDown, Clock3, PauseCircle } from "lucide-react";
 import { useId, useState } from "react";
 

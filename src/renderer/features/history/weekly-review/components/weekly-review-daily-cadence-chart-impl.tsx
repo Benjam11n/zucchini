@@ -1,5 +1,3 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop */
-
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
@@ -23,6 +21,10 @@ const chartConfig = {
     label: "Completion",
   },
 } satisfies ChartConfig;
+
+function formatPercentage(value: number | string): string {
+  return `${value}%`;
+}
 
 interface WeeklyReviewDailyCadenceChartImplProps {
   review: WeeklyReview;
@@ -49,13 +51,13 @@ export function WeeklyReviewDailyCadenceChartImpl({
               <YAxis
                 axisLine={false}
                 domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
+                tickFormatter={formatPercentage}
                 tickLine={false}
               />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value) => `${value}%`}
+                    formatter={formatPercentage}
                     indicator="line"
                   />
                 }
