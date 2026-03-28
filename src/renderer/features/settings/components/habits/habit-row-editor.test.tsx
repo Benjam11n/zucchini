@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
-import type React from "react";
+import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 
 import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
 
@@ -11,6 +11,16 @@ import type * as CategorySelectorModule from "./habit-category-selector";
 import type * as FrequencySelectorModule from "./habit-frequency-selector";
 import { HabitRowEditor } from "./habit-row-editor";
 import type * as WeekdaySelectorModule from "./habit-weekday-selector";
+
+interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
+  animate?: object;
+  exit?: object;
+  initial?: object;
+  layout?: boolean | object | string;
+  transition?: object;
+  whileHover?: object;
+  whileTap?: object;
+}
 
 vi.mock<typeof FramerMotion>(
   import("framer-motion"),
@@ -23,7 +33,7 @@ vi.mock<typeof FramerMotion>(
         {},
         {
           get: (_, tag: string) =>
-            forwardRef<HTMLElement, Record<string, unknown>>(
+            forwardRef<HTMLElement, MotionMockProps>(
               function MotionMock(props, ref) {
                 const {
                   animate: _animate,
@@ -108,7 +118,7 @@ function createHabit(
 }
 
 function renderHabitRowEditor(
-  overrides: Partial<React.ComponentProps<typeof HabitRowEditor>> = {}
+  overrides: Partial<ComponentProps<typeof HabitRowEditor>> = {}
 ) {
   const habits = [createHabit(1), createHabit(2), createHabit(3)];
 

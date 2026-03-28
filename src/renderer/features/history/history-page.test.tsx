@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 
 import type * as HistoryCalendarCardModule from "@/renderer/features/history/components/history-calendar-card";
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
@@ -23,46 +22,61 @@ import type {
 
 import { HistoryPage } from "./history-page";
 
-vi.mock<typeof FramerMotion>(
-  import("framer-motion"),
-  async (importOriginal) => {
-    const actual = await importOriginal();
+interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
+  animate?: object;
+  exit?: object;
+  initial?: object;
+  layout?: boolean | object | string;
+  transition?: object;
+  variants?: object;
+  whileHover?: object;
+  whileTap?: object;
+}
 
-    function createMotionProxy() {
-      return new Proxy(
-        {},
-        {
-          get: (_, tag: string) =>
-            forwardRef<HTMLElement, Record<string, unknown>>(
-              function MotionMock(props, ref) {
-                const {
-                  animate: _animate,
-                  exit: _exit,
-                  initial: _initial,
-                  layout: _layout,
-                  transition: _transition,
-                  variants: _variants,
-                  whileHover: _whileHover,
-                  whileTap: _whileTap,
-                  ...rest
-                } = props;
+interface GitHubCalendarWeek {
+  cells: {
+    date: string;
+  }[];
+  key: string;
+}
 
-                return createElement(tag, { ...rest, ref });
-              }
-            ),
-        }
-      );
-    }
+vi.mock(import("framer-motion"), async (importOriginal) => {
+  const actual = await importOriginal();
 
-    return {
-      ...actual,
-      LazyMotion: ({ children }: ComponentProps<typeof actual.LazyMotion>) => (
-        <div>{children}</div>
-      ),
-      m: createMotionProxy() as typeof actual.m,
-    };
+  function createMotionProxy() {
+    return new Proxy(
+      {},
+      {
+        get: (_, tag: string) =>
+          forwardRef<HTMLElement, MotionMockProps>(
+            function MotionMock(props, ref) {
+              const {
+                animate: _animate,
+                exit: _exit,
+                initial: _initial,
+                layout: _layout,
+                transition: _transition,
+                variants: _variants,
+                whileHover: _whileHover,
+                whileTap: _whileTap,
+                ...rest
+              } = props;
+
+              return createElement(tag, { ...rest, ref });
+            }
+          ),
+      }
+    );
   }
-);
+
+  return {
+    ...actual,
+    LazyMotion: ({ children }: ComponentProps<typeof actual.LazyMotion>) => (
+      <div>{children}</div>
+    ),
+    m: createMotionProxy() as typeof actual.m,
+  };
+});
 
 vi.mock<typeof TabsModule>(
   import("@/renderer/shared/ui/tabs"),
@@ -92,7 +106,7 @@ vi.mock<typeof TabsModule>(
 vi.mock<typeof GitHubCalendarModule>(
   import("@/renderer/shared/components/github-calendar"),
   () => ({
-    GitHubCalendar: ({ weeks }: { weeks: unknown[] }) => (
+    GitHubCalendar: ({ weeks }: { weeks: GitHubCalendarWeek[] }) => (
       <div data-testid="github-calendar">{weeks.length}</div>
     ),
   })
@@ -385,8 +399,7 @@ describe("history page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Load older history" }));
 
-    // oxlint-disable-next-line vitest/prefer-called-times
-    expect(onLoadOlderHistory).toHaveBeenCalledOnce();
+    expect(onLoadOlderHistory.mock.calls).toHaveLength(1);
     expect(
       screen.getByRole("combobox", { name: "Select history year" })
     ).toBeInTheDocument();

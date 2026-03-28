@@ -1,3 +1,5 @@
+import type { JsonValue } from "@/shared/types/json";
+
 const STORAGE_EVENT = "storage";
 
 export const STORAGE_KEYS = {
@@ -7,20 +9,20 @@ export const STORAGE_KEYS = {
   weeklyReview: "zucchini_weekly_review",
 } as const;
 
-export function readJsonStorage(key: string): unknown | null {
+export function readJsonStorage(key: string): JsonValue | null {
   try {
     const rawValue = localStorage.getItem(key);
     if (!rawValue) {
       return null;
     }
 
-    return JSON.parse(rawValue) as unknown;
+    return JSON.parse(rawValue) as JsonValue;
   } catch {
     return null;
   }
 }
 
-export function writeJsonStorage(key: string, value: unknown): boolean {
+export function writeJsonStorage<T>(key: string, value: T): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -31,7 +33,7 @@ export function writeJsonStorage(key: string, value: unknown): boolean {
 
 export function subscribeToStorageKey(
   key: string,
-  onChange: (value: unknown | null) => void
+  onChange: (value: JsonValue | null) => void
 ): () => void {
   const handleStorage = (event: StorageEvent) => {
     if (event.key !== key) {
@@ -44,7 +46,7 @@ export function subscribeToStorageKey(
     }
 
     try {
-      onChange(JSON.parse(event.newValue) as unknown);
+      onChange(JSON.parse(event.newValue) as JsonValue);
     } catch {
       onChange(null);
     }

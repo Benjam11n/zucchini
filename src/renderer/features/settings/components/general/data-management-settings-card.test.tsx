@@ -54,8 +54,7 @@ describe("data management settings card", () => {
     fireEvent.click(screen.getByRole("button", { name: /open folder/i }));
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(habits.openDataFolder).toHaveBeenCalledOnce();
+      expect(habits.openDataFolder.mock.calls).toHaveLength(1);
     });
     expect(
       screen.getByText(/opened zucchini in your file manager/i)
@@ -70,8 +69,7 @@ describe("data management settings card", () => {
     fireEvent.click(screen.getByRole("button", { name: /export backup/i }));
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(habits.exportBackup).toHaveBeenCalledOnce();
+      expect(habits.exportBackup.mock.calls).toHaveLength(1);
     });
     await waitFor(() => {
       expect(
@@ -96,8 +94,7 @@ describe("data management settings card", () => {
     );
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(habits.importBackup).toHaveBeenCalledOnce();
+      expect(habits.importBackup.mock.calls).toHaveLength(1);
     });
   });
 });

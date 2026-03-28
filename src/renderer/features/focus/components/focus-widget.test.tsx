@@ -161,8 +161,7 @@ describe("focus widget", () => {
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Close widget" }));
     });
-    // eslint-disable-next-line vitest/prefer-called-once
-    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeSpy.mock.calls).toHaveLength(1);
   });
 
   it("supports skipping an active short break", async () => {

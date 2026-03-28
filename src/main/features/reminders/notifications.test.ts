@@ -11,6 +11,8 @@ import {
   showSnoozedReminder,
 } from "./notifications";
 
+type ElectronExports = typeof ElectronModule;
+
 type MacNotificationState =
   | "DO_NOT_DISTURB"
   | "SESSION_ON_CONSOLE_KEY"
@@ -56,46 +58,55 @@ const windowsNotificationState = vi.hoisted(() => ({
   throwOnRead: false,
 }));
 
-vi.mock<typeof ElectronModule>(import("electron"), () => ({
-  Notification: class {
-    static isSupported(): boolean {
-      return notificationState.supported;
-    }
+vi.mock("electron", async (importOriginal) => {
+  const actual = (await importOriginal()) as ElectronExports;
 
-    private readonly options: {
-      body: string;
-      icon?: { empty: boolean; path: string };
-      title: string;
-    };
+  return {
+    ...actual,
+    Notification: Object.assign(
+      class {
+        static isSupported(): boolean {
+          return notificationState.supported;
+        }
 
-    constructor(options: {
-      body: string;
-      icon?: { empty: boolean; path: string };
-      title: string;
-    }) {
-      this.options = options;
-    }
+        private readonly options: {
+          body: string;
+          icon?: { empty: boolean; path: string };
+          title: string;
+        };
 
-    show(): void {
-      if (notificationState.throwOnShow) {
-        throw new Error("notification denied");
-      }
+        constructor(options: {
+          body: string;
+          icon?: { empty: boolean; path: string };
+          title: string;
+        }) {
+          this.options = options;
+        }
 
-      notificationState.lastNotification = {
-        body: this.options.body,
-        icon: this.options.icon,
-        title: this.options.title,
-      };
-    }
-  } as unknown as typeof ElectronModule.Notification,
-  nativeImage: {
-    createFromPath: (assetPath: string) => ({
-      empty: false,
-      isEmpty: () => false,
-      path: assetPath,
-    }),
-  } as unknown as typeof ElectronModule.nativeImage,
-}));
+        show(): void {
+          if (notificationState.throwOnShow) {
+            throw new Error("notification denied");
+          }
+
+          notificationState.lastNotification = {
+            body: this.options.body,
+            icon: this.options.icon,
+            title: this.options.title,
+          };
+        }
+      },
+      actual.Notification
+    ),
+    nativeImage: {
+      ...actual.nativeImage,
+      createFromPath: (assetPath: string) => ({
+        empty: false,
+        isEmpty: () => false,
+        path: assetPath,
+      }),
+    },
+  };
+});
 
 vi.mock<MacNotificationStateModule>(import("macos-notification-state"), () => ({
   getNotificationState: () => {

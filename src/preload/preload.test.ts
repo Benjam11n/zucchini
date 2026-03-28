@@ -1,5 +1,3 @@
-/* eslint-disable vitest/prefer-called-once */
-
 import type * as ElectronModule from "electron";
 import type { ContextBridge, IpcRenderer } from "electron";
 
@@ -9,24 +7,32 @@ import type {
   HabitsApi,
   TodayState,
 } from "@/shared/contracts/habits-ipc";
+import type { FocusSession } from "@/shared/domain/focus-session";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();
 const on = vi.fn();
 const removeListener = vi.fn();
 
-vi.mock<typeof ElectronModule>(import("electron"), () => ({
-  contextBridge: {
-    exposeInMainWorld: vi.fn((key: string, value: unknown) => {
-      exposed.set(key, value);
-    }),
-  } as unknown as ContextBridge,
-  ipcRenderer: {
-    invoke,
-    on,
-    removeListener,
-  } as unknown as IpcRenderer,
-}));
+vi.mock<typeof ElectronModule>(import("electron"), async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    contextBridge: {
+      ...actual.contextBridge,
+      exposeInMainWorld: vi.fn((key: string, value: unknown) => {
+        exposed.set(key, value);
+      }),
+    } as ContextBridge,
+    ipcRenderer: {
+      ...actual.ipcRenderer,
+      invoke,
+      on,
+      removeListener,
+    } as IpcRenderer,
+  };
+});
 
 describe("preload habits API", () => {
   async function loadPreloadModule(): Promise<void> {
@@ -107,11 +113,11 @@ describe("preload habits API", () => {
     const listener = vi.fn();
     const unsubscribe = getHabitsApi().onFocusSessionRecorded(listener);
 
-    expect(on).toHaveBeenCalledTimes(1);
+    expect(on.mock.calls).toHaveLength(1);
 
     const [channel, handler] = on.mock.calls[0] as [
       string,
-      (_event: unknown, session: unknown) => void,
+      (_event: object, session: FocusSession) => void,
     ];
 
     expect(channel).toBe("habits:focusSessionRecorded");
@@ -141,7 +147,7 @@ describe("preload habits API", () => {
 
     unsubscribe();
 
-    expect(removeListener).toHaveBeenCalledTimes(1);
+    expect(removeListener.mock.calls).toHaveLength(1);
   });
 
   it("exposes update status subscriptions through the preload bridge", async () => {
@@ -150,11 +156,20 @@ describe("preload habits API", () => {
     const listener = vi.fn();
     const unsubscribe = getUpdaterApi().onStateChange(listener);
 
-    expect(on).toHaveBeenCalledTimes(1);
+    expect(on.mock.calls).toHaveLength(1);
 
     const [, handler] = on.mock.calls[0] as [
       string,
-      (_event: unknown, state: unknown) => void,
+      (
+        _event: object,
+        state: {
+          availableVersion: string;
+          currentVersion: string;
+          errorMessage: string | null;
+          progressPercent: number | null;
+          status: "available";
+        }
+      ) => void,
     ];
 
     handler(
@@ -178,7 +193,7 @@ describe("preload habits API", () => {
 
     unsubscribe();
 
-    expect(removeListener).toHaveBeenCalledTimes(1);
+    expect(removeListener.mock.calls).toHaveLength(1);
   });
 
   it("throws AppUpdaterIpcError instances for updater error responses", async () => {

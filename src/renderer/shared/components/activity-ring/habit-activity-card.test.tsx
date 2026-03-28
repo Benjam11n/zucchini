@@ -1,4 +1,3 @@
-/* eslint-disable vitest/prefer-called-once */
 // @vitest-environment jsdom
 
 import { cleanup, render } from "@testing-library/react";
@@ -90,10 +89,10 @@ describe("habit activity card", () => {
       <HabitActivityCard categoryProgress={stableReference} />
     );
 
-    expect(buildHabitActivityDataSpy).toHaveBeenCalledTimes(1);
+    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
 
     rerender(<HabitActivityCard categoryProgress={stableReference} />);
-    expect(buildHabitActivityDataSpy).toHaveBeenCalledTimes(1);
+    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
   });
 
   it("recomputes activity data when the categoryProgress reference changes", async () => {
@@ -130,7 +129,7 @@ describe("habit activity card", () => {
       <HabitActivityCard categoryProgress={[...initialCategoryProgress]} />
     );
 
-    expect(buildHabitActivityDataSpy).toHaveBeenCalledTimes(1);
+    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
 
     rerender(
       <HabitActivityCard
@@ -147,6 +146,6 @@ describe("habit activity card", () => {
       />
     );
 
-    expect(buildHabitActivityDataSpy).toHaveBeenCalledTimes(2);
+    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(2);
   });
 });

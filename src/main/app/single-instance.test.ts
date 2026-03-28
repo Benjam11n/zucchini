@@ -1,5 +1,3 @@
-/* eslint-disable vitest/prefer-called-once, vitest/prefer-called-times */
-
 import {
   acquireSingleInstanceLock,
   registerSecondInstanceHandler,
@@ -21,7 +19,7 @@ describe("single-instance helpers", () => {
     };
 
     expect(acquireSingleInstanceLock(appLike)).toBeTruthy();
-    expect(appLike.requestSingleInstanceLock).toHaveBeenCalledOnce();
+    expect(appLike.requestSingleInstanceLock.mock.calls).toHaveLength(1);
   });
 
   it("returns false when the app fails to acquire the single-instance lock", () => {
@@ -30,7 +28,7 @@ describe("single-instance helpers", () => {
     };
 
     expect(acquireSingleInstanceLock(appLike)).toBeFalsy();
-    expect(appLike.requestSingleInstanceLock).toHaveBeenCalledOnce();
+    expect(appLike.requestSingleInstanceLock.mock.calls).toHaveLength(1);
   });
 
   it("calls showMainWindow when the second-instance event fires", () => {
@@ -46,12 +44,12 @@ describe("single-instance helpers", () => {
 
     secondInstanceListener?.();
 
-    expect(appLike.on).toHaveBeenCalledOnce();
+    expect(appLike.on.mock.calls).toHaveLength(1);
     expect(appLike.on).toHaveBeenCalledWith(
       "second-instance",
       expect.any(Function)
     );
-    expect(showMainWindow).toHaveBeenCalledOnce();
+    expect(showMainWindow.mock.calls).toHaveLength(1);
   });
 
   it("registers the second-instance handler only for the primary instance path", () => {
@@ -67,7 +65,7 @@ describe("single-instance helpers", () => {
     registerHandlerForPrimaryInstance(primaryAppLike);
     registerHandlerForPrimaryInstance(secondaryAppLike);
 
-    expect(primaryAppLike.on).toHaveBeenCalledOnce();
+    expect(primaryAppLike.on.mock.calls).toHaveLength(1);
     expect(secondaryAppLike.on).not.toHaveBeenCalled();
   });
 });

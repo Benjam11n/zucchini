@@ -4,6 +4,16 @@ import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
+declare global {
+  interface PromiseConstructor {
+    withResolvers<T>(): {
+      promise: Promise<T>;
+      reject: (reason?: unknown) => void;
+      resolve: (value: T | PromiseLike<T>) => void;
+    };
+  }
+}
+
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   return {
     date: "2026-03-10",
@@ -104,18 +114,12 @@ function createFocusSession(
 }
 
 function createDeferred<T>() {
-  let deferredResolve!: (value: T | PromiseLike<T>) => void;
-  let deferredReject!: (reason?: unknown) => void;
-  // eslint-disable-next-line promise/avoid-new
-  const promise = new Promise<T>((resolve, reject) => {
-    deferredResolve = resolve;
-    deferredReject = reject;
-  });
+  const { promise, reject, resolve } = Promise.withResolvers<T>();
 
   return {
     promise,
-    reject: deferredReject,
-    resolve: deferredResolve,
+    reject,
+    resolve,
   };
 }
 
@@ -258,8 +262,7 @@ describe("app store actions", () => {
     actions.handleTabChange("focus");
 
     await vi.waitFor(() => {
-      // oxlint-disable-next-line vitest/prefer-called-once
-      expect(getFocusSessionsMock).toHaveBeenCalledTimes(1);
+      expect(getFocusSessionsMock.mock.calls).toHaveLength(1);
     });
   });
 
@@ -280,8 +283,7 @@ describe("app store actions", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    // oxlint-disable-next-line vitest/prefer-called-times
-    expect(getHistoryMock).toHaveBeenCalledOnce();
+    expect(getHistoryMock.mock.calls).toHaveLength(1);
     expect(getHistoryMock).toHaveBeenNthCalledWith(1, 69);
     expect(stores.useHistoryStore.getState().historyScope).toBe("recent");
     expect(

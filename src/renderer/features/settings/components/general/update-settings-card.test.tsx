@@ -16,19 +16,20 @@ const IDLE_UPDATE_STATE: AppUpdateState = {
 
 function setUpdaterState(state: AppUpdateState) {
   const onStateChange = vi.fn(() => vi.fn());
+  const updater = {
+    checkForUpdates: vi.fn(async () => {}),
+    downloadUpdate: vi.fn(async () => {}),
+    getState: vi.fn().mockResolvedValue(state),
+    installUpdate: vi.fn(async () => {}),
+    onStateChange,
+  };
 
   Object.defineProperty(window, "updater", {
     configurable: true,
-    value: {
-      checkForUpdates: vi.fn(async () => {}),
-      downloadUpdate: vi.fn(async () => {}),
-      getState: vi.fn().mockResolvedValue(state),
-      installUpdate: vi.fn(async () => {}),
-      onStateChange,
-    },
+    value: updater,
   });
 
-  return window.updater;
+  return updater;
 }
 
 describe("update settings card", () => {
@@ -47,8 +48,7 @@ describe("update settings card", () => {
     fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.checkForUpdates).toHaveBeenCalledTimes(1);
+      expect(updater.checkForUpdates.mock.calls).toHaveLength(1);
     });
   });
 
@@ -61,8 +61,7 @@ describe("update settings card", () => {
     render(<UpdateSettingsCard />);
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.getState).toHaveBeenCalledTimes(1);
+      expect(updater.getState.mock.calls).toHaveLength(1);
     });
 
     expect(screen.queryByText("App updates")).not.toBeInTheDocument();

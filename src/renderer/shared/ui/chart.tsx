@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import type * as React from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
+import type { JsonObject } from "@/shared/types/json";
 
 export type ChartConfig = Record<
   string,
@@ -62,7 +63,7 @@ interface ChartTooltipContentPrimitiveProps {
 interface ChartTooltipPrimitiveProps {
   active?: boolean;
   content?: React.ReactNode;
-  cursor?: Record<string, unknown>;
+  cursor?: JsonObject;
 }
 
 interface ChartResponsiveContainerProps {

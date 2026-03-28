@@ -1,5 +1,8 @@
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
-import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
 
 import {
   createIdleFocusTimerState,
@@ -21,7 +24,7 @@ export async function resetFocusTimerSession({
   clearFocusSaveError: () => void;
   focusDurationMs: number;
   now?: Date;
-  recordFocusSession: (input: CreateFocusSessionInput) => Promise<unknown>;
+  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   setFocusSaveErrorMessage: (message: string | null) => void;
   setTimerState: (timerState: PersistedFocusTimerState) => void;
   timerState: PersistedFocusTimerState;

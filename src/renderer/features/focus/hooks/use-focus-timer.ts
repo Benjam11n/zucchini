@@ -21,7 +21,10 @@ import {
 } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
-import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 const LEASE_TTL_MS = 2500;
@@ -102,7 +105,7 @@ export function useFocusTimer({
 }: {
   clearFocusSaveError: () => void;
   pomodoroSettings: PomodoroTimerSettings | null;
-  recordFocusSession: (input: CreateFocusSessionInput) => Promise<unknown>;
+  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   setFocusSaveErrorMessage: (message: string | null) => void;
 }) {
   const timerState = useFocusStore((state) => state.timerState);

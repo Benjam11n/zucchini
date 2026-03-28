@@ -13,21 +13,27 @@ const handlers = new Map<
   (_event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<unknown>
 >();
 
-vi.mock<typeof ElectronModule>(import("electron"), () => ({
-  ipcMain: {
-    handle: vi.fn(
-      (channel: string, handler: (...args: unknown[]) => unknown) => {
-        handlers.set(
-          channel,
-          handler as (
-            _event: IpcMainInvokeEvent,
-            ...args: unknown[]
-          ) => Promise<unknown>
-        );
-      }
-    ),
-  } as unknown as IpcMain,
-}));
+vi.mock<typeof ElectronModule>(import("electron"), async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    ipcMain: {
+      ...actual.ipcMain,
+      handle: vi.fn(
+        (channel: string, handler: (...args: unknown[]) => unknown) => {
+          handlers.set(
+            channel,
+            handler as (
+              _event: IpcMainInvokeEvent,
+              ...args: unknown[]
+            ) => Promise<unknown>
+          );
+        }
+      ),
+    } as IpcMain,
+  };
+});
 
 vi.mock<typeof NotificationsModule>(
   import("@/main/features/reminders/notifications"),
@@ -291,8 +297,7 @@ describe("registerIpcHandlers()", () => {
       data: "/tmp/zucchini",
       ok: true,
     });
-    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-    expect(onOpenDataFolder).toHaveBeenCalledOnce();
+    expect(onOpenDataFolder.mock.calls).toHaveLength(1);
   });
 
   it("routes the export backup action to the provided callback", async () => {
@@ -313,8 +318,7 @@ describe("registerIpcHandlers()", () => {
       data: "/tmp/zucchini-backup.db",
       ok: true,
     });
-    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-    expect(onExportBackup).toHaveBeenCalledOnce();
+    expect(onExportBackup.mock.calls).toHaveLength(1);
   });
 
   it("routes the import backup action to the provided callback", async () => {
@@ -333,7 +337,6 @@ describe("registerIpcHandlers()", () => {
       data: true,
       ok: true,
     });
-    // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-    expect(onImportBackup).toHaveBeenCalledOnce();
+    expect(onImportBackup.mock.calls).toHaveLength(1);
   });
 });

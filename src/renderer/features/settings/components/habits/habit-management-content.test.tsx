@@ -3,10 +3,22 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type * as FramerMotion from "framer-motion";
 import { createElement, forwardRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { HabitManagementContent } from "./habit-management-content";
+
+interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
+  animate?: object;
+  exit?: object;
+  initial?: object;
+  layout?: boolean | object | string;
+  transition?: object;
+  variants?: object;
+  whileHover?: object;
+  whileTap?: object;
+}
 
 function createAsyncMock() {
   return vi.fn(() => Promise.resolve());
@@ -23,7 +35,7 @@ vi.mock<typeof FramerMotion>(
         {},
         {
           get: (_, tag: string) =>
-            forwardRef<HTMLElement, Record<string, unknown>>(
+            forwardRef<HTMLElement, MotionMockProps>(
               function MotionMock(props, ref) {
                 const {
                   animate: _animate,

@@ -1,11 +1,18 @@
-/* eslint-disable vitest/prefer-called-once */
-
 import {
   registerAppUpdater,
   resolveAppUpdateSupportMode,
 } from "@/main/app/updater";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
+
+interface AppUpdaterEventMap {
+  "checking-for-update": [];
+  "download-progress": [{ percent: number }];
+  error: [Error];
+  "update-available": [{ version: string }];
+  "update-downloaded": [{ version: string }];
+  "update-not-available": [];
+}
 
 class FakeAutoUpdater {
   autoDownload = true;
@@ -23,17 +30,27 @@ class FakeAutoUpdater {
   quitAndInstall = vi.fn();
 
   private readonly listeners = new Map<
-    string,
-    ((...args: unknown[]) => void)[]
+    keyof AppUpdaterEventMap,
+    ((...args: AppUpdaterEventMap[keyof AppUpdaterEventMap]) => void)[]
   >();
 
-  on(event: string, listener: (...args: unknown[]) => void): void {
+  on<TEvent extends keyof AppUpdaterEventMap>(
+    event: TEvent,
+    listener: (...args: AppUpdaterEventMap[TEvent]) => void
+  ): void {
     const nextListeners = this.listeners.get(event) ?? [];
-    nextListeners.push(listener);
+    nextListeners.push(
+      listener as (
+        ...args: AppUpdaterEventMap[keyof AppUpdaterEventMap]
+      ) => void
+    );
     this.listeners.set(event, nextListeners);
   }
 
-  emit(event: string, ...args: unknown[]): void {
+  emit<TEvent extends keyof AppUpdaterEventMap>(
+    event: TEvent,
+    ...args: AppUpdaterEventMap[TEvent]
+  ): void {
     for (const listener of this.listeners.get(event) ?? []) {
       listener(...args);
     }
@@ -90,7 +107,7 @@ describe("registerAppUpdater()", () => {
 
     await handlers.get(APP_UPDATER_CHANNELS.downloadUpdate)?.();
 
-    expect(updater.downloadUpdate).toHaveBeenCalledTimes(1);
+    expect(updater.downloadUpdate.mock.calls).toHaveLength(1);
 
     updater.emit("update-downloaded", {
       version: "0.2.0",
@@ -98,7 +115,7 @@ describe("registerAppUpdater()", () => {
 
     await handlers.get(APP_UPDATER_CHANNELS.installUpdate)?.();
 
-    expect(updater.quitAndInstall).toHaveBeenCalledTimes(1);
+    expect(updater.quitAndInstall.mock.calls).toHaveLength(1);
     expect(updater.quitAndInstall).toHaveBeenCalledWith(false, true);
   });
 
@@ -130,7 +147,7 @@ describe("registerAppUpdater()", () => {
 
     await handlers.get(APP_UPDATER_CHANNELS.checkForUpdates)?.();
 
-    expect(updater.checkForUpdates).toHaveBeenCalledTimes(1);
+    expect(updater.checkForUpdates.mock.calls).toHaveLength(1);
   });
 
   it("broadcasts state changes from updater events", () => {
@@ -215,8 +232,8 @@ describe("registerAppUpdater()", () => {
 
     controller.start();
 
-    expect(scheduleTimeout).toHaveBeenCalledTimes(1);
-    expect(scheduleInterval).toHaveBeenCalledTimes(1);
+    expect(scheduleTimeout.mock.calls).toHaveLength(1);
+    expect(scheduleInterval.mock.calls).toHaveLength(1);
   });
 
   it("enables the documented dev updater flow when dev-app-update.yml exists", () => {

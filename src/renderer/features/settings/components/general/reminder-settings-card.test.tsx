@@ -90,7 +90,7 @@ describe("reminder settings card", () => {
   });
 
   it("does not show a notification warning when desktop delivery is available", async () => {
-    setHabitsApi({
+    const habits = setHabitsApi({
       availability: "available",
       reason: null,
     });
@@ -104,8 +104,7 @@ describe("reminder settings card", () => {
     );
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(window.habits.getDesktopNotificationStatus).toHaveBeenCalledOnce();
+      expect(habits.getDesktopNotificationStatus.mock.calls).toHaveLength(1);
     });
 
     expect(
@@ -187,8 +186,7 @@ describe("reminder settings card", () => {
     );
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(habits.getDesktopNotificationStatus).toHaveBeenCalledTimes(1);
+      expect(habits.getDesktopNotificationStatus.mock.calls).toHaveLength(1);
     });
 
     fireEvent(window, new Event("focus"));

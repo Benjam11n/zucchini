@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { act, render, screen, waitFor } from "@testing-library/react";
-import type * as SonnerModule from "sonner";
 import { toast } from "sonner";
+import type { ExternalToast } from "sonner";
 
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
@@ -14,12 +14,25 @@ const sonnerState = vi.hoisted(() => ({
   toastMock: vi.fn(),
 }));
 
-vi.mock<typeof SonnerModule>(import("sonner"), () => ({
-  toast: Object.assign(sonnerState.toastMock, {
-    dismiss: sonnerState.dismissToastMock,
-    message: sonnerState.messageToastMock,
-  }) as unknown as typeof toast,
-}));
+interface ToastAction {
+  onClick: (event: never) => void;
+}
+
+type ToastFn = (message: string, data?: ExternalToast) => string | number;
+
+vi.mock(import("sonner"), async (importOriginal) => {
+  const actual = await importOriginal();
+  const toastProxy = ((message: string, data?: ExternalToast) =>
+    sonnerState.toastMock(message, data)) as ToastFn;
+
+  return {
+    ...actual,
+    toast: Object.assign(toastProxy, actual.toast, {
+      dismiss: sonnerState.dismissToastMock,
+      message: sonnerState.messageToastMock,
+    }),
+  };
+});
 
 const IDLE_UPDATE_STATE: AppUpdateState = {
   availableVersion: null,
@@ -31,19 +44,20 @@ const IDLE_UPDATE_STATE: AppUpdateState = {
 
 function setUpdaterState(state: AppUpdateState) {
   const onStateChange = vi.fn(() => vi.fn());
+  const updater = {
+    checkForUpdates: vi.fn(async () => {}),
+    downloadUpdate: vi.fn(async () => {}),
+    getState: vi.fn().mockResolvedValue(state),
+    installUpdate: vi.fn(async () => {}),
+    onStateChange,
+  };
 
   Object.defineProperty(window, "updater", {
     configurable: true,
-    value: {
-      checkForUpdates: vi.fn(async () => {}),
-      downloadUpdate: vi.fn(async () => {}),
-      getState: vi.fn().mockResolvedValue(state),
-      installUpdate: vi.fn(async () => {}),
-      onStateChange,
-    },
+    value: updater,
   });
 
-  return window.updater;
+  return updater;
 }
 
 describe("update button", () => {
@@ -56,8 +70,7 @@ describe("update button", () => {
     render(<UpdateButton />);
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.getState).toHaveBeenCalledTimes(1);
+      expect(updater.getState.mock.calls).toHaveLength(1);
     });
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
@@ -77,7 +90,7 @@ describe("update button", () => {
     render(<UpdateButton />);
 
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith(
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
         "Update available",
         expect.objectContaining({
           action: expect.objectContaining({
@@ -88,17 +101,15 @@ describe("update button", () => {
       );
     });
 
-    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.action as {
-      onClick: (event: never) => void;
-    };
+    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.action as ToastAction;
 
     act(() => {
       action.onClick({} as never);
     });
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.downloadUpdate).toHaveBeenCalledTimes(1);
+      expect(updater.downloadUpdate.mock.calls).toHaveLength(1);
     });
   });
 
@@ -115,7 +126,7 @@ describe("update button", () => {
     render(<UpdateButton />);
 
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith(
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
         "Update ready",
         expect.objectContaining({
           action: expect.objectContaining({
@@ -128,9 +139,8 @@ describe("update button", () => {
       );
     });
 
-    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.cancel as {
-      onClick: (event: never) => void;
-    };
+    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.cancel as ToastAction;
 
     act(() => {
       cancel.onClick({} as never);
@@ -153,7 +163,7 @@ describe("update button", () => {
     render(<UpdateButton />);
 
     await waitFor(() => {
-      expect(toast).toHaveBeenCalledWith(
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
         "Update ready",
         expect.objectContaining({
           action: expect.objectContaining({
@@ -168,17 +178,15 @@ describe("update button", () => {
       );
     });
 
-    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]?.action as {
-      onClick: (event: never) => void;
-    };
+    const action = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.action as ToastAction;
 
     act(() => {
       action.onClick({} as never);
     });
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.installUpdate).toHaveBeenCalledTimes(1);
+      expect(updater.installUpdate.mock.calls).toHaveLength(1);
     });
   });
 
@@ -194,8 +202,7 @@ describe("update button", () => {
     render(<UpdateButton />);
 
     await waitFor(() => {
-      // eslint-disable-next-line vitest/prefer-called-once, vitest/prefer-called-times
-      expect(updater.getState).toHaveBeenCalledTimes(1);
+      expect(updater.getState.mock.calls).toHaveLength(1);
     });
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();

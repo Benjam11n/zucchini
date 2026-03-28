@@ -4,6 +4,8 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 import { createAppTray } from "./tray";
 
+type ElectronExports = typeof ElectronModule;
+
 const trayState = vi.hoisted(() => ({
   clickHandler: null as null | (() => void),
   destroyCount: 0,
@@ -11,42 +13,55 @@ const trayState = vi.hoisted(() => ({
   trayCount: 0,
 }));
 
-vi.mock<typeof ElectronModule>(import("electron"), () => ({
-  Menu: {
-    buildFromTemplate: (
-      template: ElectronModule.MenuItemConstructorOptions[]
-    ) => template,
-  } as unknown as typeof ElectronModule.Menu,
-  Tray: class {
-    constructor() {
-      trayState.trayCount += 1;
-    }
+vi.mock("electron", async (importOriginal) => {
+  const actual = (await importOriginal()) as ElectronExports;
 
-    destroy(): void {
-      trayState.destroyCount += 1;
-    }
+  return {
+    ...actual,
+    Menu: {
+      ...actual.Menu,
+      buildFromTemplate: (
+        template: ElectronModule.MenuItemConstructorOptions[]
+      ) => template,
+    },
+    Tray: Object.assign(
+      class {
+        constructor() {
+          trayState.trayCount += 1;
+        }
 
-    on(event: string, handler: () => void): void {
-      if (event === "click") {
-        trayState.clickHandler = handler;
-      }
-    }
+        destroy(): void {
+          trayState.destroyCount += 1;
+        }
 
-    setContextMenu(menu: ElectronModule.MenuItemConstructorOptions[]): void {
-      trayState.lastMenu = menu;
-    }
+        on(event: string, handler: () => void): void {
+          if (event === "click") {
+            trayState.clickHandler = handler;
+          }
+        }
 
-    setToolTip(): void {}
-  } as unknown as typeof ElectronModule.Tray,
-  app: {
-    getAppPath: () => "/mocked/app",
-  } as unknown as typeof ElectronModule.app,
-  nativeImage: {
-    createFromPath: () => ({
-      resize: () => ({}),
-    }),
-  } as unknown as typeof ElectronModule.nativeImage,
-}));
+        setContextMenu(
+          menu: ElectronModule.MenuItemConstructorOptions[]
+        ): void {
+          trayState.lastMenu = menu;
+        }
+
+        setToolTip(): void {}
+      },
+      actual.Tray
+    ),
+    app: {
+      ...actual.app,
+      getAppPath: () => "/mocked/app",
+    },
+    nativeImage: {
+      ...actual.nativeImage,
+      createFromPath: () => ({
+        resize: () => ({}),
+      }),
+    },
+  };
+});
 
 const baseSettings: AppSettings = {
   focusCyclesBeforeLongBreak: 4,
