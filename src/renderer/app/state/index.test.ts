@@ -1,4 +1,5 @@
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -18,8 +19,10 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
       reminderEnabled: true,
       reminderSnoozeMinutes: 15,
       reminderTime: "20:30",
+      resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
       themeMode: "system",
       timezone: "Asia/Singapore",
+      toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
     },
     streak: {
       availableFreezes: 1,

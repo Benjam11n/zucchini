@@ -17,6 +17,7 @@ import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 
 import { FocusPage } from "./focus-page";
 
@@ -30,8 +31,10 @@ const settings = {
   reminderEnabled: true,
   reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
+  resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system" as const,
   timezone: "Asia/Singapore",
+  toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
 function FocusPageHarness() {
@@ -60,6 +63,7 @@ function installHabitsMock() {
     configurable: true,
     value: {
       getDesktopNotificationStatus: vi.fn(),
+      onFocusTimerActionRequested: vi.fn(() => vi.fn()),
       recordFocusSession: vi.fn(() => Promise.resolve()),
     },
   });

@@ -23,6 +23,29 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
+export type FocusTimerAction = "reset" | "toggle";
+export type FocusTimerActionSource =
+  | "global-shortcut"
+  | "main-window"
+  | "widget";
+
+export interface FocusTimerActionRequest {
+  action: FocusTimerAction;
+  source: FocusTimerActionSource;
+}
+
+export interface FocusTimerShortcutRegistration {
+  activeAccelerator: string | null;
+  accelerator: string;
+  errorMessage: string | null;
+  isRegistered: boolean;
+}
+
+export interface FocusTimerShortcutStatus {
+  reset: FocusTimerShortcutRegistration;
+  toggle: FocusTimerShortcutRegistration;
+}
+
 export const HABITS_IPC_CHANNELS = {
   archiveHabit: "habits:archiveHabit",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
@@ -30,8 +53,11 @@ export const HABITS_IPC_CHANNELS = {
   createHabit: "habits:createHabit",
   exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
+  focusTimerActionRequested: "habits:focusTimerActionRequested",
+  focusTimerShortcutStatusChanged: "habits:focusTimerShortcutStatusChanged",
   getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
   getFocusSessions: "habits:getFocusSessions",
+  getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
   getHabits: "habits:getHabits",
   getHistory: "habits:getHistory",
   getTodayState: "habits:getTodayState",
@@ -150,12 +176,19 @@ export interface HabitsApi {
   exportBackup: () => Promise<string | null>;
   getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
+  getFocusTimerShortcutStatus: () => Promise<FocusTimerShortcutStatus>;
   getHabits: () => Promise<Habit[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
   getTodayState: () => Promise<TodayState>;
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
   importBackup: () => Promise<boolean>;
+  onFocusTimerActionRequested: (
+    listener: (request: FocusTimerActionRequest) => void
+  ) => () => void;
+  onFocusTimerShortcutStatusChanged: (
+    listener: (status: FocusTimerShortcutStatus) => void
+  ) => () => void;
   onFocusSessionRecorded: (
     listener: (session: FocusSession) => void
   ) => () => void;

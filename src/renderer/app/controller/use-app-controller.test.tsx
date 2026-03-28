@@ -36,8 +36,10 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
       reminderEnabled: true,
       reminderSnoozeMinutes: 15,
       reminderTime: "20:30",
+      resetFocusTimerShortcut: "Command+Shift+Backspace",
       themeMode: "system",
       timezone: "Asia/Singapore",
+      toggleFocusTimerShortcut: "Command+Shift+Space",
     },
     streak: {
       availableFreezes: 1,
@@ -177,6 +179,20 @@ async function setupUseAppController({
       .fn()
       .mockResolvedValue({ availability: "available", reason: null }),
     getFocusSessions: vi.fn().mockResolvedValue([]),
+    getFocusTimerShortcutStatus: vi.fn().mockResolvedValue({
+      reset: {
+        accelerator: "Command+Shift+Backspace",
+        activeAccelerator: "Command+Shift+Backspace",
+        errorMessage: null,
+        isRegistered: true,
+      },
+      toggle: {
+        accelerator: "Command+Shift+Space",
+        activeAccelerator: "Command+Shift+Space",
+        errorMessage: null,
+        isRegistered: true,
+      },
+    }),
     getHabits: vi.fn().mockResolvedValue([createManagedHabit()]),
     getHistory: vi.fn((limit?: number) =>
       Promise.resolve(limit === 14 ? history.slice(0, 2) : history)
@@ -185,6 +201,8 @@ async function setupUseAppController({
     getWeeklyReview: vi.fn().mockResolvedValue(weeklyReview),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(weeklyReviewOverview),
     onFocusSessionRecorded: vi.fn(() => vi.fn()),
+    onFocusTimerActionRequested: vi.fn(() => vi.fn()),
+    onFocusTimerShortcutStatusChanged: vi.fn(() => vi.fn()),
     recordFocusSession: vi.fn((_input) => Promise.resolve()),
     releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
     renameHabit: vi.fn().mockResolvedValue(todayState),

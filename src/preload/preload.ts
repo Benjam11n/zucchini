@@ -22,6 +22,8 @@ import {
   HabitsIpcError,
 } from "@/shared/contracts/habits-ipc";
 import type {
+  FocusTimerActionRequest,
+  FocusTimerShortcutStatus,
   HabitsApi,
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
@@ -90,6 +92,10 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
   getFocusSessions: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
+  getFocusTimerShortcutStatus: () =>
+    invokeHabits<FocusTimerShortcutStatus>(
+      HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus
+    ),
   getHabits: () => invokeHabits(HABITS_IPC_CHANNELS.getHabits),
   getHistory: (limit?: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.getHistory, limit),
@@ -116,6 +122,46 @@ const habitsApi: HabitsApi = {
       ipcRenderer.removeListener(
         HABITS_IPC_CHANNELS.focusSessionRecorded,
         handleFocusSessionRecorded
+      );
+    };
+  },
+  onFocusTimerActionRequested: (listener) => {
+    const handleFocusTimerActionRequested = (
+      _event: IpcRendererEvent,
+      request: FocusTimerActionRequest
+    ) => {
+      listener(request);
+    };
+
+    ipcRenderer.on(
+      HABITS_IPC_CHANNELS.focusTimerActionRequested,
+      handleFocusTimerActionRequested
+    );
+
+    return () => {
+      ipcRenderer.removeListener(
+        HABITS_IPC_CHANNELS.focusTimerActionRequested,
+        handleFocusTimerActionRequested
+      );
+    };
+  },
+  onFocusTimerShortcutStatusChanged: (listener) => {
+    const handleFocusTimerShortcutStatusChanged = (
+      _event: IpcRendererEvent,
+      status: FocusTimerShortcutStatus
+    ) => {
+      listener(status);
+    };
+
+    ipcRenderer.on(
+      HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
+      handleFocusTimerShortcutStatusChanged
+    );
+
+    return () => {
+      ipcRenderer.removeListener(
+        HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
+        handleFocusTimerShortcutStatusChanged
       );
     };
   },

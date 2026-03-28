@@ -25,7 +25,9 @@ export function areAppSettingsEqual(
     left.reminderEnabled === right.reminderEnabled &&
     left.reminderSnoozeMinutes === right.reminderSnoozeMinutes &&
     left.reminderTime === right.reminderTime &&
+    left.resetFocusTimerShortcut === right.resetFocusTimerShortcut &&
     left.themeMode === right.themeMode &&
+    left.toggleFocusTimerShortcut === right.toggleFocusTimerShortcut &&
     left.timezone === right.timezone
   );
 }

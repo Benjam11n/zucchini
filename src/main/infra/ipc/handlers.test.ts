@@ -4,6 +4,7 @@ import type { IpcMain, IpcMainInvokeEvent } from "electron";
 import type * as NotificationsModule from "@/main/features/reminders/notifications";
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { registerIpcHandlers } from "./handlers";
@@ -58,8 +59,10 @@ const defaultSettings: AppSettings = {
   reminderEnabled: true,
   reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
+  resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system",
   timezone: "Asia/Singapore",
+  toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
 function createService() {
@@ -107,6 +110,20 @@ function createRegisterOptions(
   return {
     broadcastFocusSessionRecorded: vi.fn(),
     focusTimerCoordinator: createFocusTimerCoordinator(),
+    getFocusTimerShortcutStatus: vi.fn(() => ({
+      reset: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        errorMessage: null,
+        isRegistered: true,
+      },
+      toggle: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        errorMessage: null,
+        isRegistered: true,
+      },
+    })),
     onExportBackup: vi.fn(() => Promise.resolve(null)),
     onImportBackup: vi.fn(() => Promise.resolve(false)),
     onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
@@ -207,6 +224,33 @@ describe("registerIpcHandlers()", () => {
       data: {
         availability: "available",
         reason: null,
+      },
+      ok: true,
+    });
+  });
+
+  it("returns focus timer shortcut status through IPC", async () => {
+    resetHandlers();
+    registerIpcHandlers(createRegisterOptions());
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: {
+        reset: {
+          accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+          activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+          errorMessage: null,
+          isRegistered: true,
+        },
+        toggle: {
+          accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+          activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+          errorMessage: null,
+          isRegistered: true,
+        },
       },
       ok: true,
     });

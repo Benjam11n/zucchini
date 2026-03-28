@@ -2,6 +2,7 @@
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { PomodoroSettingsFields } from "./pomodoro-settings-fields";
@@ -16,8 +17,10 @@ const settings: AppSettings = {
   reminderEnabled: true,
   reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
+  resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system",
   timezone: "Asia/Singapore",
+  toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
 describe("pomodoro settings fields", () => {
@@ -97,5 +100,30 @@ describe("pomodoro settings fields", () => {
 
     expect(onChange).not.toHaveBeenCalled();
     expect(longBreakMinutesInput).toHaveValue("15");
+  });
+
+  it("updates the global toggle shortcut through the shared form state", () => {
+    const onChange = vi.fn();
+
+    render(
+      <PomodoroSettingsFields
+        fieldErrors={{}}
+        idPrefix="pomodoro-test"
+        onChange={onChange}
+        settings={settings}
+      />
+    );
+
+    fireEvent.change(
+      screen.getByLabelText("Global start/pause/resume shortcut"),
+      {
+        target: { value: "Command+Option+Space" },
+      }
+    );
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...settings,
+      toggleFocusTimerShortcut: "Command+Option+Space",
+    });
   });
 });

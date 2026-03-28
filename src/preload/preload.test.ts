@@ -4,9 +4,12 @@ import type { ContextBridge, IpcRenderer } from "electron";
 import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type {
   DesktopNotificationStatus,
+  FocusTimerActionRequest,
+  FocusTimerShortcutStatus,
   HabitsApi,
   TodayState,
 } from "@/shared/contracts/habits-ipc";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 const exposed = new Map<string, unknown>();
@@ -67,8 +70,10 @@ describe("preload habits API", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       },
       streak: {
         availableFreezes: 1,
@@ -143,6 +148,81 @@ describe("preload habits API", () => {
       id: 7,
       startedAt: "2026-03-08T09:00:00.000Z",
       timerSessionId: "timer-session-7",
+    });
+
+    unsubscribe();
+
+    expect(removeListener.mock.calls).toHaveLength(1);
+  });
+
+  it("exposes focus timer action subscriptions through the preload bridge", async () => {
+    await loadPreloadModule();
+
+    const listener = vi.fn();
+    const unsubscribe = getHabitsApi().onFocusTimerActionRequested(listener);
+
+    const [channel, handler] = on.mock.calls[0] as [
+      string,
+      (_event: object, request: FocusTimerActionRequest) => void,
+    ];
+
+    expect(channel).toBe("habits:focusTimerActionRequested");
+
+    handler({}, { action: "toggle", source: "global-shortcut" });
+
+    expect(listener).toHaveBeenCalledWith({
+      action: "toggle",
+      source: "global-shortcut",
+    });
+
+    unsubscribe();
+
+    expect(removeListener.mock.calls).toHaveLength(1);
+  });
+
+  it("exposes focus timer shortcut status subscriptions through the preload bridge", async () => {
+    await loadPreloadModule();
+
+    const listener = vi.fn();
+    const unsubscribe =
+      getHabitsApi().onFocusTimerShortcutStatusChanged(listener);
+
+    const [, handler] = on.mock.calls[0] as [
+      string,
+      (_event: object, status: FocusTimerShortcutStatus) => void,
+    ];
+
+    handler(
+      {},
+      {
+        reset: {
+          accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+          activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+          errorMessage: null,
+          isRegistered: true,
+        },
+        toggle: {
+          accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+          activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+          errorMessage: null,
+          isRegistered: true,
+        },
+      }
+    );
+
+    expect(listener).toHaveBeenCalledWith({
+      reset: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        errorMessage: null,
+        isRegistered: true,
+      },
+      toggle: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        errorMessage: null,
+        isRegistered: true,
+      },
     });
 
     unsubscribe();
@@ -254,6 +334,33 @@ describe("preload habits API", () => {
       getHabitsApi().getDesktopNotificationStatus()
     ).resolves.toStrictEqual(status);
     expect(invoke).toHaveBeenCalledWith("habits:getDesktopNotificationStatus");
+  });
+
+  it("invokes focus timer shortcut status through the preload bridge", async () => {
+    await loadPreloadModule();
+    const status: FocusTimerShortcutStatus = {
+      reset: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+        errorMessage: null,
+        isRegistered: true,
+      },
+      toggle: {
+        accelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        activeAccelerator: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        errorMessage: null,
+        isRegistered: true,
+      },
+    };
+    invoke.mockResolvedValue({
+      data: status,
+      ok: true,
+    });
+
+    await expect(getHabitsApi().getFocusTimerShortcutStatus()).resolves.toBe(
+      status
+    );
+    expect(invoke).toHaveBeenCalledWith("habits:getFocusTimerShortcutStatus");
   });
 
   it("invokes open data folder through the preload bridge", async () => {

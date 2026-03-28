@@ -13,6 +13,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  globalShortcut,
   ipcMain,
   nativeImage,
   powerMonitor,
@@ -24,6 +25,7 @@ import { resolveRuntimeIconPath } from "@/main/app/assets";
 import { systemClock } from "@/main/app/clock";
 import { createDataManagementActions } from "@/main/app/data-management";
 import { createFatalErrorReporter } from "@/main/app/fatal-error";
+import { createFocusTimerGlobalShortcutManager } from "@/main/app/global-shortcuts";
 import {
   shouldHideOnWindowClose,
   shouldQuitWhenAllWindowsClosed,
@@ -48,6 +50,10 @@ import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import type {
+  FocusTimerActionRequest,
+  FocusTimerShortcutStatus,
+} from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 function loadAppWindow(window: BrowserWindow, search = ""): void {
@@ -188,17 +194,67 @@ function broadcastFocusSessionRecorded(session: FocusSession): void {
   }
 }
 
-function applyAppRuntimeSettingsFromState(nextRuntime: AppRuntime): void {
-  const today = nextRuntime.service.getTodayState();
-  trayEnabled = applyRuntimeSettings({
-    appLike: app,
-    applyThemeMode: applyWindowThemeMode,
-    runtime: nextRuntime,
-    settings: today.settings,
-  });
+function broadcastFocusTimerShortcutStatus(
+  status: FocusTimerShortcutStatus
+): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(
+      HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
+      status
+    );
+  }
+}
+
+function getPreferredFocusTimerWindow(): BrowserWindow | null {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+
+  if (focusedWindow && !focusedWindow.isDestroyed()) {
+    return focusedWindow;
+  }
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    return mainWindow;
+  }
+
+  if (focusWidgetWindow && !focusWidgetWindow.isDestroyed()) {
+    return focusWidgetWindow;
+  }
+
+  return null;
+}
+
+function dispatchFocusTimerAction(request: FocusTimerActionRequest): void {
+  const targetWindow = getPreferredFocusTimerWindow();
+
+  if (!targetWindow) {
+    return;
+  }
+
+  targetWindow.webContents.send(
+    HABITS_IPC_CHANNELS.focusTimerActionRequested,
+    request
+  );
+}
+
+const focusTimerGlobalShortcutManager = createFocusTimerGlobalShortcutManager({
+  globalShortcut,
+  onAction: (action) =>
+    dispatchFocusTimerAction({
+      action,
+      source: "global-shortcut",
+    }),
+});
+
+function registerFocusTimerGlobalShortcuts(settings: {
+  resetFocusTimerShortcut: string;
+  toggleFocusTimerShortcut: string;
+}): void {
+  const status = focusTimerGlobalShortcutManager.register(settings);
+  broadcastFocusTimerShortcutStatus(status);
 }
 
 function cleanupRuntime(): void {
+  focusTimerGlobalShortcutManager.unregisterAll();
   runtime?.reminders.cancel();
   runtime?.tray.destroy();
   runtime?.repository.close();
@@ -261,6 +317,8 @@ function bootstrapApp(): void {
           registerIpcHandlers({
             broadcastFocusSessionRecorded,
             focusTimerCoordinator,
+            getFocusTimerShortcutStatus: () =>
+              focusTimerGlobalShortcutManager.getStatus(),
             onExportBackup: dataManagement.exportBackup,
             onImportBackup: () =>
               dataManagement.importBackup(() => {
@@ -275,6 +333,7 @@ function bootstrapApp(): void {
                 runtime: nextRuntime,
                 settings,
               });
+              registerFocusTimerGlobalShortcuts(settings);
             },
             onShowFocusWidget: showFocusWidget,
             onShowMainWindow: showMainWindow,
@@ -294,7 +353,14 @@ function bootstrapApp(): void {
 
           setTimeout(() => {
             try {
-              applyAppRuntimeSettingsFromState(nextRuntime);
+              const todayState = nextRuntime.service.getTodayState();
+              trayEnabled = applyRuntimeSettings({
+                appLike: app,
+                applyThemeMode: applyWindowThemeMode,
+                runtime: nextRuntime,
+                settings: todayState.settings,
+              });
+              registerFocusTimerGlobalShortcuts(todayState.settings);
             } catch (error) {
               console.error("Failed to warm app runtime.", error);
             }

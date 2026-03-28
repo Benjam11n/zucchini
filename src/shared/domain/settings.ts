@@ -1,3 +1,5 @@
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+
 /**
  * Application settings domain and validation helpers.
  *
@@ -10,6 +12,11 @@ export interface PomodoroTimerSettings {
   focusCyclesBeforeLongBreak: number;
   focusLongBreakSeconds: number;
   focusShortBreakSeconds: number;
+}
+
+export interface FocusTimerShortcutSettings {
+  resetFocusTimerShortcut: string;
+  toggleFocusTimerShortcut: string;
 }
 
 const DEFAULT_REMINDER_TIME = "20:30";
@@ -26,6 +33,40 @@ const MIN_FOCUS_BREAK_SECONDS = 1;
 const MAX_FOCUS_BREAK_SECONDS = 60 * 60;
 const MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK = 1;
 const MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK = 12;
+const MAX_GLOBAL_SHORTCUT_LENGTH = 100;
+const GLOBAL_SHORTCUT_MODIFIERS = new Set([
+  "alt",
+  "cmd",
+  "cmdorctrl",
+  "command",
+  "commandorcontrol",
+  "control",
+  "ctrl",
+  "meta",
+  "option",
+  "shift",
+  "super",
+]);
+const GLOBAL_SHORTCUT_KEYS = new Set([
+  "backspace",
+  "delete",
+  "down",
+  "end",
+  "enter",
+  "esc",
+  "escape",
+  "home",
+  "insert",
+  "left",
+  "pagedown",
+  "pageup",
+  "return",
+  "right",
+  "space",
+  "tab",
+  "up",
+]);
+const GLOBAL_SHORTCUT_UNSUPPORTED_TOKENS = new Set(["fn", "globe"]);
 
 export interface AppSettings {
   focusDefaultDurationSeconds: PomodoroTimerSettings["focusDefaultDurationSeconds"];
@@ -37,8 +78,43 @@ export interface AppSettings {
   reminderEnabled: boolean;
   reminderSnoozeMinutes: number;
   reminderTime: string;
+  resetFocusTimerShortcut: FocusTimerShortcutSettings["resetFocusTimerShortcut"];
   themeMode: ThemeMode;
+  toggleFocusTimerShortcut: FocusTimerShortcutSettings["toggleFocusTimerShortcut"];
   timezone: string;
+}
+
+function isMacLikePlatform(platform: string): boolean {
+  return platform === "darwin";
+}
+
+function getRuntimePlatform(): string {
+  if (typeof process !== "undefined" && typeof process.platform === "string") {
+    return process.platform;
+  }
+
+  if (
+    typeof navigator !== "undefined" &&
+    typeof navigator.platform === "string" &&
+    navigator.platform.toLowerCase().includes("mac")
+  ) {
+    return "darwin";
+  }
+
+  return "unknown";
+}
+
+export function createDefaultFocusTimerShortcutSettings(
+  platform = getRuntimePlatform()
+): FocusTimerShortcutSettings {
+  return {
+    resetFocusTimerShortcut: isMacLikePlatform(platform)
+      ? FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset
+      : FOCUS_TIMER_SHORTCUT_DEFAULTS.other.reset,
+    toggleFocusTimerShortcut: isMacLikePlatform(platform)
+      ? FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle
+      : FOCUS_TIMER_SHORTCUT_DEFAULTS.other.toggle,
+  };
 }
 
 export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
@@ -53,6 +129,7 @@ export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
 export function createDefaultAppSettings(timezone: string): AppSettings {
   return {
     ...createDefaultPomodoroTimerSettings(),
+    ...createDefaultFocusTimerShortcutSettings(),
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,
@@ -78,6 +155,79 @@ export function getPomodoroTimerSettings(
     focusLongBreakSeconds: settings.focusLongBreakSeconds,
     focusShortBreakSeconds: settings.focusShortBreakSeconds,
   };
+}
+
+function isSupportedGlobalShortcutKey(token: string): boolean {
+  return (
+    GLOBAL_SHORTCUT_KEYS.has(token) ||
+    /^[a-z0-9]$/i.test(token) ||
+    /^f([1-9]|1\d|2[0-4])$/i.test(token)
+  );
+}
+
+function parseGlobalShortcutAccelerator(
+  value: string
+): { key: string; modifiers: string[] } | null {
+  const trimmed = value.trim();
+
+  if (trimmed.length === 0 || trimmed.length > MAX_GLOBAL_SHORTCUT_LENGTH) {
+    return null;
+  }
+
+  const tokens = trimmed
+    .split("+")
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0);
+
+  if (tokens.length < 2) {
+    return null;
+  }
+
+  const modifiers: string[] = [];
+  let key: string | null = null;
+
+  for (const token of tokens) {
+    const normalizedToken = token.toLowerCase();
+
+    if (GLOBAL_SHORTCUT_UNSUPPORTED_TOKENS.has(normalizedToken)) {
+      return null;
+    }
+
+    if (GLOBAL_SHORTCUT_MODIFIERS.has(normalizedToken)) {
+      modifiers.push(normalizedToken);
+      continue;
+    }
+
+    if (key !== null || !isSupportedGlobalShortcutKey(normalizedToken)) {
+      return null;
+    }
+
+    key = normalizedToken;
+  }
+
+  if (key === null || modifiers.length === 0) {
+    return null;
+  }
+
+  const uniqueModifiers = [...new Set(modifiers)].toSorted();
+
+  return { key, modifiers: uniqueModifiers };
+}
+
+export function isValidGlobalShortcutAccelerator(value: string): boolean {
+  return parseGlobalShortcutAccelerator(value) !== null;
+}
+
+export function normalizeGlobalShortcutAccelerator(
+  value: string
+): string | null {
+  const parsedAccelerator = parseGlobalShortcutAccelerator(value);
+
+  if (!parsedAccelerator) {
+    return null;
+  }
+
+  return [...parsedAccelerator.modifiers, parsedAccelerator.key].join("+");
 }
 
 export function isThemeMode(value: string): value is ThemeMode {

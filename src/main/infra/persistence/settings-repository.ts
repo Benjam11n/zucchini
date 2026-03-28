@@ -1,7 +1,10 @@
 import { settings } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
-import { createDefaultAppSettings } from "@/shared/domain/settings";
+import {
+  createDefaultAppSettings,
+  isValidGlobalShortcutAccelerator,
+} from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { normalizeThemeMode } from "./mappers";
@@ -40,8 +43,18 @@ export class SqliteSettingsRepository {
         reminderEnabled: map.get("reminderEnabled") === "true",
         reminderSnoozeMinutes: Number(map.get("reminderSnoozeMinutes")),
         reminderTime: map.get("reminderTime") ?? defaults.reminderTime,
+        resetFocusTimerShortcut: isValidGlobalShortcutAccelerator(
+          map.get("resetFocusTimerShortcut") ?? ""
+        )
+          ? (map.get("resetFocusTimerShortcut") as string)
+          : defaults.resetFocusTimerShortcut,
         themeMode: normalizeThemeMode(map.get("themeMode")),
         timezone: map.get("timezone") ?? defaults.timezone,
+        toggleFocusTimerShortcut: isValidGlobalShortcutAccelerator(
+          map.get("toggleFocusTimerShortcut") ?? ""
+        )
+          ? (map.get("toggleFocusTimerShortcut") as string)
+          : defaults.toggleFocusTimerShortcut,
       };
 
       const validationResult = appSettingsSchema.safeParse(candidateSettings);
@@ -81,7 +94,15 @@ export class SqliteSettingsRepository {
         String(nextSettings.reminderSnoozeMinutes)
       );
       this.upsertSetting("reminderTime", nextSettings.reminderTime);
+      this.upsertSetting(
+        "resetFocusTimerShortcut",
+        nextSettings.resetFocusTimerShortcut
+      );
       this.upsertSetting("themeMode", nextSettings.themeMode);
+      this.upsertSetting(
+        "toggleFocusTimerShortcut",
+        nextSettings.toggleFocusTimerShortcut
+      );
       this.upsertSetting("timezone", nextSettings.timezone);
     });
 
@@ -115,7 +136,15 @@ export class SqliteSettingsRepository {
         String(defaults.reminderSnoozeMinutes)
       );
       this.upsertSetting("reminderTime", defaults.reminderTime);
+      this.upsertSetting(
+        "resetFocusTimerShortcut",
+        defaults.resetFocusTimerShortcut
+      );
       this.upsertSetting("themeMode", defaults.themeMode);
+      this.upsertSetting(
+        "toggleFocusTimerShortcut",
+        defaults.toggleFocusTimerShortcut
+      );
       this.upsertSetting("timezone", defaults.timezone);
     });
   }

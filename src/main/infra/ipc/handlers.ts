@@ -28,12 +28,16 @@ import {
   validateReorderHabitIds,
 } from "@/main/infra/ipc/validation";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
-import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc";
+import type {
+  FocusTimerShortcutStatus,
+  HabitsIpcResponse,
+} from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
   broadcastFocusSessionRecorded: (session: FocusSession) => void;
+  getFocusTimerShortcutStatus: () => FocusTimerShortcutStatus;
   onExportBackup: () => Promise<string | null>;
   onImportBackup: () => Promise<boolean>;
   onOpenDataFolder: () => Promise<string>;
@@ -70,6 +74,7 @@ function registerHandler<TArgs extends unknown[], TResult>(
 export function registerIpcHandlers({
   broadcastFocusSessionRecorded,
   focusTimerCoordinator,
+  getFocusTimerShortcutStatus,
   onExportBackup,
   onImportBackup,
   onOpenDataFolder,
@@ -90,6 +95,9 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
     service.getFocusSessions(validateFocusSessionLimit(limit))
+  );
+  registerHandler(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus, () =>
+    getFocusTimerShortcutStatus()
   );
   registerHandler(HABITS_IPC_CHANNELS.getHabits, () => service.getHabits());
   registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) => {

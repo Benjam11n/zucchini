@@ -5,13 +5,13 @@ import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-
 import { useFocusWidgetSizeSync } from "@/renderer/features/focus/components/use-focus-widget-size-sync";
 import { useFocusWidgetSnapshot } from "@/renderer/features/focus/components/use-focus-widget-snapshot";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
-import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
-  createRunningFocusTimerState,
+  resetFocusTimer,
+  toggleFocusTimer,
+} from "@/renderer/features/focus/lib/focus-timer-actions";
+import {
   formatTimerLabel,
   getPomodoroFocusDurationMs,
-  pauseFocusTimerState,
-  resumeFocusTimerState,
   skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
@@ -124,26 +124,27 @@ export function FocusWidget() {
   });
 
   function handleStartOrResume() {
-    clearFocusSaveError();
-    setTimerState(
-      isPaused
-        ? resumeFocusTimerState(timerState)
-        : createRunningFocusTimerState(
-            new Date(),
-            getPomodoroFocusDurationMs(resolvedPomodoroSettings),
-            timerState.completedFocusCycles
-          )
-    );
+    toggleFocusTimer({
+      clearFocusSaveError,
+      pomodoroSettings: resolvedPomodoroSettings,
+      setTimerState,
+      timerState,
+    });
   }
 
   function handlePause() {
-    setTimerState(pauseFocusTimerState(timerState));
+    toggleFocusTimer({
+      clearFocusSaveError,
+      pomodoroSettings: resolvedPomodoroSettings,
+      setTimerState,
+      timerState,
+    });
   }
 
   async function handleReset() {
-    await resetFocusTimerSession({
+    await resetFocusTimer({
       clearFocusSaveError,
-      focusDurationMs: getPomodoroFocusDurationMs(resolvedPomodoroSettings),
+      pomodoroSettings: resolvedPomodoroSettings,
       recordFocusSession: window.habits.recordFocusSession,
       setFocusSaveErrorMessage,
       setTimerState,

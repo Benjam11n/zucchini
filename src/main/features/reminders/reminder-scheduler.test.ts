@@ -1,5 +1,6 @@
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -44,8 +45,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   reminderEnabled: true,
   reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
+  resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system",
   timezone: "UTC",
+  toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
 const DEFAULT_RUNTIME_STATE: ReminderRuntimeState = {

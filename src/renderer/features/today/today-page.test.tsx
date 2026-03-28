@@ -6,6 +6,7 @@ import { memo } from "react";
 import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 
@@ -70,8 +71,10 @@ const state: TodayState = {
     reminderEnabled: true,
     reminderSnoozeMinutes: 15,
     reminderTime: "20:30",
+    resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
     themeMode: "system",
     timezone: "Asia/Singapore",
+    toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
   },
   streak: {
     availableFreezes: 1,

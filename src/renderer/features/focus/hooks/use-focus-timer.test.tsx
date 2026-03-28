@@ -31,6 +31,10 @@ type FocusSessionRecordedListener = (session: {
   startedAt: string;
   timerSessionId: string | null;
 }) => void;
+type FocusTimerActionListener = (request: {
+  action: "reset" | "toggle";
+  source: "global-shortcut" | "main-window" | "widget";
+}) => void;
 
 const DEFAULT_TIMER_SETTINGS = {
   focusCyclesBeforeLongBreak: 4,
@@ -68,6 +72,7 @@ function setupFocusTimerTest() {
   localStorage.clear();
   resetFocusStore();
   let focusSessionRecordedListener: FocusSessionRecordedListener | null = null;
+  let focusTimerActionListener: FocusTimerActionListener | null = null;
   const showFocusWidget = vi.fn(() => Promise.resolve());
   Object.defineProperty(window, "habits", {
     configurable: true,
@@ -83,6 +88,14 @@ function setupFocusTimerTest() {
           };
         }
       ),
+      onFocusTimerActionRequested: vi.fn(
+        (listener: FocusTimerActionListener) => {
+          focusTimerActionListener = listener;
+          return () => {
+            focusTimerActionListener = null;
+          };
+        }
+      ),
       releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
       showFocusWidget,
       showNotification: vi.fn().mockResolvedValue(42),
@@ -94,6 +107,9 @@ function setupFocusTimerTest() {
       session: Parameters<FocusSessionRecordedListener>[0]
     ) {
       focusSessionRecordedListener?.(session);
+    },
+    emitFocusTimerAction(request: Parameters<FocusTimerActionListener>[0]) {
+      focusTimerActionListener?.(request);
     },
     showFocusWidget,
   };
@@ -648,6 +664,50 @@ describe("use focus timer", () => {
         timerSessionId: "timer-session-broadcast",
       },
     ]);
+    teardownFocusTimerTest();
+  });
+
+  it("toggles the timer in response to a global focus timer action", async () => {
+    const { emitFocusTimerAction } = setupFocusTimerTest();
+
+    renderFocusTimerHook();
+
+    await act(async () => {
+      emitFocusTimerAction({ action: "toggle", source: "global-shortcut" });
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().timerState.status).toBe("running");
+    teardownFocusTimerTest();
+  });
+
+  it("resets the timer in response to a global focus timer action", async () => {
+    const { emitFocusTimerAction } = setupFocusTimerTest();
+
+    useFocusStore.getState().setTimerState({
+      breakVariant: null,
+      completedFocusCycles: 0,
+      cycleId: "cycle-reset",
+      endsAt: "2026-03-08T09:10:00.000Z",
+      focusDurationMs: 25 * 60 * 1000,
+      lastCompletedBreak: null,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 10 * 60 * 1000,
+      startedAt: "2026-03-08T09:00:00.000Z",
+      status: "running",
+      timerSessionId: "timer-session-reset",
+    });
+
+    renderFocusTimerHook();
+
+    await act(async () => {
+      emitFocusTimerAction({ action: "reset", source: "global-shortcut" });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(useFocusStore.getState().timerState.status).toBe("idle");
     teardownFocusTimerTest();
   });
 });

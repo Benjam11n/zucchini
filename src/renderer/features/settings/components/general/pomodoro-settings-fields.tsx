@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { Button } from "@/renderer/shared/ui/button";
 import { DurationInput } from "@/renderer/shared/ui/duration-input";
+import { Input } from "@/renderer/shared/ui/input";
 import {
   Item,
   ItemActions,
@@ -9,6 +11,8 @@ import {
   ItemGroup,
 } from "@/renderer/shared/ui/item";
 import { Label } from "@/renderer/shared/ui/label";
+import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
+import { createDefaultFocusTimerShortcutSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 function sanitizeIntegerInput(value: string): string {
@@ -29,6 +33,7 @@ export function PomodoroSettingsFields({
   const [cyclesInput, setCyclesInput] = useState(() =>
     settings.focusCyclesBeforeLongBreak.toString()
   );
+  const defaultShortcutSettings = createDefaultFocusTimerShortcutSettings();
 
   useEffect(() => {
     setCyclesInput(settings.focusCyclesBeforeLongBreak.toString());
@@ -201,6 +206,104 @@ export function PomodoroSettingsFields({
       {fieldErrors.focusCyclesBeforeLongBreak ? (
         <p className="text-xs text-destructive">
           {fieldErrors.focusCyclesBeforeLongBreak}
+        </p>
+      ) : null}
+
+      <Item className="px-0 py-0">
+        <ItemContent>
+          <Label
+            htmlFor={`${idPrefix}-toggle-shortcut`}
+            className="text-sm font-medium"
+          >
+            Global start/pause/resume shortcut
+          </Label>
+          <ItemDescription>
+            Uses standard system modifiers only. Globe/Fn is not supported.
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions className="w-full max-w-[260px]">
+          <Input
+            aria-invalid={
+              fieldErrors.toggleFocusTimerShortcut ? true : undefined
+            }
+            id={`${idPrefix}-toggle-shortcut`}
+            onChange={(event) => {
+              onChange({
+                ...settings,
+                toggleFocusTimerShortcut: event.currentTarget.value,
+              });
+            }}
+            value={settings.toggleFocusTimerShortcut}
+          />
+          <Button
+            onClick={() => {
+              onChange({
+                ...settings,
+                toggleFocusTimerShortcut:
+                  defaultShortcutSettings.toggleFocusTimerShortcut,
+              });
+            }}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            Reset
+          </Button>
+        </ItemActions>
+      </Item>
+
+      {fieldErrors.toggleFocusTimerShortcut ? (
+        <p className="text-xs text-destructive">
+          {fieldErrors.toggleFocusTimerShortcut}
+        </p>
+      ) : null}
+
+      <Item className="px-0 py-0">
+        <ItemContent>
+          <Label
+            htmlFor={`${idPrefix}-reset-shortcut`}
+            className="text-sm font-medium"
+          >
+            Global reset shortcut
+          </Label>
+          <ItemDescription>
+            {`Enter an accelerator like ${FOCUS_TIMER_SHORTCUT_REFERENCE.reset}.`}
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions className="w-full max-w-[260px]">
+          <Input
+            aria-invalid={
+              fieldErrors.resetFocusTimerShortcut ? true : undefined
+            }
+            id={`${idPrefix}-reset-shortcut`}
+            onChange={(event) => {
+              onChange({
+                ...settings,
+                resetFocusTimerShortcut: event.currentTarget.value,
+              });
+            }}
+            value={settings.resetFocusTimerShortcut}
+          />
+          <Button
+            onClick={() => {
+              onChange({
+                ...settings,
+                resetFocusTimerShortcut:
+                  defaultShortcutSettings.resetFocusTimerShortcut,
+              });
+            }}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            Reset
+          </Button>
+        </ItemActions>
+      </Item>
+
+      {fieldErrors.resetFocusTimerShortcut ? (
+        <p className="text-xs text-destructive">
+          {fieldErrors.resetFocusTimerShortcut}
         </p>
       ) : null}
     </ItemGroup>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
+import { performFocusTimerAction } from "@/renderer/features/focus/lib/focus-timer-actions";
 import {
   createCompletedFocusSessionInput,
   createIdleFocusTimerState,
@@ -202,6 +203,28 @@ export function useFocusTimer({
         useFocusStore.getState().prependFocusSession(focusSession);
       }),
     []
+  );
+
+  useEffect(
+    () =>
+      window.habits.onFocusTimerActionRequested((request) => {
+        const currentTimerState = useFocusStore.getState().timerState;
+
+        performFocusTimerAction({
+          action: request.action,
+          dependencies: {
+            clearFocusSaveError,
+            pomodoroSettings: pomodoroSettingsRef.current,
+            recordFocusSession,
+            setFocusSaveErrorMessage,
+            setTimerState: useFocusStore.getState().setTimerState,
+            timerState: currentTimerState,
+          },
+        }).catch(() => {
+          // Action failures are already routed through focus timer state.
+        });
+      }),
+    [clearFocusSaveError, recordFocusSession, setFocusSaveErrorMessage]
   );
 
   useEffect(() => {

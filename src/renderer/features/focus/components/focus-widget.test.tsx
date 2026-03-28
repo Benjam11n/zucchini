@@ -11,6 +11,7 @@ import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 
 import { FocusWidget } from "./focus-widget";
 
@@ -86,8 +87,10 @@ describe("focus widget", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       },
       streak: {
         availableFreezes: 1,
@@ -110,6 +113,7 @@ describe("focus widget", () => {
         getDesktopNotificationStatus: vi.fn(),
         getTodayState,
         onFocusSessionRecorded: vi.fn(() => vi.fn()),
+        onFocusTimerActionRequested: vi.fn(() => vi.fn()),
         recordFocusSession: vi.fn((_input) => Promise.resolve()),
         releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
         resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),

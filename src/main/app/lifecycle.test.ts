@@ -1,3 +1,5 @@
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+
 import {
   buildLoginItemSettings,
   shouldHideOnWindowClose,
@@ -17,8 +19,10 @@ describe("buildLoginItemSettings()", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toStrictEqual({
       openAsHidden: true,
@@ -38,8 +42,10 @@ describe("buildLoginItemSettings()", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toStrictEqual({
       openAsHidden: true,

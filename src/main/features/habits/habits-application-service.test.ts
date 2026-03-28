@@ -105,8 +105,10 @@ class FakeRepository implements AppRepository {
     reminderEnabled: true,
     reminderSnoozeMinutes: 15,
     reminderTime: "20:30",
+    resetFocusTimerShortcut: "Command+Shift+Backspace",
     themeMode: "system",
     timezone: "Asia/Singapore",
+    toggleFocusTimerShortcut: "Command+Shift+Space",
   };
   reminderRuntimeState: ReminderRuntimeState = {
     lastMidnightWarningSentAt: null,

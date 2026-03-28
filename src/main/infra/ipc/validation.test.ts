@@ -1,3 +1,5 @@
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+
 import {
   IpcValidationError,
   validateAppSettings,
@@ -20,8 +22,10 @@ describe("ipc validation", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toMatchObject({
       minimizeToTray: true,
@@ -42,8 +46,10 @@ describe("ipc validation", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Mars/Colony",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);
   });
@@ -60,8 +66,10 @@ describe("ipc validation", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);
   });
@@ -78,8 +86,30 @@ describe("ipc validation", () => {
         reminderEnabled: true,
         reminderSnoozeMinutes: 15,
         reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
         themeMode: "system",
         timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+      })
+    ).toThrow(IpcValidationError);
+  });
+
+  it("rejects duplicate global focus timer shortcuts", () => {
+    expect(() =>
+      validateAppSettings({
+        focusCyclesBeforeLongBreak: 4,
+        focusDefaultDurationSeconds: 1500,
+        focusLongBreakSeconds: 15 * 60,
+        focusShortBreakSeconds: 5 * 60,
+        launchAtLogin: false,
+        minimizeToTray: false,
+        reminderEnabled: true,
+        reminderSnoozeMinutes: 15,
+        reminderTime: "20:30",
+        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+        themeMode: "system",
+        timezone: "Asia/Singapore",
+        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);
   });

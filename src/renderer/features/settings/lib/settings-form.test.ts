@@ -4,6 +4,7 @@ import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
 } from "@/renderer/features/settings/lib/settings-form";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 
 const baseSettings: AppSettings = {
@@ -16,8 +17,10 @@ const baseSettings: AppSettings = {
   reminderEnabled: true,
   reminderSnoozeMinutes: 15,
   reminderTime: "20:30",
+  resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system",
   timezone: "Asia/Singapore",
+  toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
 describe("areAppSettingsEqual()", () => {

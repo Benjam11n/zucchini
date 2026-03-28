@@ -6,10 +6,13 @@
  */
 import { z } from "zod";
 
+import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
 import {
+  isValidGlobalShortcutAccelerator,
   isValidFocusDurationSeconds,
   isValidFocusBreakDurationSeconds,
   isValidFocusCyclesBeforeLongBreak,
+  normalizeGlobalShortcutAccelerator,
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
   isValidTimeZone,
@@ -67,6 +70,14 @@ export const habitWeekdaysSchema = z
   });
 
 const themeModeSchema = z.enum(["system", "light", "dark"]);
+const globalShortcutSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .refine(isValidGlobalShortcutAccelerator, {
+    message: `Global shortcuts must use a supported accelerator like ${FOCUS_TIMER_SHORTCUT_REFERENCE.toggle}.`,
+  });
 
 export const appSettingsSchema = z
   .object({
@@ -107,10 +118,12 @@ export const appSettingsSchema = z
     reminderTime: z.string().refine(isValidReminderTime, {
       message: "Reminder time must use HH:MM 24-hour format.",
     }),
+    resetFocusTimerShortcut: globalShortcutSchema,
     themeMode: themeModeSchema,
     timezone: z.string().trim().min(1).refine(isValidTimeZone, {
       message: "Timezone must be a valid IANA timezone.",
     }),
+    toggleFocusTimerShortcut: globalShortcutSchema,
   })
   .strict()
   .superRefine((settings, context) => {
@@ -120,6 +133,24 @@ export const appSettingsSchema = z
         message:
           "Long break duration must be greater than or equal to short break duration.",
         path: ["focusLongBreakSeconds"],
+      });
+    }
+
+    if (
+      normalizeGlobalShortcutAccelerator(settings.toggleFocusTimerShortcut) ===
+      normalizeGlobalShortcutAccelerator(settings.resetFocusTimerShortcut)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Global start/pause/resume shortcut must be different from the reset shortcut.",
+        path: ["toggleFocusTimerShortcut"],
+      });
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Global reset shortcut must be different from the start/pause/resume shortcut.",
+        path: ["resetFocusTimerShortcut"],
       });
     }
   });
