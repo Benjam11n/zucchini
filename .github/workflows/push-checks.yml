@@ -1,14 +1,16 @@
-name: PR Checks
+name: Push Checks
 
 on:
-  pull_request:
+  push:
+    branches:
+      - "**"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-checks-${{ github.event.pull_request.number || github.ref }}
+  group: push-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
