@@ -12,6 +12,7 @@ import { DataManagementSettingsCard } from "@/renderer/features/settings/compone
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
 import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
+import { CategorySettingsCard } from "@/renderer/features/settings/components/habits/category-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import {
@@ -134,7 +135,12 @@ export function SettingsPage(props: SettingsPageProps) {
           </TabsContent>
 
           <TabsContent value="habits">
-            <m.section variants={staggerItemVariants}>
+            <m.div className="grid gap-6" variants={staggerItemVariants}>
+              <CategorySettingsCard
+                fieldErrors={props.fieldErrors}
+                onChange={props.onChange}
+                settings={props.settings}
+              />
               <HabitManagementCard
                 habits={props.habits}
                 onArchiveHabit={props.onArchiveHabit}
@@ -146,7 +152,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
               />
-            </m.section>
+            </m.div>
           </TabsContent>
         </Tabs>
       </m.div>

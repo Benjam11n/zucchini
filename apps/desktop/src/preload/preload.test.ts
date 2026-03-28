@@ -11,6 +11,7 @@ import type {
 } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();
@@ -60,18 +61,8 @@ describe("preload habits API", () => {
       date: "2026-03-08",
       habits: [],
       settings: {
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
+        ...createDefaultAppSettings("Asia/Singapore"),
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       },
       streak: {

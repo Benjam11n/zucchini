@@ -5,7 +5,10 @@ import { memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import {
   hoverLift,
   microTransition,
@@ -104,7 +107,8 @@ function HabitListItemComponent({
   onToggle,
   showCategory,
 }: HabitListItemProps) {
-  const ui = HABIT_CATEGORY_UI[habit.category];
+  const categoryPreferences = useHabitCategoryPreferences();
+  const ui = getHabitCategoryUi(habit.category, categoryPreferences);
 
   return (
     <m.label
@@ -127,8 +131,8 @@ function HabitListItemComponent({
         onCheckedChange={() => onToggle(habit.id)}
         style={
           {
-            backgroundColor: habit.completed ? ui.ringColor : undefined,
-            borderColor: ui.ringColor,
+            backgroundColor: habit.completed ? ui.color : undefined,
+            borderColor: ui.color,
             color: habit.completed ? "#fff" : undefined,
           } as CSSProperties
         }
@@ -145,9 +149,9 @@ function HabitListItemComponent({
         {showCategory && (
           <span
             className="shrink-0 text-[0.68rem] tracking-[0.14em] uppercase opacity-80"
-            style={{ color: ui.ringColor }}
+            style={{ color: ui.color }}
           >
-            {habit.category}
+            {ui.label}
           </span>
         )}
       </div>
@@ -162,7 +166,7 @@ function HabitListItemComponent({
           >
             <CheckCircle2
               className="size-3.5 opacity-60"
-              style={{ color: ui.ringColor }}
+              style={{ color: ui.color }}
             />
           </m.span>
         ) : null}

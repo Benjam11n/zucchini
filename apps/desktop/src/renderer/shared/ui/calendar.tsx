@@ -32,7 +32,7 @@ function Calendar({
         nav: "absolute right-4 top-4 flex items-center gap-2 z-10",
         outside: "text-muted-foreground/40",
         root: "relative w-full",
-        selected: "rounded-[22px] bg-muted/50 text-foreground",
+        selected: "rounded-3xl bg-muted/50 text-foreground",
         today: "text-foreground",
         week: "grid grid-cols-7",
         weekday:

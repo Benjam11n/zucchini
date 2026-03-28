@@ -1,7 +1,10 @@
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  getHabitCategoryColor,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import {
   Card,
   CardContent,
@@ -31,10 +34,10 @@ interface WeeklyReviewHabitChartImplProps {
 export function WeeklyReviewHabitChartImpl({
   habitMetrics,
 }: WeeklyReviewHabitChartImplProps) {
+  const categoryPreferences = useHabitCategoryPreferences();
   const { chartHeight, viewportHeight, visibleHabits } =
-    buildWeeklyReviewHabitChartState(
-      habitMetrics,
-      (category) => HABIT_CATEGORY_UI[category].ringColor
+    buildWeeklyReviewHabitChartState(habitMetrics, (category) =>
+      getHabitCategoryColor(category, categoryPreferences)
     );
 
   return (

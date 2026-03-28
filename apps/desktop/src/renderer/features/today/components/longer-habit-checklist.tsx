@@ -72,7 +72,7 @@ export function LongerHabitChecklist({
   return (
     <LazyMotion features={domAnimation}>
       <HabitListCard
-        title="Longer Cycles"
+        title="Longer cycles"
         icon={CalendarRange}
         description="Weekly and monthly habits stay out of the rings and daily streak."
         progressLabel={

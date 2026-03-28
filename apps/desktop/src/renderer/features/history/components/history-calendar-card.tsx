@@ -29,7 +29,7 @@ export function HistoryCalendarCard({
   return (
     <Card>
       <CardContent className="space-y-4">
-        <div className="rounded-[28px] border border-border/60 bg-background/30 p-2">
+        <div className="rounded-3xl border border-border/60 bg-background/30 p-2">
           <HistoryCalendarContext.Provider value={historyCalendarContextValue}>
             <Calendar
               components={{ DayButton: HistoryCalendarDayButton }}

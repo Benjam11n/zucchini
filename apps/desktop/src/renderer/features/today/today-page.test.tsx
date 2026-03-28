@@ -9,6 +9,7 @@ import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { TodayPage } from "./today-page";
 
@@ -62,18 +63,9 @@ const state: TodayState = {
     },
   ],
   settings: {
-    focusCyclesBeforeLongBreak: 4,
+    ...createDefaultAppSettings("Asia/Singapore"),
     focusDefaultDurationSeconds: 25 * 60,
-    focusLongBreakSeconds: 15 * 60,
-    focusShortBreakSeconds: 5 * 60,
-    launchAtLogin: false,
-    minimizeToTray: false,
-    reminderEnabled: true,
-    reminderSnoozeMinutes: 15,
-    reminderTime: "20:30",
     resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-    themeMode: "system",
-    timezone: "Asia/Singapore",
     toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
   },
   streak: {

@@ -1,4 +1,6 @@
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import type { HabitCategory } from "@/shared/domain/habit";
+import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 
 /**
  * Application settings domain and validation helpers.
@@ -18,6 +20,16 @@ export interface FocusTimerShortcutSettings {
   resetFocusTimerShortcut: string;
   toggleFocusTimerShortcut: string;
 }
+
+export interface HabitCategoryMetadata {
+  color: string;
+  label: string;
+}
+
+export type HabitCategoryPreferences = Record<
+  HabitCategory,
+  HabitCategoryMetadata
+>;
 
 const DEFAULT_REMINDER_TIME = "20:30";
 export const DEFAULT_REMINDER_SNOOZE_MINUTES = 15;
@@ -67,8 +79,17 @@ const GLOBAL_SHORTCUT_KEYS = new Set([
   "up",
 ]);
 const GLOBAL_SHORTCUT_UNSUPPORTED_TOKENS = new Set(["fn", "globe"]);
+const HABIT_CATEGORY_LABEL_MAX_LENGTH = 24;
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+
+const DEFAULT_HABIT_CATEGORY_COLORS: Record<HabitCategory, string> = {
+  fitness: "#FF2D55",
+  nutrition: "#A3F900",
+  productivity: "#04C7DD",
+};
 
 export interface AppSettings {
+  categoryPreferences: HabitCategoryPreferences;
   focusDefaultDurationSeconds: PomodoroTimerSettings["focusDefaultDurationSeconds"];
   focusCyclesBeforeLongBreak: PomodoroTimerSettings["focusCyclesBeforeLongBreak"];
   focusLongBreakSeconds: PomodoroTimerSettings["focusLongBreakSeconds"];
@@ -126,8 +147,21 @@ export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
   };
 }
 
+export function createDefaultHabitCategoryPreferences(): HabitCategoryPreferences {
+  return Object.fromEntries(
+    HABIT_CATEGORY_SLOTS.map(({ defaultLabel, value }) => [
+      value,
+      {
+        color: DEFAULT_HABIT_CATEGORY_COLORS[value],
+        label: defaultLabel,
+      },
+    ])
+  ) as HabitCategoryPreferences;
+}
+
 export function createDefaultAppSettings(timezone: string): AppSettings {
   return {
+    categoryPreferences: createDefaultHabitCategoryPreferences(),
     ...createDefaultPomodoroTimerSettings(),
     ...createDefaultFocusTimerShortcutSettings(),
     launchAtLogin: false,
@@ -216,6 +250,70 @@ function parseGlobalShortcutAccelerator(
 
 export function isValidGlobalShortcutAccelerator(value: string): boolean {
   return parseGlobalShortcutAccelerator(value) !== null;
+}
+
+export function isValidHabitCategoryLabel(value: string): boolean {
+  const trimmed = value.trim();
+
+  return (
+    trimmed.length >= 1 && trimmed.length <= HABIT_CATEGORY_LABEL_MAX_LENGTH
+  );
+}
+
+export function normalizeHabitCategoryLabel(
+  value: string | null | undefined,
+  fallback: string
+): string {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+
+  return isValidHabitCategoryLabel(trimmed) ? trimmed : fallback;
+}
+
+export function isValidHabitCategoryColor(value: string): boolean {
+  return HEX_COLOR_PATTERN.test(value);
+}
+
+export function normalizeHabitCategoryColor(
+  value: string | null | undefined,
+  fallback: string
+): string {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const normalizedValue = value.trim().toUpperCase();
+
+  return isValidHabitCategoryColor(normalizedValue)
+    ? normalizedValue
+    : fallback;
+}
+
+export function normalizeHabitCategoryPreferences(
+  value:
+    | Partial<Record<HabitCategory, Partial<HabitCategoryMetadata>>>
+    | null
+    | undefined
+): HabitCategoryPreferences {
+  const defaults = createDefaultHabitCategoryPreferences();
+
+  return Object.fromEntries(
+    HABIT_CATEGORY_SLOTS.map(({ value: category }) => {
+      const candidate = value?.[category];
+      const fallback = defaults[category];
+
+      return [
+        category,
+        {
+          color: normalizeHabitCategoryColor(candidate?.color, fallback.color),
+          label: normalizeHabitCategoryLabel(candidate?.label, fallback.label),
+        },
+      ];
+    })
+  ) as HabitCategoryPreferences;
 }
 
 export function normalizeGlobalShortcutAccelerator(

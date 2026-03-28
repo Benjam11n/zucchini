@@ -1,14 +1,19 @@
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import {
+  createDefaultHabitCategoryPreferences,
   createDefaultAppSettings,
   createDefaultFocusTimerShortcutSettings,
   isValidGlobalShortcutAccelerator,
+  normalizeHabitCategoryColor,
+  normalizeHabitCategoryLabel,
+  normalizeHabitCategoryPreferences,
   normalizeGlobalShortcutAccelerator,
 } from "@/shared/domain/settings";
 
 describe("focus timer shortcut settings", () => {
   it("adds default global shortcuts to the app settings", () => {
     expect(createDefaultAppSettings("Asia/Singapore")).toMatchObject({
+      categoryPreferences: createDefaultHabitCategoryPreferences(),
       resetFocusTimerShortcut: expect.any(String),
       toggleFocusTimerShortcut: expect.any(String),
     });
@@ -50,5 +55,41 @@ describe("focus timer shortcut settings", () => {
       "command+option+space"
     );
     expect(normalizeGlobalShortcutAccelerator("Globe+Space")).toBeNull();
+  });
+
+  it("provides default category labels and colors", () => {
+    expect(createDefaultHabitCategoryPreferences()).toStrictEqual({
+      fitness: {
+        color: "#FF2D55",
+        label: "Fitness",
+      },
+      nutrition: {
+        color: "#A3F900",
+        label: "Nutrition",
+      },
+      productivity: {
+        color: "#04C7DD",
+        label: "Productivity",
+      },
+    });
+  });
+
+  it("normalizes invalid category labels and colors back to defaults", () => {
+    const defaults = createDefaultHabitCategoryPreferences();
+
+    expect(normalizeHabitCategoryLabel("  ", defaults.fitness.label)).toBe(
+      defaults.fitness.label
+    );
+    expect(normalizeHabitCategoryColor("teal", defaults.fitness.color)).toBe(
+      defaults.fitness.color
+    );
+    expect(
+      normalizeHabitCategoryPreferences({
+        fitness: {
+          color: "teal",
+          label: "",
+        },
+      })
+    ).toStrictEqual(defaults);
   });
 });

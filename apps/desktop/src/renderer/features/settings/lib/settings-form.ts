@@ -16,6 +16,8 @@ export function areAppSettingsEqual(
   }
 
   return (
+    JSON.stringify(left.categoryPreferences) ===
+      JSON.stringify(right.categoryPreferences) &&
     left.focusDefaultDurationSeconds === right.focusDefaultDurationSeconds &&
     left.focusCyclesBeforeLongBreak === right.focusCyclesBeforeLongBreak &&
     left.focusLongBreakSeconds === right.focusLongBreakSeconds &&

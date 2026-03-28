@@ -3,10 +3,11 @@ import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
+import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
-  HABIT_CATEGORY_ICONS,
-  HABIT_CATEGORY_UI,
-} from "@/renderer/shared/lib/habit-categories";
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import { HabitListCard, HabitListItem } from "@/renderer/shared/ui/habit-list";
 import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
@@ -37,6 +38,7 @@ function HabitChecklistComponent({
   icon: Icon,
 }: HabitChecklistProps) {
   const totalHabits = habits.length;
+  const categoryPreferences = useHabitCategoryPreferences();
   const habitsByCategory = useMemo(() => {
     const groupedHabits = Object.fromEntries(
       HABIT_CATEGORY_DEFINITIONS.map((category) => [
@@ -94,7 +96,7 @@ function HabitChecklistComponent({
         ) : null}
 
         {habitsByCategory.map((category) => {
-          const ui = HABIT_CATEGORY_UI[category.value];
+          const ui = getHabitCategoryUi(category.value, categoryPreferences);
           const CategoryIcon = HABIT_CATEGORY_ICONS[category.value];
 
           return (
@@ -108,13 +110,13 @@ function HabitChecklistComponent({
               <div className="flex items-center gap-2 px-0.5 pb-1">
                 <CategoryIcon
                   className="size-3 shrink-0 opacity-60"
-                  style={{ color: ui.ringColor }}
+                  style={{ color: ui.color }}
                 />
                 <span
                   className="text-[0.68rem] tracking-[0.14em] uppercase"
-                  style={{ color: ui.ringColor }}
+                  style={{ color: ui.color }}
                 >
-                  {category.label}
+                  {ui.label}
                 </span>
                 <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
                   {category.completedCount}/{category.habits.length}

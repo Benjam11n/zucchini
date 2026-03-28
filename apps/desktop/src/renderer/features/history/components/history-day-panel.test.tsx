@@ -3,6 +3,7 @@
 import { render, screen } from "@testing-library/react";
 
 import type { HistoryDay } from "@/shared/domain/history";
+import { createDefaultHabitCategoryPreferences } from "@/shared/domain/settings";
 
 import { HistoryDayPanel } from "./history-day-panel";
 
@@ -41,9 +42,12 @@ const selectedDay: HistoryDay = {
 describe("history day panel", () => {
   it("shows category icons alongside the history progress breakdown", () => {
     render(<HistoryDayPanel isToday={false} selectedDay={selectedDay} />);
+    const categoryPreferences = createDefaultHabitCategoryPreferences();
 
     for (const category of ["fitness", "nutrition", "productivity"] as const) {
-      expect(screen.getByText(category)).toBeInTheDocument();
+      expect(
+        screen.getByText(categoryPreferences[category].label)
+      ).toBeInTheDocument();
       expect(
         screen.getByTestId(`history-category-icon-${category}`)
       ).toBeInTheDocument();

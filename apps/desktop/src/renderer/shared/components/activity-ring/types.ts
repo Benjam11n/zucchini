@@ -1,4 +1,5 @@
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
+import type { HabitCategoryPreferences } from "@/shared/domain/settings";
 
 export interface ActivityData {
   label: string;
@@ -13,6 +14,7 @@ export interface ActivityData {
 
 export interface HabitActivityRingProps {
   categoryProgress: HabitCategoryProgress[];
+  categoryPreferences?: HabitCategoryPreferences;
   className?: string;
   showDetails?: boolean;
   size?: number;

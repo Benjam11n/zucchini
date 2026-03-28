@@ -3,11 +3,11 @@ import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
 import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  SETTINGS_CATEGORY_COLORS,
-  SETTINGS_CATEGORY_TEXT_ON_SELECTED,
-} from "@/renderer/features/settings/components/habits/habit-category-colors";
 import { cn } from "@/renderer/shared/lib/class-names";
+import {
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -19,15 +19,10 @@ import { Input } from "@/renderer/shared/ui/input";
 import { Item } from "@/renderer/shared/ui/item";
 import { Label } from "@/renderer/shared/ui/label";
 import {
-  HABIT_CATEGORY_DEFINITIONS,
   HABIT_FREQUENCY_DEFINITIONS,
   HABIT_WEEKDAY_DEFINITIONS,
 } from "@/shared/domain/habit";
-import type {
-  Habit,
-  HabitWeekday,
-  HabitWithStatus,
-} from "@/shared/domain/habit";
+import type { Habit, HabitWeekday } from "@/shared/domain/habit";
 
 import { HabitCategorySelector } from "./habit-category-selector";
 import { HabitFrequencySelector } from "./habit-frequency-selector";
@@ -63,10 +58,6 @@ interface HabitRowEditorProps extends Pick<
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onExpandedChange: (open: boolean) => void;
 }
-
-const CATEGORY_LABELS = Object.fromEntries(
-  HABIT_CATEGORY_DEFINITIONS.map(({ label, value }) => [value, label])
-) as Record<HabitWithStatus["category"], string>;
 
 const FREQUENCY_LABELS = Object.fromEntries(
   HABIT_FREQUENCY_DEFINITIONS.map(({ label, value }) => [value, label])
@@ -120,8 +111,10 @@ export function HabitRowEditor({
   onUpdateHabitFrequency,
   onUpdateHabitWeekdays,
 }: HabitRowEditorProps) {
+  const categoryPreferences = useHabitCategoryPreferences();
   const [draftName, setDraftName] = useState(habit.name);
   const lastCommittedNameRef = useRef(habit.name);
+  const categoryUi = getHabitCategoryUi(habit.category, categoryPreferences);
   const isDragging = dragState?.draggedHabitId === habit.id;
   const showDropBefore =
     dragState?.overHabitId === habit.id && dragState.position === "before";
@@ -193,20 +186,18 @@ export function HabitRowEditor({
                     <span
                       className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
                       style={{
-                        backgroundColor:
-                          SETTINGS_CATEGORY_COLORS[habit.category],
-                        borderColor: SETTINGS_CATEGORY_COLORS[habit.category],
-                        color:
-                          SETTINGS_CATEGORY_TEXT_ON_SELECTED[habit.category],
+                        backgroundColor: categoryUi.color,
+                        borderColor: categoryUi.color,
+                        color: categoryUi.selectedTextColor,
                       }}
                     >
                       <span
                         className="size-1.5 rounded-full"
                         style={{
-                          backgroundColor: `color-mix(in srgb, ${SETTINGS_CATEGORY_TEXT_ON_SELECTED[habit.category]} 50%, transparent)`,
+                          backgroundColor: `color-mix(in srgb, ${categoryUi.selectedTextColor} 50%, transparent)`,
                         }}
                       />
-                      {CATEGORY_LABELS[habit.category]}
+                      {categoryUi.label}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {getCadenceSummary(habit)}

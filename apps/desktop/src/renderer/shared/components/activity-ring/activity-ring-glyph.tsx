@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/renderer/shared/lib/class-names";
+import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";
@@ -65,12 +66,18 @@ function ActivityRingGlyph({
 
 export function HabitActivityRingGlyph({
   categoryProgress,
+  categoryPreferences,
   className,
   size = 56,
 }: HabitActivityRingProps) {
+  const contextCategoryPreferences = useHabitCategoryPreferences();
+
   return (
     <ActivityRingGlyph
-      activities={buildHabitActivityData(categoryProgress)}
+      activities={buildHabitActivityData(
+        categoryProgress,
+        categoryPreferences ?? contextCategoryPreferences
+      )}
       className={className}
       size={size}
     />

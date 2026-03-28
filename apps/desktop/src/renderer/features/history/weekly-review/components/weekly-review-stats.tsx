@@ -44,7 +44,7 @@ export function WeeklyReviewStats({ review }: WeeklyReviewStatsProps) {
                 <stat.icon className="size-4.5" />
               </div>
               <div className="space-y-1">
-                <p className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {stat.label}
                 </p>
                 <p className="text-2xl font-black tracking-tight text-foreground">

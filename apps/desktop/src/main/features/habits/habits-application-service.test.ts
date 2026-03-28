@@ -18,6 +18,7 @@ import type {
 } from "@/shared/domain/habit";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
@@ -96,18 +97,10 @@ class FakeRepository implements AppRepository {
     lastEvaluatedDate: "2026-03-05",
   };
   settings: AppSettings = {
-    focusCyclesBeforeLongBreak: 4,
-    focusDefaultDurationSeconds: 1500,
-    focusLongBreakSeconds: 15 * 60,
-    focusShortBreakSeconds: 5 * 60,
+    ...createDefaultAppSettings("Asia/Singapore"),
     launchAtLogin: false,
     minimizeToTray: false,
-    reminderEnabled: true,
-    reminderSnoozeMinutes: 15,
-    reminderTime: "20:30",
     resetFocusTimerShortcut: "Command+Shift+Backspace",
-    themeMode: "system",
-    timezone: "Asia/Singapore",
     toggleFocusTimerShortcut: "Command+Shift+Space",
   };
   reminderRuntimeState: ReminderRuntimeState = {

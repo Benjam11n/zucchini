@@ -1,10 +1,11 @@
 import { m } from "framer-motion";
 
-import {
-  SETTINGS_CATEGORY_COLORS,
-  SETTINGS_CATEGORY_TEXT_ON_SELECTED,
-} from "@/renderer/features/settings/components/habits/habit-category-colors";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
+import {
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import {
   hoverLift,
   microTransition,
@@ -31,11 +32,14 @@ export function HabitCategorySelector({
   onChange,
   selectedCategory,
 }: HabitCategorySelectorProps) {
+  const categoryPreferences = useHabitCategoryPreferences();
+
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {HABIT_CATEGORY_DEFINITIONS.map((category) => {
+        const CategoryIcon = HABIT_CATEGORY_ICONS[category.value];
         const isSelected = selectedCategory === category.value;
-        const color = SETTINGS_CATEGORY_COLORS[category.value];
+        const ui = getHabitCategoryUi(category.value, categoryPreferences);
 
         return (
           <m.button
@@ -55,9 +59,9 @@ export function HabitCategorySelector({
             style={
               isSelected
                 ? {
-                    backgroundColor: color,
-                    borderColor: color,
-                    color: SETTINGS_CATEGORY_TEXT_ON_SELECTED[category.value],
+                    backgroundColor: ui.color,
+                    borderColor: ui.color,
+                    color: ui.selectedTextColor,
                   }
                 : undefined
             }
@@ -65,15 +69,16 @@ export function HabitCategorySelector({
             whileHover={hoverLift}
             whileTap={tapPress}
           >
+            <CategoryIcon className="size-3 shrink-0 opacity-80" />
             <span
               className="size-2 shrink-0 rounded-full"
               style={{
                 backgroundColor: isSelected
-                  ? `color-mix(in srgb, ${SETTINGS_CATEGORY_TEXT_ON_SELECTED[category.value]} 55%, transparent)`
-                  : color,
+                  ? `color-mix(in srgb, ${ui.selectedTextColor} 55%, transparent)`
+                  : ui.color,
               }}
             />
-            {category.label}
+            {ui.label}
           </m.button>
         );
       })}

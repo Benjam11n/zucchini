@@ -1,4 +1,5 @@
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import {
   IpcValidationError,
@@ -13,18 +14,9 @@ describe("ipc validation", () => {
   it("accepts valid app settings payloads", () => {
     expect(
       validateAppSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
+        ...createDefaultAppSettings("Asia/Singapore"),
         minimizeToTray: true,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toMatchObject({
@@ -37,17 +29,8 @@ describe("ipc validation", () => {
   it("rejects invalid timezones with a typed ipc validation error", () => {
     expect(() =>
       validateAppSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
+        ...createDefaultAppSettings("Asia/Singapore"),
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
         timezone: "Mars/Colony",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
@@ -57,18 +40,9 @@ describe("ipc validation", () => {
   it("rejects focus durations longer than 60 minutes", () => {
     expect(() =>
       validateAppSettings({
-        focusCyclesBeforeLongBreak: 4,
+        ...createDefaultAppSettings("Asia/Singapore"),
         focusDefaultDurationSeconds: 3601,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);
@@ -77,18 +51,9 @@ describe("ipc validation", () => {
   it("rejects long breaks shorter than short breaks", () => {
     expect(() =>
       validateAppSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
+        ...createDefaultAppSettings("Asia/Singapore"),
         focusLongBreakSeconds: 4 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);
@@ -97,18 +62,8 @@ describe("ipc validation", () => {
   it("rejects duplicate global focus timer shortcuts", () => {
     expect(() =>
       validateAppSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
+        ...createDefaultAppSettings("Asia/Singapore"),
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toThrow(IpcValidationError);

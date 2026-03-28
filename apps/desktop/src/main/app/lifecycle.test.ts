@@ -1,4 +1,5 @@
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import {
   buildLoginItemSettings,
@@ -10,18 +11,10 @@ describe("buildLoginItemSettings()", () => {
   it("disables launch at login when the setting is off", () => {
     expect(
       buildLoginItemSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
+        ...createDefaultAppSettings("Asia/Singapore"),
         launchAtLogin: false,
         minimizeToTray: true,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toStrictEqual({
@@ -33,18 +26,10 @@ describe("buildLoginItemSettings()", () => {
   it("hides on launch when tray mode is enabled", () => {
     expect(
       buildLoginItemSettings({
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
+        ...createDefaultAppSettings("Asia/Singapore"),
         launchAtLogin: true,
         minimizeToTray: true,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
         resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
       })
     ).toStrictEqual({

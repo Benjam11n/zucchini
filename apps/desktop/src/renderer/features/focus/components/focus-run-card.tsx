@@ -78,7 +78,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
   return (
     <div
-      className="space-y-4 rounded-[26px] border border-border/60 bg-muted/20 px-4 py-4"
+      className="space-y-4 rounded-3xl border border-border/60 bg-muted/20 px-4 py-4"
       data-session-date={session.date}
       data-testid="focus-session-card"
     >

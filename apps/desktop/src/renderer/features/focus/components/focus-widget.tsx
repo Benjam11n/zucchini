@@ -23,6 +23,10 @@ import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
+import {
+  HabitCategoryPreferencesProvider,
+  getDefaultHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
@@ -194,30 +198,37 @@ export function FocusWidget() {
   });
 
   return (
-    <main className="flex h-screen w-screen items-center justify-center overflow-hidden bg-transparent text-foreground">
-      <section
-        ref={widgetRef}
-        className="flex min-w-max items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.28)]"
-        style={DRAG_REGION_STYLE}
-      >
-        <FocusWidgetControls
-          canReset={canReset}
-          canSkipBreak={canSkipBreak}
-          canStart={canStart}
-          categoryProgress={categoryProgress}
-          isBreak={isBreak}
-          isPaused={isPaused}
-          isRunning={isRunning}
-          onClose={handleClose}
-          onPause={handlePause}
-          onReset={handleReset}
-          onSkipBreak={handleSkipBreak}
-          onStartOrResume={handleStartOrResume}
-          skipBreakLabel={skipBreakLabel}
-          timerLabel={formatTimerLabel(timerState.remainingMs)}
-          timerLabelColorClass={timerLabelColorClass}
-        />
-      </section>
-    </main>
+    <HabitCategoryPreferencesProvider
+      preferences={
+        todayState?.settings.categoryPreferences ??
+        getDefaultHabitCategoryPreferences()
+      }
+    >
+      <main className="flex h-screen w-screen items-center justify-center overflow-hidden bg-transparent text-foreground">
+        <section
+          ref={widgetRef}
+          className="flex min-w-max items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.28)]"
+          style={DRAG_REGION_STYLE}
+        >
+          <FocusWidgetControls
+            canReset={canReset}
+            canSkipBreak={canSkipBreak}
+            canStart={canStart}
+            categoryProgress={categoryProgress}
+            isBreak={isBreak}
+            isPaused={isPaused}
+            isRunning={isRunning}
+            onClose={handleClose}
+            onPause={handlePause}
+            onReset={handleReset}
+            onSkipBreak={handleSkipBreak}
+            onStartOrResume={handleStartOrResume}
+            skipBreakLabel={skipBreakLabel}
+            timerLabel={formatTimerLabel(timerState.remainingMs)}
+            timerLabelColorClass={timerLabelColorClass}
+          />
+        </section>
+      </main>
+    </HabitCategoryPreferencesProvider>
   );
 }

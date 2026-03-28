@@ -9,10 +9,11 @@ import {
 } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
-  HABIT_CATEGORY_ICONS,
-  HABIT_CATEGORY_UI,
-} from "@/renderer/shared/lib/habit-categories";
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Card, CardContent } from "@/renderer/shared/ui/card";
@@ -31,6 +32,8 @@ export function HistoryDayPanel({
   selectedDay,
   isToday,
 }: HistoryDayPanelProps) {
+  const categoryPreferences = useHabitCategoryPreferences();
+
   if (!selectedDay) {
     return (
       <div className="rounded-2xl border border-dashed border-border/60 bg-background/20 p-4 text-sm text-muted-foreground">
@@ -56,7 +59,7 @@ export function HistoryDayPanel({
         <m.div
           key={selectedDay.date}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4 rounded-[28px] border border-border/60 bg-background/35 p-4"
+          className="space-y-4 rounded-3xl border border-border/60 bg-background/35 p-4"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: 10 }}
           transition={microTransition}
@@ -115,7 +118,10 @@ export function HistoryDayPanel({
             <Card className="border-border/60 bg-card/85">
               <CardContent className="grid gap-4 p-4">
                 {selectedDay.categoryProgress.map((progress) => {
-                  const categoryUi = HABIT_CATEGORY_UI[progress.category];
+                  const categoryUi = getHabitCategoryUi(
+                    progress.category,
+                    categoryPreferences
+                  );
                   const CategoryIcon = HABIT_CATEGORY_ICONS[progress.category];
 
                   return (
@@ -131,13 +137,13 @@ export function HistoryDayPanel({
                             aria-hidden="true"
                             className="size-3 shrink-0 opacity-60"
                             data-testid={`history-category-icon-${progress.category}`}
-                            style={{ color: categoryUi.ringColor }}
+                            style={{ color: categoryUi.color }}
                           />
                           <span
-                            className="text-[0.68rem] tracking-[0.14em] uppercase"
-                            style={{ color: categoryUi.ringColor }}
+                            className="text-[0.68rem] tracking-[0.14em]"
+                            style={{ color: categoryUi.color }}
                           >
-                            {progress.category}
+                            {categoryUi.label}
                           </span>
                         </span>
                         <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
@@ -146,7 +152,7 @@ export function HistoryDayPanel({
                       </div>
                       <Progress
                         className="mt-1.5 h-1.5 bg-muted/60"
-                        indicatorClassName={categoryUi.progressClassName}
+                        indicatorStyle={categoryUi.progressStyle}
                         value={progress.progress}
                       />
                     </m.div>
@@ -177,8 +183,8 @@ export function HistoryDayPanel({
 
           {longTermHabits.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                Long-term Goals
+              <h4 className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground">
+                Long-term goals
               </h4>
               <div className="flex flex-wrap gap-2">
                 {longTermHabits.map((habit) => (

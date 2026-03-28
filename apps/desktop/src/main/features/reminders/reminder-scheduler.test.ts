@@ -2,6 +2,7 @@ import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-sta
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type * as Notifications from "./notifications";
@@ -36,17 +37,8 @@ vi.mock<typeof Notifications>(import("./notifications"), () => ({
 }));
 
 const DEFAULT_SETTINGS: AppSettings = {
-  focusCyclesBeforeLongBreak: 4,
-  focusDefaultDurationSeconds: 1500,
-  focusLongBreakSeconds: 15 * 60,
-  focusShortBreakSeconds: 5 * 60,
-  launchAtLogin: false,
-  minimizeToTray: false,
-  reminderEnabled: true,
-  reminderSnoozeMinutes: 15,
-  reminderTime: "20:30",
+  ...createDefaultAppSettings("UTC"),
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-  themeMode: "system",
   timezone: "UTC",
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };

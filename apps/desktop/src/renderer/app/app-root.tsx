@@ -12,6 +12,7 @@ import { getBootErrorDisplay } from "@/renderer/app/lib/boot-errors";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { MASCOTS } from "@/renderer/shared/assets/mascots";
+import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 import { Button } from "@/renderer/shared/ui/button";
 import {
   Card,
@@ -234,22 +235,28 @@ function MainApp() {
   }
 
   return (
-    <>
-      <AppShell tab={tab} onTabChange={actions.handleTabChange}>
-        {renderedPage}
-      </AppShell>
-      {state.isWeeklyReviewSpotlightOpen &&
-      state.weeklyReviewOverview?.latestReview ? (
-        <Suspense fallback={null}>
-          <WeeklyReviewSpotlightDialog
-            onDismiss={actions.handleDismissWeeklyReviewSpotlight}
-            onOpenReview={actions.handleWeeklyReviewOpen}
-            open={state.isWeeklyReviewSpotlightOpen}
-            review={state.weeklyReviewOverview.latestReview}
-          />
-        </Suspense>
-      ) : null}
-    </>
+    <HabitCategoryPreferencesProvider
+      preferences={
+        (state.settingsDraft ?? state.todayState.settings).categoryPreferences
+      }
+    >
+      <>
+        <AppShell tab={tab} onTabChange={actions.handleTabChange}>
+          {renderedPage}
+        </AppShell>
+        {state.isWeeklyReviewSpotlightOpen &&
+        state.weeklyReviewOverview?.latestReview ? (
+          <Suspense fallback={null}>
+            <WeeklyReviewSpotlightDialog
+              onDismiss={actions.handleDismissWeeklyReviewSpotlight}
+              onOpenReview={actions.handleWeeklyReviewOpen}
+              open={state.isWeeklyReviewSpotlightOpen}
+              review={state.weeklyReviewOverview.latestReview}
+            />
+          </Suspense>
+        ) : null}
+      </>
+    </HabitCategoryPreferencesProvider>
   );
 }
 

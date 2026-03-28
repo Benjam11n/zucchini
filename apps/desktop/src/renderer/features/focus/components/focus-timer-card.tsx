@@ -119,7 +119,7 @@ export function FocusTimerCard({
 
       <CardContent className="space-y-5 pt-4">
         <div className="flex justify-center">
-          <div className="w-full max-w-3xl rounded-[1.75rem] border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
+          <div className="w-full max-w-3xl rounded-3xl border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               <FocusDurationEditor
                 canEditDuration={canEditDuration}

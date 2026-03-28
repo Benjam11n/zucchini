@@ -5,6 +5,7 @@ import type * as NotificationsModule from "@/main/features/reminders/notificatio
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { registerIpcHandlers } from "./handlers";
@@ -50,18 +51,8 @@ vi.mock<typeof NotificationsModule>(
 );
 
 const defaultSettings: AppSettings = {
-  focusCyclesBeforeLongBreak: 4,
-  focusDefaultDurationSeconds: 1500,
-  focusLongBreakSeconds: 15 * 60,
-  focusShortBreakSeconds: 5 * 60,
-  launchAtLogin: false,
-  minimizeToTray: false,
-  reminderEnabled: true,
-  reminderSnoozeMinutes: 15,
-  reminderTime: "20:30",
+  ...createDefaultAppSettings("Asia/Singapore"),
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-  themeMode: "system",
-  timezone: "Asia/Singapore",
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 

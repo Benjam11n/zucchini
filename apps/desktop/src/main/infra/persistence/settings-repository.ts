@@ -4,6 +4,8 @@ import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import {
   createDefaultAppSettings,
   isValidGlobalShortcutAccelerator,
+  normalizeHabitCategoryColor,
+  normalizeHabitCategoryLabel,
 } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -24,6 +26,38 @@ export class SqliteSettingsRepository {
       const savedLongBreakSeconds = map.get("focusLongBreakSeconds");
       const savedShortBreakSeconds = map.get("focusShortBreakSeconds");
       const candidateSettings: AppSettings = {
+        categoryPreferences: {
+          fitness: {
+            color: normalizeHabitCategoryColor(
+              map.get("categoryColorFitness"),
+              defaults.categoryPreferences.fitness.color
+            ),
+            label: normalizeHabitCategoryLabel(
+              map.get("categoryLabelFitness"),
+              defaults.categoryPreferences.fitness.label
+            ),
+          },
+          nutrition: {
+            color: normalizeHabitCategoryColor(
+              map.get("categoryColorNutrition"),
+              defaults.categoryPreferences.nutrition.color
+            ),
+            label: normalizeHabitCategoryLabel(
+              map.get("categoryLabelNutrition"),
+              defaults.categoryPreferences.nutrition.label
+            ),
+          },
+          productivity: {
+            color: normalizeHabitCategoryColor(
+              map.get("categoryColorProductivity"),
+              defaults.categoryPreferences.productivity.color
+            ),
+            label: normalizeHabitCategoryLabel(
+              map.get("categoryLabelProductivity"),
+              defaults.categoryPreferences.productivity.label
+            ),
+          },
+        },
         focusCyclesBeforeLongBreak: Number(
           map.get("focusCyclesBeforeLongBreak")
         ),
@@ -67,6 +101,30 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
+      this.upsertSetting(
+        "categoryLabelNutrition",
+        nextSettings.categoryPreferences.nutrition.label
+      );
+      this.upsertSetting(
+        "categoryLabelProductivity",
+        nextSettings.categoryPreferences.productivity.label
+      );
+      this.upsertSetting(
+        "categoryLabelFitness",
+        nextSettings.categoryPreferences.fitness.label
+      );
+      this.upsertSetting(
+        "categoryColorNutrition",
+        nextSettings.categoryPreferences.nutrition.color
+      );
+      this.upsertSetting(
+        "categoryColorProductivity",
+        nextSettings.categoryPreferences.productivity.color
+      );
+      this.upsertSetting(
+        "categoryColorFitness",
+        nextSettings.categoryPreferences.fitness.color
+      );
       this.upsertSetting(
         "focusDefaultDurationSeconds",
         String(nextSettings.focusDefaultDurationSeconds)
@@ -112,6 +170,30 @@ export class SqliteSettingsRepository {
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
       const defaults = createDefaultAppSettings(timezone);
+      this.upsertSetting(
+        "categoryLabelNutrition",
+        defaults.categoryPreferences.nutrition.label
+      );
+      this.upsertSetting(
+        "categoryLabelProductivity",
+        defaults.categoryPreferences.productivity.label
+      );
+      this.upsertSetting(
+        "categoryLabelFitness",
+        defaults.categoryPreferences.fitness.label
+      );
+      this.upsertSetting(
+        "categoryColorNutrition",
+        defaults.categoryPreferences.nutrition.color
+      );
+      this.upsertSetting(
+        "categoryColorProductivity",
+        defaults.categoryPreferences.productivity.color
+      );
+      this.upsertSetting(
+        "categoryColorFitness",
+        defaults.categoryPreferences.fitness.color
+      );
       this.upsertSetting(
         "focusDefaultDurationSeconds",
         String(defaults.focusDefaultDurationSeconds)

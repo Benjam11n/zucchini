@@ -1,10 +1,12 @@
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
+import { createDefaultHabitCategoryPreferences } from "@/shared/domain/settings";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";
-import { ACTIVITY_RING_ORDER, ACTIVITY_RING_SIZES } from "./constants";
+import { ACTIVITY_RING_SIZES } from "./constants";
 
 describe("buildHabitActivityData()", () => {
+  const categoryPreferences = createDefaultHabitCategoryPreferences();
+
   it("preserves ring order and fills in missing categories with zero values", () => {
     const categoryProgress: HabitCategoryProgress[] = [
       {
@@ -15,32 +17,34 @@ describe("buildHabitActivityData()", () => {
       },
     ];
 
-    expect(buildHabitActivityData(categoryProgress)).toStrictEqual([
+    expect(
+      buildHabitActivityData(categoryProgress, categoryPreferences)
+    ).toStrictEqual([
       {
-        color: HABIT_CATEGORY_UI.fitness.ringColor,
+        color: categoryPreferences.fitness.color,
         current: 0,
-        label: ACTIVITY_RING_ORDER[0].toUpperCase(),
+        label: categoryPreferences.fitness.label,
         size: ACTIVITY_RING_SIZES[0],
         target: 0,
-        unit: "HABITS",
+        unit: "Habits",
         value: 0,
       },
       {
-        color: HABIT_CATEGORY_UI.nutrition.ringColor,
+        color: categoryPreferences.nutrition.color,
         current: 2,
-        label: ACTIVITY_RING_ORDER[1].toUpperCase(),
+        label: categoryPreferences.nutrition.label,
         size: ACTIVITY_RING_SIZES[1],
         target: 4,
-        unit: "HABITS",
+        unit: "Habits",
         value: 50,
       },
       {
-        color: HABIT_CATEGORY_UI.productivity.ringColor,
+        color: categoryPreferences.productivity.color,
         current: 0,
-        label: ACTIVITY_RING_ORDER[2].toUpperCase(),
+        label: categoryPreferences.productivity.label,
         size: ACTIVITY_RING_SIZES[2],
         target: 0,
-        unit: "HABITS",
+        unit: "Habits",
         value: 0,
       },
     ]);
@@ -68,22 +72,24 @@ describe("buildHabitActivityData()", () => {
       },
     ];
 
-    expect(buildHabitActivityData(categoryProgress)).toMatchObject([
+    expect(
+      buildHabitActivityData(categoryProgress, categoryPreferences)
+    ).toMatchObject([
       {
         current: 1,
-        label: "FITNESS",
+        label: "Fitness",
         target: 4,
         value: 25,
       },
       {
         current: 4,
-        label: "NUTRITION",
+        label: "Nutrition",
         target: 4,
         value: 100,
       },
       {
         current: 3,
-        label: "PRODUCTIVITY",
+        label: "Productivity",
         target: 4,
         value: 75,
       },

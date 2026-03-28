@@ -34,7 +34,7 @@ function ChartContainer({
   return (
     <div
       className={cn(
-        "h-[260px] w-full rounded-[24px] border border-border/60 bg-background/50 p-3",
+        "h-[260px] w-full rounded-3xl border border-border/60 bg-background/50 p-3",
         className
       )}
       style={{ ...chartStyle, ...style }}

@@ -3,6 +3,7 @@
 import { memo, useMemo } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
+import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
 
 import { buildHabitActivityData } from "./build-habit-activity-data";
 import { CircleProgress } from "./circle-progress";
@@ -51,12 +52,18 @@ function AppleActivityCard({
 
 function HabitActivityCardComponent({
   categoryProgress,
+  categoryPreferences,
   className,
   showDetails = true,
 }: Omit<HabitActivityRingProps, "size">) {
+  const contextCategoryPreferences = useHabitCategoryPreferences();
   const activities = useMemo(
-    () => buildHabitActivityData(categoryProgress),
-    [categoryProgress]
+    () =>
+      buildHabitActivityData(
+        categoryProgress,
+        categoryPreferences ?? contextCategoryPreferences
+      ),
+    [categoryPreferences, categoryProgress, contextCategoryPreferences]
   );
 
   return (

@@ -4,22 +4,14 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { PomodoroSettingsFields } from "./pomodoro-settings-fields";
 
 const settings: AppSettings = {
-  focusCyclesBeforeLongBreak: 4,
+  ...createDefaultAppSettings("Asia/Singapore"),
   focusDefaultDurationSeconds: 25 * 60,
-  focusLongBreakSeconds: 15 * 60,
-  focusShortBreakSeconds: 5 * 60,
-  launchAtLogin: false,
-  minimizeToTray: false,
-  reminderEnabled: true,
-  reminderSnoozeMinutes: 15,
-  reminderTime: "20:30",
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-  themeMode: "system",
-  timezone: "Asia/Singapore",
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 

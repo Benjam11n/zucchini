@@ -9,6 +9,8 @@ import { z } from "zod";
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
 import {
   isValidGlobalShortcutAccelerator,
+  isValidHabitCategoryColor,
+  isValidHabitCategoryLabel,
   isValidFocusDurationSeconds,
   isValidFocusBreakDurationSeconds,
   isValidFocusCyclesBeforeLongBreak,
@@ -46,6 +48,24 @@ export const habitCategorySchema = z.enum([
   "productivity",
   "fitness",
 ]);
+const habitCategoryMetadataSchema = z
+  .object({
+    color: z.string().refine(isValidHabitCategoryColor, {
+      message: "Category colors must use #RRGGBB format.",
+    }),
+    label: z.string().refine(isValidHabitCategoryLabel, {
+      message: "Category labels must be between 1 and 24 characters.",
+    }),
+  })
+  .strict();
+
+const habitCategoryPreferencesSchema = z
+  .object({
+    fitness: habitCategoryMetadataSchema,
+    nutrition: habitCategoryMetadataSchema,
+    productivity: habitCategoryMetadataSchema,
+  })
+  .strict();
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
 const habitWeekdaySchema = z.union([
@@ -81,6 +101,7 @@ const globalShortcutSchema = z
 
 export const appSettingsSchema = z
   .object({
+    categoryPreferences: habitCategoryPreferencesSchema,
     focusCyclesBeforeLongBreak: z
       .number()
       .int()

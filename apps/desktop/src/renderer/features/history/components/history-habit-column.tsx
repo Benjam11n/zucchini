@@ -1,7 +1,10 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
-import { HABIT_CATEGORY_UI } from "@/renderer/shared/lib/habit-categories";
+import {
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Card, CardContent } from "@/renderer/shared/ui/card";
@@ -30,6 +33,8 @@ export function HistoryHabitColumn({
   habits,
   initialX,
 }: HistoryHabitColumnProps) {
+  const categoryPreferences = useHabitCategoryPreferences();
+
   return (
     <LazyMotion features={domAnimation}>
       <Card className="border-border/60 bg-card/85">
@@ -40,35 +45,37 @@ export function HistoryHabitColumn({
           </div>
           <ItemGroup className="gap-2">
             {habits.length > 0 ? (
-              habits.map((habit) => (
-                <m.div
-                  key={habit.id}
-                  animate={{ opacity: 1, x: 0 }}
-                  initial={{ opacity: 0, x: initialX }}
-                  transition={microTransition}
-                >
-                  <Item
-                    className="rounded-xl border-border/50 bg-background/60"
-                    variant="outline"
+              habits.map((habit) => {
+                const ui = getHabitCategoryUi(
+                  habit.category,
+                  categoryPreferences
+                );
+
+                return (
+                  <m.div
+                    key={habit.id}
+                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: initialX }}
+                    transition={microTransition}
                   >
-                    <ItemContent>
-                      <span className="text-sm text-foreground">
-                        {habit.name}
-                      </span>
-                    </ItemContent>
-                    <ItemActions>
-                      <Badge
-                        className={
-                          HABIT_CATEGORY_UI[habit.category].badgeClassName
-                        }
-                        variant="outline"
-                      >
-                        {habit.category}
-                      </Badge>
-                    </ItemActions>
-                  </Item>
-                </m.div>
-              ))
+                    <Item
+                      className="rounded-xl border-border/50 bg-background/60"
+                      variant="outline"
+                    >
+                      <ItemContent>
+                        <span className="text-sm text-foreground">
+                          {habit.name}
+                        </span>
+                      </ItemContent>
+                      <ItemActions>
+                        <Badge style={ui.badgeStyle} variant="outline">
+                          {ui.label}
+                        </Badge>
+                      </ItemActions>
+                    </Item>
+                  </m.div>
+                );
+              })
             ) : (
               <p className="text-sm text-muted-foreground">{emptyLabel}</p>
             )}

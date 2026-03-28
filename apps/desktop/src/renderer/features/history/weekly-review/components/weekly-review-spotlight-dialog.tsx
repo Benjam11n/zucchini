@@ -35,7 +35,7 @@ export function WeeklyReviewSpotlightDialog({
     >
       <DialogContent>
         <DialogHeader className="pb-2">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <CalendarDays className="size-3.5" />
             Monday review
           </div>
@@ -46,7 +46,7 @@ export function WeeklyReviewSpotlightDialog({
         </DialogHeader>
 
         <div className="px-6 pb-6">
-          <div className="rounded-[24px] border border-border/60 bg-muted/30 p-4">
+          <div className="rounded-3xl border border-border/60 bg-muted/30 p-4">
             <div className="flex items-start gap-3 rounded-2xl border border-primary/15 bg-background/80 p-4">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
                 <Sparkles className="size-5" />

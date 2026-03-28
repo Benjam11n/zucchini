@@ -198,7 +198,7 @@ export function NewHabitForm({
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <div className="grid gap-2">
               <Label
-                className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase"
+                className="text-xs font-medium tracking-[0.08em] uppercase text-muted-foreground"
                 htmlFor="new-habit"
               >
                 Name

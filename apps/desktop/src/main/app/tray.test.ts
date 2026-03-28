@@ -1,6 +1,7 @@
 import type * as ElectronModule from "electron";
 
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { createAppTray } from "./tray";
@@ -69,18 +70,10 @@ vi.mock("electron", async (importOriginal) => {
 });
 
 const baseSettings: AppSettings = {
-  focusCyclesBeforeLongBreak: 4,
-  focusDefaultDurationSeconds: 1500,
-  focusLongBreakSeconds: 15 * 60,
-  focusShortBreakSeconds: 5 * 60,
+  ...createDefaultAppSettings("Asia/Singapore"),
   launchAtLogin: false,
   minimizeToTray: false,
-  reminderEnabled: true,
-  reminderSnoozeMinutes: 15,
-  reminderTime: "20:30",
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-  themeMode: "system",
-  timezone: "Asia/Singapore",
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 

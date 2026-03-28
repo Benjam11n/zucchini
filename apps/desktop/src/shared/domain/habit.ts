@@ -7,23 +7,24 @@
  */
 import { parseDateKey } from "@/shared/utils/date";
 
-export const HABIT_CATEGORY_DEFINITIONS = [
+export const HABIT_CATEGORY_SLOTS = [
   {
-    label: "Nutrition",
+    defaultLabel: "Nutrition",
     value: "nutrition",
   },
   {
-    label: "Productivity",
+    defaultLabel: "Productivity",
     value: "productivity",
   },
   {
-    label: "Fitness",
+    defaultLabel: "Fitness",
     value: "fitness",
   },
 ] as const;
 
-export type HabitCategory =
-  (typeof HABIT_CATEGORY_DEFINITIONS)[number]["value"];
+export const HABIT_CATEGORY_DEFINITIONS = HABIT_CATEGORY_SLOTS;
+
+export type HabitCategory = (typeof HABIT_CATEGORY_SLOTS)[number]["value"];
 
 export const HABIT_FREQUENCY_DEFINITIONS = [
   {

@@ -61,12 +61,12 @@ export function HistoryCalendarDayButton({
           {...props}
           className={cn(
             className,
-            "flex h-auto min-h-[4.9rem] w-full flex-col items-center gap-1 rounded-[22px] border px-1.5 py-2 transition-colors",
+            "flex h-auto min-h-[4.9rem] w-full flex-col items-center gap-1 rounded-3xl border px-1.5 py-2 transition-colors",
             dayEntry
               ? "border-border/60 bg-background/55 hover:border-border hover:bg-background"
               : "border-transparent bg-transparent text-muted-foreground/45",
             isSelected &&
-              "border-primary/60 bg-primary/8 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]",
+              "border-primary/60 bg-primary/8 ring-1 ring-primary/25",
             disabled && "cursor-default"
           )}
           disabled={!dayEntry || disabled}
