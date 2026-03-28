@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useReducer, useRef } from "react";

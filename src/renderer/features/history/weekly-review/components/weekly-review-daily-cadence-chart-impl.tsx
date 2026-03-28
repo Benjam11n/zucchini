@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {

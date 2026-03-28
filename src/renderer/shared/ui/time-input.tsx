@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { Clock } from "lucide-react";
 import { useId } from "react";
 

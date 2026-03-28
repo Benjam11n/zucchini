@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { Minus, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 

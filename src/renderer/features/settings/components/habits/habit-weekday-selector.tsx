@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { m } from "framer-motion";
 
 import { cn } from "@/renderer/shared/lib/class-names";

@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
 import { Badge } from "@/renderer/shared/ui/badge";

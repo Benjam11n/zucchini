@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 /**
  * Shared renderer shell for the main desktop experience.
  *

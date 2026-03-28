@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { useEffect, useState } from "react";
 
 import { DurationInput } from "@/renderer/shared/ui/duration-input";

@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";

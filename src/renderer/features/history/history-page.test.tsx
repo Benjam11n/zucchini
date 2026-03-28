@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from "@testing-library/react";

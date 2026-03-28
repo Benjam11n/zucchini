@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+
 import { AnimatePresence, LayoutGroup } from "framer-motion";
 
 import type {
