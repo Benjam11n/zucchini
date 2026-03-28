@@ -4,7 +4,10 @@
     "dist/**",
     "dist-electron/**",
     "node_modules/**",
-    "release/**"
+    "release/**",
+    "apps/*/dist/**",
+    "apps/*/dist-electron/**",
+    "apps/*/release/**"
   ],
   "rules": {
     "func-style": "off",

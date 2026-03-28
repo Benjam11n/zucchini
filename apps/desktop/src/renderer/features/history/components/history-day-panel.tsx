@@ -63,9 +63,6 @@ export function HistoryDayPanel({
         >
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                Selected day
-              </p>
               <h3 className="text-lg font-semibold text-foreground">
                 {formatDateKey(selectedDay.date, {
                   day: "numeric",

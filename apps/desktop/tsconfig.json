@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "src",
+    "scripts",
+    "vite.config.ts",
+    "drizzle.config.ts",
+    "electron-builder.config.ts"
+  ]
+}

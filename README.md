@@ -1,10 +1,15 @@
 <p align="center">
-  <img src="./public/mascot/mascot-icon.jpeg" alt="Zucchini logo" width="120" />
+  <img src="./apps/web/public/mascot/mascot-icon.jpeg" alt="Zucchini logo" width="120" />
 </p>
 
 # Zucchini
 
-Zucchini is a local-first desktop habit tracker for people who want momentum,
+Zucchini is now a small Bun workspace monorepo with:
+
+- `apps/desktop`: the Electron habit tracker
+- `apps/web`: the marketing/download site
+
+The desktop app is a local-first habit tracker for people who want momentum,
 not micromanagement.
 
 It gives you a focused daily view, gentle reminders, streak protection, and
@@ -36,8 +41,19 @@ missed days, and imperfect routines. The app keeps the interface lightweight,
 stores progress locally, and focuses on clear feedback instead of noisy
 gamification.
 
+## Workspace Commands
+
+Run these from the repository root:
+
+```bash
+bun run dev:desktop
+bun run dev:web
+bun run build:desktop
+bun run build:web
+bun run check
+```
+
 ## Documentation
 
-Technical and operational documentation now lives in [docs/README.md](./docs/README.md).
-
-Start there for setup, development workflows, and release instructions.
+Desktop technical and operational documentation now lives in
+[apps/desktop/docs/README.md](./apps/desktop/docs/README.md).

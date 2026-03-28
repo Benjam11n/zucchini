@@ -1,9 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "tags": ["-lintignore"],
-  "entry": ["index.html"],
+  "entry": ["index.html", "scripts/**/*.{mjs,ts}"],
   "ignoreDependencies": ["shadcn", "tailwindcss", "tw-animate-css"],
-  "project": ["src/**/*.{ts,tsx}"],
+  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.{ts,mjs}"],
   "ignoreExportsUsedInFile": {
     "interface": true,
     "type": true

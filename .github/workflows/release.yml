@@ -35,21 +35,21 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Audit dependencies
-        run: bun run audit:ci
+        run: bun run --cwd apps/desktop audit:ci
 
       - name: Run tests
-        run: bun run test
+        run: bun run --cwd apps/desktop test
 
       - name: Build app bundles
-        run: bun run build
+        run: bun run --cwd apps/desktop build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           path: |
-            dist
-            dist-electron
+            apps/desktop/dist
+            apps/desktop/dist-electron
           if-no-files-found: error
 
   prepare-release:
@@ -72,7 +72,7 @@ jobs:
           bun-version: latest
 
       - name: Generate release notes
-        run: bun run scripts/generate-changelog.mjs --tag "${{ github.ref_name }}" --output release-notes.md
+        run: bun run --cwd apps/desktop scripts/generate-changelog.mjs --tag "${{ github.ref_name }}" --output ../../release-notes.md
 
       - name: Create or update draft release
         run: |
@@ -127,7 +127,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact_name }}
-          path: .
+          path: apps/desktop
 
       - name: Publish release artifacts
-        run: bun run ${{ matrix.release_script }}
+        run: bun run --cwd apps/desktop ${{ matrix.release_script }}

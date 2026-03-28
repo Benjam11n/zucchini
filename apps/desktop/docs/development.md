@@ -12,7 +12,7 @@ the stack, and SQLite for persistence.
 
 ## Install
 
-Run all commands from the repository root.
+Install dependencies from the repository root:
 
 ```bash
 bun install
@@ -23,21 +23,21 @@ default, rerun:
 
 ```bash
 bun install
-bun run rebuild:native
+bun run --cwd apps/desktop rebuild:native
 ```
 
 ## Common Commands
 
 ```bash
-bun run dev
-bun run build
-bun run typecheck
-bun run lint
-bun run test
-bun run knip
-bun run react-doctor
-bun run package
-bun run dist:desktop
+bun run dev:desktop
+bun run build:desktop
+bun run --cwd apps/desktop typecheck
+bun run lint:desktop
+bun run test:desktop
+bun run --cwd apps/desktop knip
+bun run --cwd apps/desktop react-doctor
+bun run --cwd apps/desktop package
+bun run --cwd apps/desktop dist:desktop
 ```
 
 ## Project Layout
@@ -63,13 +63,14 @@ Before shipping changes, run:
 
 ```bash
 bun run format
-bun run lint
-bun run test
-bun run knip
+bun run lint:desktop
+bun run test:desktop
+bun run --cwd apps/desktop knip
 ```
 
-Use `bun run typecheck` when you want a quick TypeScript-only validation, and
-`bun run react-doctor` after meaningful React changes.
+Use `bun run --cwd apps/desktop typecheck` when you want a quick
+TypeScript-only validation, and `bun run --cwd apps/desktop react-doctor`
+after meaningful React changes.
 
 ## Test Data Fixtures
 
@@ -77,15 +78,15 @@ Generate local SQLite fixtures for manual smoke testing and larger local data
 loads:
 
 ```bash
-bun run testdata:generate:medium
-bun run testdata:generate:stress
+bun run --cwd apps/desktop testdata:generate:medium
+bun run --cwd apps/desktop testdata:generate:stress
 ```
 
 You can also choose a preset explicitly:
 
 ```bash
-bun run testdata:generate -- --preset medium --overwrite
-bun run testdata:generate -- --preset stress --overwrite
+bun run --cwd apps/desktop testdata:generate -- --preset medium --overwrite
+bun run --cwd apps/desktop testdata:generate -- --preset stress --overwrite
 ```
 
 Generated databases are written to:

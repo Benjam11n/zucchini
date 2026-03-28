@@ -39,13 +39,13 @@ The release workflow lives at `.github/workflows/release.yml`.
 When you push a tag that matches `v*`, GitHub Actions will:
 
 1. Run a read-only build job on Windows and macOS that checks out the code,
-   installs Bun dependencies, runs `bun run audit:ci` against production
-   dependencies, runs `bun run test`,
-   and runs `bun run build`.
+   installs Bun dependencies, runs `bun run --cwd apps/desktop audit:ci`
+   against production dependencies, runs `bun run --cwd apps/desktop test`,
+   and runs `bun run --cwd apps/desktop build`.
 2. Generate release notes from commits since the previous tag and apply those
    notes to the draft GitHub Release body.
-3. Upload the built `dist` and `dist-electron` outputs from each platform as
-   workflow artifacts.
+3. Upload the built `apps/desktop/dist` and `apps/desktop/dist-electron`
+   outputs from each platform as workflow artifacts.
 4. Run a separate publish job on each platform that downloads the build
    artifacts and pushes unsigned Windows and macOS installers to a draft GitHub
    Release for that tag.
@@ -74,22 +74,22 @@ Use these commands from the repository root.
 ### macOS Shell
 
 ```bash
-bun run build
-GH_RELEASE_OWNER=OWNER GH_RELEASE_REPO=REPO GH_TOKEN=TOKEN bun run dist:release:mac
+bun run --cwd apps/desktop build
+GH_RELEASE_OWNER=OWNER GH_RELEASE_REPO=REPO GH_TOKEN=TOKEN bun run --cwd apps/desktop dist:release:mac
 ```
 
 ### PowerShell On Windows
 
 ```powershell
-bun run build
+bun run --cwd apps/desktop build
 $env:GH_RELEASE_OWNER="OWNER"
 $env:GH_RELEASE_REPO="REPO"
 $env:GH_TOKEN="TOKEN"
-bun run dist:release:win
+bun run --cwd apps/desktop dist:release:win
 ```
 
-`bun run dist:release` is a convenience wrapper that picks the current platform
-on macOS and Windows.
+`bun run --cwd apps/desktop dist:release` is a convenience wrapper that picks
+the current platform on macOS and Windows.
 
 ## Local Updater Smoke Test
 
@@ -122,7 +122,7 @@ native platforms or rely on the GitHub Actions release workflow.
 Prepare the version and changelog first:
 
 ```bash
-bun run changelog:release
+bun run --cwd apps/desktop changelog:release
 ```
 
 Create and push a version tag:

@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
-    name: Basic Checks
+  desktop-checks:
+    name: Desktop Checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -32,19 +32,45 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Audit dependencies
-        run: bun run audit:ci
+        run: bun run --cwd apps/desktop audit:ci
 
       - name: Check formatting
         run: bun run format:check
 
-      - name: Lint
-        run: bun run lint
+      - name: Lint desktop app
+        run: bun run lint:desktop
 
-      - name: Typecheck
-        run: bun run typecheck
+      - name: Typecheck desktop app
+        run: bun run --cwd apps/desktop typecheck
 
-      - name: Run tests
-        run: bun run test
+      - name: Run desktop tests
+        run: bun run test:desktop
 
-      - name: Check unused code
-        run: bun run knip
+      - name: Check desktop unused code
+        run: bun run --cwd apps/desktop knip
+
+  web-checks:
+    name: Web Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        run: bun run format:check
+
+      - name: Lint web app
+        run: bun run lint:web
+
+      - name: Build web app
+        run: bun run build:web

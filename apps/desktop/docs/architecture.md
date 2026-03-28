@@ -75,7 +75,7 @@ This is the highest-level execution flow of the app.
 
 ### Step 1: Electron starts the main process
 
-The app entry point is [`src/main/main.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/main.ts).
+The app entry point is [`src/main/main.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/main.ts).
 
 This file is now a composition root. Its job is to wire systems together, not
 to hold all implementation details.
@@ -98,7 +98,7 @@ together.
 ### Step 2: the main process builds the runtime
 
 The runtime is created in
-[`src/main/app/runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/runtime.ts).
+[`src/main/app/runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/runtime.ts).
 
 `createAppRuntime()` assembles the main backend pieces:
 
@@ -114,14 +114,14 @@ This file answers the question: "what backend objects does the app need to run?"
 
 Window construction is split out into dedicated modules:
 
-- [`src/main/app/windows/main-window.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/windows/main-window.ts)
-- [`src/main/app/windows/focus-widget-window.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/windows/focus-widget-window.ts)
+- [`src/main/app/windows/main-window.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/windows/main-window.ts)
+- [`src/main/app/windows/focus-widget-window.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/windows/focus-widget-window.ts)
 
 Supporting window behavior is also isolated:
 
-- [`src/main/app/windows/focus-widget-bounds.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/windows/focus-widget-bounds.ts)
-- [`src/main/app/windows/window-security.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/windows/window-security.ts)
-- [`src/main/app/window-theme.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/window-theme.ts)
+- [`src/main/app/windows/focus-widget-bounds.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/windows/focus-widget-bounds.ts)
+- [`src/main/app/windows/window-security.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/windows/window-security.ts)
+- [`src/main/app/window-theme.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/window-theme.ts)
 
 The point of this split is that `main.ts` decides when to create a window, but
 the window modules decide how a window is configured.
@@ -136,7 +136,7 @@ That means there is still one React app, but it can render in different modes.
 ### Step 5: the preload script exposes a safe API
 
 The preload entry point is
-[`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/preload/preload.ts).
+[`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/preload/preload.ts).
 
 It uses Electron's `contextBridge` to expose:
 
@@ -145,8 +145,8 @@ It uses Electron's `contextBridge` to expose:
 
 Those APIs are typed against shared contracts in:
 
-- [`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/contracts/habits-ipc.ts)
-- [`src/shared/contracts/app-updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/contracts/app-updater.ts)
+- [`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/contracts/habits-ipc.ts)
+- [`src/shared/contracts/app-updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/contracts/app-updater.ts)
 
 This is a security boundary. React does not get raw access to `ipcRenderer`,
 `fs`, or Electron globals. It only gets a small approved surface.
@@ -154,10 +154,10 @@ This is a security boundary. React does not get raw access to `ipcRenderer`,
 ### Step 6: React boots in the renderer
 
 The renderer entry point is
-[`src/renderer/main.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/main.tsx).
+[`src/renderer/main.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/main.tsx).
 
 That file mounts the React tree. The real app composition starts in
-[`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/app-root.tsx).
+[`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/app-root.tsx).
 
 `app-root.tsx` decides which top-level experience to show:
 
@@ -181,19 +181,19 @@ This folder holds application-level desktop plumbing.
 
 Important files:
 
-- [`src/main/app/runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/runtime.ts)
+- [`src/main/app/runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/runtime.ts)
   Builds the runtime object containing the major backend services.
-- [`src/main/app/data-management.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/data-management.ts)
+- [`src/main/app/data-management.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/data-management.ts)
   Handles backup export/import and opening the data folder.
-- [`src/main/app/updater-runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/updater-runtime.ts)
+- [`src/main/app/updater-runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/updater-runtime.ts)
   Wires Electron updater events to renderer-facing state broadcasts.
-- [`src/main/app/tray.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/tray.ts)
+- [`src/main/app/tray.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/tray.ts)
   Owns the system tray menu and behavior.
-- [`src/main/app/lifecycle.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/lifecycle.ts)
+- [`src/main/app/lifecycle.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/lifecycle.ts)
   Encapsulates rules like minimize-to-tray and quit behavior.
-- [`src/main/app/fatal-error.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/fatal-error.ts)
+- [`src/main/app/fatal-error.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/fatal-error.ts)
   Centralizes the last-resort crash dialog and cleanup path.
-- [`src/main/app/single-instance.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/single-instance.ts)
+- [`src/main/app/single-instance.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/single-instance.ts)
   Ensures only one app instance owns the desktop state.
 
 This folder is mostly about integration with Electron and the operating system.
@@ -246,7 +246,7 @@ In Zucchini, the preload bridge does three things:
 3. converts error payloads back into exceptions.
 
 The bridge in
-[`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/preload/preload.ts)
+[`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/preload/preload.ts)
 is intentionally thin.
 
 That is a good sign. If the preload script ever becomes "smart", the design is
@@ -261,7 +261,7 @@ usually drifting in the wrong direction.
 This folder defines the IPC contract between renderer and main.
 
 The most important file for that is
-[`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/contracts/habits-ipc.ts).
+[`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/contracts/habits-ipc.ts).
 
 It contains:
 
@@ -282,15 +282,15 @@ This folder holds the actual data model and pure domain rules.
 
 Examples:
 
-- [`habit.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/habit.ts)
+- [`habit.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/habit.ts)
   Habit types, categories, frequencies, and normalization helpers.
-- [`settings.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/settings.ts)
+- [`settings.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/settings.ts)
   App settings types.
-- [`history.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/history.ts)
+- [`history.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/history.ts)
   History-facing domain types.
-- [`weekly-review.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/weekly-review.ts)
+- [`weekly-review.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/weekly-review.ts)
   Weekly review types.
-- [`streak-engine.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/streak-engine.ts)
+- [`streak-engine.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/streak-engine.ts)
   Pure streak logic.
 
 When logic is pure and not tied to Electron, React, or SQLite, `src/shared` is
@@ -308,12 +308,12 @@ If you want to understand "where the real app logic lives", start here.
 ### The repository layer
 
 The main repository contract is
-[`src/main/infra/persistence/app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/persistence/app-repository.ts).
+[`src/main/infra/persistence/app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/persistence/app-repository.ts).
 
 This interface represents the persistence operations the application needs.
 
 The concrete SQLite implementation is
-[`src/main/infra/persistence/sqlite-app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/persistence/sqlite-app-repository.ts).
+[`src/main/infra/persistence/sqlite-app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/persistence/sqlite-app-repository.ts).
 
 That class is an aggregate repository. It owns the database client and delegates
 to smaller specialized repositories:
@@ -331,7 +331,7 @@ still keeping the SQL-facing code split by domain.
 ### The application service
 
 The main service is
-[`src/main/features/habits/habits-application-service.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/habits/habits-application-service.ts).
+[`src/main/features/habits/habits-application-service.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/habits/habits-application-service.ts).
 
 This class is the center of the core backend behavior.
 
@@ -382,7 +382,7 @@ Renderer
 ```
 
 The handler registration lives in
-[`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/ipc/handlers.ts).
+[`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/ipc/handlers.ts).
 
 This file is worth reading because it shows the exact seam between transport
 and application logic.
@@ -404,11 +404,11 @@ The database infrastructure lives under `src/main/infra/db`.
 
 Important files:
 
-- [`sqlite-client.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/db/sqlite-client.ts)
+- [`sqlite-client.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/db/sqlite-client.ts)
   Low-level database access and transaction control.
-- [`schema.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/db/schema.ts)
+- [`schema.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/db/schema.ts)
   Table schema definitions.
-- [`migrations.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/db/migrations.ts)
+- [`migrations.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/db/migrations.ts)
   Database migration setup.
 
 The service layer does not write SQL directly.
@@ -430,13 +430,13 @@ app.
 
 Reminder logic now has a cleaner split:
 
-- [`reminder-scheduler.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/reminders/reminder-scheduler.ts)
+- [`reminder-scheduler.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/reminders/reminder-scheduler.ts)
   Orchestration and timers.
-- [`reminder-policy.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/reminders/reminder-policy.ts)
+- [`reminder-policy.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/reminders/reminder-policy.ts)
   Decision logic about when reminders should fire.
-- [`reminder-timezone.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/reminders/reminder-timezone.ts)
+- [`reminder-timezone.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/reminders/reminder-timezone.ts)
   Timezone-aware date calculations.
-- [`notifications.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/reminders/notifications.ts)
+- [`notifications.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/reminders/notifications.ts)
   Actual desktop notification delivery.
 
 This is a good example of separating "what should happen" from "when do timers
@@ -445,7 +445,7 @@ run" and from "how do we compute dates safely".
 ### Tray
 
 The tray integration lives in
-[`src/main/app/tray.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/tray.ts).
+[`src/main/app/tray.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/tray.ts).
 
 The tray is part of the desktop experience:
 
@@ -458,9 +458,9 @@ The tray is part of the desktop experience:
 
 Update integration spans:
 
-- [`src/main/app/updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/updater.ts)
-- [`src/main/app/updater-runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/app/updater-runtime.ts)
-- [`src/shared/contracts/app-updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/contracts/app-updater.ts)
+- [`src/main/app/updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/updater.ts)
+- [`src/main/app/updater-runtime.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/app/updater-runtime.ts)
+- [`src/shared/contracts/app-updater.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/contracts/app-updater.ts)
 
 The renderer does not talk to `electron-updater` directly. It talks to the
 typed updater API exposed through preload.
@@ -476,29 +476,29 @@ This is the application shell and top-level controller area.
 
 Important files:
 
-- [`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/app-root.tsx)
+- [`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/app-root.tsx)
   Top-level screen selection and lazy-loading.
-- [`src/renderer/app/shell/app-shell.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/shell/app-shell.tsx)
+- [`src/renderer/app/shell/app-shell.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/shell/app-shell.tsx)
   Shared layout and navigation chrome.
-- [`src/renderer/app/controller/use-app-controller.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-app-controller.ts)
+- [`src/renderer/app/controller/use-app-controller.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-app-controller.ts)
   Main controller hook that composes state and actions.
 
 The controller area was intentionally split into smaller pieces:
 
-- [`use-app-controller-state.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-app-controller-state.ts)
+- [`use-app-controller-state.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-app-controller-state.ts)
   Selects and shapes renderer state.
-- [`use-app-lifecycle-effects.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-app-lifecycle-effects.ts)
+- [`use-app-lifecycle-effects.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-app-lifecycle-effects.ts)
   Runs startup and subscription effects.
-- [`use-settings-autosave.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-settings-autosave.ts)
+- [`use-settings-autosave.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-settings-autosave.ts)
   Handles settings autosave behavior.
-- [`app-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/app-actions.ts)
+- [`app-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/app-actions.ts)
   Creates the app action set.
-- [`boot-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/boot-actions.ts)
-- [`today-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/today-actions.ts)
-- [`history-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/history-actions.ts)
-- [`focus-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/focus-actions.ts)
-- [`settings-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/settings-actions.ts)
-- [`action-helpers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/action-helpers.ts)
+- [`boot-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/boot-actions.ts)
+- [`today-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/today-actions.ts)
+- [`history-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/history-actions.ts)
+- [`focus-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/focus-actions.ts)
+- [`settings-actions.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/settings-actions.ts)
+- [`action-helpers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/action-helpers.ts)
   Shared renderer-side state transition helpers.
 
 That split matters because the renderer controller used to mix too many
@@ -511,9 +511,9 @@ and feature folders.
 
 Examples:
 
-- [`boot-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/state/boot-store.ts)
-- [`ui-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/state/ui-store.ts)
-- [`src/renderer/features/history/state/history-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/state/history-store.ts)
+- [`boot-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/state/boot-store.ts)
+- [`ui-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/state/ui-store.ts)
+- [`src/renderer/features/history/state/history-store.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/state/history-store.ts)
 
 These stores hold UI-facing state. They should not duplicate business rules that
 already live in the backend or shared domain.
@@ -548,15 +548,15 @@ styling.
 
 Important files:
 
-- [`history-page.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/history-page.tsx)
+- [`history-page.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/history-page.tsx)
   Page shell.
-- [`use-history-view-state.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/use-history-view-state.ts)
+- [`use-history-view-state.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/use-history-view-state.ts)
   View-state derivation.
-- [`components/history-overview-panel.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/components/history-overview-panel.tsx)
-- [`components/weekly-review-section.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/components/weekly-review-section.tsx)
-- [`history-status.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/history-status.ts)
+- [`components/history-overview-panel.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/components/history-overview-panel.tsx)
+- [`components/weekly-review-section.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/components/weekly-review-section.tsx)
+- [`history-status.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/history-status.ts)
   Status types.
-- [`history-status-ui.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/history-status-ui.ts)
+- [`history-status-ui.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/history-status-ui.ts)
   Status-to-style mapping.
 
 This is a good example of a UI refactor toward clearer responsibilities:
@@ -572,19 +572,19 @@ The focus feature has both renderer behavior and main-process coordination.
 
 Renderer-side focus files include:
 
-- [`src/renderer/features/focus/focus-page.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/focus-page.tsx)
-- [`components/focus-timer-card.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-timer-card.tsx)
-- [`components/focus-duration-editor.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-duration-editor.tsx)
-- [`components/focus-timer-header.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-timer-header.tsx)
-- [`components/focus-timer-actions.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-timer-actions.tsx)
-- [`components/focus-widget.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-widget.tsx)
-- [`components/use-focus-widget-snapshot.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/use-focus-widget-snapshot.ts)
-- [`components/use-focus-widget-size-sync.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/use-focus-widget-size-sync.ts)
-- [`components/focus-timer-view-model.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/focus/components/focus-timer-view-model.ts)
+- [`src/renderer/features/focus/focus-page.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/focus-page.tsx)
+- [`components/focus-timer-card.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-timer-card.tsx)
+- [`components/focus-duration-editor.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-duration-editor.tsx)
+- [`components/focus-timer-header.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-timer-header.tsx)
+- [`components/focus-timer-actions.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-timer-actions.tsx)
+- [`components/focus-widget.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-widget.tsx)
+- [`components/use-focus-widget-snapshot.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/use-focus-widget-snapshot.ts)
+- [`components/use-focus-widget-size-sync.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/use-focus-widget-size-sync.ts)
+- [`components/focus-timer-view-model.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/focus/components/focus-timer-view-model.ts)
 
 Main-process coordination lives in:
 
-- [`src/main/features/focus/timer-coordinator.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/focus/timer-coordinator.ts)
+- [`src/main/features/focus/timer-coordinator.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/focus/timer-coordinator.ts)
 
 This split exists because some focus behavior is just UI state, while some
 behavior must coordinate across windows and the desktop app runtime.
@@ -600,9 +600,9 @@ One of the cleanup goals here was better naming for the habit editor controls.
 
 The settings habit selectors are now split into:
 
-- [`habit-category-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/settings/components/habits/habit-category-selector.tsx)
-- [`habit-frequency-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/settings/components/habits/habit-frequency-selector.tsx)
-- [`habit-weekday-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/settings/components/habits/habit-weekday-selector.tsx)
+- [`habit-category-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/settings/components/habits/habit-category-selector.tsx)
+- [`habit-frequency-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/settings/components/habits/habit-frequency-selector.tsx)
+- [`habit-weekday-selector.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/settings/components/habits/habit-weekday-selector.tsx)
 
 That is much easier to navigate than one misleadingly named file doing three
 separate jobs.
@@ -624,7 +624,7 @@ call using the channel name from the shared IPC contract.
 ### In the main process IPC layer
 
 The handler in
-[`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/ipc/handlers.ts)
+[`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/ipc/handlers.ts)
 receives the request, validates the `habitId`, then calls
 `service.toggleHabit(...)`.
 
@@ -721,14 +721,14 @@ That path will explain almost any user action in the app.
 
 If you want a practical onboarding sequence, read these in order:
 
-1. [`src/main/main.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/main.ts)
-2. [`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/preload/preload.ts)
-3. [`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/contracts/habits-ipc.ts)
-4. [`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/app-root.tsx)
-5. [`src/renderer/app/controller/use-app-controller.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-app-controller.ts)
-6. [`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/ipc/handlers.ts)
-7. [`src/main/features/habits/habits-application-service.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/habits/habits-application-service.ts)
-8. [`src/main/infra/persistence/sqlite-app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/persistence/sqlite-app-repository.ts)
+1. [`src/main/main.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/main.ts)
+2. [`src/preload/preload.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/preload/preload.ts)
+3. [`src/shared/contracts/habits-ipc.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/contracts/habits-ipc.ts)
+4. [`src/renderer/app/app-root.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/app-root.tsx)
+5. [`src/renderer/app/controller/use-app-controller.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-app-controller.ts)
+6. [`src/main/infra/ipc/handlers.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/ipc/handlers.ts)
+7. [`src/main/features/habits/habits-application-service.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/habits/habits-application-service.ts)
+8. [`src/main/infra/persistence/sqlite-app-repository.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/persistence/sqlite-app-repository.ts)
 
 Those files give you the top-level map before you dive into individual
 features.
@@ -746,11 +746,11 @@ Examples:
 
 Representative examples:
 
-- [`src/shared/domain/streak-engine.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/shared/domain/streak-engine.test.ts)
-- [`src/main/features/habits/habits-application-service.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/features/habits/habits-application-service.test.ts)
-- [`src/main/infra/ipc/handlers.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/main/infra/ipc/handlers.test.ts)
-- [`src/renderer/app/controller/use-app-controller.test.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/app/controller/use-app-controller.test.tsx)
-- [`src/renderer/features/history/history-page.test.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/src/renderer/features/history/history-page.test.tsx)
+- [`src/shared/domain/streak-engine.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/shared/domain/streak-engine.test.ts)
+- [`src/main/features/habits/habits-application-service.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/features/habits/habits-application-service.test.ts)
+- [`src/main/infra/ipc/handlers.test.ts`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/main/infra/ipc/handlers.test.ts)
+- [`src/renderer/app/controller/use-app-controller.test.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/app/controller/use-app-controller.test.tsx)
+- [`src/renderer/features/history/history-page.test.tsx`](/Users/benjaminwang/Desktop/Random%20Projects/Zucchini/apps/desktop/src/renderer/features/history/history-page.test.tsx)
 
 When you add code, the best test placement is usually the layer that owns the
 behavior.

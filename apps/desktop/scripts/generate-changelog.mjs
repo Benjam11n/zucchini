@@ -1,10 +1,15 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = process.cwd();
-const packageJsonPath = path.join(repoRoot, "package.json");
-const changelogPath = path.join(repoRoot, "CHANGELOG.md");
+const desktopRoot = process.cwd();
+const workspaceRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../.."
+);
+const packageJsonPath = path.join(desktopRoot, "package.json");
+const changelogPath = path.join(workspaceRoot, "CHANGELOG.md");
 
 const cliArgs = parseArgs(process.argv.slice(2));
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
@@ -14,7 +19,7 @@ const releaseTag = cliArgs.tag ?? `v${releaseVersion}`;
 const previousReleaseTag = cliArgs.previousTag ?? findPreviousTag(releaseTag);
 const changelogDate = cliArgs.date ?? new Date().toISOString().slice(0, 10);
 const outputPath = cliArgs.output
-  ? path.resolve(repoRoot, cliArgs.output)
+  ? path.resolve(desktopRoot, cliArgs.output)
   : null;
 
 const commitRange = previousReleaseTag ? `${previousReleaseTag}..HEAD` : "HEAD";
@@ -102,7 +107,7 @@ function parseArgs(rawArgs) {
 
 function runGit(gitArgs) {
   return execFileSync("git", gitArgs, {
-    cwd: repoRoot,
+    cwd: workspaceRoot,
     encoding: "utf8",
   }).trim();
 }
