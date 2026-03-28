@@ -9,7 +9,12 @@
   "rules": {
     "func-style": "off",
     "max-classes-per-file": "off",
-    "max-statements": "off",
+    "max-statements": [
+      "error",
+      {
+        "max": 300
+      }
+    ],
     "promise/prefer-await-to-then": "off",
     "react-perf/jsx-no-new-function-as-prop": "off",
     "unicorn/prefer-module": "off"
