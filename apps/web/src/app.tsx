@@ -1,3 +1,13 @@
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Flame,
+  ArrowRight,
+  ListChecks,
+  Snowflake,
+  Utensils,
+} from "lucide-react";
+
 const latestReleaseUrl =
   "https://github.com/benjamingwg/zucchini/releases/latest";
 
@@ -33,13 +43,13 @@ export default function App() {
 
           <div className="actions">
             <a href={latestReleaseUrl} className="btn btn-primary">
-              Download for macOS
+              Download for macOS <ArrowUpRight size={16} />
             </a>
             <a
               href="https://github.com/Benjam11n/zucchini"
               className="btn btn-secondary"
             >
-              View Source
+              View Source <ArrowRight size={18} />
             </a>
           </div>
 
@@ -50,170 +60,313 @@ export default function App() {
                 <div className="dot" />
                 <div className="dot" />
               </div>
-              <div className="window-content">
-                <div
-                  className="card"
-                  style={{
-                    alignItems: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                    gridRow: "span 2",
-                    justifyContent: "center",
-                    padding: "40px",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "200px",
-                      position: "relative",
-                      width: "200px",
-                    }}
-                  >
-                    <svg
-                      viewBox="0 0 200 200"
-                      width="200"
-                      height="200"
-                      className="rings-svg"
-                    >
-                      {/* Productivity Ring */}
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="85"
-                        fill="none"
-                        stroke="rgba(0, 159, 184, 0.1)"
-                        strokeWidth="18"
-                      />
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="85"
-                        fill="none"
-                        stroke="#009fb8"
-                        strokeWidth="18"
-                        strokeDasharray="534"
-                        strokeDashoffset="130"
-                        strokeLinecap="round"
-                        transform="rotate(-90 100 100)"
-                      />
+              <div className="window-content-v2">
+                {/* History Carousel Mock */}
+                <div className="history-carousel">
+                  {[
+                    "SUN",
+                    "MON",
+                    "TUE",
+                    "WED",
+                    "THU",
+                    "FRI",
+                    "SAT",
+                    "SUN",
+                    "MON",
+                    "TUE",
+                    "WED",
+                    "THU",
+                    "FRI",
+                    "SAT",
+                  ].map((day, i) => (
+                    // oxlint-disable-next-line react/no-array-index-key
+                    <div key={`hist-${day}-${i}`} className="history-day">
+                      <svg viewBox="0 0 40 40" width="32" height="32">
+                        {/* Fitness Ring (Outer) */}
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="18"
+                          fill="none"
+                          stroke="rgba(255, 45, 85, 0.1)"
+                          strokeWidth="3.5"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="18"
+                          fill="none"
+                          stroke="#ff2d55"
+                          strokeWidth="3.5"
+                          strokeDasharray="113"
+                          strokeDashoffset={20 + (i % 5) * 10}
+                          strokeLinecap="round"
+                          transform="rotate(-90 20 20)"
+                        />
 
-                      {/* Fitness Ring */}
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="64"
-                        fill="none"
-                        stroke="rgba(255, 45, 85, 0.1)"
-                        strokeWidth="18"
-                      />
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="64"
-                        fill="none"
-                        stroke="#ff2d55"
-                        strokeWidth="18"
-                        strokeDasharray="402"
-                        strokeDashoffset="80"
-                        strokeLinecap="round"
-                        transform="rotate(-90 100 100)"
-                      />
+                        {/* Nutrition Ring (Middle) */}
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="13.5"
+                          fill="none"
+                          stroke="rgba(163, 249, 0, 0.1)"
+                          strokeWidth="3.5"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="13.5"
+                          fill="none"
+                          stroke="#a3f900"
+                          strokeWidth="3.5"
+                          strokeDasharray="85"
+                          strokeDashoffset={15 + (i % 4) * 12}
+                          strokeLinecap="round"
+                          transform="rotate(-90 20 20)"
+                        />
 
-                      {/* Nutrition Ring */}
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="43"
-                        fill="none"
-                        stroke="rgba(120, 197, 0, 0.1)"
-                        strokeWidth="18"
-                      />
-                      <circle
-                        cx="100"
-                        cy="100"
-                        r="43"
-                        fill="none"
-                        stroke="#78c500"
-                        strokeWidth="18"
-                        strokeDasharray="270"
-                        strokeDashoffset="40"
-                        strokeLinecap="round"
-                        transform="rotate(-90 100 100)"
-                      />
-                    </svg>
-                    <div
-                      style={{
-                        left: "50%",
-                        position: "absolute",
-                        textAlign: "center",
-                        top: "50%",
-                        transform: "translate(-50%, -50%)",
-                      }}
-                    >
-                      <div style={{ fontSize: '2rem', fontWeight: 800 }}>82%</div>
-                      <div
-                        style={{
-                          fontSize: "0.7rem",
-                          letterSpacing: "0.1em",
-                          opacity: 0.6,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Score
+                        {/* Productivity Ring (Inner) */}
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="9"
+                          fill="none"
+                          stroke="rgba(4, 199, 221, 0.1)"
+                          strokeWidth="3.5"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="9"
+                          fill="none"
+                          stroke="#04c7dd"
+                          strokeWidth="3.5"
+                          strokeDasharray="57"
+                          strokeDashoffset={10 + (i % 3) * 15}
+                          strokeLinecap="round"
+                          transform="rotate(-90 20 20)"
+                        />
+                      </svg>
+                      <span>{day}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Main Activity Card */}
+                <div className="card activity-main-card">
+                  <div className="activity-top-row">
+                    <div className="activity-rings-large">
+                      <svg viewBox="0 0 200 200" width="200" height="200">
+                        {/* Background Rings */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          fill="none"
+                          stroke="rgba(255, 45, 85, 0.1)"
+                          strokeWidth="18"
+                        />
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="60"
+                          fill="none"
+                          stroke="rgba(120, 197, 0, 0.1)"
+                          strokeWidth="18"
+                        />
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="40"
+                          fill="none"
+                          stroke="rgba(0, 159, 184, 0.1)"
+                          strokeWidth="18"
+                        />
+
+                        {/* Fitness Ring (Outer) */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="80"
+                          fill="none"
+                          stroke="#ff2d55"
+                          strokeWidth="18"
+                          strokeDasharray="502"
+                          strokeDashoffset="251"
+                          strokeLinecap="round"
+                          transform="rotate(-90 100 100)"
+                          style={{ filter: "drop-shadow(0 0 4px #ff2d5588)" }}
+                        />
+
+                        {/* Nutrition Ring (Middle) */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="60"
+                          fill="none"
+                          stroke="#a3f900"
+                          strokeWidth="18"
+                          strokeDasharray="377"
+                          strokeDashoffset="150"
+                          strokeLinecap="round"
+                          transform="rotate(-90 100 100)"
+                          style={{ filter: "drop-shadow(0 0 4px #a3f90088)" }}
+                        />
+
+                        {/* Productivity Ring (Inner) */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="40"
+                          fill="none"
+                          stroke="#04c7dd"
+                          strokeWidth="18"
+                          strokeDasharray="251"
+                          strokeDashoffset="125"
+                          strokeLinecap="round"
+                          transform="rotate(-90 100 100)"
+                          style={{ filter: "drop-shadow(0 0 4px #04c7dd88)" }}
+                        />
+                      </svg>
+                    </div>
+                    <div className="activity-stats">
+                      <div className="stat-group">
+                        <span
+                          className="stat-label"
+                          style={{ color: "#ff2d55" }}
+                        >
+                          FITNESS
+                        </span>
+                        <span className="stat-value">
+                          50<small>%</small>
+                        </span>
+                      </div>
+                      <div className="stat-group">
+                        <span
+                          className="stat-label"
+                          style={{ color: "#a3f900" }}
+                        >
+                          NUTRITION
+                        </span>
+                        <span className="stat-value">
+                          60<small>%</small>
+                        </span>
+                      </div>
+                      <div className="stat-group">
+                        <span
+                          className="stat-label"
+                          style={{ color: "#04c7dd" }}
+                        >
+                          PRODUCTIVITY
+                        </span>
+                        <span className="stat-value">
+                          50<small>%</small>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="quick-stats">
+                    <div className="q-stat">
+                      <span className="q-icon-box" style={{ color: "#ff2d55" }}>
+                        <Flame size={16} />
+                      </span>
+                      <div>
+                        <strong>0</strong>
+                        <small>STREAK</small>
+                      </div>
+                    </div>
+                    <div className="q-stat">
+                      <span className="q-icon-box" style={{ color: "#009fb8" }}>
+                        <Snowflake size={16} />
+                      </span>
+                      <div>
+                        <strong>0</strong>
+                        <small>FREEZE</small>
+                      </div>
+                    </div>
+                    <div className="q-stat">
+                      <span className="q-icon-box">
+                        <CalendarDays size={16} />
+                      </span>
+                      <div>
+                        <strong>Sat 28 Mar</strong>
+                        <small>DATE</small>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="card">
-                  <div style={{ fontWeight: 700, marginBottom: "20px" }}>
-                    Today&apos;s Focus
+
+                {/* Habit Checklist Section */}
+                <div className="card checklist-section">
+                  <div className="checklist-header">
+                    <div className="title-row">
+                      <span>
+                        <ListChecks
+                          size={14}
+                          style={{
+                            marginRight: "8px",
+                            verticalAlign: "middle",
+                          }}
+                        />
+                        Today
+                      </span>
+                      <button className="manage-btn" type="button">
+                        Manage
+                      </button>
+                    </div>
+                    <div className="progress-text">6/11</div>
+                    <div className="main-progress-bar">
+                      <div className="progress-fill" style={{ width: "55%" }} />
+                    </div>
                   </div>
-                  <div className="habit-item">
-                    <div className="checkbox checked" />
-                    <span>Morning Meditation</span>
-                  </div>
-                  <div className="habit-item">
-                    <div className="checkbox checked" />
-                    <span>Read 20 Pages</span>
-                  </div>
-                  <div className="habit-item">
-                    <div className="checkbox" />
-                    <span>Inbox Zero</span>
-                  </div>
-                </div>
-                <div className="card">
-                  <div style={{ fontWeight: 700, marginBottom: "20px" }}>
-                    Weekly Overview
-                  </div>
-                  <div
-                    style={{
-                      alignItems: "flex-end",
-                      display: "flex",
-                      gap: "8px",
-                      height: "100px",
-                    }}
-                  >
+
+                  <div className="category-group">
+                    <div
+                      className="category-header"
+                      style={{ color: "#a3f900" }}
+                    >
+                      <span>
+                        <Utensils
+                          size={12}
+                          style={{
+                            marginRight: "6px",
+                            verticalAlign: "middle",
+                          }}
+                        />
+                        NUTRITION
+                      </span>
+                      <span className="count">3/4</span>
+                    </div>
                     {[
-                      { day: "Mon", val: 40 },
-                      { day: "Tue", val: 70 },
-                      { day: "Wed", val: 45 },
-                      { day: "Thu", val: 90 },
-                      { day: "Fri", val: 65 },
-                      { day: "Sat", val: 80 },
-                      { day: "Sun", val: 50 },
-                    ].map((item) => (
-                      <div
-                        key={item.day}
-                        style={{
-                          background:
-                            item.day === "Thu"
-                              ? "var(--accent)"
-                              : "rgba(255,255,255,0.1)",
-                          borderRadius: "4px",
-                          flex: 1,
-                          height: `${item.val}%`,
-                        }}
-                      />
+                      { active: true, name: "Eat zucchini" },
+                      { active: false, name: "Eat Supplements" },
+                      { active: true, name: "1 tbsp chia seeds" },
+                      { active: false, name: "Put sunscreen in the morning" },
+                    ].map((habit) => (
+                      <div key={habit.name} className="habit-row">
+                        <div
+                          className={`check-circle ${habit.active ? "active" : ""}`}
+                        >
+                          {habit.active ? (
+                            <svg
+                              fill="none"
+                              height="12"
+                              stroke="white"
+                              strokeWidth="4"
+                              viewBox="0 0 24 24"
+                              width="12"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : null}
+                        </div>
+                        <span className="habit-name">{habit.name}</span>
+                        <div
+                          className={`mini-check ${habit.active ? "active" : ""}`}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
