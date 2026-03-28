@@ -1,12 +1,12 @@
-import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
-import type { PomodoroTimerSettings } from "@/shared/domain/settings";
-import { toDateKey } from "@/shared/utils/date";
-
 import type {
   FocusBreakVariant,
   PersistedCompletedBreakState,
   PersistedFocusTimerState,
-} from "../focus.types";
+} from "@/renderer/features/focus/focus.types";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
+import { toDateKey } from "@/shared/utils/date";
+
 import {
   clampFocusDurationMs,
   DEFAULT_FOCUS_DURATION_MS,

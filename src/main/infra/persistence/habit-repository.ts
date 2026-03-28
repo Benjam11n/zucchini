@@ -1,5 +1,7 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 
+import { habits } from "@/main/infra/db/schema";
+import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
   Habit,
   HabitCategory,
@@ -7,8 +9,6 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-import { habits } from "../db/schema";
-import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { mapHabit } from "./mappers";
 
 function serializeHabitWeekdays(

@@ -4,12 +4,11 @@ import type {
   FocusSessionsPhase,
   PersistedFocusTimerState,
 } from "@/renderer/features/focus/focus.types";
+import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
-
-import { createIdleFocusTimerState } from "../lib/focus-timer-state";
 
 export interface FocusStoreState {
   focusSaveErrorMessage: string | null;

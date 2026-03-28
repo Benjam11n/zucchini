@@ -1,10 +1,9 @@
+import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import type {
   FocusSession,
   FocusSessionEntryKind,
 } from "@/shared/domain/focus-session";
-
-import type { PersistedFocusTimerState } from "../focus.types";
 
 export interface FocusSessionEntryView {
   completedAt: string;

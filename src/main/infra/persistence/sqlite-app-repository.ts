@@ -1,4 +1,6 @@
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
+import { runMigrations } from "@/main/infra/db/migrations";
+import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -13,8 +15,6 @@ import type {
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
-import { runMigrations } from "../db/migrations";
-import { SqliteDatabaseClient } from "../db/sqlite-client";
 import type { AppRepository, SettledHistoryOptions } from "./app-repository";
 import { SqliteFocusSessionRepository } from "./focus-session-repository";
 import { SqliteHabitsRepository } from "./habit-repository";

@@ -1,5 +1,7 @@
 import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
+import { dailySummary, habitPeriodStatus } from "@/main/infra/db/schema";
+import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import {
   isHabitScheduledForDate,
   normalizeHabitCategory,
@@ -10,8 +12,6 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { DailySummary } from "@/shared/domain/streak";
 
-import { dailySummary, habitPeriodStatus } from "../db/schema";
-import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import type { SettledHistoryOptions } from "./app-repository";
 import type { SqliteHabitsRepository } from "./habit-repository";
 import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";

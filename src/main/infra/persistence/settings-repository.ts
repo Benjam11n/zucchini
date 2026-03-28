@@ -1,9 +1,9 @@
+import { settings } from "@/main/infra/db/schema";
+import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import { settings } from "../db/schema";
-import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { normalizeThemeMode } from "./mappers";
 
 export class SqliteSettingsRepository {

@@ -7,21 +7,21 @@
 import type {
   CreateFocusSessionInput,
   FocusSession,
-} from "../domain/focus-session";
+} from "@/shared/domain/focus-session";
 import type {
   Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
   HabitWithStatus,
-} from "../domain/habit";
-import type { HistoryDay } from "../domain/history";
-import type { AppSettings } from "../domain/settings";
-import type { StreakState } from "../domain/streak";
+} from "@/shared/domain/habit";
+import type { HistoryDay } from "@/shared/domain/history";
+import type { AppSettings } from "@/shared/domain/settings";
+import type { StreakState } from "@/shared/domain/streak";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
-} from "../domain/weekly-review";
+} from "@/shared/domain/weekly-review";
 
 export const HABITS_IPC_CHANNELS = {
   archiveHabit: "habits:archiveHabit",

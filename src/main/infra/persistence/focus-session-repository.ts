@@ -1,12 +1,12 @@
 import { desc } from "drizzle-orm";
 
+import { focusSessions } from "@/main/infra/db/schema";
+import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
 
-import { focusSessions } from "../db/schema";
-import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { mapFocusSession } from "./mappers";
 
 const DEFAULT_FOCUS_SESSION_LIMIT = 30;

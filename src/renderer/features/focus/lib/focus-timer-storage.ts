@@ -1,3 +1,4 @@
+import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import {
   readJsonStorage,
   STORAGE_KEYS,
@@ -5,7 +6,6 @@ import {
   writeJsonStorage,
 } from "@/renderer/shared/lib/storage";
 
-import type { PersistedFocusTimerState } from "../focus.types";
 import {
   clampFocusDurationMs,
   DEFAULT_FOCUS_DURATION_MS,

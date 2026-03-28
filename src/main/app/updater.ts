@@ -33,7 +33,11 @@ interface LoggerLike {
   warn: (...args: unknown[]) => void;
 }
 
-type ScheduleFn = (handler: () => void, delayMs: number) => unknown;
+type TimerHandle = ReturnType<typeof globalThis.setTimeout>;
+type ScheduleFn = (handler: () => void, delayMs: number) => TimerHandle;
+type MaybePromise<T> = Promise<T> | T;
+
+type IpcHandlerResult = AppUpdateState | undefined;
 
 export interface AutoUpdaterLike {
   autoDownload: boolean;
@@ -54,7 +58,7 @@ interface RegisterAppUpdaterOptions {
   currentVersion: string;
   handleIpc: (
     channel: string,
-    handler: () => unknown | Promise<unknown>
+    handler: () => MaybePromise<IpcHandlerResult>
   ) => void;
   log: LoggerLike;
   scheduleInterval: ScheduleFn;

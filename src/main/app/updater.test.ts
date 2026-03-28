@@ -64,7 +64,10 @@ describe("registerAppUpdater()", () => {
     supportsAutoUpdates?: boolean;
   } = {}) {
     const updater = new FakeAutoUpdater();
-    const handlers = new Map<string, () => unknown | Promise<unknown>>();
+    const handlers = new Map<
+      string,
+      () => AppUpdateState | undefined | Promise<AppUpdateState | undefined>
+    >();
     const broadcastState = vi.fn<(state: AppUpdateState) => void>();
     const scheduleInterval = vi.fn();
     const scheduleTimeout = vi.fn();

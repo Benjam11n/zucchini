@@ -1,16 +1,15 @@
 import type {
-  HabitCategory,
-  HabitFrequency,
-  HabitWeekday,
-} from "@/shared/domain/habit";
-
-import type {
   dailySummary,
   focusSessions,
   habits,
   habitPeriodStatus,
   streakState,
-} from "../db/schema";
+} from "@/main/infra/db/schema";
+import type {
+  HabitCategory,
+  HabitFrequency,
+  HabitWeekday,
+} from "@/shared/domain/habit";
 
 export type HabitRow = typeof habits.$inferSelect;
 export type HabitPeriodStatusRow = typeof habitPeriodStatus.$inferSelect;

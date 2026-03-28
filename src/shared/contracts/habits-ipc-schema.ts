@@ -13,7 +13,7 @@ import {
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
   isValidTimeZone,
-} from "../domain/settings";
+} from "@/shared/domain/settings";
 
 export const habitIdSchema = z.number().int().positive();
 export const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {

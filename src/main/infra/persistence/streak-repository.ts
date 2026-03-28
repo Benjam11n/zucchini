@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 
+import { streakState } from "@/main/infra/db/schema";
+import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type { StreakState } from "@/shared/domain/streak";
 
-import { streakState } from "../db/schema";
-import type { SqliteDatabaseClient } from "../db/sqlite-client";
 import { mapStreakState } from "./mappers";
 
 export class SqliteStreakRepository {
