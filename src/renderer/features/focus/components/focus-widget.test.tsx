@@ -50,7 +50,9 @@ describe("focus widget", () => {
   function setupWidgetTest({ renderWidget = true } = {}) {
     resetFocusStore();
     class ResizeObserverMock {
+      // oxlint-disable-next-line class-methods-use-this
       observe() {}
+      // oxlint-disable-next-line class-methods-use-this
       disconnect() {}
     }
 

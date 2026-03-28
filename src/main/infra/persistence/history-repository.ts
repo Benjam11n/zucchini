@@ -40,7 +40,11 @@ export class SqliteHistoryRepository {
 
       const statusByKey = new Map(
         this.getStatusRowsForDate(date).map((row) => [
-          this.getStatusKey(row.frequency, row.periodStart, row.habitId),
+          SqliteHistoryRepository.getStatusKey(
+            row.frequency,
+            row.periodStart,
+            row.habitId
+          ),
           row,
         ])
       );
@@ -50,7 +54,11 @@ export class SqliteHistoryRepository {
         .map((habit) => {
           const period = getHabitPeriod(habit.frequency, date);
           const status = statusByKey.get(
-            this.getStatusKey(habit.frequency, period.start, habit.id)
+            SqliteHistoryRepository.getStatusKey(
+              habit.frequency,
+              period.start,
+              habit.id
+            )
           );
 
           return {
@@ -409,7 +417,7 @@ export class SqliteHistoryRepository {
       .all();
   }
 
-  private getStatusKey(
+  private static getStatusKey(
     frequency: string,
     periodStart: string,
     habitId: number

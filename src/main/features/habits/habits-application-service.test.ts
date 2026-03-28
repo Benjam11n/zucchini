@@ -42,6 +42,7 @@ class FakeClock implements Clock {
     return this.today;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   addDays(dateKey: string, amount: number): string {
     const [year, month, day] = dateKey.split("-").map(Number);
     const next = new Date(year, month - 1, day);
@@ -52,6 +53,7 @@ class FakeClock implements Clock {
     return `${y}-${m}-${d}`;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   compareDateKeys(left: string, right: string): number {
     return left.localeCompare(right);
   }
@@ -199,9 +201,9 @@ class FakeRepository implements AppRepository {
     const weeklyPeriod = getHabitPeriod("weekly", date);
     const monthlyPeriod = getHabitPeriod("monthly", date);
     const periodKeys = [
-      this.getPeriodKey("daily", dailyPeriod.start),
-      this.getPeriodKey("weekly", weeklyPeriod.start),
-      this.getPeriodKey("monthly", monthlyPeriod.start),
+      FakeRepository.getPeriodKey("daily", dailyPeriod.start),
+      FakeRepository.getPeriodKey("weekly", weeklyPeriod.start),
+      FakeRepository.getPeriodKey("monthly", monthlyPeriod.start),
     ];
 
     for (const key of periodKeys) {
@@ -447,12 +449,15 @@ class FakeRepository implements AppRepository {
     frequency: HabitFrequency = "daily"
   ): void {
     const period = getHabitPeriod(frequency, date);
-    this.statusByPeriod.set(this.getPeriodKey(frequency, period.start), {
-      end: period.end,
-      frequency,
-      start: period.start,
-      values,
-    });
+    this.statusByPeriod.set(
+      FakeRepository.getPeriodKey(frequency, period.start),
+      {
+        end: period.end,
+        frequency,
+        start: period.start,
+        values,
+      }
+    );
   }
 
   private getStatusValues(
@@ -460,7 +465,7 @@ class FakeRepository implements AppRepository {
     frequency: HabitFrequency
   ): Map<number, boolean> {
     const period = getHabitPeriod(frequency, date);
-    const key = this.getPeriodKey(frequency, period.start);
+    const key = FakeRepository.getPeriodKey(frequency, period.start);
     const existing = this.statusByPeriod.get(key);
 
     if (existing) {
@@ -477,7 +482,10 @@ class FakeRepository implements AppRepository {
     return values;
   }
 
-  private getPeriodKey(frequency: HabitFrequency, periodStart: string): string {
+  private static getPeriodKey(
+    frequency: HabitFrequency,
+    periodStart: string
+  ): string {
     return `${frequency}:${periodStart}`;
   }
 }

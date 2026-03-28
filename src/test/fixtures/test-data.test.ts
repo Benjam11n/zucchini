@@ -32,6 +32,7 @@ class FakeClock implements Clock {
     return this.today;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   addDays(dateKey: string, amount: number): string {
     const [year, month, day] = dateKey.split("-").map(Number);
     const next = new Date(year, month - 1, day);
@@ -42,6 +43,7 @@ class FakeClock implements Clock {
     return `${y}-${m}-${d}`;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   compareDateKeys(left: string, right: string): number {
     return left.localeCompare(right);
   }

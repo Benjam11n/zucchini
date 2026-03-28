@@ -40,6 +40,10 @@ export class AppErrorBoundary extends Component<
   }
 
   override componentDidCatch(error: unknown): void {
+    if (!this.state.hasError) {
+      return;
+    }
+
     console.error("Renderer error boundary caught an error.", error);
   }
 
