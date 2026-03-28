@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1-beta.11 - 2026-03-28
+
+Changes since `v0.1.1-beta.10`.
+
+### Fixes
+
+- Stabilize bun ci install and preload tests
+
 ## 0.1.1-beta.10 - 2026-03-28
 
 Changes since `v0.1.1-beta.9`.
