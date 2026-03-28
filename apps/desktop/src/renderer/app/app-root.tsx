@@ -246,7 +246,6 @@ function MainApp() {
             onOpenReview={actions.handleWeeklyReviewOpen}
             open={state.isWeeklyReviewSpotlightOpen}
             review={state.weeklyReviewOverview.latestReview}
-            trend={state.weeklyReviewOverview.trend}
           />
         </Suspense>
       ) : null}
