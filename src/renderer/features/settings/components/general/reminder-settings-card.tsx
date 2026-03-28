@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { Bell, Globe2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 

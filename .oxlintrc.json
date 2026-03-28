@@ -15,7 +15,6 @@
         "max": 300
       }
     ],
-    "promise/prefer-await-to-then": "off",
     "react-perf/jsx-no-new-function-as-prop": "off",
     "unicorn/prefer-module": "off"
   },

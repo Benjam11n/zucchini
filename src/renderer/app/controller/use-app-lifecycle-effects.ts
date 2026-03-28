@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { useEffect } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";

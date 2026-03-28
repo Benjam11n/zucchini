@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import type { AppTab } from "@/renderer/app/app.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";

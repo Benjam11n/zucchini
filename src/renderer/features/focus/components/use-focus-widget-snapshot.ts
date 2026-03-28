@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { useEffect, useState } from "react";
 
 import type { TodayState } from "@/shared/contracts/habits-ipc";

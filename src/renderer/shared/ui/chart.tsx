@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { Suspense, lazy } from "react";
 import type * as React from "react";
 

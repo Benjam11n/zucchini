@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { Download, Rocket, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
 import {

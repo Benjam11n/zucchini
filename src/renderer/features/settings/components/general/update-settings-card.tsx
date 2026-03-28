@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { Download, RefreshCw, Rocket } from "lucide-react";
 import { useEffect, useReducer } from "react";
 

@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";

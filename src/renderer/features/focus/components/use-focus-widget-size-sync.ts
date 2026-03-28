@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { useEffect } from "react";
 
 export function useFocusWidgetSizeSync(widgetElement: HTMLElement | null) {

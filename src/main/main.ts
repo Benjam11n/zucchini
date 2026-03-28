@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 /**
  * Electron main-process composition root.
  *

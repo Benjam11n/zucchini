@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { unstable_batchedUpdates } from "react-dom";
 
 import { useBootStore } from "@/renderer/app/state/boot-store";

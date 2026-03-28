@@ -1,3 +1,5 @@
+/* eslint-disable promise/prefer-await-to-then */
+
 import { Suspense, lazy } from "react";
 
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
