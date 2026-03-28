@@ -41,7 +41,9 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
       }),
     });
 
-    void window.habits.showNotification(title, message, iconFilename);
+    window.habits.showNotification(title, message, iconFilename).catch(() => {
+      // Desktop notifications are best-effort alongside the in-app toast.
+    });
   };
 
   useEffect(() => {

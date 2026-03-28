@@ -313,10 +313,15 @@ describe("history page", () => {
     expect(screen.getByTestId("day-panel")).toHaveTextContent(
       "2026-03-09:false"
     );
+    const [latestHistoryDay] = history;
+
+    if (!latestHistoryDay) {
+      throw new Error("Expected history test data to include a latest day.");
+    }
 
     rerender(
       <HistoryPage
-        history={[history[0]!]}
+        history={[latestHistoryDay]}
         historyLoadError={null}
         historyScope="recent"
         isHistoryLoading={false}

@@ -72,6 +72,10 @@ export interface AppUpdaterController {
   start: () => void;
 }
 
+function noopStart(): void {
+  // Updates are intentionally disabled in unsupported environments.
+}
+
 function createInitialState(
   currentVersion: string,
   supportMode: AppUpdateSupportMode
@@ -194,29 +198,35 @@ export function registerAppUpdater({
   }
 
   handleIpc(APP_UPDATER_CHANNELS.getState, () => state);
-  handleIpc(APP_UPDATER_CHANNELS.checkForUpdates, async () => {
-    if (
-      !supportsAutoUpdates ||
-      state.status === "available" ||
-      state.status === "downloaded" ||
-      state.status === "downloading"
-    ) {
-      return;
-    }
+  handleIpc(
+    APP_UPDATER_CHANNELS.checkForUpdates,
+    async (): Promise<IpcHandlerResult> => {
+      if (
+        !supportsAutoUpdates ||
+        state.status === "available" ||
+        state.status === "downloaded" ||
+        state.status === "downloading"
+      ) {
+        return;
+      }
 
-    await checkForUpdates();
-  });
-  handleIpc(APP_UPDATER_CHANNELS.downloadUpdate, async () => {
-    if (
-      !supportsAutoUpdates ||
-      (state.status !== "available" && state.status !== "error")
-    ) {
-      return;
+      await checkForUpdates();
     }
+  );
+  handleIpc(
+    APP_UPDATER_CHANNELS.downloadUpdate,
+    async (): Promise<IpcHandlerResult> => {
+      if (
+        !supportsAutoUpdates ||
+        (state.status !== "available" && state.status !== "error")
+      ) {
+        return;
+      }
 
-    await updater.downloadUpdate();
-  });
-  handleIpc(APP_UPDATER_CHANNELS.installUpdate, () => {
+      await updater.downloadUpdate();
+    }
+  );
+  handleIpc(APP_UPDATER_CHANNELS.installUpdate, (): IpcHandlerResult => {
     if (!supportsAutoUpdates || state.status !== "downloaded") {
       return;
     }
@@ -233,7 +243,7 @@ export function registerAppUpdater({
   if (!supportsAutoUpdates) {
     return {
       getState: () => state,
-      start: () => {},
+      start: noopStart,
     };
   }
 
@@ -321,10 +331,10 @@ export function registerAppUpdater({
     getState: () => state,
     start: () => {
       scheduleTimeout(() => {
-        void checkForUpdates();
+        checkForUpdates();
       }, UPDATE_CHECK_DELAY_MS);
       scheduleInterval(() => {
-        void checkForUpdates();
+        checkForUpdates();
       }, UPDATE_CHECK_INTERVAL_MS);
     },
   };

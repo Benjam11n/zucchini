@@ -133,8 +133,8 @@ export function FocusWidget() {
     setTimerState(pauseFocusTimerState(timerState));
   }
 
-  function handleReset() {
-    void resetFocusTimerSession({
+  async function handleReset() {
+    await resetFocusTimerSession({
       clearFocusSaveError,
       focusDurationMs: getPomodoroFocusDurationMs(resolvedPomodoroSettings),
       recordFocusSession: window.habits.recordFocusSession,

@@ -211,9 +211,7 @@ export function HabitManagementContent({
         <NewHabitForm onCreateHabit={handleCreateHabit} />
         <HabitManagementFeedback
           feedback={feedback}
-          onUndoArchive={() => {
-            void handleUndoArchive();
-          }}
+          onUndoArchive={handleUndoArchive}
         />
       </div>
 

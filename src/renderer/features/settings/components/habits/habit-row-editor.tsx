@@ -239,8 +239,8 @@ export function HabitRowEditor({
               <Button
                 aria-label={`Move ${habit.name} up`}
                 disabled={index === 0}
-                onClick={() => {
-                  void onReorderHabits(reorderHabitList(habits, habit.id, -1));
+                onClick={async () => {
+                  await onReorderHabits(reorderHabitList(habits, habit.id, -1));
                 }}
                 size="icon-sm"
                 type="button"
@@ -251,8 +251,8 @@ export function HabitRowEditor({
               <Button
                 aria-label={`Move ${habit.name} down`}
                 disabled={index === habits.length - 1}
-                onClick={() => {
-                  void onReorderHabits(reorderHabitList(habits, habit.id, 1));
+                onClick={async () => {
+                  await onReorderHabits(reorderHabitList(habits, habit.id, 1));
                 }}
                 size="icon-sm"
                 type="button"
@@ -275,13 +275,13 @@ export function HabitRowEditor({
                 <Input
                   className="h-9"
                   id={`habit-name-${habit.id}`}
-                  onBlur={(event) => {
+                  onBlur={async (event) => {
                     const nextName = event.target.value;
                     setDraftName(nextName);
-                    void handleRenameCommit(nextName);
+                    await handleRenameCommit(nextName);
                   }}
                   onChange={(event) => setDraftName(event.target.value)}
-                  onKeyDown={(event) => {
+                  onKeyDown={async (event) => {
                     if (event.key !== "Enter") {
                       return;
                     }
@@ -289,7 +289,7 @@ export function HabitRowEditor({
                     event.preventDefault();
                     const nextName = event.currentTarget.value;
                     setDraftName(nextName);
-                    void handleRenameCommit(nextName);
+                    await handleRenameCommit(nextName);
                     event.currentTarget.blur();
                   }}
                   required
@@ -306,8 +306,8 @@ export function HabitRowEditor({
                   <HabitCategorySelector
                     compact
                     name={`habit-category-${habit.id}`}
-                    onChange={(category) => {
-                      void onUpdateHabitCategory(habit.id, category);
+                    onChange={async (category) => {
+                      await onUpdateHabitCategory(habit.id, category);
                     }}
                     selectedCategory={habit.category}
                   />
@@ -320,8 +320,8 @@ export function HabitRowEditor({
                   <HabitFrequencySelector
                     compact
                     name={`habit-frequency-${habit.id}`}
-                    onChange={(frequency) => {
-                      void onUpdateHabitFrequency(habit.id, frequency);
+                    onChange={async (frequency) => {
+                      await onUpdateHabitFrequency(habit.id, frequency);
                     }}
                     selectedFrequency={habit.frequency}
                   />
@@ -336,8 +336,8 @@ export function HabitRowEditor({
                   <HabitWeekdaySelector
                     compact
                     name={`habit-weekdays-${habit.id}`}
-                    onChange={(selectedWeekdays) => {
-                      void onUpdateHabitWeekdays(habit.id, selectedWeekdays);
+                    onChange={async (selectedWeekdays) => {
+                      await onUpdateHabitWeekdays(habit.id, selectedWeekdays);
                     }}
                     selectedWeekdays={habit.selectedWeekdays ?? null}
                   />
@@ -351,8 +351,8 @@ export function HabitRowEditor({
                 </p>
                 <Button
                   className="h-8 px-3 text-xs"
-                  onClick={() => {
-                    void onArchiveHabit(habit.id);
+                  onClick={async () => {
+                    await onArchiveHabit(habit.id);
                   }}
                   type="button"
                   variant="destructive"

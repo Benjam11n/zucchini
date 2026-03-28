@@ -176,8 +176,12 @@ function buildHistorySessionView(
   } = {}
 ): FocusHistorySessionView {
   const sortedEntries = sortEntriesByStartTime(entries);
-  const firstEntry = sortedEntries[0]!;
-  const lastEntry = sortedEntries.at(-1)!;
+  const [firstEntry] = sortedEntries;
+  const lastEntry = sortedEntries.at(-1);
+
+  if (!firstEntry || !lastEntry) {
+    throw new Error("Cannot build a session view from an empty entry list.");
+  }
   const sessionStartMs = Date.parse(firstEntry.startedAt);
   const sessionId = getSessionGroupingKey(firstEntry);
   const trailingBreakEndMs = getTrailingBreakEndMs({
@@ -198,7 +202,11 @@ function buildHistorySessionView(
   const idleGapMinutesBetweenEntries = sortedEntries
     .slice(1)
     .map((entry, index) => {
-      const previousEntry = sortedEntries[index]!;
+      const previousEntry = sortedEntries[index];
+
+      if (!previousEntry) {
+        return 0;
+      }
 
       return Math.max(
         0,

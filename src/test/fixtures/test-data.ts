@@ -491,9 +491,15 @@ function createFocusSessions(
   rng: () => number
 ) {
   return Array.from({ length: count }, (_, index) => {
+    const [firstTrackedDate] = trackedDates;
+
+    if (!firstTrackedDate) {
+      throw new Error("Expected at least one tracked date for focus fixtures.");
+    }
+
     const date =
       trackedDates[randomInt(rng, 0, trackedDates.length - 1)] ??
-      trackedDates[0]!;
+      firstTrackedDate;
     const hour = randomInt(rng, 6, 21);
     const minute = randomInt(rng, 0, 3) * 15;
     const durationMinutes =

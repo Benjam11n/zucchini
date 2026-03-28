@@ -84,7 +84,7 @@ export function useSettingsAutosave({
     }
 
     const timer = setTimeout(() => {
-      void runAsyncTask(() => handleUpdateSettings(validationResult.data), {
+      runAsyncTask(() => handleUpdateSettings(validationResult.data), {
         onError: () => {
           setSettingsSavePhase("error");
           setSettingsSaveErrorMessage(
@@ -99,6 +99,8 @@ export function useSettingsAutosave({
           setSettingsSavePhase("saved");
           setSettingsSaveErrorMessage(null);
         },
+      }).catch(() => {
+        // `runAsyncTask` routes user-visible failures through its callbacks.
       });
     }, 600);
 

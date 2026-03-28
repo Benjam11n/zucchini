@@ -24,6 +24,21 @@ export function createFocusWidgetWindow({
 }: CreateFocusWidgetWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
   const appIndexPath = path.join(__dirname, "../dist/index.html");
+
+  async function loadWindowContent(window: BrowserWindow): Promise<void> {
+    try {
+      if (process.env.VITE_DEV_SERVER_URL) {
+        await window.loadURL(`${process.env.VITE_DEV_SERVER_URL}?view=widget`);
+        return;
+      }
+
+      await window.loadFile(appIndexPath, {
+        search: "?view=widget",
+      });
+    } catch (error) {
+      console.error("Failed to load the focus widget window.", error);
+    }
+  }
   const bounds = getDefaultFocusWidgetBounds();
   const window = new BrowserWindow({
     alwaysOnTop: true,
@@ -69,13 +84,7 @@ export function createFocusWidgetWindow({
   });
   window.on("closed", onClosed);
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    void window.loadURL(`${process.env.VITE_DEV_SERVER_URL}?view=widget`);
-  } else {
-    void window.loadFile(appIndexPath, {
-      search: "?view=widget",
-    });
-  }
+  loadWindowContent(window);
 
   return window;
 }

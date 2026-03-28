@@ -122,7 +122,9 @@ export function createTodayActions({
       }
 
       if (nextTab === "focus") {
-        void loadFocusSessions();
+        loadFocusSessions().catch(() => {
+          // Focus-session load failures are surfaced through store state.
+        });
       }
     },
     async handleToggleHabit(habitId: number) {

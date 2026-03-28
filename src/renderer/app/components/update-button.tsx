@@ -172,7 +172,9 @@ export function UpdateButton() {
       }
     };
 
-    void loadState();
+    loadState().catch(() => {
+      // `loadState` handles the user-visible failure state internally.
+    });
 
     const unsubscribe = window.updater.onStateChange((nextState) => {
       dispatch({ state: nextState, type: "loadSucceeded" });
@@ -228,8 +230,8 @@ export function UpdateButton() {
     handleDismiss(dismissalKey);
   });
 
-  const runToastAction = useEffectEvent(() => {
-    void handleClick();
+  const runToastAction = useEffectEvent(async () => {
+    await handleClick();
   });
 
   const visibleState = useMemo(() => {

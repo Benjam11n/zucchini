@@ -221,7 +221,7 @@ export function useFocusTimer({
       return;
     }
 
-    void window.habits.showFocusWidget().catch(() => {
+    window.habits.showFocusWidget().catch(() => {
       // Re-opening the widget is best effort UI behavior.
     });
   }, [timerState]);
@@ -230,7 +230,9 @@ export function useFocusTimer({
     const instanceId = instanceIdRef.current;
 
     if (timerState.status !== "running") {
-      void window.habits.releaseFocusTimerLeadership(instanceId);
+      window.habits.releaseFocusTimerLeadership(instanceId).catch(() => {
+        // Leadership release is best-effort cleanup.
+      });
       return;
     }
 
@@ -297,12 +299,12 @@ export function useFocusTimer({
                 getFocusCompleteNotification(shouldStartLongBreak);
 
               clearFocusSaveError();
-              void notify(
+              notify(
                 window.habits.showNotification,
                 notification.title,
                 notification.body
               );
-              void recordFocusSession(
+              recordFocusSession(
                 createCompletedFocusSessionInput(
                   currentState.startedAt,
                   currentState.endsAt,
@@ -352,7 +354,7 @@ export function useFocusTimer({
                   currentState.timerSessionId
                 )
           );
-          void notify(
+          notify(
             window.habits.showNotification,
             notification.title,
             notification.body
@@ -370,15 +372,21 @@ export function useFocusTimer({
       }
     };
 
-    void tick();
+    tick().catch(() => {
+      // Tick failures are handled inside the timer workflow.
+    });
     const timer = window.setInterval(() => {
-      void tick();
+      tick().catch(() => {
+        // Tick failures are handled inside the timer workflow.
+      });
     }, 1000);
 
     return () => {
       disposed = true;
       window.clearInterval(timer);
-      void window.habits.releaseFocusTimerLeadership(instanceId);
+      window.habits.releaseFocusTimerLeadership(instanceId).catch(() => {
+        // Leadership release is best-effort cleanup.
+      });
     };
   }, [
     clearFocusSaveError,

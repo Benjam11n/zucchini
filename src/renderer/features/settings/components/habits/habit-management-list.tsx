@@ -102,14 +102,14 @@ export function HabitManagementList({
                   position: "before",
                 });
               }}
-              onDrop={(event) => {
+              onDrop={async (event) => {
                 event.preventDefault();
                 const draggedHabitId = Number.parseInt(
                   event.dataTransfer.getData(HABIT_DRAG_DATA_TYPE),
                   10
                 );
 
-                void onDrop(
+                await onDrop(
                   Number.isNaN(draggedHabitId) ? null : draggedHabitId,
                   habit.id,
                   getDropPosition(

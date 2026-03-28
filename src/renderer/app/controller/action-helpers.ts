@@ -56,14 +56,21 @@ export function reorderVisibleTodayHabits(
     currentTodayState.habits.map((habit) => [habit.id, habit])
   );
 
+  const reorderedHabits = nextManagedHabits.flatMap((habit) => {
+    const currentHabit = todayHabitById.get(habit.id);
+    return currentHabit
+      ? [
+          {
+            ...currentHabit,
+            sortOrder: habit.sortOrder,
+          },
+        ]
+      : [];
+  });
+
   return {
     ...currentTodayState,
-    habits: nextManagedHabits
-      .filter((habit) => todayHabitById.has(habit.id))
-      .map((habit) => ({
-        ...todayHabitById.get(habit.id)!,
-        sortOrder: habit.sortOrder,
-      })),
+    habits: reorderedHabits,
   };
 }
 
@@ -116,7 +123,12 @@ export function refreshWeeklyReviewIfLoaded(): void {
     return;
   }
 
-  void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+  useWeeklyReviewStore
+    .getState()
+    .loadWeeklyReviewOverview()
+    .catch(() => {
+      // Weekly review failures are surfaced through store state.
+    });
 }
 
 export function applyBootFailureState(bootError: HabitsIpcError): void {

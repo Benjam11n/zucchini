@@ -118,12 +118,7 @@ function MainApp() {
             <CardDescription>{errorDisplay.description}</CardDescription>
           </CardHeader>
           <CardContent className="px-6 pt-0 pb-6">
-            <Button
-              className="w-full"
-              onClick={() => {
-                void actions.handleRetryBoot();
-              }}
-            >
+            <Button className="w-full" onClick={actions.handleRetryBoot}>
               Retry
             </Button>
           </CardContent>
@@ -168,13 +163,9 @@ function MainApp() {
           historyLoadError={state.historyLoadError}
           historyScope={state.historyScope}
           isHistoryLoading={state.isHistoryLoading}
-          onLoadOlderHistory={() => {
-            void actions.handleLoadOlderHistory();
-          }}
+          onLoadOlderHistory={actions.handleLoadOlderHistory}
           todayDate={state.todayState.date}
-          onSelectWeeklyReview={(weekStart) => {
-            void actions.handleWeeklyReviewSelect(weekStart);
-          }}
+          onSelectWeeklyReview={actions.handleWeeklyReviewSelect}
           selectedWeeklyReview={state.selectedWeeklyReview}
           weeklyReviewError={state.weeklyReviewError}
           weeklyReviewOverview={state.weeklyReviewOverview}
@@ -252,9 +243,7 @@ function MainApp() {
         <Suspense fallback={null}>
           <WeeklyReviewSpotlightDialog
             onDismiss={actions.handleDismissWeeklyReviewSpotlight}
-            onOpenReview={() => {
-              void actions.handleWeeklyReviewOpen();
-            }}
+            onOpenReview={actions.handleWeeklyReviewOpen}
             open={state.isWeeklyReviewSpotlightOpen}
             review={state.weeklyReviewOverview.latestReview}
             trend={state.weeklyReviewOverview.trend}

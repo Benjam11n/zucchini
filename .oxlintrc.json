@@ -11,11 +11,8 @@
     "func-style": "off",
     "max-classes-per-file": "off",
     "max-statements": "off",
-    "no-void": "off",
     "promise/prefer-await-to-then": "off",
     "react-perf/jsx-no-new-function-as-prop": "off",
-    "typescript/no-non-null-assertion": "off",
-    "unicorn/no-array-for-each": "off",
     "unicorn/prefer-module": "off"
   },
   "extends": [

@@ -92,11 +92,7 @@ export function FocusSessionList({
             <p className="text-sm text-destructive">
               {sessionsLoadError.message}
             </p>
-            <Button
-              onClick={() => void onRetryLoad()}
-              size="sm"
-              variant="outline"
-            >
+            <Button onClick={onRetryLoad} size="sm" variant="outline">
               Retry
             </Button>
           </div>

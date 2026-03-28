@@ -106,7 +106,7 @@ async function stopApp() {
   currentApp = null;
   expectedExits.add(app);
 
-  const exitPromise = once(app, "exit").then(() => {});
+  const exitPromise = once(app, "exit");
 
   app.kill("SIGTERM");
   killChildTreeByPid(app.pid, "TERM");
@@ -204,11 +204,11 @@ cleanupStaleDevApps();
 startApp();
 
 process.once("SIGINT", () => {
-  void shutdown(130);
+  shutdown(130).catch(reportAppReadyFailure);
 });
 process.once("SIGTERM", () => {
-  void shutdown(143);
+  shutdown(143).catch(reportAppReadyFailure);
 });
 process.once("SIGHUP", () => {
-  void shutdown(129);
+  shutdown(129).catch(reportAppReadyFailure);
 });

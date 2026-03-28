@@ -225,6 +225,17 @@ async function setupUseAppController({
   };
 }
 
+function getSettingsDraftOrThrow(
+  hook: Awaited<ReturnType<typeof setupUseAppController>>["hook"]
+) {
+  const { settingsDraft } = hook.result.current.state;
+  if (!settingsDraft) {
+    throw new Error("Expected settingsDraft to be available in this test.");
+  }
+
+  return settingsDraft;
+}
+
 describe("use app controller", () => {
   it("autosaves valid settings changes after the debounce", async () => {
     cleanup();
@@ -236,7 +247,7 @@ describe("use app controller", () => {
 
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
-        ...hook.result.current.state.settingsDraft!,
+        ...getSettingsDraftOrThrow(hook),
         reminderTime: "21:15",
       });
     });
@@ -270,7 +281,7 @@ describe("use app controller", () => {
 
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
-        ...hook.result.current.state.settingsDraft!,
+        ...getSettingsDraftOrThrow(hook),
         focusLongBreakSeconds: 20 * 60,
       });
     });
@@ -308,7 +319,7 @@ describe("use app controller", () => {
 
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
-        ...hook.result.current.state.settingsDraft!,
+        ...getSettingsDraftOrThrow(hook),
         reminderTime: "99:99",
       });
     });
@@ -337,7 +348,7 @@ describe("use app controller", () => {
 
     act(() => {
       hook.result.current.actions.handleSettingsDraftChange({
-        ...hook.result.current.state.settingsDraft!,
+        ...getSettingsDraftOrThrow(hook),
         focusLongBreakSeconds: 3 * 60,
         focusShortBreakSeconds: 5 * 60,
       });

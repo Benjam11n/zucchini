@@ -211,6 +211,13 @@ const reportFatalMainProcessError = createFatalErrorReporter({
   log: console,
 });
 
+function reportAppReadyFailure(error: unknown): void {
+  console.error(
+    "Failed while waiting for the Electron app to be ready.",
+    error
+  );
+}
+
 process.on("uncaughtException", (error) => {
   reportFatalMainProcessError("uncaughtException", error);
 });
@@ -220,97 +227,100 @@ process.on("unhandledRejection", (reason) => {
 });
 
 function bootstrapApp(): void {
-  void app.whenReady().then(() => {
-    Effect.runSync(
-      Effect.sync(() => {
-        const nextRuntime = createAppRuntime({
-          onOpenFocusWidget: showFocusWidget,
-          onOpenMainWindow: showMainWindow,
-          onQuit: () => {
-            isQuitting = true;
-            app.quit();
-          },
-        });
-        runtime = nextRuntime;
+  app
+    .whenReady()
+    .then(() => {
+      Effect.runSync(
+        Effect.sync(() => {
+          const nextRuntime = createAppRuntime({
+            onOpenFocusWidget: showFocusWidget,
+            onOpenMainWindow: showMainWindow,
+            onQuit: () => {
+              isQuitting = true;
+              app.quit();
+            },
+          });
+          runtime = nextRuntime;
 
-        if (process.platform === "darwin" && app.dock) {
-          const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
-          if (!icon.isEmpty()) {
-            app.dock.setIcon(icon);
+          if (process.platform === "darwin" && app.dock) {
+            const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
+            if (!icon.isEmpty()) {
+              app.dock.setIcon(icon);
+            }
           }
+
+          const dataManagement = createDataManagementActions({
+            appLike: app,
+            clock: systemClock,
+            dialogLike: dialog,
+            repository: nextRuntime.repository,
+            service: nextRuntime.service,
+            shellLike: shell,
+          });
+
+          registerIpcHandlers({
+            broadcastFocusSessionRecorded,
+            focusTimerCoordinator,
+            onExportBackup: dataManagement.exportBackup,
+            onImportBackup: () =>
+              dataManagement.importBackup(() => {
+                isQuitting = true;
+              }),
+            onOpenDataFolder: dataManagement.openDataFolder,
+            onResizeFocusWidget: resizeFocusWidget,
+            onSettingsChanged: (settings) => {
+              trayEnabled = applyRuntimeSettings({
+                appLike: app,
+                applyThemeMode: applyWindowThemeMode,
+                runtime: nextRuntime,
+                settings,
+              });
+            },
+            onShowFocusWidget: showFocusWidget,
+            onShowMainWindow: showMainWindow,
+            service: nextRuntime.service,
+          });
+
+          const updaterController = registerUpdaterRuntime({
+            appLike: app,
+            autoUpdater,
+            broadcastState: broadcastUpdateState,
+            ipcMainLike: ipcMain,
+            log: console,
+          });
+
+          ensureMainWindow();
+          ensureFocusWidgetWindow();
+
+          setTimeout(() => {
+            try {
+              applyAppRuntimeSettingsFromState(nextRuntime);
+            } catch (error) {
+              console.error("Failed to warm app runtime.", error);
+            }
+          }, 0);
+
+          updaterController.start();
+        })
+      );
+
+      app.on("activate", () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+          ensureMainWindow();
+          return;
         }
 
-        const dataManagement = createDataManagementActions({
-          appLike: app,
-          clock: systemClock,
-          dialogLike: dialog,
-          repository: nextRuntime.repository,
-          service: nextRuntime.service,
-          shellLike: shell,
-        });
+        showMainWindow();
+      });
 
-        registerIpcHandlers({
-          broadcastFocusSessionRecorded,
-          focusTimerCoordinator,
-          onExportBackup: dataManagement.exportBackup,
-          onImportBackup: () =>
-            dataManagement.importBackup(() => {
-              isQuitting = true;
-            }),
-          onOpenDataFolder: dataManagement.openDataFolder,
-          onResizeFocusWidget: resizeFocusWidget,
-          onSettingsChanged: (settings) => {
-            trayEnabled = applyRuntimeSettings({
-              appLike: app,
-              applyThemeMode: applyWindowThemeMode,
-              runtime: nextRuntime,
-              settings,
-            });
-          },
-          onShowFocusWidget: showFocusWidget,
-          onShowMainWindow: showMainWindow,
-          service: nextRuntime.service,
-        });
-
-        const updaterController = registerUpdaterRuntime({
-          appLike: app,
-          autoUpdater,
-          broadcastState: broadcastUpdateState,
-          ipcMainLike: ipcMain,
-          log: console,
-        });
-
-        ensureMainWindow();
-        ensureFocusWidgetWindow();
-
-        setTimeout(() => {
-          try {
-            applyAppRuntimeSettingsFromState(nextRuntime);
-          } catch (error) {
-            console.error("Failed to warm app runtime.", error);
-          }
-        }, 0);
-
-        updaterController.start();
-      })
-    );
-
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        ensureMainWindow();
-        return;
-      }
-
-      showMainWindow();
-    });
-
-    powerMonitor.on("resume", () => {
-      const nextRuntime = getRuntime();
-      nextRuntime.reminders.schedule(
-        nextRuntime.service.getTodayState().settings
-      );
-    });
-  });
+      powerMonitor.on("resume", () => {
+        const nextRuntime = getRuntime();
+        nextRuntime.reminders.schedule(
+          nextRuntime.service.getTodayState().settings
+        );
+      });
+    })
+    .catch(reportAppReadyFailure);
 }
 
 if (acquireSingleInstanceLock(app)) {
@@ -320,9 +330,7 @@ if (acquireSingleInstanceLock(app)) {
       return;
     }
 
-    void app.whenReady().then(() => {
-      showMainWindow();
-    });
+    app.whenReady().then(showMainWindow).catch(reportAppReadyFailure);
   });
   bootstrapApp();
 } else {

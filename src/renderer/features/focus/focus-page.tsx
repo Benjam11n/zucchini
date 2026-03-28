@@ -109,13 +109,9 @@ function FocusPageComponent({
             setIsPomodoroDialogOpen(true);
           }}
           onPause={() => setTimerState(pauseFocusTimerState(timerState))}
-          onReset={() => {
-            void handleReset();
-          }}
+          onReset={handleReset}
           onResume={() => setTimerState(resumeFocusTimerState(timerState))}
-          onShowWidget={() => {
-            void onShowWidget();
-          }}
+          onShowWidget={onShowWidget}
           onSkipBreak={() => {
             clearFocusSaveError();
             setTimerState(

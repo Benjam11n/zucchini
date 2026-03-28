@@ -149,11 +149,15 @@ export function ReminderSettingsCard({
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        void refreshNotificationStatus();
+        refreshNotificationStatus().catch(() => {
+          // `refreshNotificationStatus` already updates the fallback state.
+        });
       }
     };
 
-    void refreshNotificationStatus();
+    refreshNotificationStatus().catch(() => {
+      // `refreshNotificationStatus` already updates the fallback state.
+    });
     window.addEventListener("focus", handleVisibilityChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 

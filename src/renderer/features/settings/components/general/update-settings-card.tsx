@@ -180,7 +180,9 @@ export function UpdateSettingsCard() {
       }
     };
 
-    void loadState();
+    loadState().catch(() => {
+      // `loadState` handles the user-visible failure state internally.
+    });
 
     const unsubscribe = window.updater.onStateChange((nextState) => {
       dispatch({ state: nextState, type: "loadSucceeded" });
@@ -262,9 +264,7 @@ export function UpdateSettingsCard() {
                   viewState.state.status === "downloading"
                 }
                 id="check-for-updates"
-                onClick={() => {
-                  void handleClick();
-                }}
+                onClick={handleClick}
                 size="sm"
                 variant="outline"
               >

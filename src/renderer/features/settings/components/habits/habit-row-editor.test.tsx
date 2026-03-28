@@ -121,11 +121,16 @@ function renderHabitRowEditor(
   overrides: Partial<ComponentProps<typeof HabitRowEditor>> = {}
 ) {
   const habits = [createHabit(1), createHabit(2), createHabit(3)];
+  const [, defaultHabit] = habits;
+
+  if (!defaultHabit) {
+    throw new Error("Expected a default habit for the row editor test.");
+  }
 
   return render(
     <HabitRowEditor
       dragState={null}
-      habit={habits[1]!}
+      habit={defaultHabit}
       habits={habits}
       index={1}
       isExpanded={false}
@@ -186,11 +191,16 @@ describe("habit row editor", () => {
     const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
     const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(2)];
+    const [renderedHabit] = habits;
+
+    if (!renderedHabit) {
+      throw new Error("Expected a habit to render the expanded row editor.");
+    }
 
     render(
       <HabitRowEditor
         dragState={null}
-        habit={habits[0]!}
+        habit={renderedHabit}
         habits={habits}
         index={0}
         isExpanded
@@ -228,11 +238,16 @@ describe("habit row editor", () => {
   it("reorders habits upward and downward using the computed list", () => {
     const onReorderHabits = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(1), createHabit(2), createHabit(3)];
+    const [, middleHabit] = habits;
+
+    if (!middleHabit) {
+      throw new Error("Expected a middle habit for the reorder test.");
+    }
 
     render(
       <HabitRowEditor
         dragState={null}
-        habit={habits[1]!}
+        habit={middleHabit}
         habits={habits}
         index={1}
         isExpanded={false}
@@ -255,12 +270,12 @@ describe("habit row editor", () => {
 
     expect(
       onReorderHabits.mock.calls[0]?.[0].map(
-        (habit: HabitWithStatus) => habit.id
+        (reorderedHabit: HabitWithStatus) => reorderedHabit.id
       )
     ).toStrictEqual([2, 1, 3]);
     expect(
       onReorderHabits.mock.calls[1]?.[0].map(
-        (habit: HabitWithStatus) => habit.id
+        (reorderedHabit: HabitWithStatus) => reorderedHabit.id
       )
     ).toStrictEqual([1, 3, 2]);
   });

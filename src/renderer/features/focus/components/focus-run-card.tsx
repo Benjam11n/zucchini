@@ -69,8 +69,12 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
   const pauseCount = session.timelineSegments.filter(
     (segment) => segment.kind === "pause"
   ).length;
-  const firstEntry = session.entries[0]!;
-  const lastEntry = session.entries.at(-1)!;
+  const [firstEntry] = session.entries;
+  const lastEntry = session.entries.at(-1);
+
+  if (!firstEntry || !lastEntry) {
+    return null;
+  }
 
   return (
     <div

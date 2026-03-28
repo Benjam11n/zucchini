@@ -175,9 +175,9 @@ export function NewHabitForm({
       >
         <form
           className="grid gap-3"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
-            void handleCreate();
+            await handleCreate();
           }}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">

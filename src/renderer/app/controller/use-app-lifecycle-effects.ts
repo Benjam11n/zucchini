@@ -50,7 +50,9 @@ export function useAppLifecycleEffects({
     : null;
 
   useEffect(() => {
-    void bootApp();
+    bootApp().catch(() => {
+      // Boot failures are surfaced through controller state.
+    });
   }, [bootApp]);
 
   useEffect(() => {
@@ -58,7 +60,9 @@ export function useAppLifecycleEffects({
       return;
     }
 
-    void loadWeeklyReviewOverview();
+    loadWeeklyReviewOverview().catch(() => {
+      // Weekly review failures are surfaced through controller state.
+    });
   }, [bootPhase, loadWeeklyReviewOverview, weeklyReviewPhase]);
 
   useEffect(() => {
@@ -100,7 +104,9 @@ export function useAppLifecycleEffects({
         return;
       }
 
-      void refreshForNewDay();
+      refreshForNewDay().catch(() => {
+        // Refresh failures are surfaced through controller state.
+      });
     };
 
     const scheduleNextRefresh = () => {

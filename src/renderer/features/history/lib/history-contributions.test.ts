@@ -207,7 +207,12 @@ describe("history contributions", () => {
         },
       ]),
     ]);
-    const day = weeks[0]!.cells.find((cell) => cell.date === "2026-03-08")!;
+    const [firstWeek] = weeks;
+    const day = firstWeek?.cells.find((cell) => cell.date === "2026-03-08");
+
+    if (!day) {
+      throw new Error("Expected contribution data for 2026-03-08.");
+    }
 
     expect(formatContributionLabel(day)).toBe(
       "Sunday, Mar 8, 2026: 1 of 2 daily habits completed, freeze used to preserve streak"

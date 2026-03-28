@@ -23,9 +23,13 @@ export function useFocusWidgetSnapshot() {
       }
     };
 
-    void loadSnapshot();
+    loadSnapshot().catch(() => {
+      // `loadSnapshot` already applies the fallback state.
+    });
     const timer = window.setInterval(() => {
-      void loadSnapshot();
+      loadSnapshot().catch(() => {
+        // `loadSnapshot` already applies the fallback state.
+      });
     }, SNAPSHOT_REFRESH_MS);
 
     return () => {

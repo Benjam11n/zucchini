@@ -173,14 +173,16 @@ class FakeRepository implements AppRepository {
   }
 
   ensureStatusRowsForDate(date: string): void {
-    this.getHabits()
-      .filter((habit) => isHabitScheduledForDate(habit, date))
-      .forEach((habit) => {
-        this.getStatusValues(date, habit.frequency).set(
-          habit.id,
-          this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
-        );
-      });
+    const scheduledHabits = this.getHabits().filter((habit) =>
+      isHabitScheduledForDate(habit, date)
+    );
+
+    for (const habit of scheduledHabits) {
+      this.getStatusValues(date, habit.frequency).set(
+        habit.id,
+        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
+      );
+    }
   }
 
   ensureStatusRow(date: string, habitId: number): void {
@@ -196,21 +198,23 @@ class FakeRepository implements AppRepository {
     const dailyPeriod = getHabitPeriod("daily", date);
     const weeklyPeriod = getHabitPeriod("weekly", date);
     const monthlyPeriod = getHabitPeriod("monthly", date);
-    [
+    const periodKeys = [
       this.getPeriodKey("daily", dailyPeriod.start),
       this.getPeriodKey("weekly", weeklyPeriod.start),
       this.getPeriodKey("monthly", monthlyPeriod.start),
-    ].forEach((key) => {
+    ];
+
+    for (const key of periodKeys) {
       const entry = this.statusByPeriod.get(key);
       if (!entry) {
-        return;
+        continue;
       }
 
       entry.values.delete(habitId);
       if (entry.values.size === 0) {
         this.statusByPeriod.delete(key);
       }
-    });
+    }
   }
 
   toggleHabit(date: string, habitId: number): void {
@@ -423,18 +427,18 @@ class FakeRepository implements AppRepository {
   }
 
   normalizeHabitOrder(): void {
-    this.getHabits().forEach((habit, index) => {
+    for (const [index, habit] of this.getHabits().entries()) {
       habit.sortOrder = index;
-    });
+    }
   }
 
   reorderHabits(habitIds: number[]): void {
-    habitIds.forEach((habitId, index) => {
+    for (const [index, habitId] of habitIds.entries()) {
       const habit = this.habits.find((item) => item.id === habitId);
       if (habit) {
         habit.sortOrder = index;
       }
-    });
+    }
   }
 
   setStatusForDate(

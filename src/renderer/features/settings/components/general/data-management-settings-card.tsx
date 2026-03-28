@@ -86,8 +86,8 @@ export function DataManagementSettingsCard() {
               <ItemActions>
                 <Button
                   disabled={activeAction !== null}
-                  onClick={() => {
-                    void runAction("open", async () => {
+                  onClick={async () => {
+                    await runAction("open", async () => {
                       const openedPath = await window.habits.openDataFolder();
                       setFeedbackMessage(
                         `Opened ${getPathLabel(openedPath)} in your file manager.`
@@ -114,8 +114,8 @@ export function DataManagementSettingsCard() {
               <ItemActions>
                 <Button
                   disabled={activeAction !== null}
-                  onClick={() => {
-                    void runAction("export", async () => {
+                  onClick={async () => {
+                    await runAction("export", async () => {
                       const exportedPath = await window.habits.exportBackup();
 
                       if (exportedPath === null) {
@@ -213,8 +213,8 @@ export function DataManagementSettingsCard() {
             </Button>
             <Button
               disabled={activeAction !== null}
-              onClick={() => {
-                void runAction("import", async () => {
+              onClick={async () => {
+                await runAction("import", async () => {
                   setIsImportDialogOpen(false);
                   const didImport = await window.habits.importBackup();
 

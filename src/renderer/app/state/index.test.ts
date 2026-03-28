@@ -318,16 +318,21 @@ describe("app store actions", () => {
 
   it("optimistically updates the habit order before the reorder request resolves", async () => {
     const { actions, stores } = await setup();
+    const baseHabit = {
+      ...createManagedHabit(1),
+      completed: false,
+    };
+
     const reorderedState = createTodayState({
       habits: [
         {
-          ...createTodayState().habits[0]!,
+          ...baseHabit,
           id: 2,
           name: "Review notes",
           sortOrder: 0,
         },
         {
-          ...createTodayState().habits[0]!,
+          ...baseHabit,
           id: 1,
           name: "Plan top 3 tasks",
           sortOrder: 1,

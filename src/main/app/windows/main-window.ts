@@ -21,6 +21,19 @@ export function createMainWindow({
 }: CreateMainWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
   const appIndexPath = path.join(__dirname, "../dist/index.html");
+
+  async function loadWindowContent(window: BrowserWindow): Promise<void> {
+    try {
+      if (process.env.VITE_DEV_SERVER_URL) {
+        await window.loadURL(process.env.VITE_DEV_SERVER_URL);
+        return;
+      }
+
+      await window.loadFile(appIndexPath);
+    } catch (error) {
+      console.error("Failed to load the main window.", error);
+    }
+  }
   const shouldShowInactive =
     process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
     process.platform === "darwin";
@@ -61,11 +74,7 @@ export function createMainWindow({
     });
   }
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    void window.loadURL(process.env.VITE_DEV_SERVER_URL);
-  } else {
-    void window.loadFile(appIndexPath);
-  }
+  loadWindowContent(window);
 
   return window;
 }

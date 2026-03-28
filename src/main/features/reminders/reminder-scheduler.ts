@@ -38,6 +38,10 @@ interface ReminderScheduler {
   snooze: (settings: AppSettings) => boolean;
 }
 
+function noopSaveState(_state: ReminderRuntimeState): void {
+  // Tests can omit persistence when they only need scheduling behavior.
+}
+
 function clearTimer(timer: TimerHandle | null): null {
   if (timer) {
     clearTimeout(timer);
@@ -80,7 +84,7 @@ export function createReminderScheduler({
   clock = systemClock,
   getTodayState,
   loadState = () => ({ ...DEFAULT_REMINDER_RUNTIME_STATE }),
-  saveState = () => {},
+  saveState = noopSaveState,
 }: ReminderSchedulerOptions): ReminderScheduler {
   let reminderTimeout: TimerHandle | null = null;
   let midnightWarningTimeout: TimerHandle | null = null;
@@ -297,7 +301,7 @@ export function createReminderScheduler({
         return;
       }
 
-      void maybeDeliverMidnightWarning(settings);
+      maybeDeliverMidnightWarning(settings);
       return;
     }
 
@@ -320,7 +324,7 @@ export function createReminderScheduler({
         reminderTime.minutes
       )
     ) {
-      void maybeDeliverCatchUpReminder(settings);
+      maybeDeliverCatchUpReminder(settings);
     }
   }
 
@@ -338,7 +342,7 @@ export function createReminderScheduler({
     }
 
     snoozeTimeout = setTimeout(() => {
-      void maybeDeliverSnoozedReminder(settings);
+      maybeDeliverSnoozedReminder(settings);
       scheduleSnoozedReminder(settings);
     }, dueAt.getTime() - now.getTime());
   }
@@ -362,7 +366,7 @@ export function createReminderScheduler({
         midnightWarningTimeout = timer;
       },
       () => {
-        void maybeDeliverMidnightWarning(settings);
+        maybeDeliverMidnightWarning(settings);
       },
       clock
     );
