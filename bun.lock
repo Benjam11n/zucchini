@@ -64,6 +64,8 @@
     },
   },
   "trustedDependencies": [
+    "electron",
+    "esbuild",
     "windows-notification-state",
     "macos-notification-state",
   ],

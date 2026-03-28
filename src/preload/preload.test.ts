@@ -17,23 +17,22 @@ const invoke = vi.fn();
 const on = vi.fn();
 const removeListener = vi.fn();
 
-vi.mock<typeof ElectronModule>(import("electron"), async (importOriginal) => {
-  const actual = await importOriginal();
+vi.mock<typeof ElectronModule>(import("electron"), () => {
+  const contextBridge = {
+    exposeInMainWorld: vi.fn((key: string, value: unknown) => {
+      exposed.set(key, value);
+    }),
+  } as unknown as ContextBridge;
+
+  const ipcRenderer = {
+    invoke,
+    on,
+    removeListener,
+  } as unknown as IpcRenderer;
 
   return {
-    ...actual,
-    contextBridge: {
-      ...actual.contextBridge,
-      exposeInMainWorld: vi.fn((key: string, value: unknown) => {
-        exposed.set(key, value);
-      }),
-    } as ContextBridge,
-    ipcRenderer: {
-      ...actual.ipcRenderer,
-      invoke,
-      on,
-      removeListener,
-    } as IpcRenderer,
+    contextBridge,
+    ipcRenderer,
   };
 });
 
