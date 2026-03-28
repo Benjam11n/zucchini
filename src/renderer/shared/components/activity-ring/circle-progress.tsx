@@ -29,7 +29,7 @@ export function CircleProgress({ data, index }: CircleProgressProps) {
             <title>{`${data.label} Activity Progress - ${data.value}%`}</title>
 
             <circle
-              className="text-zinc-200/40 dark:text-zinc-800/60"
+              className="text-zinc-200/60 dark:text-zinc-800/60"
               cx={data.size / 2}
               cy={data.size / 2}
               fill="none"

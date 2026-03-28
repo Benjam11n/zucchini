@@ -36,7 +36,7 @@ function ActivityRingGlyph({
           return (
             <g key={activity.label}>
               <circle
-                className="text-zinc-200/30 dark:text-zinc-800/70"
+                className="text-zinc-200/60 dark:text-zinc-800/70"
                 cx={center}
                 cy={center}
                 fill="none"
