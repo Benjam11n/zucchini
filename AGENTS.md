@@ -1,85 +1,47 @@
 # AGENTS.md
 
-## Project Overview
+## Workspace Overview
 
-- Zucchini is a local-first desktop habit tracker built with Electron,
-  React, and TypeScript.
-- Core product areas include today tracking, streaks, reminders, focus
-  sessions, history, weekly review, settings, tray behavior, and app updates.
-- User data is stored locally in SQLite; the app is designed to work without a
-  cloud backend.
+- Zucchini is a lightweight Bun workspace monorepo.
+- `apps/desktop` contains the Electron desktop app.
+- `apps/web` contains the public marketing and download site.
+- Keep the two apps separate unless shared code is clearly justified.
 
 ## Stable Workflow Rules
 
-- Use `bun` from the repository root for project commands.
-- Never start the development server unless the user explicitly asks for it.
-- Prefer small, typed changes that preserve existing layer boundaries.
-- Run `bun run format` before finalizing code changes.
-- After meaningful changes, run the relevant validation commands, typically
-  `bun run lint`, `bun run test`, and `bun run knip`.
+- Run commands from the repository root with `bun`.
+- Prefer the root wrapper scripts when they exist:
+  `bun run dev:desktop`, `bun run dev:web`, `bun run build:desktop`,
+  `bun run build:web`, `bun run check`.
+- Never start a development server unless the user explicitly asks for it.
+- Before finalizing code changes, run `bun run format`.
+- After meaningful changes, run the relevant validation commands for the app
+  you touched.
 
-## Architecture
+## Monorepo Practices
 
-- `src/main`: Electron main process, app lifecycle, native integrations, IPC
-  handlers, reminders, persistence, updater, tray, and window management.
-- `src/preload`: typed preload bridge that exposes a narrow renderer API via
-  `contextBridge`.
-- `src/shared`: shared domain models, contracts, utilities, and security logic
-  used across main and renderer.
-- `src/renderer`: React UI, feature screens, controller/state orchestration,
-  and shared presentation components.
+- Keep app responsibilities clear:
+  desktop product logic stays in `apps/desktop`;
+  website code stays in `apps/web`.
+- Do not couple the web app to Electron runtime assumptions.
+- Do not extract shared packages early. Duplicate small pieces first and only
+  extract when duplication becomes real maintenance cost.
+- Prefer small, typed, direct changes over broad refactors.
+- Avoid over-engineering. Add abstraction only when it removes clear repeated
+  complexity.
 
-## Tech Stack
+## Code Quality Defaults
 
-- Electron for the desktop shell and native capabilities.
-- React 19 for the renderer UI.
-- Zustand for client-side renderer state.
-- SQLite via `better-sqlite3`, with Drizzle ORM and migrations in main-process
-  infrastructure.
-- Vite and `tsdown` for builds, with Tailwind CSS v4 for styling.
-- Vitest and Testing Library for automated tests.
+- Optimize for maintainability and readability first.
+- Prefer straightforward control flow and explicit names.
+- Keep modules narrow in scope and responsibility.
+- Avoid barrel files and broad re-export layers.
+- Make invalid states hard to represent with explicit types and boundary
+  validation.
+- Keep side effects at system edges and keep pure logic easy to test.
 
-## Codebase Practices
+## App Guides
 
-- Keep business rules in `src/shared` or `src/main`; keep renderer code focused
-  on UI, interaction flow, and local view state.
-- Treat the preload layer as the only renderer boundary to privileged Electron
-  APIs; do not import Electron directly into renderer code.
-- Prefer explicit shared domain and contract types over duplicating shapes in
-  feature code.
-- Follow the existing path alias convention using `@/` for `src`.
-- Do not introduce barrel files or re-export index layers; import from the
-  owning module directly.
-- Use Effect where the existing main-process code already relies on it for
-  side-effect and error handling clarity.
-- Favor small modules with clear responsibilities over broad utility files or
-  feature files that mix domain rules, persistence, and UI concerns.
-- Make invalid states hard to represent by validating external inputs at the
-  boundary and keeping internal types explicit.
-- Prefer straightforward control flow and well-named functions over clever
-  abstractions; optimize for readability and maintainability first.
-- Keep side effects at the edges of the system and keep pure transformation
-  logic easy to test in isolation.
-
-## Electron Practices
-
-- Keep `contextIsolation`-style boundaries intact by exposing only narrow,
-  typed preload APIs to the renderer.
-- Validate IPC inputs and outputs at the main-process boundary before they
-  reach application services or persistence code.
-- Preserve the existing browser-window security posture: deny unexpected window
-  creation, block untrusted navigation, and keep the renderer sandboxed from
-  direct Node or Electron access.
-- Maintain a strict Content Security Policy and avoid introducing remote code,
-  new external origins, or unnecessary renderer privileges.
-- Keep filesystem, OS integration, notifications, updater, and tray behavior in
-  the main process or dedicated infrastructure modules, not in renderer code.
-- Dispose of long-lived resources explicitly, especially database connections,
-  timers, subscriptions, and native window or tray lifecycles.
-
-## Testing
-
-- Keep tests deterministic and focused on domain behavior, IPC contracts,
-  repositories, and UI behavior.
-- Prefer adding or updating targeted Vitest coverage alongside behavior changes.
-- Do not leave `.only` or `.skip` in committed tests.
+- See [apps/desktop/AGENTS.md](./apps/desktop/AGENTS.md) for desktop-specific
+  rules.
+- See [apps/web/AGENTS.md](./apps/web/AGENTS.md) for web-specific rules.
