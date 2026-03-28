@@ -1,4 +1,5 @@
 import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
+import type { FocusSession } from "@/shared/domain/focus-session";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {
   WeeklyReview,
@@ -17,12 +18,14 @@ import {
 
 interface BuildWeeklyReviewOptions {
   dailySummaries: DailySummary[];
+  focusSessions: FocusSession[];
   habitStatuses: HabitPeriodStatusSnapshot[];
   weekStart: string;
 }
 
 interface BuildWeeklyReviewOverviewOptions {
   dailySummaries: DailySummary[];
+  focusSessions: FocusSession[];
   habitStatuses: HabitPeriodStatusSnapshot[];
 }
 
@@ -193,8 +196,26 @@ function getLongestCleanRun(dailySummaries: DailySummary[]): number {
   return longest;
 }
 
+function toFocusMinutes(totalSeconds: number): number {
+  if (totalSeconds <= 0) {
+    return 0;
+  }
+
+  return Math.max(1, Math.round(totalSeconds / 60));
+}
+
+function getFocusMinutes(focusSessions: FocusSession[]): number {
+  return toFocusMinutes(
+    focusSessions.reduce(
+      (totalSeconds, session) => totalSeconds + session.durationSeconds,
+      0
+    )
+  );
+}
+
 export function buildWeeklyReview({
   dailySummaries,
+  focusSessions,
   habitStatuses,
   weekStart,
 }: BuildWeeklyReviewOptions): WeeklyReview {
@@ -202,6 +223,10 @@ export function buildWeeklyReview({
   const summariesInWeek = dailySummaries
     .filter((summary) => summary.date >= weekStart && summary.date <= weekEnd)
     .toSorted((left, right) => left.date.localeCompare(right.date));
+  const focusSessionsInWeek = focusSessions.filter(
+    (session) =>
+      session.completedDate >= weekStart && session.completedDate <= weekEnd
+  );
   const statusesInWeek = habitStatuses
     .filter(
       (status) => status.periodEnd >= weekStart && status.periodEnd <= weekEnd
@@ -256,6 +281,7 @@ export function buildWeeklyReview({
     completionRate: getOpportunityCompletionRate(habitMetrics),
     dailyCadence,
     endingStreak: summariesInWeek.at(-1)?.streakCountAfterDay ?? null,
+    focusMinutes: getFocusMinutes(focusSessionsInWeek),
     freezeDays,
     habitMetrics,
     label: getWeekLabel(weekStart, weekEnd),
@@ -281,6 +307,7 @@ function toTrendPoint(review: WeeklyReview): WeeklyReviewTrendPoint {
   return {
     completedDays: review.completedDays,
     completionRate: review.completionRate,
+    focusMinutes: review.focusMinutes,
     freezeDays: review.freezeDays,
     label: review.label,
     missedDays: review.missedDays,
@@ -305,6 +332,7 @@ function collectAvailableWeekStarts(
 
 export function buildWeeklyReviewOverview({
   dailySummaries,
+  focusSessions,
   habitStatuses,
 }: BuildWeeklyReviewOverviewOptions): WeeklyReviewOverview {
   const availableWeekStarts = collectAvailableWeekStarts(
@@ -314,6 +342,7 @@ export function buildWeeklyReviewOverview({
   const reviews = availableWeekStarts.map((weekStart) =>
     buildWeeklyReview({
       dailySummaries,
+      focusSessions,
       habitStatuses,
       weekStart,
     })

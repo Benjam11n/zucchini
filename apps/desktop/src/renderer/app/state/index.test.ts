@@ -29,6 +29,7 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
   return {
     categoryProgress: [],
     date,
+    focusMinutes: 0,
     habits: [],
     summary: {
       allCompleted: false,
@@ -58,6 +59,7 @@ function createWeeklyReview(name: string): WeeklyReview {
     completionRate: 100,
     dailyCadence: [],
     endingStreak: 2,
+    focusMinutes: 0,
     freezeDays: 0,
     habitMetrics: [
       {

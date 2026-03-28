@@ -10,6 +10,7 @@ function createHistoryDay(
   return {
     categoryProgress: [],
     date,
+    focusMinutes: 0,
     habits: [],
     summary: {
       allCompleted: false,

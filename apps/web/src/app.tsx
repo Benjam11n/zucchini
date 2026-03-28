@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 const latestReleaseUrl =
-  "https://github.com/benjamingwg/zucchini/releases/latest";
+  "https://github.com/Benjam11n/zucchini/releases/latest";
 
 export default function App() {
   return (

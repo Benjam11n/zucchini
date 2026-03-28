@@ -114,6 +114,10 @@ export class SqliteAppRepository implements AppRepository {
     return this.focusSessionRepository.listRecentSessions(limit);
   }
 
+  getFocusSessionsInRange(start: string, end: string): FocusSession[] {
+    return this.focusSessionRepository.listSessionsInRange(start, end);
+  }
+
   saveFocusSession(input: CreateFocusSessionInput): FocusSession {
     return this.focusSessionRepository.insertSession(input);
   }

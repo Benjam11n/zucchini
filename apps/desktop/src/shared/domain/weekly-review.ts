@@ -33,6 +33,7 @@ export interface WeeklyReviewHabitMetric {
 export interface WeeklyReviewTrendPoint {
   completedDays: number;
   completionRate: number;
+  focusMinutes: number;
   freezeDays: number;
   label: string;
   missedDays: number;
@@ -53,6 +54,7 @@ export interface WeeklyReview {
   dailyCadence: WeeklyReviewDayPoint[];
   endingStreak: number | null;
   freezeDays: number;
+  focusMinutes: number;
   habitMetrics: WeeklyReviewHabitMetric[];
   label: string;
   longestCleanRun: number;

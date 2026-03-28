@@ -31,6 +31,7 @@ export interface AppRepository {
   removeStatusRowsForDate(date: string, habitId: number): void;
   toggleHabit(date: string, habitId: number): void;
   getFocusSessions(limit?: number): FocusSession[];
+  getFocusSessionsInRange(start: string, end: string): FocusSession[];
   saveFocusSession(input: CreateFocusSessionInput): FocusSession;
   getSettledHistory(
     limit?: number,

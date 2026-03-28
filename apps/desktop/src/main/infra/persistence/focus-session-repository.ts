@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { and, asc, desc, gte, lte } from "drizzle-orm";
 
 import { focusSessions } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
@@ -26,6 +26,24 @@ export class SqliteFocusSessionRepository {
         .from(focusSessions)
         .orderBy(desc(focusSessions.completedAt), desc(focusSessions.id))
         .limit(limit)
+        .all()
+        .map((row) => mapFocusSession(row))
+    );
+  }
+
+  listSessionsInRange(start: string, end: string): FocusSession[] {
+    return this.client.run("listFocusSessionsInRange", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(focusSessions)
+        .where(
+          and(
+            gte(focusSessions.completedDate, start),
+            lte(focusSessions.completedDate, end)
+          )
+        )
+        .orderBy(asc(focusSessions.completedAt), asc(focusSessions.id))
         .all()
         .map((row) => mapFocusSession(row))
     );

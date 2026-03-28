@@ -20,6 +20,10 @@ const chartConfig = {
     color: "var(--color-chart-2)",
     label: "Weekly completion",
   },
+  focusMinutes: {
+    color: "var(--color-chart-4)",
+    label: "Focus minutes",
+  },
 } satisfies ChartConfig;
 
 interface WeeklyReviewTrendChartImplProps {
@@ -57,8 +61,21 @@ export function WeeklyReviewTrendChartImpl({
               />
               <ChartTooltip
                 content={
-                  <ChartTooltipContent formatter={(value) => `${value}%`} />
+                  <ChartTooltipContent
+                    formatter={(value, name) =>
+                      name === "Weekly completion" ? `${value}%` : value
+                    }
+                  />
                 }
+              />
+              <Line
+                dataKey="focusMinutes"
+                dot={{ fill: "var(--color-focusMinutes)", r: 4 }}
+                name="Focus minutes"
+                stroke="var(--color-focusMinutes)"
+                strokeWidth={3}
+                type="monotone"
+                yAxisId="focus"
               />
               <Line
                 dataKey="completionRate"
@@ -67,6 +84,12 @@ export function WeeklyReviewTrendChartImpl({
                 stroke="var(--color-completionRate)"
                 strokeWidth={3}
                 type="monotone"
+              />
+              <YAxis
+                axisLine={false}
+                orientation="right"
+                tickLine={false}
+                yAxisId="focus"
               />
             </LineChart>
           </ChartResponsiveContainer>

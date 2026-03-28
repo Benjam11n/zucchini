@@ -54,11 +54,13 @@ export function buildTodayPreviewSummary(
 
 export function buildHistoryDay(
   summary: DailySummary,
-  habits: HabitWithStatus[]
+  habits: HabitWithStatus[],
+  focusMinutes: number
 ): HistoryDay {
   return {
     categoryProgress: getHabitCategoryProgress(habits.filter(isDailyHabit)),
     date: summary.date,
+    focusMinutes,
     habits,
     summary,
   };

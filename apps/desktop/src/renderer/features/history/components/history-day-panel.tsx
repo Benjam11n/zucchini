@@ -1,5 +1,5 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import { CheckCircle2, Snowflake, XCircle } from "lucide-react";
+import { CheckCircle2, Snowflake, Timer, XCircle } from "lucide-react";
 
 import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import {
@@ -115,51 +115,75 @@ export function HistoryDayPanel({
               </CardContent>
             </Card>
 
-            <Card className="border-border/60 bg-card/85">
-              <CardContent className="grid gap-4 p-4">
-                {selectedDay.categoryProgress.map((progress) => {
-                  const categoryUi = getHabitCategoryUi(
-                    progress.category,
-                    categoryPreferences
-                  );
-                  const CategoryIcon = HABIT_CATEGORY_ICONS[progress.category];
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <Card className="border-border/60 bg-card/85">
+                <CardContent className="grid gap-4 p-4">
+                  {selectedDay.categoryProgress.map((progress) => {
+                    const categoryUi = getHabitCategoryUi(
+                      progress.category,
+                      categoryPreferences
+                    );
+                    const CategoryIcon =
+                      HABIT_CATEGORY_ICONS[progress.category];
 
-                  return (
-                    <m.div
-                      key={progress.category}
-                      animate={{ opacity: 1, y: 0 }}
-                      initial={{ opacity: 0, y: 8 }}
-                      transition={microTransition}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="flex items-center gap-2">
-                          <CategoryIcon
-                            aria-hidden="true"
-                            className="size-3 shrink-0 opacity-60"
-                            data-testid={`history-category-icon-${progress.category}`}
-                            style={{ color: categoryUi.color }}
-                          />
-                          <span
-                            className="text-[0.68rem] tracking-[0.14em]"
-                            style={{ color: categoryUi.color }}
-                          >
-                            {categoryUi.label}
+                    return (
+                      <m.div
+                        key={progress.category}
+                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 8 }}
+                        transition={microTransition}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="flex items-center gap-2">
+                            <CategoryIcon
+                              aria-hidden="true"
+                              className="size-3 shrink-0 opacity-60"
+                              data-testid={`history-category-icon-${progress.category}`}
+                              style={{ color: categoryUi.color }}
+                            />
+                            <span
+                              className="text-[0.68rem] tracking-[0.14em]"
+                              style={{ color: categoryUi.color }}
+                            >
+                              {categoryUi.label}
+                            </span>
                           </span>
-                        </span>
-                        <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
-                          {progress.completed}/{progress.total}
-                        </span>
-                      </div>
-                      <Progress
-                        className="mt-1.5 h-1.5 bg-muted/60"
-                        indicatorStyle={categoryUi.progressStyle}
-                        value={progress.progress}
-                      />
-                    </m.div>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                          <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
+                            {progress.completed}/{progress.total}
+                          </span>
+                        </div>
+                        <Progress
+                          className="mt-1.5 h-1.5 bg-muted/60"
+                          indicatorStyle={categoryUi.progressStyle}
+                          value={progress.progress}
+                        />
+                      </m.div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/60 bg-card/85">
+                <CardContent className="flex h-full flex-col justify-between gap-3 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      <Timer className="size-3.5" />
+                      Focus
+                    </div>
+                    <p className="text-3xl font-black tracking-tight text-foreground">
+                      {selectedDay.focusMinutes}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      focused minute
+                      {selectedDay.focusMinutes === 1 ? "" : "s"} logged
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Total focus completed on this day.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">

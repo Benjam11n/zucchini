@@ -85,6 +85,7 @@ describe("buildWeeklyReview()", () => {
 
     const review = buildWeeklyReview({
       dailySummaries: summaries,
+      focusSessions: [],
       habitStatuses: statuses,
       weekStart,
     });
@@ -93,6 +94,7 @@ describe("buildWeeklyReview()", () => {
       completedDays: review.completedDays,
       completionRate: review.completionRate,
       endingStreak: review.endingStreak,
+      focusMinutes: review.focusMinutes,
       freezeDays: review.freezeDays,
       longestCleanRun: review.longestCleanRun,
       missedDays: review.missedDays,
@@ -101,6 +103,7 @@ describe("buildWeeklyReview()", () => {
       completedDays: 7,
       completionRate: 100,
       endingStreak: 7,
+      focusMinutes: 0,
       freezeDays: 0,
       longestCleanRun: 7,
       missedDays: 0,
@@ -132,6 +135,7 @@ describe("buildWeeklyReview()", () => {
           streakCountAfterDay: 0,
         }),
       ],
+      focusSessions: [],
       habitStatuses: [
         createStatus(1, "2026-03-02", true),
         createStatus(1, "2026-03-03", false),
@@ -166,6 +170,7 @@ describe("buildWeeklyReview()", () => {
   it("includes weekly habits in the selected review week and excludes monthly habits without opportunities", () => {
     const review = buildWeeklyReview({
       dailySummaries: [createSummary("2026-03-02", { allCompleted: true })],
+      focusSessions: [],
       habitStatuses: [
         createStatus(1, "2026-03-02", true),
         createStatus(2, "2026-03-08", false, {
@@ -199,6 +204,7 @@ describe("buildWeeklyReview()", () => {
   it("uses habit opportunities for completion rate when a week has no daily summaries", () => {
     const review = buildWeeklyReview({
       dailySummaries: [],
+      focusSessions: [],
       habitStatuses: [
         createStatus(7, "2026-03-08", true, {
           frequency: "weekly",
@@ -228,6 +234,7 @@ describe("buildWeeklyReview()", () => {
           allCompleted: true,
         }),
       ],
+      focusSessions: [],
       habitStatuses: [
         createStatus(1, "2026-03-02", true, {
           name: "Make buried chapters videp hasbit",
@@ -240,6 +247,36 @@ describe("buildWeeklyReview()", () => {
     });
 
     expect(review.habitMetrics[0]?.name).toBe("Make buried chapters video");
+  });
+
+  it("aggregates focus minutes for the selected week", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [createSummary("2026-03-02", { allCompleted: true })],
+      focusSessions: [
+        {
+          completedAt: "2026-03-02T09:25:00.000Z",
+          completedDate: "2026-03-02",
+          durationSeconds: 1500,
+          entryKind: "completed",
+          id: 1,
+          startedAt: "2026-03-02T09:00:00.000Z",
+          timerSessionId: "timer-1",
+        },
+        {
+          completedAt: "2026-03-04T11:15:00.000Z",
+          completedDate: "2026-03-04",
+          durationSeconds: 900,
+          entryKind: "partial",
+          id: 2,
+          startedAt: "2026-03-04T11:00:00.000Z",
+          timerSessionId: "timer-2",
+        },
+      ],
+      habitStatuses: [createStatus(1, "2026-03-02", true)],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.focusMinutes).toBe(40);
   });
 });
 
@@ -260,6 +297,15 @@ describe("buildWeeklyReviewOverview()", () => {
 
     const overview = buildWeeklyReviewOverview({
       dailySummaries,
+      focusSessions: dailySummaries.map((summary, index) => ({
+        completedAt: `${summary.date}T09:01:00.000Z`,
+        completedDate: summary.date,
+        durationSeconds: (index + 1) * 60,
+        entryKind: "completed",
+        id: index + 1,
+        startedAt: `${summary.date}T09:00:00.000Z`,
+        timerSessionId: `timer-${index + 1}`,
+      })),
       habitStatuses,
     });
 
@@ -268,12 +314,14 @@ describe("buildWeeklyReviewOverview()", () => {
     expect(overview.trend).toHaveLength(8);
     expect(overview.trend[0]?.weekStart).toBe("2026-01-12");
     expect(overview.trend.at(-1)?.weekStart).toBe("2026-03-02");
+    expect(overview.trend.at(-1)?.focusMinutes).toBe(9);
   });
 
   it("returns an empty overview when no completed weeks exist", () => {
     expect(
       buildWeeklyReviewOverview({
         dailySummaries: [],
+        focusSessions: [],
         habitStatuses: [],
       })
     ).toStrictEqual({

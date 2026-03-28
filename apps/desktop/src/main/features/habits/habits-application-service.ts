@@ -119,6 +119,35 @@ export class HabitsApplicationService implements HabitsService {
     this.clock = clock;
   }
 
+  private static toFocusMinutes(totalSeconds: number): number {
+    if (totalSeconds <= 0) {
+      return 0;
+    }
+
+    return Math.max(1, Math.round(totalSeconds / 60));
+  }
+
+  private static buildFocusMinutesByDate(
+    sessions: FocusSession[]
+  ): Map<string, number> {
+    const totalSecondsByDate = new Map<string, number>();
+
+    for (const session of sessions) {
+      totalSecondsByDate.set(
+        session.completedDate,
+        (totalSecondsByDate.get(session.completedDate) ?? 0) +
+          session.durationSeconds
+      );
+    }
+
+    return new Map(
+      [...totalSecondsByDate.entries()].map(([date, totalSeconds]) => [
+        date,
+        HabitsApplicationService.toFocusMinutes(totalSeconds),
+      ])
+    );
+  }
+
   initialize(): void {
     if (this.initialized) {
       return;
@@ -184,20 +213,29 @@ export class HabitsApplicationService implements HabitsService {
         limit === undefined ? undefined : Math.max(limit - 1, 0);
       const settledHistoryOptions =
         limit === undefined ? { uncapped: true } : undefined;
+      const settledSummaries = this.repository.getSettledHistory(
+        settledHistoryLimit,
+        settledHistoryOptions
+      );
+      const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
+      const focusMinutesByDate =
+        HabitsApplicationService.buildFocusMinutesByDate(
+          this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
+        );
 
       return [
         buildHistoryDay(
           buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
-          this.repository.getHabitsWithStatus(this.clock.todayKey())
+          this.repository.getHabitsWithStatus(this.clock.todayKey()),
+          focusMinutesByDate.get(todayState.date) ?? 0
         ),
-        ...this.repository
-          .getSettledHistory(settledHistoryLimit, settledHistoryOptions)
-          .map((summary) =>
-            buildHistoryDay(
-              summary,
-              this.repository.getHistoricalHabitsWithStatus(summary.date)
-            )
-          ),
+        ...settledSummaries.map((summary) =>
+          buildHistoryDay(
+            summary,
+            this.repository.getHistoricalHabitsWithStatus(summary.date),
+            focusMinutesByDate.get(summary.date) ?? 0
+          )
+        ),
       ];
     });
   }
@@ -236,6 +274,10 @@ export class HabitsApplicationService implements HabitsService {
           rangeStart,
           rangeEnd
         ),
+        focusSessions: this.repository.getFocusSessionsInRange(
+          rangeStart,
+          rangeEnd
+        ),
         habitStatuses: this.repository.getHabitPeriodStatusesEndingInRange(
           rangeStart,
           rangeEnd
@@ -253,6 +295,10 @@ export class HabitsApplicationService implements HabitsService {
 
       return buildWeeklyReview({
         dailySummaries: this.repository.getDailySummariesInRange(
+          normalizedWeekStart,
+          weekEnd
+        ),
+        focusSessions: this.repository.getFocusSessionsInRange(
           normalizedWeekStart,
           weekEnd
         ),

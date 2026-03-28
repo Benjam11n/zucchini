@@ -11,6 +11,7 @@ import type { DailySummary } from "./streak";
 export interface HistoryDay {
   categoryProgress: HabitCategoryProgress[];
   date: string;
+  focusMinutes: number;
   habits: HabitWithStatus[];
   summary: DailySummary;
 }

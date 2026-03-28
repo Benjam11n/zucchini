@@ -233,6 +233,17 @@ class FakeRepository implements AppRepository {
     return limit === undefined ? sessions : sessions.slice(0, limit);
   }
 
+  getFocusSessionsInRange(start: string, end: string): FocusSession[] {
+    return this.focusSessions
+      .filter(
+        (session) =>
+          session.completedDate >= start && session.completedDate <= end
+      )
+      .toSorted((left, right) =>
+        left.completedAt.localeCompare(right.completedAt)
+      );
+  }
+
   saveFocusSession(input: CreateFocusSessionInput): FocusSession {
     const focusSession = {
       ...input,

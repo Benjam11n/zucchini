@@ -7,6 +7,7 @@ const latestReview: WeeklyReview = {
   completionRate: 71,
   dailyCadence: [],
   endingStreak: 6,
+  focusMinutes: 120,
   freezeDays: 1,
   habitMetrics: [],
   label: "Mar 2 - Mar 8",

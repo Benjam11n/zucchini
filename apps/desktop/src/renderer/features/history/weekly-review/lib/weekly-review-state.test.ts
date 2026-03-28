@@ -11,6 +11,7 @@ function createReview(weekStart: string): WeeklyReview {
     completionRate: 50,
     dailyCadence: [],
     endingStreak: 3,
+    focusMinutes: 0,
     freezeDays: 0,
     habitMetrics: [],
     label: weekStart,

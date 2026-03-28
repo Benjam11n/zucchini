@@ -29,6 +29,7 @@ const selectedDay: HistoryDay = {
     },
   ],
   date: "2026-03-10",
+  focusMinutes: 45,
   habits: [],
   summary: {
     allCompleted: false,
@@ -52,5 +53,12 @@ describe("history day panel", () => {
         screen.getByTestId(`history-category-icon-${category}`)
       ).toBeInTheDocument();
     }
+  });
+
+  it("shows focus minutes for the selected day", () => {
+    render(<HistoryDayPanel isToday={false} selectedDay={selectedDay} />);
+
+    expect(screen.getByText("45")).toBeInTheDocument();
+    expect(screen.getByText("focused minutes logged")).toBeInTheDocument();
   });
 });
