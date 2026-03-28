@@ -11,19 +11,34 @@ function parseArgs(args: readonly string[]): GenerateTestDataOptions {
     const argument = args[index];
 
     if (argument === "--preset") {
-      options.preset = args[index + 1] as TestDataPreset;
+      const preset = args[index + 1];
+      if (!preset) {
+        throw new Error("Missing value for --preset.");
+      }
+
+      options.preset = preset as TestDataPreset;
       index += 1;
       continue;
     }
 
     if (argument === "--output") {
-      options.outputPath = args[index + 1];
+      const outputPath = args[index + 1];
+      if (!outputPath) {
+        throw new Error("Missing value for --output.");
+      }
+
+      options.outputPath = outputPath;
       index += 1;
       continue;
     }
 
     if (argument === "--seed") {
-      options.seed = Number(args[index + 1]);
+      const seed = args[index + 1];
+      if (!seed) {
+        throw new Error("Missing value for --seed.");
+      }
+
+      options.seed = Number(seed);
       index += 1;
       continue;
     }

@@ -81,19 +81,19 @@ export function FocusWidget() {
     getDefaultPomodoroTimerSettings();
 
   useEffect(() => {
-    const previousBodyView = document.body.dataset.view;
+    const previousBodyView = document.body.dataset["view"];
     const previousBodyOverflow = document.body.style.overflow;
     const previousRootOverflow = document.documentElement.style.overflow;
 
-    document.body.dataset.view = "widget";
+    document.body.dataset["view"] = "widget";
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
     return () => {
       if (previousBodyView) {
-        document.body.dataset.view = previousBodyView;
+        document.body.dataset["view"] = previousBodyView;
       } else {
-        delete document.body.dataset.view;
+        delete document.body.dataset["view"];
       }
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousRootOverflow;

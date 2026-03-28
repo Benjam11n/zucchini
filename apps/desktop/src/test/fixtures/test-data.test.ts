@@ -9,7 +9,7 @@ import type { Clock } from "@/main/app/clock";
 import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
-import { getPreviousCompletedIsoWeek } from "@/shared/utils/date";
+import { getPreviousCompletedIsoWeek, parseDateKey } from "@/shared/utils/date";
 import { generateTestData } from "@/test/fixtures/test-data";
 import type { TestDataPreset } from "@/test/fixtures/test-data";
 
@@ -34,8 +34,7 @@ class FakeClock implements Clock {
 
   // oxlint-disable-next-line class-methods-use-this
   addDays(dateKey: string, amount: number): string {
-    const [year, month, day] = dateKey.split("-").map(Number);
-    const next = new Date(year, month - 1, day);
+    const next = parseDateKey(dateKey);
     next.setDate(next.getDate() + amount);
     const y = next.getFullYear();
     const m = String(next.getMonth() + 1).padStart(2, "0");

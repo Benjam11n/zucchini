@@ -227,10 +227,10 @@ export function ReminderSettingsCard({
             </ItemContent>
             <ItemActions>
               <TimeInput
-                aria-invalid={fieldErrors.reminderTime ? true : undefined}
                 id="reminder-time"
                 onChange={(val) => onChange({ ...settings, reminderTime: val })}
                 value={settings.reminderTime}
+                {...(fieldErrors.reminderTime ? { "aria-invalid": true } : {})}
               />
             </ItemActions>
           </Item>

@@ -103,7 +103,9 @@ export class HabitsIpcError extends Error {
   constructor({ code, details, message }: SerializedHabitsIpcError) {
     super(message);
     this.code = code;
-    this.details = details;
+    if (details) {
+      this.details = details;
+    }
     this.name = "HabitsIpcError";
   }
 }
@@ -119,13 +121,15 @@ export function toHabitsIpcError(error: unknown): HabitsIpcError {
       typeof candidate.code === "string" &&
       typeof candidate.message === "string"
     ) {
+      const details = Array.isArray(candidate.details)
+        ? candidate.details.filter(
+            (detail): detail is string => typeof detail === "string"
+          )
+        : undefined;
+
       return new HabitsIpcError({
         code: candidate.code as HabitsIpcErrorCode,
-        details: Array.isArray(candidate.details)
-          ? candidate.details.filter(
-              (detail): detail is string => typeof detail === "string"
-            )
-          : undefined,
+        ...(details ? { details } : {}),
         message: candidate.message,
       });
     }

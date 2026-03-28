@@ -56,15 +56,15 @@ export function HabitCategorySelector({
               !isSelected &&
                 "border-border/60 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
             )}
-            style={
-              isSelected
-                ? {
+            {...(isSelected
+              ? {
+                  style: {
                     backgroundColor: ui.color,
                     borderColor: ui.color,
                     color: ui.selectedTextColor,
-                  }
-                : undefined
-            }
+                  },
+                }
+              : {})}
             transition={microTransition}
             whileHover={hoverLift}
             whileTap={tapPress}

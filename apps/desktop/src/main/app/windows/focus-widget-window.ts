@@ -22,11 +22,12 @@ export function createFocusWidgetWindow({
 }: CreateFocusWidgetWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
   const appIndexPath = path.join(__dirname, "../dist/index.html");
+  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
 
   async function loadWindowContent(window: BrowserWindow): Promise<void> {
     try {
-      if (process.env.VITE_DEV_SERVER_URL) {
-        await window.loadURL(`${process.env.VITE_DEV_SERVER_URL}?view=widget`);
+      if (devServerUrl) {
+        await window.loadURL(`${devServerUrl}?view=widget`);
         return;
       }
 
@@ -38,14 +39,13 @@ export function createFocusWidgetWindow({
     }
   }
   const bounds = getDefaultFocusWidgetBounds();
-  const window = new BrowserWindow({
+  const windowOptions = {
     alwaysOnTop: true,
     backgroundColor: "#00000000",
     frame: false,
     fullscreenable: false,
     height: bounds.height,
     hiddenInMissionControl: true,
-    icon: process.platform === "darwin" ? undefined : iconPath,
     maximizable: false,
     minHeight: FOCUS_WIDGET_DEFAULT_HEIGHT,
     minWidth: FOCUS_WIDGET_DEFAULT_WIDTH,
@@ -66,7 +66,9 @@ export function createFocusWidgetWindow({
     width: bounds.width,
     x: bounds.x,
     y: bounds.y,
-  });
+    ...(process.platform !== "darwin" && iconPath ? { icon: iconPath } : {}),
+  } satisfies Electron.BrowserWindowConstructorOptions;
+  const window = new BrowserWindow(windowOptions);
   configureWindowSecurity(window);
 
   window.setAlwaysOnTop(true, "floating");

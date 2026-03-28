@@ -71,12 +71,13 @@ describe("habit list item", () => {
 
     const { HabitListItem } = await loadHabitListItemModule();
     const onToggle = vi.fn();
-    const initialHabits = [createHabit(1), createHabit(2)];
+    const firstHabit = createHabit(1);
+    const secondHabit = createHabit(2);
 
     const { rerender } = render(
       <>
-        <HabitListItem habit={initialHabits[0]} onToggle={onToggle} />
-        <HabitListItem habit={initialHabits[1]} onToggle={onToggle} />
+        <HabitListItem habit={firstHabit} onToggle={onToggle} />
+        <HabitListItem habit={secondHabit} onToggle={onToggle} />
       </>
     );
 
@@ -88,10 +89,10 @@ describe("habit list item", () => {
     rerender(
       <>
         <HabitListItem
-          habit={{ ...initialHabits[0], completed: true }}
+          habit={{ ...firstHabit, completed: true }}
           onToggle={onToggle}
         />
-        <HabitListItem habit={{ ...initialHabits[1] }} onToggle={onToggle} />
+        <HabitListItem habit={{ ...secondHabit }} onToggle={onToggle} />
       </>
     );
 
@@ -106,12 +107,13 @@ describe("habit list item", () => {
 
     const { HabitListItem } = await loadHabitListItemModule();
     const onToggle = vi.fn();
-    const initialHabits = [createHabit(1), createHabit(2)];
+    const firstHabit = createHabit(1);
+    const secondHabit = createHabit(2);
 
     const { rerender } = render(
       <>
-        <HabitListItem habit={initialHabits[0]} onToggle={onToggle} />
-        <HabitListItem habit={initialHabits[1]} onToggle={onToggle} />
+        <HabitListItem habit={firstHabit} onToggle={onToggle} />
+        <HabitListItem habit={secondHabit} onToggle={onToggle} />
       </>
     );
 
@@ -122,9 +124,9 @@ describe("habit list item", () => {
 
     rerender(
       <>
-        <HabitListItem habit={{ ...initialHabits[0] }} onToggle={onToggle} />
+        <HabitListItem habit={{ ...firstHabit }} onToggle={onToggle} />
         <HabitListItem
-          habit={{ ...initialHabits[1], name: "Renamed Habit" }}
+          habit={{ ...secondHabit, name: "Renamed Habit" }}
           onToggle={onToggle}
         />
       </>

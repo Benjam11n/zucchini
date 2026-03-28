@@ -15,9 +15,9 @@ function isPublishRequested(argv: string[]): boolean {
 function getGitHubPublishConfig(
   argv: string[]
 ): Exclude<Configuration["publish"], null> | undefined {
-  const owner = process.env.GH_RELEASE_OWNER;
-  const repo = process.env.GH_RELEASE_REPO;
-  const token = process.env.GH_TOKEN;
+  const owner = process.env["GH_RELEASE_OWNER"];
+  const repo = process.env["GH_RELEASE_REPO"];
+  const token = process.env["GH_TOKEN"];
 
   if (isPublishRequested(argv)) {
     const missing = [
@@ -46,6 +46,8 @@ function getGitHubPublishConfig(
 
   return undefined;
 }
+
+const publish = getGitHubPublishConfig(process.argv);
 
 const config: Configuration = {
   appId: "com.zucchini.habittracker",
@@ -79,7 +81,7 @@ const config: Configuration = {
     target: ["dmg", "zip"],
   },
   productName: "Zucchini",
-  publish: getGitHubPublishConfig(process.argv),
+  ...(publish ? { publish } : {}),
   win: {
     icon: "build/icon.ico",
     target: ["nsis"],

@@ -57,8 +57,9 @@ import type {
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 function loadAppWindow(window: BrowserWindow, search = ""): void {
-  if (process.env.VITE_DEV_SERVER_URL) {
-    window.loadURL(`${process.env.VITE_DEV_SERVER_URL}${search}`);
+  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
+  if (devServerUrl) {
+    window.loadURL(`${devServerUrl}${search}`);
     return;
   }
 
@@ -160,7 +161,11 @@ function resizeFocusWidget(width: number, height: number): void {
     return;
   }
 
-  const [x, y] = window.getPosition();
+  const position = window.getPosition();
+  const [x, y] = position;
+  if (x === undefined || y === undefined) {
+    return;
+  }
   window.setBounds(clampFocusWidgetBounds({ height, width, x, y }));
 }
 

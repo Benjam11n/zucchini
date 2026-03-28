@@ -109,6 +109,7 @@ function HabitListItemComponent({
 }: HabitListItemProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   const ui = getHabitCategoryUi(habit.category, categoryPreferences);
+  const hoverProps = habit.completed ? {} : { whileHover: hoverLift };
 
   return (
     <m.label
@@ -121,7 +122,7 @@ function HabitListItemComponent({
         habit.completed ? "text-muted-foreground/50" : "hover:bg-muted/25"
       )}
       transition={microTransition}
-      whileHover={habit.completed ? undefined : hoverLift}
+      {...hoverProps}
       whileTap={tapPress}
     >
       <Checkbox

@@ -185,10 +185,10 @@ function buildHistorySessionView(
   const sessionStartMs = Date.parse(firstEntry.startedAt);
   const sessionId = getSessionGroupingKey(firstEntry);
   const trailingBreakEndMs = getTrailingBreakEndMs({
-    activeTimerState,
     now,
     sessionId,
     sessionLastCompletedAt: lastEntry.completedAt,
+    ...(activeTimerState ? { activeTimerState } : {}),
   });
   const sessionEndMs = trailingBreakEndMs ?? Date.parse(lastEntry.completedAt);
   const sessionSpanMinutes = Math.max(
@@ -390,9 +390,10 @@ export function buildFocusHistorySessions(
 
   return [...groupedEntries.values()]
     .map((entries) =>
-      buildHistorySessionView(entries, {
-        activeTimerState,
-      })
+      buildHistorySessionView(
+        entries,
+        activeTimerState ? { activeTimerState } : {}
+      )
     )
     .map((session) => ({
       ...session,

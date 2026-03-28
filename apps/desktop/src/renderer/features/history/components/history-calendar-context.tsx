@@ -54,8 +54,8 @@ export function HistoryCalendarDayButton({
         animate={{ opacity: 1, scale: 1 }}
         initial={{ opacity: 0, scale: 0.96 }}
         transition={microTransition}
-        whileHover={dayEntry && !disabled ? hoverLift : undefined}
-        whileTap={dayEntry && !disabled ? tapPress : undefined}
+        {...(dayEntry && !disabled ? { whileHover: hoverLift } : {})}
+        {...(dayEntry && !disabled ? { whileTap: tapPress } : {})}
       >
         <button
           {...props}

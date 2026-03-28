@@ -78,8 +78,8 @@ export function HabitActivityRingGlyph({
         categoryProgress,
         categoryPreferences ?? contextCategoryPreferences
       )}
-      className={className}
       size={size}
+      {...(className ? { className } : {})}
     />
   );
 }

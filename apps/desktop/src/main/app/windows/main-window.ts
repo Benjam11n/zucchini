@@ -21,11 +21,12 @@ export function createMainWindow({
 }: CreateMainWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
   const appIndexPath = path.join(__dirname, "../dist/index.html");
+  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
 
   async function loadWindowContent(window: BrowserWindow): Promise<void> {
     try {
-      if (process.env.VITE_DEV_SERVER_URL) {
-        await window.loadURL(process.env.VITE_DEV_SERVER_URL);
+      if (devServerUrl) {
+        await window.loadURL(devServerUrl);
         return;
       }
 
@@ -35,12 +36,11 @@ export function createMainWindow({
     }
   }
   const shouldShowInactive =
-    process.env.ZUCCHINI_ELECTRON_RESTART === "true" &&
+    process.env["ZUCCHINI_ELECTRON_RESTART"] === "true" &&
     process.platform === "darwin";
-  const window = new BrowserWindow({
+  const windowOptions = {
     backgroundColor,
     height: 760,
-    icon: process.platform === "darwin" ? undefined : iconPath,
     minHeight: 640,
     minWidth: 900,
     show: !shouldShowInactive,
@@ -54,7 +54,9 @@ export function createMainWindow({
       webSecurity: true,
     },
     width: 1100,
-  });
+    ...(process.platform !== "darwin" && iconPath ? { icon: iconPath } : {}),
+  } satisfies Electron.BrowserWindowConstructorOptions;
+  const window = new BrowserWindow(windowOptions);
   configureWindowSecurity(window);
 
   window.on("close", (event) => {

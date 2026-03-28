@@ -39,6 +39,13 @@ function HabitChecklistComponent({
 }: HabitChecklistProps) {
   const totalHabits = habits.length;
   const categoryPreferences = useHabitCategoryPreferences();
+  const progressProps =
+    totalHabits > 0
+      ? {
+          progressLabel: `${completedCount}/${totalHabits}`,
+          progressValue: Math.round((completedCount / totalHabits) * 100),
+        }
+      : {};
   const habitsByCategory = useMemo(() => {
     const groupedHabits = Object.fromEntries(
       HABIT_CATEGORY_DEFINITIONS.map((category) => [
@@ -74,15 +81,8 @@ function HabitChecklistComponent({
       <HabitListCard
         title={title}
         icon={Icon as LucideIcon}
-        progressLabel={
-          totalHabits > 0 ? `${completedCount}/${totalHabits}` : undefined
-        }
         headerActions={headerActions}
-        progressValue={
-          totalHabits > 0
-            ? Math.round((completedCount / totalHabits) * 100)
-            : undefined
-        }
+        {...progressProps}
       >
         {totalHabits === 0 ? (
           <m.div

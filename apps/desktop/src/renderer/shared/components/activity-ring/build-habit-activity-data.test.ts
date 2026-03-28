@@ -23,7 +23,7 @@ describe("buildHabitActivityData()", () => {
       {
         color: categoryPreferences.fitness.color,
         current: 0,
-        label: categoryPreferences.fitness.label,
+        label: categoryPreferences.fitness.label.toUpperCase(),
         size: ACTIVITY_RING_SIZES[0],
         target: 0,
         unit: "Habits",
@@ -32,7 +32,7 @@ describe("buildHabitActivityData()", () => {
       {
         color: categoryPreferences.nutrition.color,
         current: 2,
-        label: categoryPreferences.nutrition.label,
+        label: categoryPreferences.nutrition.label.toUpperCase(),
         size: ACTIVITY_RING_SIZES[1],
         target: 4,
         unit: "Habits",
@@ -41,7 +41,7 @@ describe("buildHabitActivityData()", () => {
       {
         color: categoryPreferences.productivity.color,
         current: 0,
-        label: categoryPreferences.productivity.label,
+        label: categoryPreferences.productivity.label.toUpperCase(),
         size: ACTIVITY_RING_SIZES[2],
         target: 0,
         unit: "Habits",
@@ -77,19 +77,19 @@ describe("buildHabitActivityData()", () => {
     ).toMatchObject([
       {
         current: 1,
-        label: "Fitness",
+        label: "FITNESS",
         target: 4,
         value: 25,
       },
       {
         current: 4,
-        label: "Nutrition",
+        label: "NUTRITION",
         target: 4,
         value: 100,
       },
       {
         current: 3,
-        label: "Productivity",
+        label: "PRODUCTIVITY",
         target: 4,
         value: 75,
       },

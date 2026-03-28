@@ -38,9 +38,13 @@ export class SqliteAppRepository implements AppRepository {
   private readonly streakRepository: SqliteStreakRepository;
 
   constructor(options: SqliteAppRepositoryOptions = {}) {
-    this.client = new SqliteDatabaseClient({
-      databasePath: options.databasePath,
-    });
+    this.client = new SqliteDatabaseClient(
+      options.databasePath
+        ? {
+            databasePath: options.databasePath,
+          }
+        : {}
+    );
     this.habitsRepository = new SqliteHabitsRepository(this.client);
     this.historyRepository = new SqliteHistoryRepository(
       this.client,

@@ -37,6 +37,19 @@ interface FocusTimerCardProps {
   onStart: (focusDurationMs: number) => void;
 }
 
+function createDurationDraft(focusDurationMs: number): {
+  minutesInput: string;
+  secondsInput: string;
+} {
+  const [minutesInput = "00", secondsInput = "00"] =
+    formatTimerLabel(focusDurationMs).split(":");
+
+  return {
+    minutesInput,
+    secondsInput,
+  };
+}
+
 export function FocusTimerCard({
   focusLongBreakSeconds,
   focusCyclesBeforeLongBreak,
@@ -74,29 +87,16 @@ export function FocusTimerCard({
   const skipBreakLabel = getSkipBreakLabel(timerState);
   const primaryActionLabel = isPaused ? "Resume" : "Start";
   const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
-  const [durationDraft, setDurationDraft] = useState(() => {
-    const [minutesInput, secondsInput] = formatTimerLabel(
-      timerState.focusDurationMs
-    ).split(":");
-
-    return {
-      minutesInput,
-      secondsInput,
-    };
-  });
+  const [durationDraft, setDurationDraft] = useState(() =>
+    createDurationDraft(timerState.focusDurationMs)
+  );
 
   useEffect(() => {
     if (!canEditDuration) {
       return;
     }
 
-    const [minutesInput, secondsInput] = formatTimerLabel(
-      timerState.focusDurationMs
-    ).split(":");
-    setDurationDraft({
-      minutesInput,
-      secondsInput,
-    });
+    setDurationDraft(createDurationDraft(timerState.focusDurationMs));
   }, [canEditDuration, timerState.focusDurationMs]);
 
   const commitDuration = (durationSeconds: number) => {

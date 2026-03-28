@@ -16,7 +16,14 @@ interface ZonedCalendarDate {
 export function parseReminderClockTime(
   value: string
 ): { hours: number; minutes: number } | null {
-  const [hours, minutes] = value.split(":").map(Number);
+  const parts = value.split(":");
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const [hoursPart, minutesPart] = parts;
+  const hours = Number(hoursPart);
+  const minutes = Number(minutesPart);
 
   if (
     !Number.isInteger(hours) ||

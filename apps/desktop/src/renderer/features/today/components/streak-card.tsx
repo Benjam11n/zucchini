@@ -90,15 +90,15 @@ function StreakCardComponent({
                     <CardContent className="flex items-center gap-3">
                       <span
                         className="rounded-full border p-2"
-                        style={
-                          c
-                            ? {
+                        {...(c
+                          ? {
+                              style: {
                                 backgroundColor: `color-mix(in srgb, ${c} 12%, transparent)`,
                                 borderColor: `color-mix(in srgb, ${c} 30%, transparent)`,
                                 color: c,
-                              }
-                            : undefined
-                        }
+                              },
+                            }
+                          : {})}
                       >
                         <Icon className="size-4" />
                       </span>
@@ -110,7 +110,7 @@ function StreakCardComponent({
                             className="text-base leading-none font-semibold"
                             exit={{ opacity: 0, y: -8 }}
                             initial={{ opacity: 0, y: 8 }}
-                            style={c ? { color: c } : undefined}
+                            {...(c ? { style: { color: c } } : {})}
                             transition={microTransition}
                           >
                             {stat.value}

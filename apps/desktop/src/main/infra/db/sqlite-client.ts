@@ -50,7 +50,7 @@ export interface SqliteDatabaseClientOptions {
 export class SqliteDatabaseClient {
   private database: Database.Database | null = null;
   private drizzleDb: DrizzleDatabase | null = null;
-  private readonly databasePath?: string;
+  private readonly databasePath: string | undefined;
   // eslint-disable-next-line class-methods-use-this
   private readonly runWithDatabaseError = <A>(
     label: string,

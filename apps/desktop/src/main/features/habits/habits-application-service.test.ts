@@ -5,6 +5,7 @@ import type {
   AppRepository,
   SettledHistoryOptions,
 } from "@/main/infra/persistence/app-repository";
+import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -21,6 +22,7 @@ import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import { parseDateKey } from "@/shared/utils/date";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 
@@ -45,8 +47,7 @@ class FakeClock implements Clock {
 
   // oxlint-disable-next-line class-methods-use-this
   addDays(dateKey: string, amount: number): string {
-    const [year, month, day] = dateKey.split("-").map(Number);
-    const next = new Date(year, month - 1, day);
+    const next = parseDateKey(dateKey);
     next.setDate(next.getDate() + amount);
     const y = next.getFullYear();
     const m = String(next.getMonth() + 1).padStart(2, "0");
@@ -276,7 +277,10 @@ class FakeRepository implements AppRepository {
       .toSorted((left, right) => left.date.localeCompare(right.date));
   }
 
-  getHabitPeriodStatusesEndingInRange(start: string, end: string) {
+  getHabitPeriodStatusesEndingInRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
     return [...this.statusByPeriod.values()]
       .filter((entry) => entry.end >= start && entry.end <= end)
       .flatMap((entry) =>
@@ -295,7 +299,7 @@ class FakeRepository implements AppRepository {
             name: habit.name,
             periodEnd: entry.end,
             periodStart: entry.start,
-            selectedWeekdays: habit.selectedWeekdays,
+            selectedWeekdays: habit.selectedWeekdays ?? null,
             sortOrder: habit.sortOrder,
           };
         })
@@ -779,10 +783,11 @@ describe("history retrieval", () => {
         .toISOString()
         .slice(0, 10);
       const allCompleted = index % 2 === 0;
+      const completedAt = allCompleted ? `${date}T21:00:00.000Z` : null;
 
       repository.dailySummaries.set(date, {
         allCompleted,
-        completedAt: [null, `${date}T21:00:00.000Z`][Number(allCompleted)],
+        completedAt,
         date,
         freezeUsed: index % 5 === 0,
         streakCountAfterDay: index + 1,

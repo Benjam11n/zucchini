@@ -19,13 +19,11 @@ class FakeAutoUpdater {
   autoInstallOnAppQuit = true;
   allowPrerelease = false;
   forceDevUpdateConfig = false;
-  logger:
-    | {
-        error: (...args: unknown[]) => void;
-        info: (...args: unknown[]) => void;
-        warn: (...args: unknown[]) => void;
-      }
-    | undefined;
+  logger: {
+    error: (...args: unknown[]) => void;
+    info: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+  } | null = null;
   downloadUpdate = vi.fn(async () => {});
   checkForUpdates = vi.fn(async () => {});
   quitAndInstall = vi.fn();

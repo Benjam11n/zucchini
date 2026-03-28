@@ -162,33 +162,37 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
       {isExpanded ? (
         <div className="grid gap-2" id={detailsId}>
-          {session.entries.map((entry, index) => (
-            <div
-              key={entry.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/70 px-3 py-2"
-            >
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Clock3 className="size-4 text-primary/80" />
-                <span>
-                  {formatEntryRange(entry.startedAt, entry.completedAt)}
-                </span>
-              </div>
+          {session.entries.map((entry, index) => {
+            const idleGap =
+              session.idleGapMinutesBetweenEntries[index - 1] ?? 0;
 
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>
-                  {entry.entryKind === "partial" ? "Partial · " : ""}
-                  {formatFocusMinutes(entry.durationSeconds)} min
-                </span>
-                {index > 0 &&
-                session.idleGapMinutesBetweenEntries[index - 1] > 0 ? (
-                  <span className="inline-flex items-center gap-1">
-                    <PauseCircle className="size-3.5" />
-                    {session.idleGapMinutesBetweenEntries[index - 1]}m gap
+            return (
+              <div
+                key={entry.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/70 px-3 py-2"
+              >
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Clock3 className="size-4 text-primary/80" />
+                  <span>
+                    {formatEntryRange(entry.startedAt, entry.completedAt)}
                   </span>
-                ) : null}
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>
+                    {entry.entryKind === "partial" ? "Partial · " : ""}
+                    {formatFocusMinutes(entry.durationSeconds)} min
+                  </span>
+                  {index > 0 && idleGap > 0 ? (
+                    <span className="inline-flex items-center gap-1">
+                      <PauseCircle className="size-3.5" />
+                      {idleGap}m gap
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : null}
     </div>

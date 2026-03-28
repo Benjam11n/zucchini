@@ -19,6 +19,11 @@ export function reorderHabitListByIndex(
 
   const nextHabits = [...habits];
   const [movedHabit] = nextHabits.splice(fromIndex, 1);
+
+  if (!movedHabit) {
+    return habits;
+  }
+
   nextHabits.splice(toIndex, 0, movedHabit);
 
   return nextHabits.map((habit, index) => ({

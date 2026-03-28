@@ -6,7 +6,20 @@
  * Parses a 'YYYY-MM-DD' string into a local Date object.
  */
 export function parseDateKey(dateKey: string): Date {
-  const [year, month, day] = dateKey.split("-").map(Number);
+  const parts = dateKey.split("-");
+  if (parts.length !== 3) {
+    throw new Error(`Invalid date key: ${dateKey}`);
+  }
+
+  const [yearPart, monthPart, dayPart] = parts;
+  const year = Number(yearPart);
+  const month = Number(monthPart);
+  const day = Number(dayPart);
+
+  if ([year, month, day].some((value) => Number.isNaN(value))) {
+    throw new Error(`Invalid date key: ${dateKey}`);
+  }
+
   return new Date(year, month - 1, day);
 }
 

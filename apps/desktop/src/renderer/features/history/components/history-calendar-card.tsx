@@ -26,34 +26,34 @@ export function HistoryCalendarCard({
   setVisibleMonth,
   visibleMonth,
 }: HistoryCalendarCardProps) {
+  const calendarProps = {
+    components: { DayButton: HistoryCalendarDayButton },
+    mode: "single" as const,
+    onMonthChange: setVisibleMonth,
+    onSelect: (date: Date | undefined) => {
+      if (!date) {
+        return;
+      }
+
+      const nextDateKey = toDateKey(date);
+
+      if (!historyByDate.has(nextDateKey)) {
+        return;
+      }
+
+      onSelectDateKey(nextDateKey);
+    },
+    showOutsideDays: true,
+    ...(visibleMonth ? { month: visibleMonth } : {}),
+    ...(selectedDay ? { selected: parseDateKey(selectedDay.date) } : {}),
+  };
+
   return (
     <Card>
       <CardContent className="space-y-4">
         <div className="rounded-3xl border border-border/60 bg-background/30 p-2">
           <HistoryCalendarContext.Provider value={historyCalendarContextValue}>
-            <Calendar
-              components={{ DayButton: HistoryCalendarDayButton }}
-              mode="single"
-              month={visibleMonth}
-              onMonthChange={setVisibleMonth}
-              onSelect={(date) => {
-                if (!date) {
-                  return;
-                }
-
-                const nextDateKey = toDateKey(date);
-
-                if (!historyByDate.has(nextDateKey)) {
-                  return;
-                }
-
-                onSelectDateKey(nextDateKey);
-              }}
-              selected={
-                selectedDay ? parseDateKey(selectedDay.date) : undefined
-              }
-              showOutsideDays
-            />
+            <Calendar {...calendarProps} />
           </HistoryCalendarContext.Provider>
         </div>
       </CardContent>

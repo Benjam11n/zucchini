@@ -69,22 +69,23 @@ export function LongerHabitChecklist({
     return null;
   }
 
+  const progressProps =
+    totalHabitsCount > 0
+      ? {
+          progressLabel: `${totalCompletedCount}/${totalHabitsCount}`,
+          progressValue: Math.round(
+            (totalCompletedCount / totalHabitsCount) * 100
+          ),
+        }
+      : {};
+
   return (
     <LazyMotion features={domAnimation}>
       <HabitListCard
         title="Longer cycles"
         icon={CalendarRange}
         description="Weekly and monthly habits stay out of the rings and daily streak."
-        progressLabel={
-          totalHabitsCount > 0
-            ? `${totalCompletedCount}/${totalHabitsCount}`
-            : undefined
-        }
-        progressValue={
-          totalHabitsCount > 0
-            ? Math.round((totalCompletedCount / totalHabitsCount) * 100)
-            : undefined
-        }
+        {...progressProps}
       >
         {sections.map((section) => {
           const completedCount = section.habits.filter(

@@ -1,8 +1,9 @@
 import type { BrowserWindow } from "electron";
 
 function isTrustedAppUrl(url: string): boolean {
-  if (process.env.VITE_DEV_SERVER_URL) {
-    return url.startsWith(process.env.VITE_DEV_SERVER_URL);
+  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
+  if (devServerUrl) {
+    return url.startsWith(devServerUrl);
   }
 
   return url.startsWith("file://");

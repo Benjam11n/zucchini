@@ -69,10 +69,11 @@ function showNotification(
     const icon = iconFilename
       ? nativeImage.createFromPath(resolveMascotAssetPath(iconFilename))
       : undefined;
+    const notificationIcon = icon && !icon.isEmpty() ? icon : null;
 
     new Notification({
       body,
-      icon: icon && !icon.isEmpty() ? icon : undefined,
+      ...(notificationIcon ? { icon: notificationIcon } : {}),
       title,
     }).show();
   } catch {

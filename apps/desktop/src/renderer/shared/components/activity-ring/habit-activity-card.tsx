@@ -69,8 +69,8 @@ function HabitActivityCardComponent({
   return (
     <AppleActivityCard
       activities={activities}
-      className={className}
       showDetails={showDetails}
+      {...(className ? { className } : {})}
     />
   );
 }
