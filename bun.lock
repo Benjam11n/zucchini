@@ -63,6 +63,10 @@
       },
     },
   },
+  "trustedDependencies": [
+    "windows-notification-state",
+    "macos-notification-state",
+  ],
   "overrides": {
     "undici": "7.24.1",
   },

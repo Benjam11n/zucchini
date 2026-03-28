@@ -18,6 +18,14 @@ Run all commands from the repository root.
 bun install
 ```
 
+If this clone was installed before native notification addons were trusted by
+default, rerun:
+
+```bash
+bun install
+bun run rebuild:native
+```
+
 ## Common Commands
 
 ```bash

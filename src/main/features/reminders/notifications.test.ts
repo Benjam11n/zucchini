@@ -2,6 +2,7 @@ import type * as ElectronModule from "electron";
 
 import type * as AssetsModule from "@/main/app/assets";
 
+import type * as NativeAddonModule from "./native-addon";
 import {
   getDesktopNotificationStatus,
   showCatchUpReminder,
@@ -56,6 +57,11 @@ const macNotificationState = vi.hoisted(() => ({
 const windowsNotificationState = vi.hoisted(() => ({
   current: "QUNS_ACCEPTS_NOTIFICATIONS" as WindowsNotificationState,
   throwOnRead: false,
+}));
+
+const nativeAddonState = vi.hoisted(() => ({
+  macosAvailable: true,
+  windowsAvailable: true,
 }));
 
 vi.mock("electron", async (importOriginal) => {
@@ -131,11 +137,26 @@ vi.mock<WindowsNotificationStateModule>(
   })
 );
 
+vi.mock<typeof NativeAddonModule>(import("./native-addon"), () => ({
+  hasNativeAddonBinary: ({ packageName }: { packageName: string }) => {
+    if (packageName === "macos-notification-state") {
+      return nativeAddonState.macosAvailable;
+    }
+
+    if (packageName === "windows-notification-state") {
+      return nativeAddonState.windowsAvailable;
+    }
+
+    return false;
+  },
+}));
+
 vi.mock<typeof AssetsModule>(import("@/main/app/assets"), () => ({
   resolveMascotAssetPath: (filename: string) => `/mocked/${filename}`,
 }));
 
 const originalPlatform = process.platform;
+const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 function setPlatform(platform: NodeJS.Platform): void {
   Object.defineProperty(process, "platform", {
@@ -152,6 +173,9 @@ function resetState(): void {
   macNotificationState.throwOnRead = false;
   windowsNotificationState.current = "QUNS_ACCEPTS_NOTIFICATIONS";
   windowsNotificationState.throwOnRead = false;
+  nativeAddonState.macosAvailable = true;
+  nativeAddonState.windowsAvailable = true;
+  consoleWarn.mockClear();
   setPlatform(originalPlatform);
 }
 
@@ -286,6 +310,22 @@ describe("notifications", () => {
     });
   });
 
+  it("warns and falls back when the macOS native addon is missing", async () => {
+    resetState();
+    setPlatform("darwin");
+    nativeAddonState.macosAvailable = false;
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+    expect(consoleWarn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Native addon "macos-notification-state" is unavailable'
+      )
+    );
+  });
+
   it("maps Windows quiet time to a blocked status", async () => {
     resetState();
     setPlatform("win32");
@@ -317,6 +357,22 @@ describe("notifications", () => {
       availability: "unknown",
       reason: "platform-error",
     });
+  });
+
+  it("warns and falls back when the Windows native addon is missing", async () => {
+    resetState();
+    setPlatform("win32");
+    nativeAddonState.windowsAvailable = false;
+
+    await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
+      availability: "unknown",
+      reason: "platform-error",
+    });
+    expect(consoleWarn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Native addon "windows-notification-state" is unavailable'
+      )
+    );
   });
 
   it("returns unsupported on Linux", async () => {

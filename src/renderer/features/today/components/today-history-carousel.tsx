@@ -32,6 +32,7 @@ export function TodayHistoryCarousel({
   }
 
   // Get the last string of days up to 14, reverse to show chronological order
+  // CHECK: can we move all of these magic strings to maybe a config file? yaml or json or whatever
   const days = [...history].slice(0, 14).toReversed();
 
   return (

@@ -3,6 +3,8 @@ import { nativeImage, Notification } from "electron";
 import { resolveMascotAssetPath } from "@/main/app/assets";
 import type { DesktopNotificationStatus } from "@/shared/contracts/habits-ipc";
 
+import { hasNativeAddonBinary } from "./native-addon";
+
 interface MacOsNotificationStateModule {
   getNotificationState: () => Promise<
     | "DO_NOT_DISTURB"
@@ -25,6 +27,8 @@ interface WindowsNotificationStateModule {
     | "UNKNOWN_ERROR";
 }
 
+const warnedMissingAddons = new Set<string>();
+
 function createBlockedStatus(
   reason: DesktopNotificationStatus["reason"]
 ): DesktopNotificationStatus {
@@ -39,6 +43,17 @@ function createUnknownStatus(): DesktopNotificationStatus {
     availability: "unknown",
     reason: "platform-error",
   };
+}
+
+function warnMissingNativeAddon(packageName: string): void {
+  if (warnedMissingAddons.has(packageName)) {
+    return;
+  }
+
+  warnedMissingAddons.add(packageName);
+  console.warn(
+    `[reminders] Native addon "${packageName}" is unavailable. Reminder status detection will fall back to "unknown". Run \`bun run rebuild:native\` to rebuild optional native modules.`
+  );
 }
 
 function showNotification(
@@ -74,6 +89,16 @@ export function showDesktopNotification(
 }
 
 async function getMacOsNotificationStatus(): Promise<DesktopNotificationStatus> {
+  if (
+    !hasNativeAddonBinary({
+      bindingName: "notificationstate",
+      packageName: "macos-notification-state",
+    })
+  ) {
+    warnMissingNativeAddon("macos-notification-state");
+    return createUnknownStatus();
+  }
+
   try {
     const module =
       (await import("macos-notification-state")) as MacOsNotificationStateModule;
@@ -95,6 +120,16 @@ async function getMacOsNotificationStatus(): Promise<DesktopNotificationStatus> 
 }
 
 async function getWindowsNotificationStatus(): Promise<DesktopNotificationStatus> {
+  if (
+    !hasNativeAddonBinary({
+      bindingName: "notificationstate",
+      packageName: "windows-notification-state",
+    })
+  ) {
+    warnMissingNativeAddon("windows-notification-state");
+    return createUnknownStatus();
+  }
+
   try {
     const module =
       (await import("windows-notification-state")) as WindowsNotificationStateModule;
