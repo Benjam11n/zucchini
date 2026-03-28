@@ -54,7 +54,7 @@ export function Toaster(props: ToasterProps) {
         success: <CircleCheckIcon className="size-4" />,
         warning: <TriangleAlertIcon className="size-4" />,
       }}
-      position="bottom-right"
+      position="bottom-left"
       theme={theme}
       toastOptions={{
         classNames: {

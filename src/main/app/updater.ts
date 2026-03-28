@@ -42,6 +42,7 @@ type IpcHandlerResult = AppUpdateState | undefined;
 export interface AutoUpdaterLike {
   autoDownload: boolean;
   autoInstallOnAppQuit: boolean;
+  allowPrerelease?: boolean;
   forceDevUpdateConfig?: boolean;
   logger?: LoggerLike | null;
   checkForUpdates: () => Promise<unknown>;
@@ -104,6 +105,10 @@ function toDownloadedErrorState(state: AppUpdateState): AppUpdateState {
     progressPercent: 100,
     status: "downloaded",
   };
+}
+
+function isPrereleaseVersion(version: string): boolean {
+  return version.includes("-");
 }
 
 export function resolveAppUpdateSupportMode({
@@ -249,6 +254,7 @@ export function registerAppUpdater({
 
   updater.autoDownload = false;
   updater.autoInstallOnAppQuit = false;
+  updater.allowPrerelease = isPrereleaseVersion(currentVersion);
   updater.forceDevUpdateConfig = supportMode === "development";
   updater.logger = log;
 

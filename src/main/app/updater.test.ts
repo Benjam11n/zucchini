@@ -17,6 +17,7 @@ interface AppUpdaterEventMap {
 class FakeAutoUpdater {
   autoDownload = true;
   autoInstallOnAppQuit = true;
+  allowPrerelease = false;
   forceDevUpdateConfig = false;
   logger:
     | {
@@ -59,8 +60,10 @@ class FakeAutoUpdater {
 
 describe("registerAppUpdater()", () => {
   function createController({
+    currentVersion = "0.1.0",
     supportsAutoUpdates = true,
   }: {
+    currentVersion?: string;
     supportsAutoUpdates?: boolean;
   } = {}) {
     const updater = new FakeAutoUpdater();
@@ -79,7 +82,7 @@ describe("registerAppUpdater()", () => {
 
     const controller = registerAppUpdater({
       broadcastState,
-      currentVersion: "0.1.0",
+      currentVersion,
       handleIpc: (channel, handler) => {
         handlers.set(channel, handler);
       },
@@ -151,6 +154,25 @@ describe("registerAppUpdater()", () => {
     await handlers.get(APP_UPDATER_CHANNELS.checkForUpdates)?.();
 
     expect(updater.checkForUpdates.mock.calls).toHaveLength(1);
+  });
+
+  it("transitions manual checks to available when a release is found", async () => {
+    const { broadcastState, handlers, updater } = createController();
+
+    await handlers.get(APP_UPDATER_CHANNELS.checkForUpdates)?.();
+
+    updater.emit("checking-for-update");
+    updater.emit("update-available", {
+      version: "0.2.0",
+    });
+
+    expect(broadcastState).toHaveBeenLastCalledWith({
+      availableVersion: "0.2.0",
+      currentVersion: "0.1.0",
+      errorMessage: null,
+      progressPercent: null,
+      status: "available",
+    });
   });
 
   it("broadcasts state changes from updater events", () => {
@@ -230,13 +252,30 @@ describe("registerAppUpdater()", () => {
   });
 
   it("schedules startup and periodic update checks", () => {
-    const { controller, scheduleInterval, scheduleTimeout } =
+    const { controller, scheduleInterval, scheduleTimeout, updater } =
       createController();
 
     controller.start();
 
     expect(scheduleTimeout.mock.calls).toHaveLength(1);
     expect(scheduleInterval.mock.calls).toHaveLength(1);
+    expect(updater.autoDownload).toBeFalsy();
+  });
+
+  it("allows prerelease updates for prerelease app versions", () => {
+    const { updater } = createController({
+      currentVersion: "0.1.1-beta.9",
+    });
+
+    expect(updater.allowPrerelease).toBeTruthy();
+  });
+
+  it("does not allow prerelease updates for stable app versions", () => {
+    const { updater } = createController({
+      currentVersion: "0.1.1",
+    });
+
+    expect(updater.allowPrerelease).toBeFalsy();
   });
 
   it("enables the documented dev updater flow when dev-app-update.yml exists", () => {

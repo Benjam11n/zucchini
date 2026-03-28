@@ -43,10 +43,17 @@ const IDLE_UPDATE_STATE: AppUpdateState = {
 };
 
 function setUpdaterState(state: AppUpdateState) {
-  const onStateChange = vi.fn(() => vi.fn());
+  let stateChangeListener: ((state: AppUpdateState) => void) | null = null;
+  const onStateChange = vi.fn((listener: (state: AppUpdateState) => void) => {
+    stateChangeListener = listener;
+    return vi.fn();
+  });
   const updater = {
     checkForUpdates: vi.fn(async () => {}),
     downloadUpdate: vi.fn(async () => {}),
+    emitStateChange(nextState: AppUpdateState) {
+      stateChangeListener?.(nextState);
+    },
     getState: vi.fn().mockResolvedValue(state),
     installUpdate: vi.fn(async () => {}),
     onStateChange,
@@ -110,6 +117,36 @@ describe("update button", () => {
 
     await waitFor(() => {
       expect(updater.downloadUpdate.mock.calls).toHaveLength(1);
+    });
+  });
+
+  it("shows a toast when updater emits an available update after loading idle", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
+    const updater = setUpdaterState(IDLE_UPDATE_STATE);
+
+    render(<UpdateButton />);
+
+    await waitFor(() => {
+      expect(updater.getState.mock.calls).toHaveLength(1);
+    });
+
+    act(() => {
+      updater.emitStateChange({
+        ...IDLE_UPDATE_STATE,
+        availableVersion: "0.1.1-beta.10",
+        status: "available",
+      });
+    });
+
+    await waitFor(() => {
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          description: "Version 0.1.1-beta.10 is available",
+        })
+      );
     });
   });
 
@@ -187,6 +224,52 @@ describe("update button", () => {
 
     await waitFor(() => {
       expect(updater.installUpdate.mock.calls).toHaveLength(1);
+    });
+  });
+
+  it("shows a new toast after dismissing a different available version", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    sonnerState.messageToastMock.mockClear();
+    const updater = setUpdaterState({
+      ...IDLE_UPDATE_STATE,
+      availableVersion: "0.1.1-beta.10",
+      status: "available",
+    });
+
+    render(<UpdateButton />);
+
+    await waitFor(() => {
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          description: "Version 0.1.1-beta.10 is available",
+        })
+      );
+    });
+
+    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.cancel as ToastAction;
+
+    act(() => {
+      cancel.onClick({} as never);
+    });
+
+    act(() => {
+      updater.emitStateChange({
+        ...IDLE_UPDATE_STATE,
+        availableVersion: "0.1.1-beta.11",
+        status: "available",
+      });
+    });
+
+    await waitFor(() => {
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          description: "Version 0.1.1-beta.11 is available",
+        })
+      );
     });
   });
 

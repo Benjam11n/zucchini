@@ -10,6 +10,7 @@ Both installers are intentionally unsigned in this phase.
 - Linux packaging remains available locally but is not part of CI release
   automation.
 - Auto-update metadata is published for Windows and macOS releases.
+- Packaged apps only detect updates from published GitHub releases, not drafts.
 - Crash reporting, code signing, and notarization are still deferred.
 
 ## Prerequisites
@@ -63,6 +64,9 @@ The workflow publishes these assets:
 The GitHub Release remains a draft so you can smoke-test the artifacts before
 publishing it.
 
+Packaged Zucchini builds will not detect that draft release in-app. The update
+becomes visible to users only after you publish the GitHub Release.
+
 ## Local Release Commands
 
 Use these commands from the repository root.
@@ -105,6 +109,10 @@ private: false
 
 If the file is present, Zucchini enables Electron's documented
 `forceDevUpdateConfig` path automatically in development.
+
+Packaged prerelease builds can detect newer published prerelease releases. The
+app checks automatically, shows a dismissible in-app notice when one is found,
+and waits for the user to start the download.
 
 If you need both Windows and macOS release artifacts, build them on their
 native platforms or rely on the GitHub Actions release workflow.
