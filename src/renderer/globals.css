@@ -231,4 +231,8 @@
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
+
+  body[data-view="widget"] {
+    background: transparent;
+  }
 }

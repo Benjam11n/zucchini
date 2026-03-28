@@ -10,14 +10,12 @@ import {
 import { configureWindowSecurity } from "./window-security";
 
 interface CreateFocusWidgetWindowOptions {
-  backgroundColor: string;
   iconPath?: string;
   getIsQuitting: () => boolean;
   onClosed: () => void;
 }
 
 export function createFocusWidgetWindow({
-  backgroundColor,
   getIsQuitting,
   iconPath,
   onClosed,
@@ -42,7 +40,7 @@ export function createFocusWidgetWindow({
   const bounds = getDefaultFocusWidgetBounds();
   const window = new BrowserWindow({
     alwaysOnTop: true,
-    backgroundColor,
+    backgroundColor: "#00000000",
     frame: false,
     fullscreenable: false,
     height: bounds.height,
@@ -52,10 +50,11 @@ export function createFocusWidgetWindow({
     minHeight: FOCUS_WIDGET_DEFAULT_HEIGHT,
     minWidth: FOCUS_WIDGET_DEFAULT_WIDTH,
     minimizable: false,
-    resizable: true,
+    resizable: false,
     show: false,
     skipTaskbar: true,
     title: "Zucchini Focus Widget",
+    transparent: true,
     webPreferences: {
       contextIsolation: true,
       navigateOnDragDrop: false,

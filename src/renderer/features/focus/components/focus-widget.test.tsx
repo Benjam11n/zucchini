@@ -129,6 +129,11 @@ describe("focus widget", () => {
     const { getTodayState } = setupWidgetTest();
 
     expect(screen.getByText("25:00")).toBeInTheDocument();
+    expect(document.body.dataset.view).toBe("widget");
+    expect(screen.getByRole("main")).toHaveClass("bg-transparent");
+
+    const widgetShell = screen.getByRole("main").firstElementChild;
+    expect(widgetShell).toHaveClass("bg-background");
 
     await waitFor(() => {
       expect(getTodayState.mock.calls[0]).toStrictEqual([]);

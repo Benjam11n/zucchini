@@ -77,13 +77,20 @@ export function FocusWidget() {
     getDefaultPomodoroTimerSettings();
 
   useEffect(() => {
+    const previousBodyView = document.body.dataset.view;
     const previousBodyOverflow = document.body.style.overflow;
     const previousRootOverflow = document.documentElement.style.overflow;
 
+    document.body.dataset.view = "widget";
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
     return () => {
+      if (previousBodyView) {
+        document.body.dataset.view = previousBodyView;
+      } else {
+        delete document.body.dataset.view;
+      }
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousRootOverflow;
     };
@@ -186,10 +193,10 @@ export function FocusWidget() {
   });
 
   return (
-    <main className="flex h-screen w-screen items-center justify-center overflow-hidden bg-background text-foreground">
+    <main className="flex h-screen w-screen items-center justify-center overflow-hidden bg-transparent text-foreground">
       <section
         ref={widgetRef}
-        className="flex min-w-max items-center gap-2 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(8,12,10,0.96),rgba(3,7,5,0.96))] px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.85)]"
+        className="flex min-w-max items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5 shadow-[0_18px_44px_-22px_rgba(0,0,0,0.28)]"
         style={DRAG_REGION_STYLE}
       >
         <FocusWidgetControls

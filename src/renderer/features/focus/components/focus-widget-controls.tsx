@@ -57,7 +57,7 @@ export function FocusWidgetControls({
 
       {isBreak ? (
         <div
-          className="rounded-full border border-white/10 bg-white/6 px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide text-white/80 uppercase"
+          className="rounded-full border border-border bg-muted px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide text-muted-foreground uppercase"
           style={NO_DRAG_REGION_STYLE}
         >
           {skipBreakLabel === "Skip long break" ? "Long break" : "Short break"}
@@ -65,7 +65,7 @@ export function FocusWidgetControls({
       ) : null}
 
       <div
-        className="flex items-center gap-1 rounded-full border border-white/8 bg-white/3 p-1"
+        className="flex items-center gap-1 rounded-full border border-border bg-muted p-1"
         style={NO_DRAG_REGION_STYLE}
       >
         {canStart ? (

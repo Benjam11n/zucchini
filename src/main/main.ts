@@ -118,7 +118,6 @@ function ensureFocusWidgetWindow(): BrowserWindow {
   }
 
   const window = createFocusWidgetWindow({
-    backgroundColor: getWindowBackgroundColor(),
     getIsQuitting: () => isQuitting,
     iconPath: resolveRuntimeIconPath(),
     onClosed: () => {
@@ -129,7 +128,6 @@ function ensureFocusWidgetWindow(): BrowserWindow {
   });
 
   configureWindowSecurity(window);
-  loadAppWindow(window, "?view=widget");
   focusWidgetWindow = window;
   return window;
 }
