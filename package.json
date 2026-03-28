@@ -24,7 +24,7 @@
     "testdata:generate:stress": "electron -r tsx/cjs scripts/generate-test-data.ts --preset stress --overwrite",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "audit": "bun audit",
-    "audit:ci": "bun audit --audit-level=high",
+    "audit:ci": "bun audit --production --audit-level=high",
     "lint": "ultracite check .",
     "format": "ultracite fix .",
     "format:check": "oxfmt --check .",

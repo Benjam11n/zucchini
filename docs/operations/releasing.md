@@ -38,7 +38,8 @@ The release workflow lives at `.github/workflows/release.yml`.
 When you push a tag that matches `v*`, GitHub Actions will:
 
 1. Run a read-only build job on Windows and macOS that checks out the code,
-   installs Bun dependencies, runs `bun run audit:ci`, runs `bun run test`,
+   installs Bun dependencies, runs `bun run audit:ci` against production
+   dependencies, runs `bun run test`,
    and runs `bun run build`.
 2. Generate release notes from commits since the previous tag and apply those
    notes to the draft GitHub Release body.
