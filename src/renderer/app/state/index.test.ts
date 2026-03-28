@@ -4,16 +4,6 @@ import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
-declare global {
-  interface PromiseConstructor {
-    withResolvers<T>(): {
-      promise: Promise<T>;
-      reject: (reason?: unknown) => void;
-      resolve: (value: T | PromiseLike<T>) => void;
-    };
-  }
-}
-
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   return {
     date: "2026-03-10",
@@ -114,7 +104,14 @@ function createFocusSession(
 }
 
 function createDeferred<T>() {
-  const { promise, reject, resolve } = Promise.withResolvers<T>();
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  // Deferred promises are intentional here so tests can control async resolution.
+  // eslint-disable-next-line promise/avoid-new
+  const promise = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
 
   return {
     promise,
