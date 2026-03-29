@@ -6,7 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import {
@@ -108,7 +108,10 @@ function HabitListItemComponent({
   showCategory,
 }: HabitListItemProps) {
   const categoryPreferences = useHabitCategoryPreferences();
-  const ui = getHabitCategoryUi(habit.category, categoryPreferences);
+  const presentation = getHabitCategoryPresentation(
+    habit.category,
+    categoryPreferences
+  );
   const hoverProps = habit.completed ? {} : { whileHover: hoverLift };
 
   return (
@@ -132,8 +135,8 @@ function HabitListItemComponent({
         onCheckedChange={() => onToggle(habit.id)}
         style={
           {
-            backgroundColor: habit.completed ? ui.color : undefined,
-            borderColor: ui.color,
+            backgroundColor: habit.completed ? presentation.color : undefined,
+            borderColor: presentation.color,
             color: habit.completed ? "#fff" : undefined,
           } as CSSProperties
         }
@@ -150,9 +153,9 @@ function HabitListItemComponent({
         {showCategory && (
           <span
             className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
-            style={{ color: ui.color }}
+            style={{ color: presentation.color }}
           >
-            {ui.label}
+            {presentation.label}
           </span>
         )}
       </div>
@@ -167,7 +170,7 @@ function HabitListItemComponent({
           >
             <CheckCircle2
               className="size-3.5 opacity-60"
-              style={{ color: ui.color }}
+              style={{ color: presentation.color }}
             />
           </m.span>
         ) : null}

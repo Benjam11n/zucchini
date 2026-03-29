@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
@@ -114,7 +114,10 @@ export function HabitRowEditor({
   const categoryPreferences = useHabitCategoryPreferences();
   const [draftName, setDraftName] = useState(habit.name);
   const lastCommittedNameRef = useRef(habit.name);
-  const categoryUi = getHabitCategoryUi(habit.category, categoryPreferences);
+  const categoryPresentation = getHabitCategoryPresentation(
+    habit.category,
+    categoryPreferences
+  );
   const isDragging = dragState?.draggedHabitId === habit.id;
   const showDropBefore =
     dragState?.overHabitId === habit.id && dragState.position === "before";
@@ -192,18 +195,18 @@ export function HabitRowEditor({
                     <span
                       className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
                       style={{
-                        backgroundColor: categoryUi.color,
-                        borderColor: categoryUi.color,
-                        color: categoryUi.selectedTextColor,
+                        backgroundColor: categoryPresentation.color,
+                        borderColor: categoryPresentation.color,
+                        color: categoryPresentation.selectedTextColor,
                       }}
                     >
                       <span
                         className="size-1.5 rounded-full"
                         style={{
-                          backgroundColor: `color-mix(in srgb, ${categoryUi.selectedTextColor} 50%, transparent)`,
+                          backgroundColor: `color-mix(in srgb, ${categoryPresentation.selectedTextColor} 50%, transparent)`,
                         }}
                       />
-                      {categoryUi.label}
+                      {categoryPresentation.label}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {getCadenceSummary(habit)}

@@ -3,9 +3,8 @@ import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
-import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
@@ -96,8 +95,11 @@ function HabitChecklistComponent({
         ) : null}
 
         {habitsByCategory.map((category) => {
-          const ui = getHabitCategoryUi(category.value, categoryPreferences);
-          const CategoryIcon = HABIT_CATEGORY_ICONS[category.value];
+          const presentation = getHabitCategoryPresentation(
+            category.value,
+            categoryPreferences
+          );
+          const CategoryIcon = presentation.icon;
 
           return (
             <m.div
@@ -110,13 +112,13 @@ function HabitChecklistComponent({
               <div className="flex items-center gap-2 px-0.5 pb-1">
                 <CategoryIcon
                   className="size-3 shrink-0 opacity-60"
-                  style={{ color: ui.color }}
+                  style={{ color: presentation.color }}
                 />
                 <span
                   className="text-[0.68rem] uppercase tracking-wide"
-                  style={{ color: ui.color }}
+                  style={{ color: presentation.color }}
                 >
-                  {ui.label}
+                  {presentation.label}
                 </span>
                 <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
                   {category.completedCount}/{category.habits.length}

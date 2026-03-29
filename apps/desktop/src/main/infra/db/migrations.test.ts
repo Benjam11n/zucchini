@@ -98,6 +98,7 @@ describe.skipIf(!canUseSqlite())("runMigrations", () => {
     expect(JSON.parse(row.category_preferences)).toStrictEqual({
       fitness: {
         color: "#CC3355",
+        icon: "dumbbell",
         label: "Movement",
       },
       nutrition: defaults.categoryPreferences.nutrition,

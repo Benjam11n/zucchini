@@ -1,3 +1,4 @@
+import type { AppSettings } from "@/shared/domain/settings";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { SqliteSettingsRepository } from "./settings-repository";
@@ -100,19 +101,22 @@ describe("SqliteSettingsRepository", () => {
   it("round-trips category preferences through the settings row", () => {
     const client = createFakeClient();
     const repository = new SqliteSettingsRepository(client as never);
-    const customSettings = {
+    const customSettings: AppSettings = {
       ...createDefaultAppSettings("Asia/Singapore"),
       categoryPreferences: {
         fitness: {
           color: "#CC3355",
+          icon: "heartPulse",
           label: "Movement",
         },
         nutrition: {
           color: "#66CC22",
+          icon: "apple",
           label: "Fuel",
         },
         productivity: {
           color: "#22BBDD",
+          icon: "brain",
           label: "Work",
         },
       },

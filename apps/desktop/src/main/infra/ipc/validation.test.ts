@@ -69,6 +69,40 @@ describe("ipc validation", () => {
     ).toThrow(IpcValidationError);
   });
 
+  it("accepts category preferences with supported icon fields", () => {
+    const settings = createDefaultAppSettings("Asia/Singapore");
+
+    expect(
+      validateAppSettings({
+        ...settings,
+        categoryPreferences: {
+          ...settings.categoryPreferences,
+          nutrition: {
+            ...settings.categoryPreferences.nutrition,
+            icon: "apple",
+          },
+        },
+      }).categoryPreferences.nutrition.icon
+    ).toBe("apple");
+  });
+
+  it("rejects unsupported category icon ids", () => {
+    const settings = createDefaultAppSettings("Asia/Singapore");
+
+    expect(() =>
+      validateAppSettings({
+        ...settings,
+        categoryPreferences: {
+          ...settings.categoryPreferences,
+          nutrition: {
+            ...settings.categoryPreferences.nutrition,
+            icon: "sparkles",
+          },
+        },
+      })
+    ).toThrow(IpcValidationError);
+  });
+
   it("rejects duplicate habit ids in reorder payloads", () => {
     expect(() => validateReorderHabitIds([1, 1, 2])).toThrow(
       IpcValidationError

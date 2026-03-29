@@ -7,6 +7,8 @@
  */
 import { parseDateKey } from "@/shared/utils/date";
 
+// Category slots are fixed product-defined identities. Users can customize
+// the display label, color, and icon for each slot.
 export const HABIT_CATEGORY_SLOTS = [
   {
     defaultLabel: "Nutrition",

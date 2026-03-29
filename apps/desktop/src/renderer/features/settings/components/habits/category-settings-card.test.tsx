@@ -62,5 +62,54 @@ describe("CategorySettingsCard", () => {
         },
       },
     });
+
+    fireEvent.click(screen.getByLabelText("Use Apple icon for Nutrition"));
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...settings,
+      categoryPreferences: {
+        ...settings.categoryPreferences,
+        nutrition: {
+          ...settings.categoryPreferences.nutrition,
+          icon: "apple",
+        },
+      },
+    });
+  });
+
+  it("updates icon picker labels when category names change", () => {
+    const settings = createDefaultAppSettings("Asia/Singapore");
+
+    const { rerender } = render(
+      <CategorySettingsCard
+        fieldErrors={{}}
+        onChange={vi.fn()}
+        settings={settings}
+      />
+    );
+
+    expect(screen.getByTitle("Change Nutrition color")).toBeInTheDocument();
+
+    rerender(
+      <CategorySettingsCard
+        fieldErrors={{}}
+        onChange={vi.fn()}
+        settings={{
+          ...settings,
+          categoryPreferences: {
+            ...settings.categoryPreferences,
+            nutrition: {
+              ...settings.categoryPreferences.nutrition,
+              label: "Fuel",
+            },
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByTitle("Change Fuel color")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Use Apple icon for Fuel")
+    ).toBeInTheDocument();
   });
 });

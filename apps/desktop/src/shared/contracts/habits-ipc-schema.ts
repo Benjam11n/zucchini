@@ -10,6 +10,7 @@ import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shor
 import {
   isValidGlobalShortcutAccelerator,
   isValidHabitCategoryColor,
+  isValidHabitCategoryIcon,
   isValidHabitCategoryLabel,
   isValidFocusDurationSeconds,
   isValidFocusBreakDurationSeconds,
@@ -55,6 +56,9 @@ const habitCategoryMetadataSchema = z
   .object({
     color: z.string().refine(isValidHabitCategoryColor, {
       message: "Category colors must use #RRGGBB format.",
+    }),
+    icon: z.string().refine(isValidHabitCategoryIcon, {
+      message: "Category icons must use a supported icon id.",
     }),
     label: z.string().refine(isValidHabitCategoryLabel, {
       message: "Category labels must be between 1 and 24 characters.",

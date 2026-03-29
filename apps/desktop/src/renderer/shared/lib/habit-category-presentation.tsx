@@ -1,6 +1,8 @@
+import type { LucideIcon } from "lucide-react";
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 
+import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import type { HabitCategory } from "@/shared/domain/habit";
 import type {
   HabitCategoryPreferences,
@@ -62,10 +64,38 @@ export function getHabitCategoryColor(
   return preferences[category].color;
 }
 
-export function getHabitCategoryUi(
+export function getHabitCategoryIcon(
   category: HabitCategory,
   preferences = DEFAULT_CATEGORY_PREFERENCES
-) {
+): LucideIcon {
+  return HABIT_CATEGORY_ICONS[preferences[category].icon];
+}
+
+export function getHabitCategoryPresentation(
+  category: HabitCategory,
+  preferences = DEFAULT_CATEGORY_PREFERENCES
+): {
+  badgeStyle: {
+    backgroundColor: string;
+    borderColor: string;
+    color: string;
+  };
+  color: string;
+  icon: LucideIcon;
+  label: string;
+  panelStyle: {
+    backgroundColor: string;
+    borderColor: string;
+  };
+  progressStyle: {
+    backgroundColor: string;
+  };
+  ringTrackColor: string;
+  selectedTextColor: string;
+  textStyle: {
+    color: string;
+  };
+} {
   const color = getHabitCategoryColor(category, preferences);
   const selectedTextColor = getTextColorOnColor(color);
 
@@ -76,6 +106,7 @@ export function getHabitCategoryUi(
       color,
     },
     color,
+    icon: getHabitCategoryIcon(category, preferences),
     label: getHabitCategoryLabel(category, preferences),
     panelStyle: {
       backgroundColor: `color-mix(in srgb, ${color} 6%, transparent)`,
@@ -90,6 +121,13 @@ export function getHabitCategoryUi(
       color,
     },
   };
+}
+
+export function getHabitCategoryUi(
+  category: HabitCategory,
+  preferences = DEFAULT_CATEGORY_PREFERENCES
+) {
+  return getHabitCategoryPresentation(category, preferences);
 }
 
 export function getDefaultHabitCategoryPreferences() {

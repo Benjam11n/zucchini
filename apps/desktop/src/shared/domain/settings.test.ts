@@ -5,6 +5,7 @@ import {
   createDefaultFocusTimerShortcutSettings,
   isValidGlobalShortcutAccelerator,
   normalizeHabitCategoryColor,
+  normalizeHabitCategoryIcon,
   normalizeHabitCategoryLabel,
   normalizeHabitCategoryPreferences,
   normalizeGlobalShortcutAccelerator,
@@ -61,14 +62,17 @@ describe("focus timer shortcut settings", () => {
     expect(createDefaultHabitCategoryPreferences()).toStrictEqual({
       fitness: {
         color: "#FF2D55",
+        icon: "dumbbell",
         label: "Fitness",
       },
       nutrition: {
         color: "#A3F900",
+        icon: "utensils",
         label: "Nutrition",
       },
       productivity: {
         color: "#04C7DD",
+        icon: "zap",
         label: "Productivity",
       },
     });
@@ -83,10 +87,14 @@ describe("focus timer shortcut settings", () => {
     expect(normalizeHabitCategoryColor("teal", defaults.fitness.color)).toBe(
       defaults.fitness.color
     );
+    expect(normalizeHabitCategoryIcon("sparkles", defaults.fitness.icon)).toBe(
+      defaults.fitness.icon
+    );
     expect(
       normalizeHabitCategoryPreferences({
         fitness: {
           color: "teal",
+          icon: "sparkles" as never,
           label: "",
         },
       })

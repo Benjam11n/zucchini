@@ -2,10 +2,11 @@ import { RotateCcw, Tags } from "lucide-react";
 import { useRef } from "react";
 
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
+import { cn } from "@/renderer/shared/lib/class-names";
+import { HABIT_CATEGORY_ICON_OPTIONS } from "@/renderer/shared/lib/habit-categories";
 import {
   getDefaultHabitCategoryPreferences,
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { Button } from "@/renderer/shared/ui/button";
 import {
@@ -59,8 +60,8 @@ export function CategorySettingsCard({
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Click the activity rings to change your category colors, and rename
-          them below. Existing habits update automatically.
+          Click the activity rings to change your category colors, rename them,
+          and choose an icon below. Existing habits update automatically.
         </p>
       </CardHeader>
       <CardContent>
@@ -73,7 +74,7 @@ export function CategorySettingsCard({
               viewBox="0 0 200 200"
             >
               {HABIT_CATEGORY_SLOTS.map(({ value }, index) => {
-                const categoryUi = getHabitCategoryUi(
+                const categoryPresentation = getHabitCategoryPresentation(
                   value,
                   settings.categoryPreferences
                 );
@@ -105,7 +106,7 @@ export function CategorySettingsCard({
                       cx="100"
                       cy="100"
                       r={r}
-                      stroke={categoryUi.color}
+                      stroke={categoryPresentation.color}
                       strokeDasharray={circumference}
                       strokeDashoffset={circumference * 0.25}
                       strokeLinecap="round"
@@ -120,11 +121,11 @@ export function CategorySettingsCard({
           {/* EDITABLE LABELS AND CONTROLS */}
           <div className="flex w-full flex-1 flex-col gap-4">
             {HABIT_CATEGORY_SLOTS.map(({ value }) => {
-              const Icon = HABIT_CATEGORY_ICONS[value];
-              const categoryUi = getHabitCategoryUi(
+              const categoryPresentation = getHabitCategoryPresentation(
                 value,
                 settings.categoryPreferences
               );
+              const Icon = categoryPresentation.icon;
 
               return (
                 <div
@@ -135,11 +136,11 @@ export function CategorySettingsCard({
                     className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-transform hover:scale-105"
                     onClick={() => colorPickerRefs[value]?.current?.click()}
                     style={{
-                      backgroundColor: `${categoryUi.color}20`,
-                      borderColor: categoryUi.color,
-                      color: categoryUi.color,
+                      backgroundColor: `${categoryPresentation.color}20`,
+                      borderColor: categoryPresentation.color,
+                      color: categoryPresentation.color,
                     }}
-                    title={`Change ${categoryUi.label} color`}
+                    title={`Change ${categoryPresentation.label} color`}
                     type="button"
                   >
                     <Icon className="size-5" />
@@ -148,7 +149,7 @@ export function CategorySettingsCard({
                   {/* Hidden Color Picker Input */}
                   <input
                     ref={colorPickerRefs[value]}
-                    aria-label={`${categoryUi.label} color`}
+                    aria-label={`${categoryPresentation.label} color`}
                     className="sr-only"
                     id={`category-color-${value}`}
                     onChange={(event) => {
@@ -167,7 +168,7 @@ export function CategorySettingsCard({
                     value={settings.categoryPreferences[value].color}
                   />
 
-                  <div className="flex w-full min-w-0 flex-1 flex-col gap-1.5">
+                  <div className="flex w-full min-w-0 flex-1 flex-col gap-2">
                     <Label
                       className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                       htmlFor={`category-label-${value}`}
@@ -193,6 +194,52 @@ export function CategorySettingsCard({
                       type="text"
                       value={settings.categoryPreferences[value].label}
                     />
+                    <div className="flex flex-wrap gap-1.5">
+                      {HABIT_CATEGORY_ICON_OPTIONS.map((option) => {
+                        const OptionIcon = option.icon;
+                        const isSelected =
+                          settings.categoryPreferences[value].icon ===
+                          option.value;
+
+                        return (
+                          <button
+                            key={option.value}
+                            aria-label={`Use ${option.label} icon for ${categoryPresentation.label}`}
+                            className={cn(
+                              "flex size-8 items-center justify-center rounded-lg border transition-colors",
+                              isSelected
+                                ? "shadow-sm"
+                                : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+                            )}
+                            onClick={() => {
+                              onChange({
+                                ...settings,
+                                categoryPreferences: {
+                                  ...settings.categoryPreferences,
+                                  [value]: {
+                                    ...settings.categoryPreferences[value],
+                                    icon: option.value,
+                                  },
+                                },
+                              });
+                            }}
+                            style={
+                              isSelected
+                                ? {
+                                    backgroundColor: `${categoryPresentation.color}18`,
+                                    borderColor: categoryPresentation.color,
+                                    color: categoryPresentation.color,
+                                  }
+                                : undefined
+                            }
+                            title={`Use ${option.label} icon`}
+                            type="button"
+                          >
+                            <OptionIcon className="size-4" />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <Button

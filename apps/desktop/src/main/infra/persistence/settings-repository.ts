@@ -5,6 +5,7 @@ import {
   createDefaultAppSettings,
   isValidGlobalShortcutAccelerator,
   normalizeHabitCategoryColor,
+  normalizeHabitCategoryIcon,
   normalizeHabitCategoryLabel,
 } from "@/shared/domain/settings";
 import type {
@@ -28,13 +29,17 @@ function parseCategoryMetadata(
 ): HabitCategoryPreferences[keyof HabitCategoryPreferences] {
   const candidate =
     value && typeof value === "object"
-      ? (value as Partial<Record<"color" | "label", unknown>>)
+      ? (value as Partial<Record<"color" | "icon" | "label", unknown>>)
       : null;
 
   return {
     color: normalizeHabitCategoryColor(
       typeof candidate?.color === "string" ? candidate.color : undefined,
       defaults.color
+    ),
+    icon: normalizeHabitCategoryIcon(
+      typeof candidate?.icon === "string" ? candidate.icon : undefined,
+      defaults.icon
     ),
     label: normalizeHabitCategoryLabel(
       typeof candidate?.label === "string" ? candidate.label : undefined,

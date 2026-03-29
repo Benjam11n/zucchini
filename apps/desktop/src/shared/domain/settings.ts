@@ -21,8 +21,20 @@ export interface FocusTimerShortcutSettings {
   toggleFocusTimerShortcut: string;
 }
 
+export const HABIT_CATEGORY_ICON_VALUES = [
+  "utensils",
+  "apple",
+  "zap",
+  "brain",
+  "dumbbell",
+  "heartPulse",
+] as const;
+
+export type HabitCategoryIcon = (typeof HABIT_CATEGORY_ICON_VALUES)[number];
+
 export interface HabitCategoryMetadata {
   color: string;
+  icon: HabitCategoryIcon;
   label: string;
 }
 
@@ -86,6 +98,12 @@ const DEFAULT_HABIT_CATEGORY_COLORS: Record<HabitCategory, string> = {
   fitness: "#FF2D55",
   nutrition: "#A3F900",
   productivity: "#04C7DD",
+};
+
+const DEFAULT_HABIT_CATEGORY_ICONS: Record<HabitCategory, HabitCategoryIcon> = {
+  fitness: "dumbbell",
+  nutrition: "utensils",
+  productivity: "zap",
 };
 
 export interface AppSettings {
@@ -153,6 +171,7 @@ export function createDefaultHabitCategoryPreferences(): HabitCategoryPreference
       value,
       {
         color: DEFAULT_HABIT_CATEGORY_COLORS[value],
+        icon: DEFAULT_HABIT_CATEGORY_ICONS[value],
         label: defaultLabel,
       },
     ])
@@ -277,6 +296,12 @@ export function isValidHabitCategoryColor(value: string): boolean {
   return HEX_COLOR_PATTERN.test(value);
 }
 
+export function isValidHabitCategoryIcon(
+  value: string
+): value is HabitCategoryIcon {
+  return HABIT_CATEGORY_ICON_VALUES.includes(value as HabitCategoryIcon);
+}
+
 export function normalizeHabitCategoryColor(
   value: string | null | undefined,
   fallback: string
@@ -290,6 +315,19 @@ export function normalizeHabitCategoryColor(
   return isValidHabitCategoryColor(normalizedValue)
     ? normalizedValue
     : fallback;
+}
+
+export function normalizeHabitCategoryIcon(
+  value: string | null | undefined,
+  fallback: HabitCategoryIcon
+): HabitCategoryIcon {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const normalizedValue = value.trim();
+
+  return isValidHabitCategoryIcon(normalizedValue) ? normalizedValue : fallback;
 }
 
 export function normalizeHabitCategoryPreferences(
@@ -309,6 +347,7 @@ export function normalizeHabitCategoryPreferences(
         category,
         {
           color: normalizeHabitCategoryColor(candidate?.color, fallback.color),
+          icon: normalizeHabitCategoryIcon(candidate?.icon, fallback.icon),
           label: normalizeHabitCategoryLabel(candidate?.label, fallback.label),
         },
       ];

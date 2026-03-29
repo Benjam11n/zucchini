@@ -9,9 +9,8 @@ import {
 } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
@@ -119,12 +118,11 @@ export function HistoryDayPanel({
               <Card className="border-border/60 bg-card/85">
                 <CardContent className="grid gap-4 p-4">
                   {selectedDay.categoryProgress.map((progress) => {
-                    const categoryUi = getHabitCategoryUi(
+                    const categoryPresentation = getHabitCategoryPresentation(
                       progress.category,
                       categoryPreferences
                     );
-                    const CategoryIcon =
-                      HABIT_CATEGORY_ICONS[progress.category];
+                    const CategoryIcon = categoryPresentation.icon;
 
                     return (
                       <m.div
@@ -139,13 +137,13 @@ export function HistoryDayPanel({
                               aria-hidden="true"
                               className="size-3 shrink-0 opacity-60"
                               data-testid={`history-category-icon-${progress.category}`}
-                              style={{ color: categoryUi.color }}
+                              style={{ color: categoryPresentation.color }}
                             />
                             <span
                               className="text-[0.68rem] uppercase tracking-wide"
-                              style={{ color: categoryUi.color }}
+                              style={{ color: categoryPresentation.color }}
                             >
-                              {categoryUi.label}
+                              {categoryPresentation.label}
                             </span>
                           </span>
                           <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
@@ -154,7 +152,7 @@ export function HistoryDayPanel({
                         </div>
                         <Progress
                           className="mt-1.5 h-1.5 bg-muted/60"
-                          indicatorStyle={categoryUi.progressStyle}
+                          indicatorStyle={categoryPresentation.progressStyle}
                           value={progress.progress}
                         />
                       </m.div>

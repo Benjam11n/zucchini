@@ -1,9 +1,8 @@
 import { m } from "framer-motion";
 
 import { cn } from "@/renderer/shared/lib/class-names";
-import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
-  getHabitCategoryUi,
+  getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import {
@@ -37,9 +36,12 @@ export function HabitCategorySelector({
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {HABIT_CATEGORY_DEFINITIONS.map((category) => {
-        const CategoryIcon = HABIT_CATEGORY_ICONS[category.value];
         const isSelected = selectedCategory === category.value;
-        const ui = getHabitCategoryUi(category.value, categoryPreferences);
+        const presentation = getHabitCategoryPresentation(
+          category.value,
+          categoryPreferences
+        );
+        const CategoryIcon = presentation.icon;
 
         return (
           <m.button
@@ -59,9 +61,9 @@ export function HabitCategorySelector({
             {...(isSelected
               ? {
                   style: {
-                    backgroundColor: ui.color,
-                    borderColor: ui.color,
-                    color: ui.selectedTextColor,
+                    backgroundColor: presentation.color,
+                    borderColor: presentation.color,
+                    color: presentation.selectedTextColor,
                   },
                 }
               : {})}
@@ -74,11 +76,11 @@ export function HabitCategorySelector({
               className="size-2 shrink-0 rounded-full"
               style={{
                 backgroundColor: isSelected
-                  ? `color-mix(in srgb, ${ui.selectedTextColor} 55%, transparent)`
-                  : ui.color,
+                  ? `color-mix(in srgb, ${presentation.selectedTextColor} 55%, transparent)`
+                  : presentation.color,
               }}
             />
-            {ui.label}
+            {presentation.label}
           </m.button>
         );
       })}
