@@ -6,7 +6,7 @@ export type MockHabitsApi = {
   [K in keyof HabitsApi]: ReturnType<typeof vi.fn>;
 };
 
-export function createMockHabitsApi(
+function createMockHabitsApi(
   overrides: Partial<MockHabitsApi> = {}
 ): MockHabitsApi {
   const mock = {

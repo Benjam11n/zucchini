@@ -23,7 +23,7 @@ export interface PersistedFocusTimerState {
   timerSessionId: string | null;
 }
 
-export function arePersistedCompletedBreakStatesEqual(
+function arePersistedCompletedBreakStatesEqual(
   left: PersistedCompletedBreakState | null,
   right: PersistedCompletedBreakState | null
 ): boolean {

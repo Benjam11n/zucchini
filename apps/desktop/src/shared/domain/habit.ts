@@ -24,8 +24,6 @@ export const HABIT_CATEGORY_SLOTS = [
   },
 ] as const;
 
-export const HABIT_CATEGORY_DEFINITIONS = HABIT_CATEGORY_SLOTS;
-
 export type HabitCategory = (typeof HABIT_CATEGORY_SLOTS)[number]["value"];
 
 export const HABIT_FREQUENCY_DEFINITIONS = [
@@ -115,9 +113,7 @@ export interface HabitCategoryProgress {
 }
 
 function isHabitCategory(value: string): value is HabitCategory {
-  return HABIT_CATEGORY_DEFINITIONS.some(
-    (definition) => definition.value === value
-  );
+  return HABIT_CATEGORY_SLOTS.some((definition) => definition.value === value);
 }
 
 function isHabitFrequency(value: string): value is HabitFrequency {
@@ -196,7 +192,7 @@ export function isHabitScheduledForDate(
 export function getHabitCategoryProgress(
   habits: readonly HabitWithStatus[]
 ): HabitCategoryProgress[] {
-  return HABIT_CATEGORY_DEFINITIONS.map(({ value }) => {
+  return HABIT_CATEGORY_SLOTS.map(({ value }) => {
     const habitsInCategory = habits.filter((habit) => habit.category === value);
     const completed = habitsInCategory.filter(
       (habit) => habit.completed

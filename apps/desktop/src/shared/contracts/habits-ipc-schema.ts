@@ -223,7 +223,7 @@ export const createFocusSessionInputSchema = z
   })
   .strict();
 
-export const persistedCompletedBreakStateSchema = z
+const persistedCompletedBreakStateSchema = z
   .object({
     completedAt: isoTimestampSchema,
     timerSessionId: z.string().trim().min(1).max(120),

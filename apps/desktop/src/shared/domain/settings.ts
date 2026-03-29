@@ -422,18 +422,6 @@ export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
   );
 }
 
-export function isValidPomodoroTimerSettings(
-  settings: PomodoroTimerSettings
-): boolean {
-  return (
-    isValidFocusDurationSeconds(settings.focusDefaultDurationSeconds) &&
-    isValidFocusCyclesBeforeLongBreak(settings.focusCyclesBeforeLongBreak) &&
-    isValidFocusBreakDurationSeconds(settings.focusLongBreakSeconds) &&
-    isValidFocusBreakDurationSeconds(settings.focusShortBreakSeconds) &&
-    settings.focusLongBreakSeconds >= settings.focusShortBreakSeconds
-  );
-}
-
 export function isValidTimeZone(value: string): boolean {
   try {
     new Intl.DateTimeFormat("en-CA", {

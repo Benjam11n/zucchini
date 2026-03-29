@@ -9,7 +9,7 @@ import {
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import { HabitListCard, HabitListItem } from "@/renderer/shared/ui/habit-list";
-import { HABIT_CATEGORY_DEFINITIONS } from "@/shared/domain/habit";
+import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 
 interface HabitChecklistProps {
@@ -22,7 +22,7 @@ interface HabitChecklistProps {
   icon?: React.ElementType;
 }
 
-type CategoryGroup = (typeof HABIT_CATEGORY_DEFINITIONS)[number] & {
+type CategoryGroup = (typeof HABIT_CATEGORY_SLOTS)[number] & {
   completedCount: number;
   habits: HabitWithStatus[];
 };
@@ -47,7 +47,7 @@ function HabitChecklistComponent({
       : {};
   const habitsByCategory = useMemo(() => {
     const groupedHabits = Object.fromEntries(
-      HABIT_CATEGORY_DEFINITIONS.map((category) => [
+      HABIT_CATEGORY_SLOTS.map((category) => [
         category.value,
         {
           completedCount: 0,
@@ -68,7 +68,7 @@ function HabitChecklistComponent({
       }
     }
 
-    return HABIT_CATEGORY_DEFINITIONS.map((category) => ({
+    return HABIT_CATEGORY_SLOTS.map((category) => ({
       ...category,
       completedCount: groupedHabits[category.value].completedCount,
       habits: groupedHabits[category.value].habits,

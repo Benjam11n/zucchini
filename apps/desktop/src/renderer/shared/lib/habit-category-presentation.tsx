@@ -4,10 +4,7 @@ import type { ReactNode } from "react";
 
 import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import type { HabitCategory } from "@/shared/domain/habit";
-import type {
-  HabitCategoryPreferences,
-  AppSettings,
-} from "@/shared/domain/settings";
+import type { HabitCategoryPreferences } from "@/shared/domain/settings";
 import { createDefaultHabitCategoryPreferences } from "@/shared/domain/settings";
 
 const DEFAULT_CATEGORY_PREFERENCES = createDefaultHabitCategoryPreferences();
@@ -34,12 +31,6 @@ export function useHabitCategoryPreferences(): HabitCategoryPreferences {
   return useContext(HabitCategoryPreferencesContext);
 }
 
-export function getCategoryPreferencesFromSettings(
-  settings: Pick<AppSettings, "categoryPreferences">
-): HabitCategoryPreferences {
-  return settings.categoryPreferences;
-}
-
 function getTextColorOnColor(backgroundColor: string): string {
   const hex = backgroundColor.replace("#", "");
   const red = Number.parseInt(hex.slice(0, 2), 16);
@@ -64,7 +55,7 @@ export function getHabitCategoryColor(
   return preferences[category].color;
 }
 
-export function getHabitCategoryIcon(
+function getHabitCategoryIcon(
   category: HabitCategory,
   preferences = DEFAULT_CATEGORY_PREFERENCES
 ): LucideIcon {

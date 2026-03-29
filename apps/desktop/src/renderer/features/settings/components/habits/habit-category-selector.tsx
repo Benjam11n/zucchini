@@ -11,7 +11,7 @@ import {
   tapPress,
 } from "@/renderer/shared/lib/motion";
 import {
-  HABIT_CATEGORY_DEFINITIONS,
+  HABIT_CATEGORY_SLOTS,
   normalizeHabitCategory,
 } from "@/shared/domain/habit";
 import type { HabitCategory } from "@/shared/domain/habit";
@@ -35,7 +35,7 @@ export function HabitCategorySelector({
 
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
-      {HABIT_CATEGORY_DEFINITIONS.map((category) => {
+      {HABIT_CATEGORY_SLOTS.map((category) => {
         const isSelected = selectedCategory === category.value;
         const presentation = getHabitCategoryPresentation(
           category.value,
