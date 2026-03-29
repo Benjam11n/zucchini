@@ -84,10 +84,6 @@ export function CategorySettingsCard({
             Reset to defaults
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Click the activity rings to change your category colors, rename them,
-          and choose an icon below. Existing habits update automatically.
-        </p>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center gap-10 md:flex-row md:items-center">
