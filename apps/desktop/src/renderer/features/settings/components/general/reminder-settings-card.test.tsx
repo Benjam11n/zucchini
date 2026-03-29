@@ -6,6 +6,7 @@ import type { DesktopNotificationStatus } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
+import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
 import { ReminderSettingsCard } from "./reminder-settings-card";
 
@@ -15,52 +16,17 @@ const defaultSettings: AppSettings = {
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
-const availableNotificationStatus: DesktopNotificationStatus = {
+const defaultNotificationStatus: DesktopNotificationStatus = {
   availability: "available",
   reason: null,
 };
 
 function setHabitsApi(
-  notificationStatus: DesktopNotificationStatus = availableNotificationStatus
+  notificationStatus: DesktopNotificationStatus = defaultNotificationStatus
 ) {
-  const habits = {
-    archiveHabit: vi.fn(),
-    claimFocusTimerCycleCompletion: vi.fn(),
-    claimFocusTimerLeadership: vi.fn(),
-    createHabit: vi.fn(),
-    exportBackup: vi.fn(),
+  return installMockHabitsApi({
     getDesktopNotificationStatus: vi.fn().mockResolvedValue(notificationStatus),
-    getFocusSessions: vi.fn(),
-    getHabits: vi.fn(),
-    getHistory: vi.fn(),
-    getTodayState: vi.fn(),
-    getWeeklyReview: vi.fn(),
-    getWeeklyReviewOverview: vi.fn(),
-    importBackup: vi.fn(),
-    onFocusSessionRecorded: vi.fn(() => vi.fn()),
-    openDataFolder: vi.fn(),
-    recordFocusSession: vi.fn(),
-    releaseFocusTimerLeadership: vi.fn(),
-    renameHabit: vi.fn(),
-    reorderHabits: vi.fn(),
-    resizeFocusWidget: vi.fn(),
-    showFocusWidget: vi.fn(),
-    showMainWindow: vi.fn(),
-    showNotification: vi.fn(),
-    toggleHabit: vi.fn(),
-    unarchiveHabit: vi.fn(),
-    updateHabitCategory: vi.fn(),
-    updateHabitFrequency: vi.fn(),
-    updateHabitWeekdays: vi.fn(),
-    updateSettings: vi.fn(),
-  };
-
-  Object.defineProperty(window, "habits", {
-    configurable: true,
-    value: habits,
   });
-
-  return habits;
 }
 
 describe("reminder settings card", () => {

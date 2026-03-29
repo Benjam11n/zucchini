@@ -1,58 +1,18 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import type * as FramerMotion from "framer-motion";
-import { createElement, forwardRef } from "react";
-import type { ComponentProps, ComponentPropsWithoutRef } from "react";
+import type { ComponentProps } from "react";
 
 import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
+import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import type * as CategorySelectorModule from "./habit-category-selector";
 import type * as FrequencySelectorModule from "./habit-frequency-selector";
 import { HabitRowEditor } from "./habit-row-editor";
 import type * as WeekdaySelectorModule from "./habit-weekday-selector";
 
-interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
-  animate?: object;
-  exit?: object;
-  initial?: object;
-  layout?: boolean | object | string;
-  transition?: object;
-  whileHover?: object;
-  whileTap?: object;
-}
-
-vi.mock<typeof FramerMotion>(
-  import("framer-motion"),
-  async (importOriginal) => {
-    const actual = await importOriginal();
-
-    return {
-      ...actual,
-      m: new Proxy(
-        {},
-        {
-          get: (_, tag: string) =>
-            forwardRef<HTMLElement, MotionMockProps>(
-              function MotionMock(props, ref) {
-                const {
-                  animate: _animate,
-                  exit: _exit,
-                  initial: _initial,
-                  layout: _layout,
-                  transition: _transition,
-                  whileHover: _whileHover,
-                  whileTap: _whileTap,
-                  ...rest
-                } = props;
-
-                return createElement(tag, { ...rest, ref });
-              }
-            ),
-        }
-      ) as typeof actual.m,
-    };
-  }
+vi.mock(import("framer-motion"), (importOriginal) =>
+  createFramerMotionMock(importOriginal)
 );
 
 vi.mock<typeof CategorySelectorModule>(

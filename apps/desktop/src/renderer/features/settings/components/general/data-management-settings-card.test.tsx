@@ -2,47 +2,18 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
+
 import { DataManagementSettingsCard } from "./data-management-settings-card";
 
 function setHabitsApi() {
-  const habits = {
-    archiveHabit: vi.fn(),
-    claimFocusTimerCycleCompletion: vi.fn(),
-    claimFocusTimerLeadership: vi.fn(),
-    createHabit: vi.fn(),
+  return installMockHabitsApi({
     exportBackup: vi.fn(() => Promise.resolve("/tmp/zucchini-backup.db")),
-    getDesktopNotificationStatus: vi.fn(),
-    getFocusSessions: vi.fn(),
-    getHistory: vi.fn(),
-    getTodayState: vi.fn(),
-    getWeeklyReview: vi.fn(),
-    getWeeklyReviewOverview: vi.fn(),
     importBackup: vi.fn(() => Promise.resolve(true)),
-    onFocusSessionRecorded: vi.fn(() => vi.fn()),
     openDataFolder: vi.fn(() =>
       Promise.resolve("/Users/test/Library/Application Support/Zucchini")
     ),
-    recordFocusSession: vi.fn(),
-    releaseFocusTimerLeadership: vi.fn(),
-    renameHabit: vi.fn(),
-    reorderHabits: vi.fn(),
-    resizeFocusWidget: vi.fn(),
-    showFocusWidget: vi.fn(),
-    showMainWindow: vi.fn(),
-    showNotification: vi.fn(),
-    toggleHabit: vi.fn(),
-    updateHabitCategory: vi.fn(),
-    updateHabitFrequency: vi.fn(),
-    updateHabitWeekdays: vi.fn(),
-    updateSettings: vi.fn(),
-  };
-
-  Object.defineProperty(window, "habits", {
-    configurable: true,
-    value: habits,
   });
-
-  return habits;
 }
 
 describe("data management settings card", () => {

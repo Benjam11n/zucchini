@@ -232,6 +232,7 @@
     letter-spacing: var(--tracking-normal);
   }
 
+  html[data-view="widget"],
   body[data-view="widget"] {
     background: transparent;
   }

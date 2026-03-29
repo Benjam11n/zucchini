@@ -1,6 +1,8 @@
 import { domAnimation, LazyMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -85,6 +87,14 @@ export function HabitManagementContent({
     }, FEEDBACK_TIMEOUT_MS);
   }
 
+  function showErrorFeedback(message: string) {
+    clearFeedbackTimer();
+    setFeedback({
+      kind: "error",
+      message,
+    });
+  }
+
   function showArchivedFeedback(habitId: number, habitName: string) {
     clearFeedbackTimer();
     setFeedback({
@@ -102,14 +112,34 @@ export function HabitManagementContent({
     }, UNDO_TIMEOUT_MS);
   }
 
+  async function runHabitAction({
+    onSuccess,
+    task,
+  }: {
+    onSuccess?: () => void | Promise<void>;
+    task: () => Promise<void>;
+  }) {
+    await runAsyncTask(task, {
+      mapError: toHabitsIpcError,
+      onError: (error) => {
+        showErrorFeedback(error.message);
+      },
+      ...(onSuccess ? { onSuccess } : {}),
+    });
+  }
+
   async function handleRenameHabit(habitId: number, name: string) {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return;
     }
 
-    await onRenameHabit(habitId, name);
-    showSavedFeedback(`Saved "${trimmedName}".`);
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Saved "${trimmedName}".`);
+      },
+      task: () => onRenameHabit(habitId, name),
+    });
   }
 
   async function handleUpdateHabitCategory(
@@ -117,8 +147,12 @@ export function HabitManagementContent({
     category: HabitCategory,
     habitName: string
   ) {
-    await onUpdateHabitCategory(habitId, category);
-    showSavedFeedback(`Saved changes to "${habitName}".`);
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Saved changes to "${habitName}".`);
+      },
+      task: () => onUpdateHabitCategory(habitId, category),
+    });
   }
 
   async function handleUpdateHabitFrequency(
@@ -126,8 +160,12 @@ export function HabitManagementContent({
     frequency: HabitFrequency,
     habitName: string
   ) {
-    await onUpdateHabitFrequency(habitId, frequency);
-    showSavedFeedback(`Saved changes to "${habitName}".`);
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Saved changes to "${habitName}".`);
+      },
+      task: () => onUpdateHabitFrequency(habitId, frequency),
+    });
   }
 
   async function handleUpdateHabitWeekdays(
@@ -135,16 +173,24 @@ export function HabitManagementContent({
     selectedWeekdays: HabitWeekday[] | null,
     habitName: string
   ) {
-    await onUpdateHabitWeekdays(habitId, selectedWeekdays);
-    showSavedFeedback(`Saved changes to "${habitName}".`);
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Saved changes to "${habitName}".`);
+      },
+      task: () => onUpdateHabitWeekdays(habitId, selectedWeekdays),
+    });
   }
 
   async function handleArchive(habitId: number, habitName: string) {
-    await onArchiveHabit(habitId);
-    showArchivedFeedback(habitId, habitName);
-    if (expandedHabitId === habitId) {
-      setExpandedHabitId(null);
-    }
+    await runHabitAction({
+      onSuccess: () => {
+        showArchivedFeedback(habitId, habitName);
+        if (expandedHabitId === habitId) {
+          setExpandedHabitId(null);
+        }
+      },
+      task: () => onArchiveHabit(habitId),
+    });
   }
 
   async function handleUndoArchive() {
@@ -154,16 +200,24 @@ export function HabitManagementContent({
 
     const archivedHabit = feedback;
     clearFeedbackTimer();
-    await onUnarchiveHabit(archivedHabit.habitId);
-    setFeedback(null);
-    showSavedFeedback(`Restored "${archivedHabit.habitName}".`);
+    await runHabitAction({
+      onSuccess: () => {
+        setFeedback(null);
+        showSavedFeedback(`Restored "${archivedHabit.habitName}".`);
+      },
+      task: () => onUnarchiveHabit(archivedHabit.habitId),
+    });
   }
 
   async function handleReorderHabits(
     nextHabits: HabitManagementCardProps["habits"]
   ) {
-    await onReorderHabits(nextHabits);
-    showSavedFeedback("Saved habit order.");
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback("Saved habit order.");
+      },
+      task: () => onReorderHabits(nextHabits),
+    });
   }
 
   async function handleCreateHabit(
@@ -173,10 +227,14 @@ export function HabitManagementContent({
     selectedWeekdays?: HabitWeekday[] | null
   ) {
     const trimmedName = name.trim();
-    await onCreateHabit(name, category, frequency, selectedWeekdays);
-    if (trimmedName) {
-      setPendingCreatedHabitName(trimmedName);
-    }
+    await runHabitAction({
+      onSuccess: () => {
+        if (trimmedName) {
+          setPendingCreatedHabitName(trimmedName);
+        }
+      },
+      task: () => onCreateHabit(name, category, frequency, selectedWeekdays),
+    });
   }
 
   async function handleDrop(

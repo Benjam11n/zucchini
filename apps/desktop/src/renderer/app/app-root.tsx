@@ -270,13 +270,7 @@ export default function App() {
         title="Widget error"
       >
         <Suspense
-          fallback={
-            <LoadingStateCard
-              description="Preparing your focus widget."
-              fullscreen
-              title="Loading widget"
-            />
-          }
+          fallback={<div className="h-screen w-screen bg-transparent" />}
         >
           <FocusWidget />
         </Suspense>

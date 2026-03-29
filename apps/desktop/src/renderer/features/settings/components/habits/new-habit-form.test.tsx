@@ -1,57 +1,17 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type * as FramerMotion from "framer-motion";
-import { createElement, forwardRef } from "react";
-import type { ComponentPropsWithoutRef } from "react";
+
+import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import { NewHabitForm } from "./new-habit-form";
-
-interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
-  animate?: object;
-  exit?: object;
-  initial?: object;
-  layout?: boolean | object | string;
-  transition?: object;
-  whileHover?: object;
-  whileTap?: object;
-}
 
 function createAsyncMock() {
   return vi.fn(() => Promise.resolve());
 }
 
-vi.mock<typeof FramerMotion>(
-  import("framer-motion"),
-  async (importOriginal) => {
-    const actual = await importOriginal();
-
-    return {
-      ...actual,
-      m: new Proxy(
-        {},
-        {
-          get: (_, tag: string) =>
-            forwardRef<HTMLElement, MotionMockProps>(
-              function MotionMock(props, ref) {
-                const {
-                  animate: _animate,
-                  exit: _exit,
-                  initial: _initial,
-                  layout: _layout,
-                  transition: _transition,
-                  whileHover: _whileHover,
-                  whileTap: _whileTap,
-                  ...rest
-                } = props;
-
-                return createElement(tag, { ...rest, ref });
-              }
-            ),
-        }
-      ) as typeof actual.m,
-    };
-  }
+vi.mock(import("framer-motion"), (importOriginal) =>
+  createFramerMotionMock(importOriginal)
 );
 
 describe("new habit form", () => {

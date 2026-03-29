@@ -16,14 +16,21 @@ export function HabitManagementFeedback({
     return null;
   }
 
+  let feedbackClassName = "border-border/70 bg-muted/30 text-primary";
+
+  if (feedback.kind === "archived") {
+    feedbackClassName = "border-primary/25 bg-primary/10 text-foreground";
+  } else if (feedback.kind === "error") {
+    feedbackClassName =
+      "border-destructive/30 bg-destructive/8 text-destructive";
+  }
+
   return (
     <div
       aria-live="polite"
       className={cn(
         "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs",
-        feedback.kind === "archived"
-          ? "border-primary/25 bg-primary/10 text-foreground"
-          : "border-border/70 bg-muted/30 text-primary"
+        feedbackClassName
       )}
       role="status"
     >

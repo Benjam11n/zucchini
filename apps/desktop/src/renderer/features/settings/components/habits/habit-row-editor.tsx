@@ -131,8 +131,14 @@ export function HabitRowEditor({
       return;
     }
 
-    lastCommittedNameRef.current = nextName;
-    await onRenameHabit(habit.id, nextName);
+    const previousName = lastCommittedNameRef.current;
+
+    try {
+      await onRenameHabit(habit.id, nextName);
+      lastCommittedNameRef.current = nextName;
+    } catch {
+      setDraftName(previousName);
+    }
   }
 
   return (

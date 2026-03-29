@@ -49,7 +49,8 @@ function createFakeClient(initialRow: Record<string, unknown> | undefined) {
 describe("SqliteFocusTimerStateRepository", () => {
   it("returns null when no timer state row exists", () => {
     const repository = new SqliteFocusTimerStateRepository(
-      createFakeClient() as never
+      // oxlint-disable-next-line unicorn/no-useless-undefined
+      createFakeClient(undefined) as never
     );
 
     expect(repository.getState()).toBeNull();
@@ -57,7 +58,8 @@ describe("SqliteFocusTimerStateRepository", () => {
 
   it("round-trips focus timer state through the repository", () => {
     const repository = new SqliteFocusTimerStateRepository(
-      createFakeClient() as never
+      // oxlint-disable-next-line unicorn/no-useless-undefined
+      createFakeClient(undefined) as never
     );
     const state: PersistedFocusTimerState = {
       breakVariant: "long",

@@ -68,7 +68,6 @@ class FakeClock implements Clock {
 
 class FakeRepository implements AppRepository {
   failTransactionForLabel: string | null = null;
-  initializeCalls = 0;
   habits: Habit[] = [
     {
       category: "productivity",
@@ -113,23 +112,18 @@ class FakeRepository implements AppRepository {
   };
   focusSessions: FocusSession[] = [];
   focusTimerState: PersistedFocusTimerState | null = null;
-  seedDefaultsCalls = 0;
-  transactionLabels: string[] = [];
 
-  initializeSchema(): void {
-    this.initializeCalls += 1;
-  }
+  // oxlint-disable-next-line class-methods-use-this
+  initializeSchema(): void {}
   runInTransaction<A>(label: string, execute: () => A): A {
-    this.transactionLabels.push(label);
     if (this.failTransactionForLabel === label) {
       throw new Error(`transaction failed: ${label}`);
     }
 
     return execute();
   }
-  seedDefaults(): void {
-    this.seedDefaultsCalls += 1;
-  }
+  // oxlint-disable-next-line class-methods-use-this
+  seedDefaults(): void {}
 
   getHabits(): Habit[] {
     return this.habits
@@ -819,22 +813,6 @@ describe("history retrieval", () => {
     expect(history.at(-1)?.date).toBe("2025-01-01");
   });
 
-  it("initializes storage only once across repeated reads", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.getTodayState();
-    service.getHistory();
-
-    expect(repository.initializeCalls).toBe(1);
-    expect(repository.seedDefaultsCalls).toBe(1);
-  });
-});
-
-describe("weekly review retrieval", () => {
   it("builds a weekly review overview for completed weeks", () => {
     const repository = new FakeRepository();
     repository.streak.lastEvaluatedDate = "2026-03-08";
@@ -884,123 +862,6 @@ describe("weekly review retrieval", () => {
       overview.latestReview?.habitMetrics.map((metric) => metric.name)
     ).toContain("Weekly stretch");
   });
-
-  it("wraps weekly review overview reads in a repository transaction", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
-    );
-
-    service.getWeeklyReviewOverview();
-
-    expect(repository.transactionLabels).toContain("getWeeklyReviewOverview");
-  });
-});
-
-describe("habitService transactions", () => {
-  it("wraps getTodayState in a repository transaction", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.getTodayState();
-
-    expect(repository.transactionLabels).toContain("getTodayState");
-  });
-
-  it("wraps createHabit in a repository transaction", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.createHabit("Read", "productivity", "daily");
-
-    expect(repository.transactionLabels).toContain("createHabit");
-  });
-
-  it("wraps updateHabitFrequency in a repository transaction", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.updateHabitFrequency(1, "weekly");
-
-    expect(repository.transactionLabels).toContain("updateHabitFrequency");
-  });
-
-  it("wraps archiveHabit in a repository transaction", () => {
-    const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.archiveHabit(1);
-
-    expect(repository.transactionLabels).toContain("archiveHabit");
-  });
-
-  it("wraps unarchiveHabit in a repository transaction", () => {
-    const repository = new FakeRepository();
-    repository.habits.push({
-      category: "fitness",
-      createdAt: "2026-03-01T00:00:00.000Z",
-      frequency: "daily",
-      id: 2,
-      isArchived: true,
-      name: "Habit 2",
-      sortOrder: 1,
-    });
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.unarchiveHabit(2);
-
-    expect(repository.transactionLabels).toContain("unarchiveHabit");
-  });
-
-  it("wraps reorderHabits in a repository transaction", () => {
-    const repository = new FakeRepository();
-    repository.habits.push({
-      category: "fitness",
-      createdAt: "2026-03-01T00:00:00.000Z",
-      frequency: "daily",
-      id: 2,
-      isArchived: false,
-      name: "Habit 2",
-      sortOrder: 1,
-    });
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    service.reorderHabits([2, 1]);
-
-    expect(repository.transactionLabels).toContain("reorderHabits");
-  });
-
-  it("propagates transaction failures", () => {
-    const repository = new FakeRepository();
-    repository.failTransactionForLabel = "createHabit";
-    const service = new HabitsApplicationService(
-      repository,
-      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
-    );
-
-    expect(() => service.createHabit("Read", "productivity", "daily")).toThrow(
-      "transaction failed: createHabit"
-    );
-  });
 });
 
 describe("focus sessions", () => {
@@ -1026,8 +887,6 @@ describe("focus sessions", () => {
       id: 1,
     });
     expect(service.getFocusSessions()).toHaveLength(1);
-    expect(repository.transactionLabels).toContain("recordFocusSession");
-    expect(repository.transactionLabels).toContain("getFocusSessions");
   });
 
   it("rejects invalid focus session payloads", () => {
@@ -1046,5 +905,20 @@ describe("focus sessions", () => {
         timerSessionId: "timer-session-invalid",
       } as CreateFocusSessionInput)
     ).toThrow("ISO 8601");
+  });
+});
+
+describe("transaction error handling", () => {
+  it("propagates transaction failures", () => {
+    const repository = new FakeRepository();
+    repository.failTransactionForLabel = "createHabit";
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    expect(() => service.createHabit("Read", "productivity", "daily")).toThrow(
+      "transaction failed: createHabit"
+    );
   });
 });

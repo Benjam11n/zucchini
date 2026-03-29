@@ -1,17 +1,11 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { createElement, forwardRef } from "react";
-import type { ComponentProps, ComponentPropsWithoutRef } from "react";
+import type { ComponentProps } from "react";
 
 import type * as HistoryCalendarCardModule from "@/renderer/features/history/components/history-calendar-card";
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
-import type * as WeeklyReviewDailyCadenceChartModule from "@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart";
-import type * as WeeklyReviewHabitChartModule from "@/renderer/features/history/weekly-review/components/weekly-review-habit-chart";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
-import type * as WeeklyReviewMostMissedCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card";
-import type * as WeeklyReviewStatsModule from "@/renderer/features/history/weekly-review/components/weekly-review-stats";
-import type * as WeeklyReviewTrendChartModule from "@/renderer/features/history/weekly-review/components/weekly-review-trend-chart";
 import type * as GitHubCalendarModule from "@/renderer/shared/components/github-calendar";
 import type * as TabsModule from "@/renderer/shared/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -19,19 +13,9 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import { HistoryPage } from "./history-page";
-
-interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
-  animate?: object;
-  exit?: object;
-  initial?: object;
-  layout?: boolean | object | string;
-  transition?: object;
-  variants?: object;
-  whileHover?: object;
-  whileTap?: object;
-}
 
 interface GitHubCalendarWeek {
   cells: {
@@ -40,43 +24,9 @@ interface GitHubCalendarWeek {
   key: string;
 }
 
-vi.mock(import("framer-motion"), async (importOriginal) => {
-  const actual = await importOriginal();
-
-  function createMotionProxy() {
-    return new Proxy(
-      {},
-      {
-        get: (_, tag: string) =>
-          forwardRef<HTMLElement, MotionMockProps>(
-            function MotionMock(props, ref) {
-              const {
-                animate: _animate,
-                exit: _exit,
-                initial: _initial,
-                layout: _layout,
-                transition: _transition,
-                variants: _variants,
-                whileHover: _whileHover,
-                whileTap: _whileTap,
-                ...rest
-              } = props;
-
-              return createElement(tag, { ...rest, ref });
-            }
-          ),
-      }
-    );
-  }
-
-  return {
-    ...actual,
-    LazyMotion: ({ children }: ComponentProps<typeof actual.LazyMotion>) => (
-      <div>{children}</div>
-    ),
-    m: createMotionProxy() as typeof actual.m,
-  };
-});
+vi.mock(import("framer-motion"), (importOriginal) =>
+  createFramerMotionMock(importOriginal)
+);
 
 vi.mock<typeof TabsModule>(
   import("@/renderer/shared/ui/tabs"),
@@ -157,18 +107,27 @@ vi.mock<typeof HistoryDayPanelModule>(
   })
 );
 
-vi.mock<typeof WeeklyReviewDailyCadenceChartModule>(
+vi.mock(
   import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart"),
   () => ({
     WeeklyReviewDailyCadenceChart: () => <div>daily cadence chart</div>,
   })
 );
-
-vi.mock<typeof WeeklyReviewHabitChartModule>(
+vi.mock(
   import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart"),
-  () => ({
-    WeeklyReviewHabitChart: () => <div>habit chart</div>,
-  })
+  () => ({ WeeklyReviewHabitChart: () => <div>habit chart</div> })
+);
+vi.mock(
+  import("@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card"),
+  () => ({ WeeklyReviewMostMissedCard: () => <div>most missed card</div> })
+);
+vi.mock(
+  import("@/renderer/features/history/weekly-review/components/weekly-review-stats"),
+  () => ({ WeeklyReviewStats: () => <div>weekly stats</div> })
+);
+vi.mock(
+  import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart"),
+  () => ({ WeeklyReviewTrendChart: () => <div>trend chart</div> })
 );
 
 vi.mock<typeof WeeklyReviewHeroCardModule>(
@@ -177,27 +136,6 @@ vi.mock<typeof WeeklyReviewHeroCardModule>(
     WeeklyReviewHeroCard: ({ review }: { review: WeeklyReview }) => (
       <div data-testid="weekly-review-hero">{review.weekStart}</div>
     ),
-  })
-);
-
-vi.mock<typeof WeeklyReviewMostMissedCardModule>(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card"),
-  () => ({
-    WeeklyReviewMostMissedCard: () => <div>most missed card</div>,
-  })
-);
-
-vi.mock<typeof WeeklyReviewStatsModule>(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-stats"),
-  () => ({
-    WeeklyReviewStats: () => <div>weekly stats</div>,
-  })
-);
-
-vi.mock<typeof WeeklyReviewTrendChartModule>(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart"),
-  () => ({
-    WeeklyReviewTrendChart: () => <div>trend chart</div>,
   })
 );
 

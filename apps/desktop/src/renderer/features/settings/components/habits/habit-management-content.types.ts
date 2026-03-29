@@ -5,6 +5,10 @@ export type HabitFeedback =
       habitName: string;
     }
   | {
+      kind: "error";
+      message: string;
+    }
+  | {
       kind: "saved";
       message: string;
     }
