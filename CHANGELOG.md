@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1-beta.13 - 2026-03-29
+
+Changes since `v0.1.1-beta.12`.
+
+### Fixes
+
+- Invoke `bunx` through `cmd.exe` during Windows postinstall so native dependency setup works in CI
+
 ## 0.1.1-beta.12 - 2026-03-29
 
 Changes since `v0.1.1-beta.11`.

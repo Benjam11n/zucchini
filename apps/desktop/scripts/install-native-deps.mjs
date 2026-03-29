@@ -14,11 +14,20 @@ if (hasSpaceInCwd) {
   process.exit(0);
 }
 
-const command = process.platform === "win32" ? "bunx.cmd" : "bunx";
-const child = spawn(command, ["electron-builder", "install-app-deps"], {
-  cwd: process.cwd(),
-  stdio: "inherit",
-});
+const child =
+  process.platform === "win32"
+    ? spawn(
+        process.env["ComSpec"] ?? "cmd.exe",
+        ["/d", "/s", "/c", "bunx electron-builder install-app-deps"],
+        {
+          cwd: process.cwd(),
+          stdio: "inherit",
+        }
+      )
+    : spawn("bunx", ["electron-builder", "install-app-deps"], {
+        cwd: process.cwd(),
+        stdio: "inherit",
+      });
 
 child.on("exit", (code, signal) => {
   if (signal) {
