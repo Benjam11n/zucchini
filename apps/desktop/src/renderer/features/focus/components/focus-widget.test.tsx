@@ -4,6 +4,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { act } from "react";
 
 import {
+  createIdleFocusTimerState,
+  formatTimerLabel,
   createRunningBreakTimerState,
   createRunningFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
@@ -13,7 +15,11 @@ import {
 } from "@/renderer/features/focus/state/focus-store";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-import { createDefaultPomodoroTimerSettings } from "@/shared/domain/settings";
+import {
+  createTestAppSettings,
+  minutes,
+  minutesMs,
+} from "@/test/fixtures/focus-test-utils";
 
 import { FocusWidget } from "./focus-widget";
 
@@ -39,6 +45,15 @@ describe("focus widget", () => {
     renderWidget?: boolean;
   } = {}) {
     resetFocusStore();
+    const settings = createTestAppSettings({
+      focusCyclesBeforeLongBreak: 4,
+      focusDefaultDurationSeconds: minutes(25),
+      focusLongBreakSeconds: minutes(15),
+      focusShortBreakSeconds: minutes(5),
+      resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
+      toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
+    });
+
     class ResizeObserverMock {
       // oxlint-disable-next-line class-methods-use-this
       observe() {}
@@ -61,21 +76,7 @@ describe("focus widget", () => {
     const getTodayState = vi.fn().mockResolvedValue({
       date: "2026-03-10",
       habits: [],
-      settings: {
-        focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
-        launchAtLogin: false,
-        minimizeToTray: false,
-        reminderEnabled: true,
-        reminderSnoozeMinutes: 15,
-        reminderTime: "20:30",
-        resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
-        themeMode: "system",
-        timezone: "Asia/Singapore",
-        toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
-      },
+      settings,
       streak: {
         availableFreezes: 1,
         bestStreak: 3,
@@ -119,6 +120,7 @@ describe("focus widget", () => {
       getFocusTimerState,
       getTodayState,
       saveFocusTimerState: window.habits.saveFocusTimerState,
+      settings,
     };
   }
 
@@ -131,9 +133,7 @@ describe("focus widget", () => {
 
     expect(
       screen.getByText(
-        `${String(
-          createDefaultPomodoroTimerSettings().focusDefaultDurationSeconds / 60
-        ).padStart(2, "0")}:00`
+        formatTimerLabel(createIdleFocusTimerState().remainingMs)
       )
     ).toBeInTheDocument();
     expect(document.body.dataset["view"]).toBe("widget");
@@ -187,10 +187,10 @@ describe("focus widget", () => {
     const now = new Date();
     const { getTodayState } = setupWidgetTest({
       persistedTimerState: createRunningBreakTimerState({
-        breakDurationMs: 5 * 60 * 1000,
+        breakDurationMs: minutesMs(5),
         breakVariant: "short",
         completedFocusCycles: 1,
-        focusDurationMs: 25 * 60 * 1000,
+        focusDurationMs: minutesMs(25),
         now,
         timerSessionId: "timer-session-widget-skip",
       }),
@@ -281,10 +281,10 @@ describe("focus widget", () => {
     act(() => {
       useFocusStore.getState().setTimerState(
         createRunningBreakTimerState({
-          breakDurationMs: 5 * 60 * 1000,
+          breakDurationMs: minutesMs(5),
           breakVariant: "short",
           completedFocusCycles: 1,
-          focusDurationMs: 25 * 60 * 1000,
+          focusDurationMs: minutesMs(25),
           now: new Date(),
           timerSessionId: "timer-session-widget-short",
         })
@@ -313,10 +313,10 @@ describe("focus widget", () => {
     act(() => {
       useFocusStore.getState().setTimerState(
         createRunningBreakTimerState({
-          breakDurationMs: 15 * 60 * 1000,
+          breakDurationMs: minutesMs(15),
           breakVariant: "long",
           completedFocusCycles: 4,
-          focusDurationMs: 25 * 60 * 1000,
+          focusDurationMs: minutesMs(25),
           now: new Date(),
           timerSessionId: "timer-session-widget-long",
         })
@@ -367,8 +367,11 @@ describe("focus widget", () => {
     const { getFocusTimerState } = setupWidgetTest({ renderWidget: false });
     act(() => {
       useFocusStore.getState().setTimerState({
-        ...createRunningFocusTimerState(new Date("2026-03-08T09:00:00.000Z")),
-        remainingMs: 15 * 60 * 1000,
+        ...createRunningFocusTimerState(
+          new Date("2026-03-08T09:00:00.000Z"),
+          minutesMs(25)
+        ),
+        remainingMs: minutesMs(15),
         status: "paused",
       });
     });
@@ -386,7 +389,7 @@ describe("focus widget", () => {
     await waitFor(() => {
       expect(window.habits.recordFocusSession).toHaveBeenCalledWith(
         expect.objectContaining({
-          durationSeconds: 30 * 60,
+          durationSeconds: minutes(10),
           entryKind: "partial",
         })
       );
@@ -399,10 +402,10 @@ describe("focus widget", () => {
     act(() => {
       useFocusStore.getState().setTimerState(
         createRunningBreakTimerState({
-          breakDurationMs: 5 * 60 * 1000,
+          breakDurationMs: minutesMs(5),
           breakVariant: "short",
           completedFocusCycles: 1,
-          focusDurationMs: 25 * 60 * 1000,
+          focusDurationMs: minutesMs(25),
           now: new Date("2026-03-08T09:25:00.000Z"),
           timerSessionId: "timer-session-widget-break-reset",
         })

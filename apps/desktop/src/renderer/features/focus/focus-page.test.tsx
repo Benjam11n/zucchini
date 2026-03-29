@@ -18,12 +18,15 @@ import {
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
-import { createDefaultAppSettings } from "@/shared/domain/settings";
+import {
+  createTestAppSettings,
+  minutesMs,
+} from "@/test/fixtures/focus-test-utils";
 
 import { FocusPage } from "./focus-page";
 
 const settings = {
-  ...createDefaultAppSettings("Asia/Singapore"),
+  ...createTestAppSettings(),
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   themeMode: "system" as const,
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
@@ -128,10 +131,10 @@ describe("focus tab", () => {
     resetFocusStore();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
-        breakDurationMs: 5 * 60 * 1000,
+        breakDurationMs: minutesMs(5),
         breakVariant: "short",
         completedFocusCycles: 1,
-        focusDurationMs: 25 * 60 * 1000,
+        focusDurationMs: minutesMs(25),
         now: new Date("2026-03-08T09:00:00.000Z"),
         timerSessionId: "timer-session-page-short",
       })
@@ -141,9 +144,7 @@ describe("focus tab", () => {
 
     expect(screen.getAllByText("Short break").length).toBeGreaterThan(0);
     expect(
-      screen.getByText(
-        `${createDefaultAppSettings("Asia/Singapore").focusCyclesBeforeLongBreak} sessions`
-      )
+      screen.getByText(`${settings.focusCyclesBeforeLongBreak} sessions`)
     ).toBeInTheDocument();
 
     act(() => {
@@ -161,7 +162,7 @@ describe("focus tab", () => {
     resetFocusStore();
     useFocusStore
       .getState()
-      .setTimerState(createIdleFocusTimerState(new Date(), 25 * 60 * 1000, 3));
+      .setTimerState(createIdleFocusTimerState(new Date(), minutesMs(25), 3));
 
     render(<FocusPageHarness />);
 
@@ -173,10 +174,10 @@ describe("focus tab", () => {
     resetFocusStore();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
-        breakDurationMs: 5 * 60 * 1000,
+        breakDurationMs: minutesMs(5),
         breakVariant: "short",
         completedFocusCycles: 1,
-        focusDurationMs: 25 * 60 * 1000,
+        focusDurationMs: minutesMs(25),
         now: new Date("2026-03-08T09:25:00.000Z"),
         timerSessionId: "timer-session-page-skip",
       })

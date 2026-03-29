@@ -4,13 +4,16 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
-import { createDefaultAppSettings } from "@/shared/domain/settings";
+import {
+  createTestAppSettings,
+  minutes,
+} from "@/test/fixtures/focus-test-utils";
 
 import { PomodoroSettingsFields } from "./pomodoro-settings-fields";
 
 const settings: AppSettings = {
-  ...createDefaultAppSettings("Asia/Singapore"),
-  focusDefaultDurationSeconds: 25 * 60,
+  ...createTestAppSettings(),
+  focusDefaultDurationSeconds: minutes(25),
   resetFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.reset,
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
@@ -42,7 +45,7 @@ describe("pomodoro settings fields", () => {
 
     expect(onChange).toHaveBeenCalledWith({
       ...settings,
-      focusDefaultDurationSeconds: 12 * 60,
+      focusDefaultDurationSeconds: minutes(12),
     });
   });
 

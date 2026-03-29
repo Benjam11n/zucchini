@@ -12,6 +12,21 @@ function createFakeClient(initialRows: { key: string; value: string }[] = []) {
           return {
             values(value: { key: string; value: string }) {
               return {
+                onConflictDoNothing() {
+                  return {
+                    run() {
+                      const existingRow = rows.find(
+                        (row) => row.key === value.key
+                      );
+
+                      if (existingRow) {
+                        return;
+                      }
+
+                      rows.push({ ...value });
+                    },
+                  };
+                },
                 onConflictDoUpdate() {
                   return {
                     run() {
@@ -21,21 +36,6 @@ function createFakeClient(initialRows: { key: string; value: string }[] = []) {
 
                       if (existingRow) {
                         existingRow.value = value.value;
-                        return;
-                      }
-
-                      rows.push({ ...value });
-                    },
-                  };
-                },
-                onConflictDoNothing() {
-                  return {
-                    run() {
-                      const existingRow = rows.find(
-                        (row) => row.key === value.key
-                      );
-
-                      if (existingRow) {
                         return;
                       }
 

@@ -1,3 +1,5 @@
+import { minutesMs } from "@/test/fixtures/focus-test-utils";
+
 import {
   createRunningBreakTimerState,
   createRunningFocusTimerState,
@@ -9,7 +11,7 @@ describe("focus timer state", () => {
   it("pauses and resumes using end-time math", () => {
     const running = createRunningFocusTimerState(
       new Date("2026-03-08T09:00:00.000Z"),
-      25 * 60 * 1000,
+      minutesMs(25),
       2
     );
     const paused = pauseFocusTimerState(
@@ -18,7 +20,7 @@ describe("focus timer state", () => {
     );
 
     expect(paused.status).toBe("paused");
-    expect(paused.remainingMs).toBe(15 * 60 * 1000);
+    expect(paused.remainingMs).toBe(minutesMs(15));
 
     const resumed = resumeFocusTimerState(
       paused,
@@ -36,10 +38,10 @@ describe("focus timer state", () => {
 
   it("stores long-break metadata on a running break", () => {
     const runningBreak = createRunningBreakTimerState({
-      breakDurationMs: 15 * 60 * 1000,
+      breakDurationMs: minutesMs(15),
       breakVariant: "long",
       completedFocusCycles: 4,
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       now: new Date("2026-03-08T09:00:00.000Z"),
       timerSessionId: "timer-session-long",
     });
@@ -48,7 +50,7 @@ describe("focus timer state", () => {
       breakVariant: "long",
       completedFocusCycles: 4,
       phase: "break",
-      remainingMs: 15 * 60 * 1000,
+      remainingMs: minutesMs(15),
       status: "running",
     });
   });

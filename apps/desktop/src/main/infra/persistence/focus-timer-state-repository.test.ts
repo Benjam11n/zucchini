@@ -2,9 +2,7 @@ import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
 import { SqliteFocusTimerStateRepository } from "./focus-timer-state-repository";
 
-function createFakeClient(
-  initialRow: Record<string, unknown> | undefined = undefined
-) {
+function createFakeClient(initialRow: Record<string, unknown> | undefined) {
   let row = initialRow;
 
   return {

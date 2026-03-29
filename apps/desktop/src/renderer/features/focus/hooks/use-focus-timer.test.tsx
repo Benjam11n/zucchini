@@ -18,8 +18,13 @@ import type {
   FocusSession,
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-import { createDefaultPomodoroTimerSettings } from '@/shared/domain/settings';
-import type { PomodoroTimerSettings } from '@/shared/domain/settings';
+import { createDefaultPomodoroTimerSettings } from "@/shared/domain/settings";
+import type { PomodoroTimerSettings } from "@/shared/domain/settings";
+import {
+  createTestPomodoroSettings,
+  minutes,
+  minutesMs,
+} from "@/test/fixtures/focus-test-utils";
 
 import { useFocusTimer } from "./use-focus-timer";
 
@@ -38,12 +43,12 @@ type FocusTimerActionListener = (request: {
 }) => void;
 type FocusTimerStateChangedListener = (state: PersistedFocusTimerState) => void;
 
-const DEFAULT_TIMER_SETTINGS = {
+const DEFAULT_TIMER_SETTINGS = createTestPomodoroSettings({
   focusCyclesBeforeLongBreak: 4,
-  focusDefaultDurationSeconds: 1500,
-  focusLongBreakSeconds: 15 * 60,
-  focusShortBreakSeconds: 5 * 60,
-};
+  focusDefaultDurationSeconds: minutes(25),
+  focusLongBreakSeconds: minutes(15),
+  focusShortBreakSeconds: minutes(5),
+});
 
 function setupFocusTimerTest(
   persistedTimerState: PersistedFocusTimerState | null = null
@@ -173,9 +178,9 @@ describe("use focus timer", () => {
     renderFocusTimerHook({
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 30 * 60,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
+        focusDefaultDurationSeconds: minutes(30),
+        focusLongBreakSeconds: minutes(15),
+        focusShortBreakSeconds: minutes(5),
       },
     });
 
@@ -184,8 +189,8 @@ describe("use focus timer", () => {
     });
 
     expect(useFocusStore.getState().timerState).toMatchObject({
-      focusDurationMs: 30 * 60 * 1000,
-      remainingMs: 30 * 60 * 1000,
+      focusDurationMs: minutesMs(30),
+      remainingMs: minutesMs(30),
       status: "idle",
     });
     teardownFocusTimerTest();
@@ -195,7 +200,8 @@ describe("use focus timer", () => {
     setupFocusTimerTest();
 
     const running = createRunningFocusTimerState(
-      new Date("2026-03-08T09:00:00.000Z")
+      new Date("2026-03-08T09:00:00.000Z"),
+      minutesMs(25)
     );
     const paused = pauseFocusTimerState(
       running,
@@ -203,7 +209,7 @@ describe("use focus timer", () => {
     );
 
     expect(paused.status).toBe("paused");
-    expect(paused.remainingMs).toBe(35 * 60 * 1000);
+    expect(paused.remainingMs).toBe(minutesMs(15));
 
     const resumed = resumeFocusTimerState(
       paused,
@@ -211,7 +217,7 @@ describe("use focus timer", () => {
     );
 
     expect(resumed.status).toBe("running");
-    expect(resumed.endsAt).toBe("2026-03-08T09:47:00.000Z");
+    expect(resumed.endsAt).toBe("2026-03-08T09:27:00.000Z");
     teardownFocusTimerTest();
   });
 
@@ -255,7 +261,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 0,
       cycleId: "cycle-1",
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
@@ -284,7 +290,7 @@ describe("use focus timer", () => {
       breakVariant: "short",
       completedFocusCycles: 1,
       phase: "break",
-      remainingMs: 5 * 60 * 1000,
+      remainingMs: minutesMs(5),
       status: "running",
       timerSessionId: "timer-session-1",
     });
@@ -302,7 +308,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 3,
       cycleId: "cycle-4",
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
@@ -331,7 +337,7 @@ describe("use focus timer", () => {
       breakVariant: "long",
       completedFocusCycles: 4,
       phase: "break",
-      remainingMs: 15 * 60 * 1000,
+      remainingMs: minutesMs(15),
       status: "running",
       timerSessionId: "timer-session-4",
     });
@@ -353,7 +359,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 2,
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
@@ -376,10 +382,10 @@ describe("use focus timer", () => {
       breakVariant: null,
       completedFocusCycles: 2,
       endsAt: "2026-03-08T09:25:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastUpdatedAt: "2026-03-08T09:00:01.000Z",
       phase: "focus",
-      remainingMs: 25 * 60 * 1000,
+      remainingMs: minutesMs(25),
       startedAt: "2026-03-08T09:00:01.000Z",
       status: "running",
       timerSessionId: "timer-session-short-break",
@@ -398,7 +404,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 4,
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
@@ -420,7 +426,7 @@ describe("use focus timer", () => {
     expect(useFocusStore.getState().timerState).toStrictEqual(
       createIdleFocusTimerState(
         new Date("2026-03-08T09:00:01.000Z"),
-        25 * 60 * 1000,
+        minutesMs(25),
         0,
         {
           completedAt: "2026-03-08T09:00:01.000Z",
@@ -447,7 +453,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 2,
       cycleId: null,
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "break",
@@ -460,9 +466,9 @@ describe("use focus timer", () => {
     renderFocusTimerHook({
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 4,
-        focusDefaultDurationSeconds: 30 * 60,
-        focusLongBreakSeconds: 15 * 60,
-        focusShortBreakSeconds: 5 * 60,
+        focusDefaultDurationSeconds: minutes(30),
+        focusLongBreakSeconds: minutes(15),
+        focusShortBreakSeconds: minutes(5),
       },
       recordFocusSession,
     });
@@ -478,10 +484,10 @@ describe("use focus timer", () => {
       breakVariant: null,
       completedFocusCycles: 2,
       endsAt: "2026-03-08T09:30:01.000Z",
-      focusDurationMs: 30 * 60 * 1000,
+      focusDurationMs: minutesMs(30),
       lastUpdatedAt: "2026-03-08T09:00:01.000Z",
       phase: "focus",
-      remainingMs: 30 * 60 * 1000,
+      remainingMs: minutesMs(30),
       startedAt: "2026-03-08T09:00:01.000Z",
       status: "running",
       timerSessionId: "timer-session-short-break-latest",
@@ -502,7 +508,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 0,
       cycleId: "cycle-settings",
       endsAt: "2026-03-08T09:00:02.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
@@ -537,9 +543,9 @@ describe("use focus timer", () => {
     rerender({
       pomodoroSettings: {
         focusCyclesBeforeLongBreak: 2,
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 20 * 60,
-        focusShortBreakSeconds: 7 * 60,
+        focusDefaultDurationSeconds: minutes(25),
+        focusLongBreakSeconds: minutes(20),
+        focusShortBreakSeconds: minutes(7),
       },
     });
 
@@ -551,7 +557,7 @@ describe("use focus timer", () => {
 
     expect(useFocusStore.getState().timerState).toMatchObject({
       breakVariant: "short",
-      remainingMs: 7 * 60 * 1000,
+      remainingMs: minutesMs(7),
       status: "running",
     });
     teardownFocusTimerTest();
@@ -567,7 +573,7 @@ describe("use focus timer", () => {
       completedFocusCycles: 1,
       cycleId: "cycle-stored",
       endsAt: "2026-03-08T09:00:01.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
@@ -677,11 +683,11 @@ describe("use focus timer", () => {
       completedFocusCycles: 0,
       cycleId: "cycle-reset",
       endsAt: "2026-03-08T09:10:00.000Z",
-      focusDurationMs: 25 * 60 * 1000,
+      focusDurationMs: minutesMs(25),
       lastCompletedBreak: null,
       lastUpdatedAt: "2026-03-08T09:00:00.000Z",
       phase: "focus",
-      remainingMs: 10 * 60 * 1000,
+      remainingMs: minutesMs(10),
       startedAt: "2026-03-08T09:00:00.000Z",
       status: "running",
       timerSessionId: "timer-session-reset",
