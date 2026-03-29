@@ -63,9 +63,7 @@ describe("CategorySettingsCard", () => {
       },
     });
 
-    // Open icon popover
-    fireEvent.click(screen.getByText("Utensils"));
-
+    fireEvent.click(screen.getByRole("button", { name: /Utensils/i }));
     fireEvent.click(screen.getByLabelText("Use Apple icon for Nutrition"));
 
     expect(onChange).toHaveBeenCalledWith({
@@ -112,9 +110,7 @@ describe("CategorySettingsCard", () => {
 
     expect(screen.getByTitle("Change Fuel color")).toBeInTheDocument();
 
-    // Open icon popover
-    fireEvent.click(screen.getByText("Utensils"));
-
+    fireEvent.click(screen.getByRole("button", { name: /Utensils/i }));
     expect(
       screen.getByLabelText("Use Apple icon for Fuel")
     ).toBeInTheDocument();
