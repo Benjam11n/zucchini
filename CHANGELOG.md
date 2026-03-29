@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1-beta.14 - 2026-03-29
+
+Changes since `v0.1.1-beta.13`.
+
+### Features
+
+- Add icon library, implement popover component, and optimize tray menu updates
+
+### Refactors
+
+- Update category preview ring order to use a defined constant for rendering slots
+- Remove unused Popover component implementation
+- Replace popover-based color and icon pickers with inline controls in CategorySettingsCard
+- Update weekly review stats and hero card layouts with improved styling and typography
+
 ## 0.1.1-beta.13 - 2026-03-29
 
 Changes since `v0.1.1-beta.12`.
