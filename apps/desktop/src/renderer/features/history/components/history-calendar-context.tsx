@@ -61,7 +61,7 @@ export function HistoryCalendarDayButton({
           {...props}
           className={cn(
             className,
-            "flex h-auto min-h-[4.9rem] w-full flex-col items-center gap-1 rounded-3xl border px-1.5 py-2 transition-colors",
+            "flex h-auto min-h-[4.9rem] w-full flex-col items-center gap-1 rounded-xl border px-1.5 py-2 transition-colors",
             dayEntry
               ? "border-border/60 bg-background/55 hover:border-border hover:bg-background"
               : "border-transparent bg-transparent text-muted-foreground/45",

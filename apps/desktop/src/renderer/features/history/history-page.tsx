@@ -75,7 +75,7 @@ export function HistoryPage({
       >
         <Tabs defaultValue="daily" className="w-full">
           <m.section variants={staggerItemVariants}>
-            <TabsList className="mb-6 w-full rounded-2xl bg-muted/80 p-1">
+            <TabsList className="mb-6 w-full bg-muted/80 p-1">
               <TabsTrigger className="flex-1" value="daily">
                 <CalendarDays className="size-4" />
                 Daily View

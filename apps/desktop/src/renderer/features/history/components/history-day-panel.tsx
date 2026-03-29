@@ -36,7 +36,7 @@ export function HistoryDayPanel({
 
   if (!selectedDay) {
     return (
-      <div className="rounded-2xl border border-dashed border-border/60 bg-background/20 p-4 text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 p-4 text-sm text-muted-foreground">
         No tracked days yet. Start completing habits to unlock the calendar
         browser.
       </div>
@@ -59,7 +59,7 @@ export function HistoryDayPanel({
         <m.div
           key={selectedDay.date}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4 rounded-3xl border border-border/60 bg-background/35 p-4"
+          className="space-y-4 rounded-xl border border-border/60 bg-background/35 p-4"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: 10 }}
           transition={microTransition}
@@ -142,7 +142,7 @@ export function HistoryDayPanel({
                               style={{ color: categoryUi.color }}
                             />
                             <span
-                              className="text-[0.68rem] tracking-[0.14em]"
+                              className="text-[0.68rem] uppercase tracking-wide"
                               style={{ color: categoryUi.color }}
                             >
                               {categoryUi.label}
@@ -166,7 +166,7 @@ export function HistoryDayPanel({
               <Card className="border-border/60 bg-card/85">
                 <CardContent className="flex h-full flex-col justify-between gap-3 p-4">
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <div className="ui-eyebrow flex items-center gap-2">
                       <Timer className="size-3.5" />
                       Focus
                     </div>
@@ -207,9 +207,7 @@ export function HistoryDayPanel({
 
           {longTermHabits.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground">
-                Long-term goals
-              </h4>
+              <h4 className="ui-eyebrow">Long-term goals</h4>
               <div className="flex flex-wrap gap-2">
                 {longTermHabits.map((habit) => (
                   <div

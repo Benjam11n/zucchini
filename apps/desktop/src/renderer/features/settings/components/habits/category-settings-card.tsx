@@ -63,7 +63,7 @@ export function CategorySettingsCard({
           return (
             <div
               key={value}
-              className="grid gap-3 rounded-2xl border border-border/60 bg-muted/25 p-4"
+              className="grid gap-3 rounded-xl border border-border/60 bg-muted/25 p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">

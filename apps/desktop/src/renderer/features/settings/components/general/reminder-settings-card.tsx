@@ -254,7 +254,7 @@ export function ReminderSettingsCard({
               </ItemDescription>
             </ItemContent>
             <ItemActions className="max-w-[220px]">
-              <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
+              <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
                 <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
                 <select
                   aria-label="Timezone"

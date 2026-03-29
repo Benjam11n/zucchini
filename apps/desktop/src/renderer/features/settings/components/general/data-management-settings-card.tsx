@@ -186,7 +186,7 @@ export function DataManagementSettingsCard() {
 
           <div className="px-6 py-4">
             <div
-              className="flex items-start gap-3 rounded-2xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+              className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
               role="alert"
             >
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />

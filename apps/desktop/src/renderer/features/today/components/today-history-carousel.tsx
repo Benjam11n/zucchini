@@ -58,7 +58,7 @@ export function TodayHistoryCarousel({
                 >
                   <button
                     type="button"
-                    className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl p-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex cursor-pointer flex-col items-center gap-2 rounded-xl p-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setSelectedDay(day)}
                   >
                     <HabitActivityRingGlyph

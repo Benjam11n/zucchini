@@ -81,7 +81,7 @@ function FocusPageComponent({
   return (
     <div className="grid gap-6">
       {focusSaveErrorMessage ? (
-        <div className="rounded-2xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
           {focusSaveErrorMessage}
         </div>
       ) : null}

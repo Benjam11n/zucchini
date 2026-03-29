@@ -119,7 +119,7 @@ export function FocusTimerCard({
 
       <CardContent className="space-y-5 pt-4">
         <div className="flex justify-center">
-          <div className="w-full max-w-3xl rounded-3xl border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
+          <div className="w-full max-w-3xl rounded-xl border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               <FocusDurationEditor
                 canEditDuration={canEditDuration}
@@ -139,10 +139,8 @@ export function FocusTimerCard({
             </div>
 
             <div className="mt-3 grid gap-2.5 md:grid-cols-[1fr_1fr]">
-              <div className="rounded-2xl border border-border/60 bg-background/60 px-3 py-2.5">
-                <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-                  Quick breaks
-                </p>
+              <div className="rounded-xl border border-border/60 bg-background/60 px-3 py-2.5">
+                <p className="ui-eyebrow text-[11px]">Quick breaks</p>
                 <p className="mt-1.5 text-sm font-medium">
                   {formatTimerLabel(focusShortBreakSeconds * MS_PER_SECOND)}{" "}
                   short ·{" "}
@@ -153,10 +151,8 @@ export function FocusTimerCard({
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-border/60 bg-background/60 px-3 py-2.5">
-                <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-                  Long break after
-                </p>
+              <div className="rounded-xl border border-border/60 bg-background/60 px-3 py-2.5">
+                <p className="ui-eyebrow text-[11px]">Long break after</p>
                 <div className="mt-1.5 flex items-center justify-between gap-2">
                   <Button
                     aria-label="Decrease cycles before long break"

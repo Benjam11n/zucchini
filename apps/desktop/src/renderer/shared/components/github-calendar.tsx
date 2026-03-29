@@ -113,7 +113,7 @@ function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
         <m.div
           aria-label={cell.label}
           className={cn(
-            "size-3.5 cursor-help rounded-sm border outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-card",
+            "size-3.5 cursor-help rounded-[2px] border outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-card",
             getContributionSquareClassName(cell),
             cell.isToday && "ring-1 ring-ring/60 ring-offset-1 ring-offset-card"
           )}
@@ -129,7 +129,7 @@ function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
         sideOffset={8}
       >
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold tracking-[0.16em] uppercase text-muted-foreground">
+          <p className="ui-eyebrow text-[11px]">
             {formatDateKey(cell.date, {
               day: "numeric",
               month: "short",
@@ -150,7 +150,7 @@ function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
 function GitHubCalendar({ weeks }: GitHubCalendarProps) {
   if (weeks.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-border/60 bg-background/20 px-4 py-10 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 px-4 py-10 text-center text-sm text-muted-foreground">
         No history yet. Complete a day to populate the heatmap.
       </div>
     );
@@ -158,7 +158,7 @@ function GitHubCalendar({ weeks }: GitHubCalendarProps) {
 
   return (
     <TooltipProvider>
-      <div className="overflow-x-auto rounded-3xl border border-border/60 bg-background/30 p-4 sm:p-5">
+      <div className="overflow-x-auto rounded-xl border border-border/60 bg-background/30 p-4 sm:p-5">
         <div className="min-w-max">
           <div className="mb-3 flex gap-1 pl-8 text-[11px] text-muted-foreground">
             {weeks.map((week, index) => {
@@ -200,7 +200,7 @@ function GitHubCalendar({ weeks }: GitHubCalendarProps) {
               <div
                 key={intensity}
                 className={cn(
-                  "size-3.5 rounded-sm border",
+                  "size-3.5 rounded-[2px] border",
                   CONTRIBUTION_INTENSITY_CLASSNAMES[intensity]
                 )}
               />
@@ -213,7 +213,7 @@ function GitHubCalendar({ weeks }: GitHubCalendarProps) {
               <div key={status} className="flex items-center gap-1.5">
                 <div
                   className={cn(
-                    "size-3.5 rounded-sm border",
+                    "size-3.5 rounded-[2px] border",
                     SPECIAL_CONTRIBUTION_STATE_CLASSNAMES[
                       status as keyof typeof SPECIAL_CONTRIBUTION_STATE_CLASSNAMES
                     ]

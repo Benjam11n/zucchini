@@ -149,7 +149,7 @@ function HabitListItemComponent({
         </span>
         {showCategory && (
           <span
-            className="shrink-0 text-[0.68rem] tracking-[0.14em] uppercase opacity-80"
+            className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
             style={{ color: ui.color }}
           >
             {ui.label}

@@ -78,7 +78,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
   return (
     <div
-      className="space-y-4 rounded-3xl border border-border/60 bg-muted/20 px-4 py-4"
+      className="space-y-4 rounded-xl border border-border/60 bg-muted/20 px-4 py-4"
       data-session-date={session.date}
       data-testid="focus-session-card"
     >
@@ -121,7 +121,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
       <FocusRunTimeline session={session} />
 
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/60 px-3 py-2">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/60 px-3 py-2">
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">
             {session.entries.length === 1
@@ -169,7 +169,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
             return (
               <div
                 key={entry.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background/70 px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/70 px-3 py-2"
               >
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Clock3 className="size-4 text-primary/80" />

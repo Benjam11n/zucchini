@@ -20,7 +20,7 @@ export function HabitManagementFeedback({
     <div
       aria-live="polite"
       className={cn(
-        "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-xs",
+        "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs",
         feedback.kind === "archived"
           ? "border-primary/25 bg-primary/10 text-foreground"
           : "border-border/70 bg-muted/30 text-primary"

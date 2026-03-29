@@ -113,7 +113,7 @@ function HabitChecklistComponent({
                   style={{ color: ui.color }}
                 />
                 <span
-                  className="text-[0.68rem] tracking-[0.14em] uppercase"
+                  className="text-[0.68rem] uppercase tracking-wide"
                   style={{ color: ui.color }}
                 >
                   {ui.label}

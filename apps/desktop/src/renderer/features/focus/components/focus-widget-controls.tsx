@@ -65,7 +65,7 @@ export function FocusWidgetControls({
       ) : null}
 
       <div
-        className="flex items-center gap-1 rounded-full border border-border bg-muted p-1"
+        className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1"
         style={NO_DRAG_REGION_STYLE}
       >
         {canStart ? (

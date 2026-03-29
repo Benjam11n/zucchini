@@ -113,7 +113,7 @@ export function WeeklyReviewSection({
   return (
     <div className="grid gap-4">
       {weeklyReviewError ? (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
           {weeklyReviewError.message}
         </div>
       ) : null}

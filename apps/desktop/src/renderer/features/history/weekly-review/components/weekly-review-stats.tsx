@@ -45,13 +45,11 @@ export function WeeklyReviewStats({ review }: WeeklyReviewStatsProps) {
         return (
           <Card key={stat.key} className="border-border/60 bg-card/90">
             <CardContent className="flex items-center gap-3 px-4 py-4">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-muted text-foreground">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground">
                 <stat.icon className="size-4.5" />
               </div>
               <div className="space-y-1">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  {stat.label}
-                </p>
+                <p className="ui-eyebrow">{stat.label}</p>
                 <p className="text-2xl font-black tracking-tight text-foreground">
                   {value ?? 0}
                   {"suffix" in stat ? stat.suffix : ""}

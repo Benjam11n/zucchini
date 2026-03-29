@@ -88,7 +88,7 @@ export function FocusSessionList({
         ) : null}
 
         {sessionsLoadError && sessions.length === 0 ? (
-          <div className="space-y-3 rounded-2xl border border-destructive/25 bg-destructive/8 p-4">
+          <div className="space-y-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4">
             <p className="text-sm text-destructive">
               {sessionsLoadError.message}
             </p>

@@ -23,14 +23,14 @@ export function WeeklyReviewMostMissedCard({
       </CardHeader>
       <CardContent className="grid gap-3">
         {habits.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 px-4 py-6 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border/60 bg-background/40 px-4 py-6 text-sm text-muted-foreground">
             No misses last week. Keep the rhythm.
           </div>
         ) : (
           habits.map((habit) => (
             <div
               key={habit.habitId}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-4 py-3"
+              className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/45 px-4 py-3"
             >
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">{habit.name}</p>

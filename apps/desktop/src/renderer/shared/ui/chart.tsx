@@ -34,7 +34,7 @@ function ChartContainer({
   return (
     <div
       className={cn(
-        "h-[260px] w-full rounded-3xl border border-border/60 bg-background/50 p-3",
+        "h-[260px] w-full rounded-xl border border-border/60 bg-background/50 p-3",
         className
       )}
       style={{ ...chartStyle, ...style }}
@@ -101,15 +101,11 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "min-w-40 rounded-2xl border border-border/70 bg-background/95 px-3 py-2 shadow-xl",
+        "min-w-40 rounded-xl border border-border/70 bg-background/95 px-3 py-2 shadow-xl",
         className
       )}
     >
-      {label ? (
-        <p className="mb-2 text-xs font-semibold tracking-[0.16em] uppercase text-muted-foreground">
-          {label}
-        </p>
-      ) : null}
+      {label ? <p className="ui-eyebrow mb-2 text-xs">{label}</p> : null}
       <div className="grid gap-1.5">
         {payload.map((item) => {
           const displayValue =

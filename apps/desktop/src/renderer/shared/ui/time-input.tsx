@@ -52,7 +52,7 @@ export function TimeInput({
       aria-invalid={ariaInvalid}
       id={inputId}
       className={cn(
-        "flex h-9 w-full items-center gap-1 rounded-md border border-input bg-background px-3",
+        "flex h-9 w-full items-center gap-1 rounded-lg border border-input bg-background px-3",
         "text-sm shadow-sm ring-offset-background transition-colors",
         "focus-within:outline-none focus-within:ring-1 focus-within:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20",
         className

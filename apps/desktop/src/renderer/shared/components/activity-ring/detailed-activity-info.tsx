@@ -21,7 +21,7 @@ export function DetailedActivityInfo({
       >
         {activities.map((activity) => (
           <m.div key={activity.label} className="flex flex-col gap-0.5">
-            <span className="text-[0.65rem] font-medium tracking-[0.18em] uppercase text-zinc-500 dark:text-zinc-400">
+            <span className="text-[0.65rem] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               {activity.label}
             </span>
             <span

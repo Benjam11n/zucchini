@@ -129,7 +129,7 @@ export function HistoryOverviewPanel({
             </div>
           </div>
           {historyLoadError && historyScope !== "full" ? (
-            <div className="rounded-2xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+            <div className="rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
               {historyLoadError.message}
             </div>
           ) : null}

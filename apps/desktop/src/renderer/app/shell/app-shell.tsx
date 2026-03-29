@@ -92,7 +92,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                 </TabsList>
 
                 <div className="flex flex-1 items-center gap-3 lg:hidden">
-                  <TabsList className="grid flex-1 grid-cols-4 rounded-2xl bg-muted/80 p-1">
+                  <TabsList className="grid flex-1 grid-cols-4 bg-muted/80 p-1">
                     <TabsTrigger className="px-4" value="today">
                       Today
                     </TabsTrigger>

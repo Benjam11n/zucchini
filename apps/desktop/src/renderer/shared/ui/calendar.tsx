@@ -22,7 +22,7 @@ function Calendar({
         caption_label: "text-sm font-semibold tracking-tight text-foreground",
         day: "p-1 text-center align-middle",
         day_button:
-          "flex size-12 items-center justify-center rounded-2xl text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/60",
+          "flex size-12 items-center justify-center rounded-xl text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/60",
         disabled: "opacity-35",
         hidden: "invisible",
         month: "space-y-4",
@@ -32,11 +32,10 @@ function Calendar({
         nav: "absolute right-4 top-4 flex items-center gap-2 z-10",
         outside: "text-muted-foreground/40",
         root: "relative w-full",
-        selected: "rounded-3xl bg-muted/50 text-foreground",
+        selected: "rounded-xl bg-muted/50 text-foreground",
         today: "text-foreground",
         week: "grid grid-cols-7",
-        weekday:
-          "pb-2 text-center text-[0.68rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground",
+        weekday: "ui-eyebrow pb-2 text-center",
         weekdays: "grid grid-cols-7",
         weeks: "space-y-1",
         ...classNames,

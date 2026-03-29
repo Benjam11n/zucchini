@@ -132,7 +132,7 @@ export function PomodoroRoadmapCard({
 
   return (
     <div className="space-y-2.5">
-      <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/40 p-2.5">
+      <div className="overflow-hidden rounded-xl border border-border/60 bg-background/40 p-2.5">
         <div className="flex h-5 overflow-hidden rounded-xl bg-muted/20">
           {segments.map((segment) => (
             <div
@@ -160,7 +160,7 @@ export function PomodoroRoadmapCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-end rounded-2xl border border-border/60 bg-muted/10 px-3 py-2">
+      <div className="flex items-center justify-end rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
         <p className="text-sm font-semibold text-foreground">
           Total set: {formatDuration(totalSetDurationMs)}
         </p>

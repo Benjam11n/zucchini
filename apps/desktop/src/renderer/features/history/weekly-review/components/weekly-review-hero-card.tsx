@@ -36,7 +36,7 @@ export function WeeklyReviewHeroCard({
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary">Weekly review</Badge>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="ui-eyebrow flex items-center gap-2 text-xs">
                 <Sparkles className="size-3.5" />
                 Monday reset
               </div>
@@ -54,20 +54,16 @@ export function WeeklyReviewHeroCard({
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-3xl border border-border/60 bg-background/70 p-4">
+          <div className="grid gap-3 rounded-xl border border-border/60 bg-background/70 p-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-border/50 bg-card/70 p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Tracked days
-                </p>
+              <div className="rounded-xl border border-border/50 bg-card/70 p-3">
+                <p className="ui-eyebrow">Tracked days</p>
                 <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
                   {review.trackedDays}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border/50 bg-card/70 p-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Habit chances
-                </p>
+              <div className="rounded-xl border border-border/50 bg-card/70 p-3">
+                <p className="ui-eyebrow">Habit chances</p>
                 <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
                   {review.habitMetrics.reduce(
                     (total, habit) => total + habit.opportunities,

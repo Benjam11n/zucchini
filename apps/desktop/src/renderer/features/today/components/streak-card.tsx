@@ -116,7 +116,7 @@ function StreakCardComponent({
                             {stat.value}
                           </m.p>
                         </AnimatePresence>
-                        <p className="text-xs tracking-[0.16em] uppercase text-muted-foreground">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
                           {stat.label}
                         </p>
                       </div>

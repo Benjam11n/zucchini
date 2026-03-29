@@ -79,6 +79,7 @@ export function FocusDurationEditor({
 
     return (
       <>
+        {/* Keep the tighter custom tracking here so the timer digits align cleanly at display size. */}
         <div className="flex justify-end">
           <p
             className={`pr-[0.04em] text-right text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums ${timerDisplayColorClass}`}

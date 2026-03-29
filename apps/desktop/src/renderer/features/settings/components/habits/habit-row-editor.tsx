@@ -139,7 +139,7 @@ export function HabitRowEditor({
     <m.div
       animate={{ opacity: 1, scale: 1, y: 0 }}
       className={cn(
-        "relative rounded-2xl transition-opacity",
+        "relative rounded-xl transition-opacity",
         isDragging && "opacity-55"
       )}
       exit={{ opacity: 0, scale: 0.96, y: -10 }}
@@ -164,7 +164,7 @@ export function HabitRowEditor({
       />
       <Collapsible open={isExpanded} onOpenChange={onExpandedChange}>
         <Item
-          className="flex-col items-stretch gap-0 overflow-hidden rounded-2xl border-border/70 bg-muted/20 p-0"
+          className="flex-col items-stretch gap-0 overflow-hidden rounded-xl border-border/70 bg-muted/20 p-0"
           variant="outline"
         >
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-2.5 sm:p-3">
@@ -258,7 +258,7 @@ export function HabitRowEditor({
             <div className="grid gap-4 border-t border-border/60 px-3 py-3 sm:px-4">
               <div className="grid gap-2">
                 <Label
-                  className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase"
+                  className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
                   htmlFor={`habit-name-${habit.id}`}
                 >
                   Habit name
