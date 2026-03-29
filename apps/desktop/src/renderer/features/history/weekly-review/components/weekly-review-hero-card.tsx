@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
@@ -36,10 +36,6 @@ export function WeeklyReviewHeroCard({
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary">Weekly review</Badge>
-              <div className="ui-eyebrow flex items-center gap-2 text-xs">
-                <Sparkles className="size-3.5" />
-                Monday reset
-              </div>
             </div>
 
             <div className="space-y-2">
