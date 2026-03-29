@@ -3,14 +3,19 @@
   "tasks": [
     {
       "label": "Test",
-      "type": "shell",
-      "command": "bun run test",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["Test (Desktop)"],
       "group": {
         "kind": "test",
         "isDefault": true
+      }
+    },
+    {
+      "label": "Test (Desktop)",
+      "type": "shell",
+      "command": "bun run test:desktop",
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
       "presentation": {
         "reveal": "always",
@@ -19,9 +24,9 @@
       }
     },
     {
-      "label": "Test (Watch)",
+      "label": "Test (Desktop Watch)",
       "type": "shell",
-      "command": "bun run test:watch",
+      "command": "bun run --cwd apps/desktop test:watch",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -33,8 +38,32 @@
     },
     {
       "label": "Typecheck",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Typecheck (Desktop)", "Typecheck (Web)"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Typecheck (Desktop)",
       "type": "shell",
-      "command": "bun run typecheck",
+      "command": "bun run --cwd apps/desktop typecheck",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$tsc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Typecheck (Web)",
+      "type": "shell",
+      "command": "bun run --cwd apps/web typecheck",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -47,8 +76,31 @@
     },
     {
       "label": "Lint",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Lint (Desktop)", "Lint (Web)"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Lint (Desktop)",
       "type": "shell",
-      "command": "bun run lint",
+      "command": "bun run lint:desktop",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Lint (Web)",
+      "type": "shell",
+      "command": "bun run lint:web",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -74,7 +126,7 @@
     {
       "label": "Knip",
       "type": "shell",
-      "command": "bun run knip",
+      "command": "bun run --cwd apps/desktop knip",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -85,9 +137,22 @@
       }
     },
     {
-      "label": "React Doctor",
+      "label": "React Doctor (Desktop)",
       "type": "shell",
-      "command": "bun run react-doctor",
+      "command": "bun run --cwd apps/desktop react-doctor",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "React Doctor (Web)",
+      "type": "shell",
+      "command": "bun run react-doctor:web",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -99,14 +164,37 @@
     },
     {
       "label": "Build",
-      "type": "shell",
-      "command": "bun run build",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "dependsOrder": "sequence",
+      "dependsOn": ["Build (Desktop)", "Build (Web)"],
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Build (Desktop)",
+      "type": "shell",
+      "command": "bun run build:desktop",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Build (Web)",
+      "type": "shell",
+      "command": "bun run build:web",
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
       "presentation": {
         "reveal": "always",
