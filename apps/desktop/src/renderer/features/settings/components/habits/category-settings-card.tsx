@@ -16,7 +16,6 @@ import {
   CardHeader,
 } from "@/renderer/shared/ui/card";
 import { Input } from "@/renderer/shared/ui/input";
-import { Label } from "@/renderer/shared/ui/label";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 
 const PRESET_CATEGORY_COLORS = [
@@ -194,13 +193,7 @@ export function CategorySettingsCard({
                       value={settings.categoryPreferences[value].color}
                     />
 
-                    <div className="flex w-full min-w-0 flex-1 flex-col gap-2">
-                      <Label
-                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                        htmlFor={`category-label-${value}`}
-                      >
-                        {value}
-                      </Label>
+                    <div className="flex w-full min-w-0 flex-1 flex-col gap-1.5">
                       <Input
                         id={`category-label-${value}`}
                         maxLength={24}
@@ -220,7 +213,7 @@ export function CategorySettingsCard({
                         type="text"
                         value={settings.categoryPreferences[value].label}
                       />
-                      <div className="mt-2 flex flex-wrap gap-3">
+                      <div className="flex flex-wrap gap-3">
                         <button
                           aria-expanded={isColorPanelOpen}
                           className="flex h-9 items-center gap-2 rounded-lg border border-input bg-background/70 px-3 text-sm shadow-sm transition-colors hover:bg-muted"
