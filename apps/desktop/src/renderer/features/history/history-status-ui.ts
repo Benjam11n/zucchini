@@ -19,8 +19,8 @@ export const HISTORY_STATUS_UI: Record<
   },
   freeze: {
     badgeClassName:
-      "border-secondary/65 bg-secondary text-secondary-foreground dark:border-secondary/70 dark:bg-secondary/90 dark:text-secondary-foreground",
-    squareClassName: "border-secondary/80 bg-secondary/75",
+      "border-sky-500/35 bg-sky-500/8 text-sky-700 dark:border-sky-400/45 dark:bg-sky-400/14 dark:text-sky-300",
+    squareClassName: "border-sky-500/85 bg-sky-400/85",
   },
   "in-progress": {
     badgeClassName:

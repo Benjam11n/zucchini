@@ -1,5 +1,7 @@
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Tags } from "lucide-react";
+import { useRef } from "react";
 
+import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
 import {
   getDefaultHabitCategoryPreferences,
@@ -11,13 +13,10 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/renderer/shared/ui/card";
 import { Input } from "@/renderer/shared/ui/input";
 import { Label } from "@/renderer/shared/ui/label";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
-
-import type { SettingsPageProps } from "../../settings.types";
 
 export function CategorySettingsCard({
   fieldErrors,
@@ -26,12 +25,24 @@ export function CategorySettingsCard({
 }: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   const defaultCategoryPreferences = getDefaultHabitCategoryPreferences();
 
+  // Create refs for hidden color inputs to trigger them via SVG rings
+  const colorPickerRefs = {
+    [HABIT_CATEGORY_SLOTS[0]?.value ?? "slot-1"]:
+      useRef<HTMLInputElement>(null),
+    [HABIT_CATEGORY_SLOTS[1]?.value ?? "slot-2"]:
+      useRef<HTMLInputElement>(null),
+    [HABIT_CATEGORY_SLOTS[2]?.value ?? "slot-3"]:
+      useRef<HTMLInputElement>(null),
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardDescription>Categories</CardDescription>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle>Customize</CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          <Tags className="size-4" />
+          Categories
+        </CardDescription>
+        <div className="flex items-center justify-end gap-3">
           <Button
             onClick={() => {
               onChange({
@@ -48,87 +59,97 @@ export function CategorySettingsCard({
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Rename your three category groups and choose their colors. Existing
-          habits update automatically.
+          Click the activity rings to change your category colors, and rename
+          them below. Existing habits update automatically.
         </p>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        {HABIT_CATEGORY_SLOTS.map(({ value }) => {
-          const Icon = HABIT_CATEGORY_ICONS[value];
-          const categoryUi = getHabitCategoryUi(
-            value,
-            settings.categoryPreferences
-          );
-
-          return (
-            <div
-              key={value}
-              className="grid gap-3 rounded-xl border border-border/60 bg-muted/25 p-4"
+      <CardContent>
+        <div className="flex flex-col items-center gap-10 md:flex-row md:items-center">
+          {/* INTERACTIVE 3-RING DISPLAY */}
+          <div className="relative flex size-56 shrink-0 items-center justify-center">
+            <svg
+              className="absolute inset-0 size-full -rotate-90 drop-shadow-sm"
+              fill="transparent"
+              viewBox="0 0 200 200"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="rounded-full border p-2"
-                    style={categoryUi.panelStyle}
-                  >
-                    <Icon
-                      className="size-4"
-                      style={{ color: categoryUi.color }}
-                    />
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {categoryUi.label}
-                    </p>
-                  </div>
-                </div>
+              {HABIT_CATEGORY_SLOTS.map(({ value }, index) => {
+                const categoryUi = getHabitCategoryUi(
+                  value,
+                  settings.categoryPreferences
+                );
+                // Radii for out, middle, inner: 80, 56, 32
+                const r = 80 - index * 24;
+                const circumference = 2 * Math.PI * r;
 
-                <Button
-                  onClick={() => {
-                    onChange({
-                      ...settings,
-                      categoryPreferences: {
-                        ...settings.categoryPreferences,
-                        [value]: defaultCategoryPreferences[value],
-                      },
-                    });
-                  }}
-                  size="sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  Reset
-                </Button>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
-                <div className="grid gap-2">
-                  <Label htmlFor={`category-label-${value}`}>Label</Label>
-                  <Input
-                    id={`category-label-${value}`}
-                    maxLength={24}
-                    onChange={(event) => {
-                      onChange({
-                        ...settings,
-                        categoryPreferences: {
-                          ...settings.categoryPreferences,
-                          [value]: {
-                            ...settings.categoryPreferences[value],
-                            label: event.target.value,
-                          },
-                        },
-                      });
+                return (
+                  <g
+                    key={`ring-${value}`}
+                    className="group cursor-pointer transition-opacity hover:opacity-80 active:opacity-100"
+                    onClick={() => {
+                      // Trigger the hidden color input when a ring is clicked
+                      colorPickerRefs[value]?.current?.click();
                     }}
-                    type="text"
-                    value={settings.categoryPreferences[value].label}
-                  />
-                </div>
+                  >
+                    {/* Ring background track */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r={r}
+                      stroke="currentColor"
+                      strokeWidth="16"
+                      className="text-muted/20 transition-colors group-hover:text-muted/30"
+                    />
+                    {/* 75% visual fill */}
+                    <circle
+                      className="transition-colors"
+                      cx="100"
+                      cy="100"
+                      r={r}
+                      stroke={categoryUi.color}
+                      strokeDasharray={circumference}
+                      strokeDashoffset={circumference * 0.25}
+                      strokeLinecap="round"
+                      strokeWidth="16"
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor={`category-color-${value}`}>Color</Label>
+          {/* EDITABLE LABELS AND CONTROLS */}
+          <div className="flex w-full flex-1 flex-col gap-4">
+            {HABIT_CATEGORY_SLOTS.map(({ value }) => {
+              const Icon = HABIT_CATEGORY_ICONS[value];
+              const categoryUi = getHabitCategoryUi(
+                value,
+                settings.categoryPreferences
+              );
+
+              return (
+                <div
+                  key={value}
+                  className="flex items-center gap-4 rounded-xl border border-border/60 bg-muted/25 px-4 py-3 transition-colors hover:bg-muted/40"
+                >
+                  <button
+                    className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-transform hover:scale-105"
+                    onClick={() => colorPickerRefs[value]?.current?.click()}
+                    style={{
+                      backgroundColor: `${categoryUi.color}20`,
+                      borderColor: categoryUi.color,
+                      color: categoryUi.color,
+                    }}
+                    title={`Change ${categoryUi.label} color`}
+                    type="button"
+                  >
+                    <Icon className="size-5" />
+                  </button>
+
+                  {/* Hidden Color Picker Input */}
                   <input
+                    ref={colorPickerRefs[value]}
                     aria-label={`${categoryUi.label} color`}
-                    className="h-10 w-14 cursor-pointer rounded-xl border border-border bg-transparent p-1"
+                    className="sr-only"
                     id={`category-color-${value}`}
                     onChange={(event) => {
                       onChange({
@@ -145,28 +166,60 @@ export function CategorySettingsCard({
                     type="color"
                     value={settings.categoryPreferences[value].color}
                   />
-                </div>
 
-                <div className="grid gap-2">
-                  <Label>Preview</Label>
-                  <div
-                    className="inline-flex h-10 items-center rounded-full border px-3 text-sm font-medium"
-                    style={{
-                      backgroundColor: categoryUi.color,
-                      borderColor: categoryUi.color,
-                      color: categoryUi.selectedTextColor,
-                    }}
-                  >
-                    {categoryUi.label}
+                  <div className="flex w-full min-w-0 flex-1 flex-col gap-1.5">
+                    <Label
+                      className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                      htmlFor={`category-label-${value}`}
+                    >
+                      {value}
+                    </Label>
+                    <Input
+                      id={`category-label-${value}`}
+                      maxLength={24}
+                      className="h-8 border-transparent bg-transparent px-0 text-base font-medium shadow-none outline-none focus-visible:border-border focus-visible:bg-background focus-visible:px-3 focus-visible:ring-0"
+                      onChange={(event) => {
+                        onChange({
+                          ...settings,
+                          categoryPreferences: {
+                            ...settings.categoryPreferences,
+                            [value]: {
+                              ...settings.categoryPreferences[value],
+                              label: event.target.value,
+                            },
+                          },
+                        });
+                      }}
+                      type="text"
+                      value={settings.categoryPreferences[value].label}
+                    />
                   </div>
+
+                  <Button
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      onChange({
+                        ...settings,
+                        categoryPreferences: {
+                          ...settings.categoryPreferences,
+                          [value]: defaultCategoryPreferences[value],
+                        },
+                      });
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <RotateCcw className="size-4" />
+                  </Button>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
 
         {fieldErrors.categoryPreferences ? (
-          <p className="text-sm text-destructive">
+          <p className="mt-4 text-sm text-destructive">
             {fieldErrors.categoryPreferences}
           </p>
         ) : null}
