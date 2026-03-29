@@ -8,6 +8,7 @@ import {
   focusTimerCycleIdSchema,
   focusTimerInstanceIdSchema,
   focusTimerLeaseTtlSchema,
+  persistedFocusTimerStateSchema,
   focusWidgetSizeSchema,
   habitCategorySchema,
   habitFrequencySchema,
@@ -21,6 +22,7 @@ import {
   reorderHabitIdsSchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -92,6 +94,12 @@ export const validateFocusTimerLeaseTtl = createValidator(
   "focus timer leadership ttl",
   focusTimerLeaseTtlSchema
 );
+
+export const validatePersistedFocusTimerState =
+  createValidator<PersistedFocusTimerState>(
+    "focus timer state",
+    persistedFocusTimerStateSchema
+  );
 
 export const validateFocusWidgetSize = createValidator(
   "focus widget size",

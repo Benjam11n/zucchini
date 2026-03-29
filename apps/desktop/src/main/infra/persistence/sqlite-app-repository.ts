@@ -5,6 +5,7 @@ import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   Habit,
   HabitCategory,
@@ -17,6 +18,7 @@ import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import type { AppRepository, SettledHistoryOptions } from "./app-repository";
 import { SqliteFocusSessionRepository } from "./focus-session-repository";
+import { SqliteFocusTimerStateRepository } from "./focus-timer-state-repository";
 import { SqliteHabitsRepository } from "./habit-repository";
 import { SqliteHistoryRepository } from "./history-repository";
 import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-repository";
@@ -33,6 +35,7 @@ export class SqliteAppRepository implements AppRepository {
   private readonly habitsRepository: SqliteHabitsRepository;
   private readonly historyRepository: SqliteHistoryRepository;
   private readonly focusSessionRepository: SqliteFocusSessionRepository;
+  private readonly focusTimerStateRepository: SqliteFocusTimerStateRepository;
   private readonly settingsRepository: SqliteSettingsRepository;
   private readonly reminderRuntimeStateRepository: SqliteReminderRuntimeStateRepository;
   private readonly streakRepository: SqliteStreakRepository;
@@ -51,6 +54,9 @@ export class SqliteAppRepository implements AppRepository {
       this.habitsRepository
     );
     this.focusSessionRepository = new SqliteFocusSessionRepository(this.client);
+    this.focusTimerStateRepository = new SqliteFocusTimerStateRepository(
+      this.client
+    );
     this.settingsRepository = new SqliteSettingsRepository(this.client);
     this.reminderRuntimeStateRepository =
       new SqliteReminderRuntimeStateRepository(this.client);
@@ -124,6 +130,16 @@ export class SqliteAppRepository implements AppRepository {
 
   saveFocusSession(input: CreateFocusSessionInput): FocusSession {
     return this.focusSessionRepository.insertSession(input);
+  }
+
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null {
+    return this.focusTimerStateRepository.getState();
+  }
+
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState {
+    return this.focusTimerStateRepository.saveState(state);
   }
 
   getSettledHistory(

@@ -12,6 +12,7 @@ import {
   validateFocusTimerCycleId,
   validateFocusTimerInstanceId,
   validateFocusTimerLeaseTtl,
+  validatePersistedFocusTimerState,
   validateFocusWidgetSize,
   validateCreateFocusSessionInput,
   validateDateKey,
@@ -33,10 +34,12 @@ import type {
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { AppSettings } from "@/shared/domain/settings";
 
 interface RegisterIpcHandlersOptions {
   broadcastFocusSessionRecorded: (session: FocusSession) => void;
+  broadcastFocusTimerStateChanged: (state: PersistedFocusTimerState) => void;
   getFocusTimerShortcutStatus: () => FocusTimerShortcutStatus;
   onExportBackup: () => Promise<string | null>;
   onImportBackup: () => Promise<boolean>;
@@ -73,6 +76,7 @@ function registerHandler<TArgs extends unknown[], TResult>(
 
 export function registerIpcHandlers({
   broadcastFocusSessionRecorded,
+  broadcastFocusTimerStateChanged,
   focusTimerCoordinator,
   getFocusTimerShortcutStatus,
   onExportBackup,
@@ -96,6 +100,9 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
     service.getFocusSessions(validateFocusSessionLimit(limit))
   );
+  registerHandler(HABITS_IPC_CHANNELS.getFocusTimerState, () =>
+    service.getPersistedFocusTimerState()
+  );
   registerHandler(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus, () =>
     getFocusTimerShortcutStatus()
   );
@@ -108,6 +115,15 @@ export function registerIpcHandlers({
     broadcastFocusSessionRecorded(focusSession);
 
     return focusSession;
+  });
+  registerHandler(HABITS_IPC_CHANNELS.saveFocusTimerState, (state: unknown) => {
+    const nextState = service.savePersistedFocusTimerState(
+      validatePersistedFocusTimerState(state)
+    );
+
+    broadcastFocusTimerStateChanged(nextState);
+
+    return nextState;
   });
   registerHandler(
     HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion,

@@ -55,6 +55,7 @@ import type {
   FocusTimerShortcutStatus,
 } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
 function loadAppWindow(window: BrowserWindow, search = ""): void {
   const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
@@ -199,6 +200,14 @@ function broadcastFocusSessionRecorded(session: FocusSession): void {
   }
 }
 
+function broadcastFocusTimerStateChanged(
+  state: PersistedFocusTimerState
+): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(HABITS_IPC_CHANNELS.focusTimerStateChanged, state);
+  }
+}
+
 function broadcastFocusTimerShortcutStatus(
   status: FocusTimerShortcutStatus
 ): void {
@@ -321,6 +330,7 @@ function bootstrapApp(): void {
 
           registerIpcHandlers({
             broadcastFocusSessionRecorded,
+            broadcastFocusTimerStateChanged,
             focusTimerCoordinator,
             getFocusTimerShortcutStatus: () =>
               focusTimerGlobalShortcutManager.getStatus(),

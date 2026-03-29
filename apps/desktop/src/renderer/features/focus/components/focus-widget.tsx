@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls";
 import { useFocusWidgetSizeSync } from "@/renderer/features/focus/components/use-focus-widget-size-sync";
@@ -14,11 +14,6 @@ import {
   getPomodoroFocusDurationMs,
   skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  getDefaultPomodoroTimerSettings,
-  readPomodoroTimerSettings,
-  subscribeToPomodoroTimerSettings,
-} from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
@@ -29,7 +24,10 @@ import {
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
-import { getPomodoroTimerSettings } from "@/shared/domain/settings";
+import {
+  createDefaultPomodoroTimerSettings,
+  getPomodoroTimerSettings,
+} from "@/shared/domain/settings";
 
 const DRAG_REGION_STYLE = { WebkitAppRegion: "drag" } as CSSProperties;
 
@@ -72,13 +70,9 @@ export function FocusWidget() {
   const todayState = useFocusWidgetSnapshot();
   const categoryProgress = getHabitCategoryProgress(todayState?.habits ?? []);
   const systemTheme = useSystemTheme();
-  const [storedPomodoroSettings, setStoredPomodoroSettings] = useState(() =>
-    readPomodoroTimerSettings()
-  );
   const resolvedPomodoroSettings =
-    storedPomodoroSettings ??
     (todayState ? getPomodoroTimerSettings(todayState.settings) : null) ??
-    getDefaultPomodoroTimerSettings();
+    createDefaultPomodoroTimerSettings();
 
   useEffect(() => {
     const previousBodyView = document.body.dataset["view"];
@@ -99,14 +93,6 @@ export function FocusWidget() {
       document.documentElement.style.overflow = previousRootOverflow;
     };
   }, []);
-
-  useEffect(
-    () =>
-      subscribeToPomodoroTimerSettings((nextPomodoroSettings) => {
-        setStoredPomodoroSettings(nextPomodoroSettings);
-      }),
-    []
-  );
 
   useApplyThemeMode({
     systemTheme,

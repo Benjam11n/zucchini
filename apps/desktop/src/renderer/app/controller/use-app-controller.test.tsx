@@ -186,6 +186,7 @@ async function setupUseAppController({
         isRegistered: true,
       },
     }),
+    getFocusTimerState: vi.fn().mockResolvedValue(null),
     getHabits: vi.fn().mockResolvedValue([createManagedHabit()]),
     getHistory: vi.fn((limit?: number) =>
       Promise.resolve(limit === 14 ? history.slice(0, 2) : history)
@@ -196,11 +197,13 @@ async function setupUseAppController({
     onFocusSessionRecorded: vi.fn(() => vi.fn()),
     onFocusTimerActionRequested: vi.fn(() => vi.fn()),
     onFocusTimerShortcutStatusChanged: vi.fn(() => vi.fn()),
+    onFocusTimerStateChanged: vi.fn(() => vi.fn()),
     recordFocusSession: vi.fn((_input) => Promise.resolve()),
     releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
     renameHabit: vi.fn().mockResolvedValue(todayState),
     reorderHabits: vi.fn().mockResolvedValue(todayState),
     resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
+    saveFocusTimerState: vi.fn((state) => Promise.resolve(state)),
     showFocusWidget: vi.fn(() => Promise.resolve()),
     showMainWindow: vi.fn(() => Promise.resolve()),
     showNotification: vi.fn().mockResolvedValue(42),

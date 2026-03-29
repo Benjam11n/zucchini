@@ -170,64 +170,73 @@ export class SqliteSettingsRepository {
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
       const defaults = createDefaultAppSettings(timezone);
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryLabelNutrition",
         defaults.categoryPreferences.nutrition.label
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryLabelProductivity",
         defaults.categoryPreferences.productivity.label
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryLabelFitness",
         defaults.categoryPreferences.fitness.label
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryColorNutrition",
         defaults.categoryPreferences.nutrition.color
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryColorProductivity",
         defaults.categoryPreferences.productivity.color
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "categoryColorFitness",
         defaults.categoryPreferences.fitness.color
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "focusDefaultDurationSeconds",
         String(defaults.focusDefaultDurationSeconds)
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "focusCyclesBeforeLongBreak",
         String(defaults.focusCyclesBeforeLongBreak)
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "focusLongBreakSeconds",
         String(defaults.focusLongBreakSeconds)
       );
-      this.upsertSetting(
+      this.insertSettingIfMissing(
         "focusShortBreakSeconds",
         String(defaults.focusShortBreakSeconds)
       );
-      this.upsertSetting("launchAtLogin", String(defaults.launchAtLogin));
-      this.upsertSetting("minimizeToTray", String(defaults.minimizeToTray));
-      this.upsertSetting("reminderEnabled", String(defaults.reminderEnabled));
-      this.upsertSetting(
+      this.insertSettingIfMissing(
+        "launchAtLogin",
+        String(defaults.launchAtLogin)
+      );
+      this.insertSettingIfMissing(
+        "minimizeToTray",
+        String(defaults.minimizeToTray)
+      );
+      this.insertSettingIfMissing(
+        "reminderEnabled",
+        String(defaults.reminderEnabled)
+      );
+      this.insertSettingIfMissing(
         "reminderSnoozeMinutes",
         String(defaults.reminderSnoozeMinutes)
       );
-      this.upsertSetting("reminderTime", defaults.reminderTime);
-      this.upsertSetting(
+      this.insertSettingIfMissing("reminderTime", defaults.reminderTime);
+      this.insertSettingIfMissing(
         "resetFocusTimerShortcut",
         defaults.resetFocusTimerShortcut
       );
-      this.upsertSetting("themeMode", defaults.themeMode);
-      this.upsertSetting(
+      this.insertSettingIfMissing("themeMode", defaults.themeMode);
+      this.insertSettingIfMissing(
         "toggleFocusTimerShortcut",
         defaults.toggleFocusTimerShortcut
       );
-      this.upsertSetting("timezone", defaults.timezone);
+      this.insertSettingIfMissing("timezone", defaults.timezone);
     });
   }
 
@@ -240,6 +249,15 @@ export class SqliteSettingsRepository {
         set: { value },
         target: settings.key,
       })
+      .run();
+  }
+
+  private insertSettingIfMissing(key: string, value: string): void {
+    this.client
+      .getDrizzle()
+      .insert(settings)
+      .values({ key, value })
+      .onConflictDoNothing()
       .run();
   }
 }

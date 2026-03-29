@@ -28,6 +28,7 @@ import type {
   HabitsIpcResponse,
 } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -95,6 +96,10 @@ const habitsApi: HabitsApi = {
   getFocusTimerShortcutStatus: () =>
     invokeHabits<FocusTimerShortcutStatus>(
       HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus
+    ),
+  getFocusTimerState: () =>
+    invokeHabits<PersistedFocusTimerState | null>(
+      HABITS_IPC_CHANNELS.getFocusTimerState
     ),
   getHabits: () => invokeHabits(HABITS_IPC_CHANNELS.getHabits),
   getHistory: (limit?: number) =>
@@ -165,6 +170,26 @@ const habitsApi: HabitsApi = {
       );
     };
   },
+  onFocusTimerStateChanged: (listener) => {
+    const handleFocusTimerStateChanged = (
+      _event: IpcRendererEvent,
+      state: PersistedFocusTimerState
+    ) => {
+      listener(state);
+    };
+
+    ipcRenderer.on(
+      HABITS_IPC_CHANNELS.focusTimerStateChanged,
+      handleFocusTimerStateChanged
+    );
+
+    return () => {
+      ipcRenderer.removeListener(
+        HABITS_IPC_CHANNELS.focusTimerStateChanged,
+        handleFocusTimerStateChanged
+      );
+    };
+  },
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
@@ -176,6 +201,8 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.reorderHabits, habitIds),
   resizeFocusWidget: (width: number, height: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.resizeFocusWidget, width, height),
+  saveFocusTimerState: (state: PersistedFocusTimerState) =>
+    invokeHabits(HABITS_IPC_CHANNELS.saveFocusTimerState, state),
   showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
   showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>

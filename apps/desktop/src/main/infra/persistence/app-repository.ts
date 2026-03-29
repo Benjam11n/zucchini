@@ -3,6 +3,7 @@ import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   Habit,
   HabitCategory,
@@ -33,6 +34,10 @@ export interface AppRepository {
   getFocusSessions(limit?: number): FocusSession[];
   getFocusSessionsInRange(start: string, end: string): FocusSession[];
   saveFocusSession(input: CreateFocusSessionInput): FocusSession;
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null;
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState;
   getSettledHistory(
     limit?: number,
     options?: SettledHistoryOptions

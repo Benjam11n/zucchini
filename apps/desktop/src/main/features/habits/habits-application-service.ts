@@ -12,10 +12,12 @@ import {
 } from "@/main/features/weekly-review/builder";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { persistedFocusTimerStateSchema } from "@/shared/contracts/habits-ipc-schema";
 import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
@@ -46,6 +48,10 @@ export interface HabitsService {
   toggleHabit(habitId: number): TodayState;
   getFocusSessions(limit?: number): FocusSession[];
   recordFocusSession(input: CreateFocusSessionInput): FocusSession;
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null;
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState;
   getHistory(limit?: number): HistoryDay[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
@@ -106,6 +112,14 @@ function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
 
   if (input.timerSessionId.trim().length === 0) {
     throw new Error("Focus session entries must include a timer session id.");
+  }
+}
+
+function assertValidPersistedFocusTimerState(
+  state: PersistedFocusTimerState
+): void {
+  if (!persistedFocusTimerStateSchema.safeParse(state).success) {
+    throw new Error("Focus timer state is invalid.");
   }
 }
 
@@ -201,6 +215,25 @@ export class HabitsApplicationService implements HabitsService {
 
     return this.repository.runInTransaction("recordFocusSession", () =>
       this.repository.saveFocusSession(input)
+    );
+  }
+
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null {
+    this.initialize();
+    return this.repository.runInTransaction("getPersistedFocusTimerState", () =>
+      this.repository.getPersistedFocusTimerState()
+    );
+  }
+
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState {
+    this.initialize();
+    assertValidPersistedFocusTimerState(state);
+
+    return this.repository.runInTransaction(
+      "savePersistedFocusTimerState",
+      () => this.repository.savePersistedFocusTimerState(state)
     );
   }
 

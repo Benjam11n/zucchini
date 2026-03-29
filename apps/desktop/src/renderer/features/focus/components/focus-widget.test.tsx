@@ -12,27 +12,10 @@ import {
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import { createDefaultPomodoroTimerSettings } from "@/shared/domain/settings";
 
 import { FocusWidget } from "./focus-widget";
-
-function createLocalStorageMock() {
-  const storage = new Map<string, string>();
-
-  return {
-    clear() {
-      storage.clear();
-    },
-    getItem(key: string) {
-      return storage.get(key) ?? null;
-    },
-    removeItem(key: string) {
-      storage.delete(key);
-    },
-    setItem(key: string, value: string) {
-      storage.set(key, value);
-    },
-  };
-}
 
 describe("focus widget", () => {
   function dispatchShortcut(code: string, key: string) {
@@ -48,7 +31,13 @@ describe("focus widget", () => {
     });
   }
 
-  function setupWidgetTest({ renderWidget = true } = {}) {
+  function setupWidgetTest({
+    persistedTimerState = null,
+    renderWidget = true,
+  }: {
+    persistedTimerState?: PersistedFocusTimerState | null;
+    renderWidget?: boolean;
+  } = {}) {
     resetFocusStore();
     class ResizeObserverMock {
       // oxlint-disable-next-line class-methods-use-this
@@ -69,11 +58,6 @@ describe("focus widget", () => {
         removeEventListener: vi.fn(),
       }),
     });
-    Object.defineProperty(globalThis, "localStorage", {
-      configurable: true,
-      value: createLocalStorageMock(),
-    });
-    localStorage.clear();
     const getTodayState = vi.fn().mockResolvedValue({
       date: "2026-03-10",
       habits: [],
@@ -99,6 +83,7 @@ describe("focus widget", () => {
         lastEvaluatedDate: "2026-03-09",
       },
     });
+    const getFocusTimerState = vi.fn().mockResolvedValue(persistedTimerState);
     const closeSpy = vi.fn();
     Object.defineProperty(window, "close", {
       configurable: true,
@@ -111,12 +96,15 @@ describe("focus widget", () => {
         claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
         claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
         getDesktopNotificationStatus: vi.fn(),
+        getFocusTimerState,
         getTodayState,
         onFocusSessionRecorded: vi.fn(() => vi.fn()),
         onFocusTimerActionRequested: vi.fn(() => vi.fn()),
+        onFocusTimerStateChanged: vi.fn(() => vi.fn()),
         recordFocusSession: vi.fn((_input) => Promise.resolve()),
         releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
         resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
+        saveFocusTimerState: vi.fn((state) => Promise.resolve(state)),
         showFocusWidget: vi.fn(() => Promise.resolve()),
         showNotification: vi.fn((_title, _body) => Promise.resolve()),
       },
@@ -126,13 +114,28 @@ describe("focus widget", () => {
       render(<FocusWidget />);
     }
 
-    return { closeSpy, getTodayState };
+    return {
+      closeSpy,
+      getFocusTimerState,
+      getTodayState,
+      saveFocusTimerState: window.habits.saveFocusTimerState,
+    };
   }
 
   it("renders a compact timer with icon controls and the activity ring", async () => {
-    const { getTodayState } = setupWidgetTest();
+    const { getFocusTimerState, getTodayState } = setupWidgetTest();
 
-    expect(screen.getByText("25:00")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getFocusTimerState).toHaveBeenCalled();
+    });
+
+    expect(
+      screen.getByText(
+        `${String(
+          createDefaultPomodoroTimerSettings().focusDefaultDurationSeconds / 60
+        ).padStart(2, "0")}:00`
+      )
+    ).toBeInTheDocument();
     expect(document.body.dataset["view"]).toBe("widget");
     expect(screen.getByRole("main")).toHaveClass("bg-transparent");
 
@@ -145,16 +148,21 @@ describe("focus widget", () => {
   });
 
   it("supports start, pause, reset, and close controls", async () => {
-    const { closeSpy, getTodayState } = setupWidgetTest();
+    const { closeSpy, getFocusTimerState, getTodayState, saveFocusTimerState } =
+      setupWidgetTest();
 
     await waitFor(() => {
+      expect(getFocusTimerState).toHaveBeenCalled();
+      expect(saveFocusTimerState).toHaveBeenCalled();
       expect(getTodayState.mock.calls[0]).toStrictEqual([]);
     });
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Start timer" }));
     });
-    expect(useFocusStore.getState().timerState.status).toBe("running");
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.status).toBe("running");
+    });
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Pause timer" }));
@@ -176,21 +184,18 @@ describe("focus widget", () => {
   });
 
   it("supports skipping an active short break", async () => {
-    const { getTodayState } = setupWidgetTest({ renderWidget: false });
     const now = new Date();
-    localStorage.setItem(
-      "zucchini_focus_timer",
-      JSON.stringify(
-        createRunningBreakTimerState({
-          breakDurationMs: 5 * 60 * 1000,
-          breakVariant: "short",
-          completedFocusCycles: 1,
-          focusDurationMs: 25 * 60 * 1000,
-          now,
-          timerSessionId: "timer-session-widget-skip",
-        })
-      )
-    );
+    const { getTodayState } = setupWidgetTest({
+      persistedTimerState: createRunningBreakTimerState({
+        breakDurationMs: 5 * 60 * 1000,
+        breakVariant: "short",
+        completedFocusCycles: 1,
+        focusDurationMs: 25 * 60 * 1000,
+        now,
+        timerSessionId: "timer-session-widget-skip",
+      }),
+      renderWidget: false,
+    });
 
     render(<FocusWidget />);
 
@@ -213,14 +218,19 @@ describe("focus widget", () => {
   });
 
   it("supports keyboard shortcuts for start, pause, resume, and reset", async () => {
-    const { getTodayState } = setupWidgetTest();
+    const { getFocusTimerState, getTodayState, saveFocusTimerState } =
+      setupWidgetTest();
 
     await waitFor(() => {
+      expect(getFocusTimerState).toHaveBeenCalled();
+      expect(saveFocusTimerState).toHaveBeenCalled();
       expect(getTodayState.mock.calls[0]).toStrictEqual([]);
     });
 
     dispatchShortcut("Space", " ");
-    expect(useFocusStore.getState().timerState.status).toBe("running");
+    await waitFor(() => {
+      expect(useFocusStore.getState().timerState.status).toBe("running");
+    });
 
     dispatchShortcut("Space", " ");
     expect(useFocusStore.getState().timerState.status).toBe("paused");
@@ -236,22 +246,24 @@ describe("focus widget", () => {
   });
 
   it("restores a running timer without resetting it on widget mount", async () => {
-    setupWidgetTest({ renderWidget: false });
     const now = new Date();
-
-    localStorage.setItem(
-      "zucchini_focus_timer",
-      JSON.stringify({
+    setupWidgetTest({
+      persistedTimerState: {
+        breakVariant: null,
+        completedFocusCycles: 0,
         cycleId: "cycle-restore",
         endsAt: new Date(now.getTime() + 1_500_000).toISOString(),
         focusDurationMs: 1_500_000,
+        lastCompletedBreak: null,
         lastUpdatedAt: now.toISOString(),
         phase: "focus",
         remainingMs: 1_500_000,
         startedAt: now.toISOString(),
         status: "running",
-      })
-    );
+        timerSessionId: null,
+      },
+      renderWidget: false,
+    });
 
     render(<FocusWidget />);
 
@@ -352,7 +364,7 @@ describe("focus widget", () => {
   });
 
   it("records a partial focus entry when resetting after elapsed focus time", async () => {
-    setupWidgetTest({ renderWidget: false });
+    const { getFocusTimerState } = setupWidgetTest({ renderWidget: false });
     act(() => {
       useFocusStore.getState().setTimerState({
         ...createRunningFocusTimerState(new Date("2026-03-08T09:00:00.000Z")),
@@ -363,6 +375,10 @@ describe("focus widget", () => {
 
     render(<FocusWidget />);
 
+    await waitFor(() => {
+      expect(getFocusTimerState).toHaveBeenCalled();
+    });
+
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Reset timer" }));
     });
@@ -370,7 +386,7 @@ describe("focus widget", () => {
     await waitFor(() => {
       expect(window.habits.recordFocusSession).toHaveBeenCalledWith(
         expect.objectContaining({
-          durationSeconds: 10 * 60,
+          durationSeconds: 30 * 60,
           entryKind: "partial",
         })
       );

@@ -1,33 +1,23 @@
 import type { SettingsSavePhase } from "@/renderer/features/settings/settings.types";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type {
+  FocusBreakVariant,
+  FocusTimerPhase,
+  FocusTimerStatus,
+  PersistedCompletedBreakState,
+  PersistedFocusTimerState,
+} from "@/shared/domain/focus-timer";
 import type { AppSettings } from "@/shared/domain/settings";
 
-export type FocusTimerPhase = "focus" | "break";
-export type FocusTimerStatus = "idle" | "running" | "paused";
 export type FocusSessionsPhase = AsyncPhase;
-export type FocusBreakVariant = "short" | "long";
-
-export interface PersistedCompletedBreakState {
-  completedAt: string;
-  timerSessionId: string;
-  variant: FocusBreakVariant;
-}
-
-export interface PersistedFocusTimerState {
-  breakVariant: FocusBreakVariant | null;
-  cycleId: string | null;
-  completedFocusCycles: number;
-  endsAt: string | null;
-  focusDurationMs: number;
-  lastCompletedBreak: PersistedCompletedBreakState | null;
-  lastUpdatedAt: string;
-  phase: FocusTimerPhase;
-  remainingMs: number;
-  startedAt: string | null;
-  status: FocusTimerStatus;
-  timerSessionId: string | null;
-}
+export type {
+  FocusBreakVariant,
+  FocusTimerPhase,
+  FocusTimerStatus,
+  PersistedCompletedBreakState,
+  PersistedFocusTimerState,
+};
 
 export interface FocusTodaySummary {
   completedCount: number;

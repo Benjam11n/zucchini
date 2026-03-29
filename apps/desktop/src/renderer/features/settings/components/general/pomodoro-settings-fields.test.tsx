@@ -91,7 +91,9 @@ describe("pomodoro settings fields", () => {
     fireEvent.blur(longBreakMinutesInput);
 
     expect(onChange).not.toHaveBeenCalled();
-    expect(longBreakMinutesInput).toHaveValue("15");
+    expect(longBreakMinutesInput).toHaveValue(
+      String(settings.focusLongBreakSeconds / 60)
+    );
   });
 
   it("updates the global toggle shortcut through the shared form state", () => {

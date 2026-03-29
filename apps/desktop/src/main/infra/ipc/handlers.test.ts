@@ -5,6 +5,7 @@ import type * as NotificationsModule from "@/main/features/reminders/notificatio
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -57,12 +58,28 @@ const defaultSettings: AppSettings = {
 };
 
 function createService() {
+  const focusTimerState: PersistedFocusTimerState = {
+    breakVariant: null,
+    completedFocusCycles: 0,
+    cycleId: null,
+    endsAt: null,
+    focusDurationMs: 1500 * 1000,
+    lastCompletedBreak: null,
+    lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+    phase: "focus",
+    remainingMs: 1500 * 1000,
+    startedAt: null,
+    status: "idle",
+    timerSessionId: null,
+  };
+
   return {
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
     getFocusSessions: vi.fn(() => []),
     getHabits: vi.fn(() => []),
     getHistory: vi.fn(() => []),
+    getPersistedFocusTimerState: vi.fn(() => focusTimerState),
     getReminderRuntimeState: vi.fn(),
     getTodayState: vi.fn(() => {
       throw new Error("boom");
@@ -77,6 +94,7 @@ function createService() {
     recordFocusSession: vi.fn(),
     renameHabit: vi.fn(),
     reorderHabits: vi.fn(),
+    savePersistedFocusTimerState: vi.fn((state) => state),
     saveReminderRuntimeState: vi.fn(),
     toggleHabit: vi.fn(),
     unarchiveHabit: vi.fn(),
@@ -100,6 +118,7 @@ function createRegisterOptions(
 ): Parameters<typeof registerIpcHandlers>[0] {
   return {
     broadcastFocusSessionRecorded: vi.fn(),
+    broadcastFocusTimerStateChanged: vi.fn(),
     focusTimerCoordinator: createFocusTimerCoordinator(),
     getFocusTimerShortcutStatus: vi.fn(() => ({
       reset: {
@@ -292,6 +311,49 @@ describe("registerIpcHandlers()", () => {
       ...payload,
       id: 1,
     });
+  });
+
+  it("saves focus timer state and broadcasts the normalized snapshot", async () => {
+    resetHandlers();
+    const service = createService();
+    const broadcastFocusTimerStateChanged = vi.fn();
+    const nextState: PersistedFocusTimerState = {
+      breakVariant: null,
+      completedFocusCycles: 1,
+      cycleId: "cycle-1",
+      endsAt: "2026-03-08T09:25:00.000Z",
+      focusDurationMs: 1500 * 1000,
+      lastCompletedBreak: null,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1500 * 1000,
+      startedAt: "2026-03-08T09:00:00.000Z",
+      status: "running",
+      timerSessionId: "timer-session-1",
+    };
+    service.savePersistedFocusTimerState.mockReturnValue(nextState);
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        broadcastFocusTimerStateChanged,
+        service,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.saveFocusTimerState)?.(
+        {} as IpcMainInvokeEvent,
+        nextState
+      )
+    ).resolves.toStrictEqual({
+      data: nextState,
+      ok: true,
+    });
+
+    expect(service.savePersistedFocusTimerState).toHaveBeenCalledWith(
+      nextState
+    );
+    expect(broadcastFocusTimerStateChanged).toHaveBeenCalledWith(nextState);
   });
 
   it("routes focus timer leadership requests to the coordinator", async () => {

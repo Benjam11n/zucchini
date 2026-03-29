@@ -75,6 +75,26 @@ export const focusSessions = sqliteTable(
   ]
 );
 
+export const focusTimerState = sqliteTable("focus_timer_state", {
+  breakVariant: text("break_variant"),
+  completedFocusCycles: integer("completed_focus_cycles").notNull(),
+  cycleId: text("cycle_id"),
+  endsAt: text("ends_at"),
+  focusDurationMs: integer("focus_duration_ms").notNull(),
+  id: integer().primaryKey(),
+  lastCompletedBreakCompletedAt: text("last_completed_break_completed_at"),
+  lastCompletedBreakTimerSessionId: text(
+    "last_completed_break_timer_session_id"
+  ),
+  lastCompletedBreakVariant: text("last_completed_break_variant"),
+  lastUpdatedAt: text("last_updated_at").notNull(),
+  phase: text().notNull(),
+  remainingMs: integer("remaining_ms").notNull(),
+  startedAt: text("started_at"),
+  status: text().notNull(),
+  timerSessionId: text("timer_session_id"),
+});
+
 export const streakState = sqliteTable("streak_state", {
   availableFreezes: integer("available_freezes").notNull(),
   bestStreak: integer("best_streak").notNull(),
@@ -99,6 +119,7 @@ export const settings = sqliteTable("settings", {
 export const schema = {
   dailySummary,
   focusSessions,
+  focusTimerState,
   habitPeriodStatus,
   habits,
   reminderRuntimeState,

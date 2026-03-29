@@ -4,11 +4,9 @@ import { useEffect } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
 import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
-import { writePomodoroTimerSettings } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review/lib/weekly-review-spotlight";
 import { readLastSeenWeeklyReviewStart } from "@/renderer/features/history/weekly-review/lib/weekly-review-storage";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
-import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import { toDateKey } from "@/shared/utils/date";
 
@@ -47,10 +45,6 @@ export function useAppLifecycleEffects({
   weeklyReviewOverview: AppControllerState["weeklyReviewOverview"];
   weeklyReviewPhase: AppControllerState["weeklyReviewPhase"];
 }) {
-  const savedPomodoroSettings = todayState
-    ? getPomodoroTimerSettings(todayState.settings)
-    : null;
-
   useEffect(() => {
     bootApp().catch(() => {
       // Boot failures are surfaced through controller state.
@@ -141,20 +135,6 @@ export function useAppLifecycleEffects({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [bootPhase, refreshForNewDay, todayState?.date]);
-
-  useEffect(() => {
-    if (!savedPomodoroSettings) {
-      return;
-    }
-
-    writePomodoroTimerSettings(savedPomodoroSettings);
-  }, [
-    savedPomodoroSettings,
-    savedPomodoroSettings?.focusDefaultDurationSeconds,
-    savedPomodoroSettings?.focusCyclesBeforeLongBreak,
-    savedPomodoroSettings?.focusLongBreakSeconds,
-    savedPomodoroSettings?.focusShortBreakSeconds,
-  ]);
 
   useApplyThemeMode({
     systemTheme,

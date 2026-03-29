@@ -11,6 +11,7 @@ import type {
 } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { FocusSession } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 const exposed = new Map<string, unknown>();
@@ -214,6 +215,43 @@ describe("preload habits API", () => {
         isRegistered: true,
       },
     });
+
+    unsubscribe();
+
+    expect(removeListener.mock.calls).toHaveLength(1);
+  });
+
+  it("exposes focus timer state subscriptions through the preload bridge", async () => {
+    await loadPreloadModule();
+
+    const listener = vi.fn();
+    const unsubscribe = getHabitsApi().onFocusTimerStateChanged(listener);
+
+    const [channel, handler] = on.mock.calls[0] as [
+      string,
+      (_event: object, state: PersistedFocusTimerState) => void,
+    ];
+
+    expect(channel).toBe("habits:focusTimerStateChanged");
+
+    const timerState: PersistedFocusTimerState = {
+      breakVariant: null,
+      completedFocusCycles: 0,
+      cycleId: null,
+      endsAt: null,
+      focusDurationMs: 1500 * 1000,
+      lastCompletedBreak: null,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1500 * 1000,
+      startedAt: null,
+      status: "idle",
+      timerSessionId: null,
+    };
+
+    handler({}, timerState);
+
+    expect(listener).toHaveBeenCalledWith(timerState);
 
     unsubscribe();
 

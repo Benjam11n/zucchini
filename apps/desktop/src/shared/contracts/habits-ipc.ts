@@ -8,6 +8,7 @@ import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   Habit,
   HabitCategory,
@@ -55,9 +56,11 @@ export const HABITS_IPC_CHANNELS = {
   focusSessionRecorded: "habits:focusSessionRecorded",
   focusTimerActionRequested: "habits:focusTimerActionRequested",
   focusTimerShortcutStatusChanged: "habits:focusTimerShortcutStatusChanged",
+  focusTimerStateChanged: "habits:focusTimerStateChanged",
   getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
   getFocusSessions: "habits:getFocusSessions",
   getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
+  getFocusTimerState: "habits:getFocusTimerState",
   getHabits: "habits:getHabits",
   getHistory: "habits:getHistory",
   getTodayState: "habits:getTodayState",
@@ -70,6 +73,7 @@ export const HABITS_IPC_CHANNELS = {
   renameHabit: "habits:renameHabit",
   reorderHabits: "habits:reorderHabits",
   resizeFocusWidget: "habits:resizeFocusWidget",
+  saveFocusTimerState: "habits:saveFocusTimerState",
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
@@ -180,6 +184,7 @@ export interface HabitsApi {
   exportBackup: () => Promise<string | null>;
   getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
   getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
+  getFocusTimerState: () => Promise<PersistedFocusTimerState | null>;
   getFocusTimerShortcutStatus: () => Promise<FocusTimerShortcutStatus>;
   getHabits: () => Promise<Habit[]>;
   getHistory: (limit?: number) => Promise<HistoryDay[]>;
@@ -196,10 +201,16 @@ export interface HabitsApi {
   onFocusSessionRecorded: (
     listener: (session: FocusSession) => void
   ) => () => void;
+  onFocusTimerStateChanged: (
+    listener: (state: PersistedFocusTimerState) => void
+  ) => () => void;
   openDataFolder: () => Promise<string>;
   recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;
+  saveFocusTimerState: (
+    state: PersistedFocusTimerState
+  ) => Promise<PersistedFocusTimerState>;
   updateSettings: (settings: AppSettings) => Promise<AppSettings>;
   createHabit: (
     name: string,

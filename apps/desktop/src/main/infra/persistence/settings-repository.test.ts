@@ -28,6 +28,21 @@ function createFakeClient(initialRows: { key: string; value: string }[] = []) {
                     },
                   };
                 },
+                onConflictDoNothing() {
+                  return {
+                    run() {
+                      const existingRow = rows.find(
+                        (row) => row.key === value.key
+                      );
+
+                      if (existingRow) {
+                        return;
+                      }
+
+                      rows.push({ ...value });
+                    },
+                  };
+                },
               };
             },
           };
@@ -93,5 +108,30 @@ describe("SqliteSettingsRepository", () => {
     expect(savedSettings.categoryPreferences).toStrictEqual(
       customSettings.categoryPreferences
     );
+  });
+
+  it("does not overwrite saved pomodoro settings when seeding defaults", () => {
+    const client = createFakeClient();
+    const repository = new SqliteSettingsRepository(client as never);
+
+    repository.saveSettings(
+      {
+        ...createDefaultAppSettings("Asia/Singapore"),
+        focusCyclesBeforeLongBreak: 7,
+        focusDefaultDurationSeconds: 33 * 60,
+        focusLongBreakSeconds: 22 * 60,
+        focusShortBreakSeconds: 9 * 60,
+      },
+      "Asia/Singapore"
+    );
+
+    repository.seedDefaults("Asia/Singapore");
+
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
+      focusCyclesBeforeLongBreak: 7,
+      focusDefaultDurationSeconds: 33 * 60,
+      focusLongBreakSeconds: 22 * 60,
+      focusShortBreakSeconds: 9 * 60,
+    });
   });
 });

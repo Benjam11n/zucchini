@@ -140,7 +140,11 @@ describe("focus tab", () => {
     render(<FocusPageHarness />);
 
     expect(screen.getAllByText("Short break").length).toBeGreaterThan(0);
-    expect(screen.getByText("4 sessions")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `${createDefaultAppSettings("Asia/Singapore").focusCyclesBeforeLongBreak} sessions`
+      )
+    ).toBeInTheDocument();
 
     act(() => {
       useFocusStore.getState().setTimerState({

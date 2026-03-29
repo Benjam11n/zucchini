@@ -10,6 +10,7 @@ import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
   Habit,
   HabitCategory,
@@ -111,6 +112,7 @@ class FakeRepository implements AppRepository {
     snoozedUntil: null,
   };
   focusSessions: FocusSession[] = [];
+  focusTimerState: PersistedFocusTimerState | null = null;
   seedDefaultsCalls = 0;
   transactionLabels: string[] = [];
 
@@ -252,6 +254,17 @@ class FakeRepository implements AppRepository {
     };
     this.focusSessions.unshift(focusSession);
     return focusSession;
+  }
+
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null {
+    return this.focusTimerState;
+  }
+
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState {
+    this.focusTimerState = state;
+    return state;
   }
 
   getSettledHistory(

@@ -12,22 +12,14 @@ import {
   getCompletedFocusCyclesAfterBreak,
   getPomodoroFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  readFocusTimerState,
-  subscribeToFocusTimerState,
-  writeFocusTimerState,
-} from "@/renderer/features/focus/lib/focus-timer-storage";
-import {
-  getDefaultPomodoroTimerSettings,
-  readPomodoroTimerSettings,
-  subscribeToPomodoroTimerSettings,
-} from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
 import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
+import { arePersistedFocusTimerStatesEqual } from "@/shared/domain/focus-timer";
+import { createDefaultPomodoroTimerSettings } from "@/shared/domain/settings";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 const LEASE_TTL_MS = 2500;
@@ -114,43 +106,72 @@ export function useFocusTimer({
   const timerState = useFocusStore((state) => state.timerState);
   const setTimerState = useFocusStore((state) => state.setTimerState);
   const instanceIdRef = useRef(createCycleId());
-  const [storedPomodoroSettings, setStoredPomodoroSettings] = useState(() =>
-    readPomodoroTimerSettings()
-  );
   const resolvedPomodoroSettings =
-    pomodoroSettings ??
-    storedPomodoroSettings ??
-    getDefaultPomodoroTimerSettings();
+    pomodoroSettings ?? createDefaultPomodoroTimerSettings();
   const pomodoroSettingsRef = useRef(resolvedPomodoroSettings);
   const hasSeenTimerStateRef = useRef(false);
   const previousTimerStateRef = useRef(timerState);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const persistedTimerStateRef = useRef<PersistedFocusTimerState | null>(null);
+  const latestSaveRequestIdRef = useRef(0);
 
   pomodoroSettingsRef.current = resolvedPomodoroSettings;
 
   useEffect(() => {
-    const restored = readFocusTimerState();
-    if (restored) {
-      setTimerState(resolveRestoredTimerState(restored));
-    }
+    let cancelled = false;
 
-    setHasHydrated(true);
+    window.habits
+      .getFocusTimerState()
+      .then((restored) => {
+        if (cancelled) {
+          return;
+        }
+
+        const nextTimerState = restored
+          ? resolveRestoredTimerState(restored)
+          : null;
+        persistedTimerStateRef.current = nextTimerState;
+
+        if (
+          nextTimerState &&
+          !arePersistedFocusTimerStatesEqual(
+            useFocusStore.getState().timerState,
+            nextTimerState
+          )
+        ) {
+          setTimerState(nextTimerState);
+        }
+      })
+      .catch(() => {
+        // Timer restore is best effort; fall back to the in-memory default.
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setHasHydrated(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [setTimerState]);
 
   useEffect(
     () =>
-      subscribeToFocusTimerState((nextTimerState) => {
-        useFocusStore
-          .getState()
-          .setTimerState(nextTimerState ?? createIdleFocusTimerState());
-      }),
-    []
-  );
+      window.habits.onFocusTimerStateChanged((nextTimerState) => {
+        const resolvedTimerState = resolveRestoredTimerState(nextTimerState);
+        persistedTimerStateRef.current = resolvedTimerState;
 
-  useEffect(
-    () =>
-      subscribeToPomodoroTimerSettings((nextPomodoroSettings) => {
-        setStoredPomodoroSettings(nextPomodoroSettings);
+        if (
+          arePersistedFocusTimerStatesEqual(
+            useFocusStore.getState().timerState,
+            resolvedTimerState
+          )
+        ) {
+          return;
+        }
+
+        useFocusStore.getState().setTimerState(resolvedTimerState);
       }),
     []
   );
@@ -160,7 +181,35 @@ export function useFocusTimer({
       return;
     }
 
-    writeFocusTimerState(timerState);
+    if (
+      arePersistedFocusTimerStatesEqual(
+        persistedTimerStateRef.current,
+        timerState
+      )
+    ) {
+      return;
+    }
+
+    const requestId = latestSaveRequestIdRef.current + 1;
+    latestSaveRequestIdRef.current = requestId;
+    let cancelled = false;
+
+    window.habits
+      .saveFocusTimerState(timerState)
+      .then((savedTimerState) => {
+        if (cancelled || latestSaveRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        persistedTimerStateRef.current = savedTimerState;
+      })
+      .catch(() => {
+        // Timer persistence is best effort; keep the in-memory state.
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [hasHydrated, timerState]);
 
   useEffect(() => {

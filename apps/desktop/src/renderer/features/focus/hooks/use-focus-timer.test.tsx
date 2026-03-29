@@ -9,7 +9,6 @@ import {
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import { writePomodoroTimerSettings } from "@/renderer/features/focus/lib/pomodoro-settings-storage";
 import {
   resetFocusStore,
   useFocusStore,
@@ -18,7 +17,9 @@ import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
-import type { PomodoroTimerSettings } from "@/shared/domain/settings";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import { createDefaultPomodoroTimerSettings } from '@/shared/domain/settings';
+import type { PomodoroTimerSettings } from '@/shared/domain/settings';
 
 import { useFocusTimer } from "./use-focus-timer";
 
@@ -35,6 +36,7 @@ type FocusTimerActionListener = (request: {
   action: "reset" | "toggle";
   source: "global-shortcut" | "main-window" | "widget";
 }) => void;
+type FocusTimerStateChangedListener = (state: PersistedFocusTimerState) => void;
 
 const DEFAULT_TIMER_SETTINGS = {
   focusCyclesBeforeLongBreak: 4,
@@ -43,36 +45,20 @@ const DEFAULT_TIMER_SETTINGS = {
   focusShortBreakSeconds: 5 * 60,
 };
 
-function createLocalStorageMock() {
-  const storage = new Map<string, string>();
-
-  return {
-    clear() {
-      storage.clear();
-    },
-    getItem(key: string) {
-      return storage.get(key) ?? null;
-    },
-    removeItem(key: string) {
-      storage.delete(key);
-    },
-    setItem(key: string, value: string) {
-      storage.set(key, value);
-    },
-  };
-}
-
-function setupFocusTimerTest() {
+function setupFocusTimerTest(
+  persistedTimerState: PersistedFocusTimerState | null = null
+) {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-03-08T09:00:00.000Z"));
-  Object.defineProperty(globalThis, "localStorage", {
-    configurable: true,
-    value: createLocalStorageMock(),
-  });
-  localStorage.clear();
   resetFocusStore();
   let focusSessionRecordedListener: FocusSessionRecordedListener | null = null;
   let focusTimerActionListener: FocusTimerActionListener | null = null;
+  let focusTimerStateChangedListener: FocusTimerStateChangedListener | null =
+    null;
+  const getFocusTimerState = vi.fn().mockResolvedValue(persistedTimerState);
+  const saveFocusTimerState = vi.fn((state: PersistedFocusTimerState) =>
+    Promise.resolve(state)
+  );
   const showFocusWidget = vi.fn(() => Promise.resolve());
   Object.defineProperty(window, "habits", {
     configurable: true,
@@ -80,6 +66,7 @@ function setupFocusTimerTest() {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
       getDesktopNotificationStatus: vi.fn(),
+      getFocusTimerState,
       onFocusSessionRecorded: vi.fn(
         (listener: FocusSessionRecordedListener) => {
           focusSessionRecordedListener = listener;
@@ -96,7 +83,16 @@ function setupFocusTimerTest() {
           };
         }
       ),
+      onFocusTimerStateChanged: vi.fn(
+        (listener: FocusTimerStateChangedListener) => {
+          focusTimerStateChangedListener = listener;
+          return () => {
+            focusTimerStateChangedListener = null;
+          };
+        }
+      ),
       releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
+      saveFocusTimerState,
       showFocusWidget,
       showNotification: vi.fn().mockResolvedValue(42),
     },
@@ -111,6 +107,13 @@ function setupFocusTimerTest() {
     emitFocusTimerAction(request: Parameters<FocusTimerActionListener>[0]) {
       focusTimerActionListener?.(request);
     },
+    emitFocusTimerStateChanged(
+      state: Parameters<FocusTimerStateChangedListener>[0]
+    ) {
+      focusTimerStateChangedListener?.(state);
+    },
+    getFocusTimerState,
+    saveFocusTimerState,
     showFocusWidget,
   };
 }
@@ -200,7 +203,7 @@ describe("use focus timer", () => {
     );
 
     expect(paused.status).toBe("paused");
-    expect(paused.remainingMs).toBe(15 * 60 * 1000);
+    expect(paused.remainingMs).toBe(35 * 60 * 1000);
 
     const resumed = resumeFocusTimerState(
       paused,
@@ -208,28 +211,25 @@ describe("use focus timer", () => {
     );
 
     expect(resumed.status).toBe("running");
-    expect(resumed.endsAt).toBe("2026-03-08T09:27:00.000Z");
+    expect(resumed.endsAt).toBe("2026-03-08T09:47:00.000Z");
     teardownFocusTimerTest();
   });
 
-  it("restores an in-progress timer from localStorage", async () => {
-    setupFocusTimerTest();
-    localStorage.setItem(
-      "zucchini_focus_timer",
-      JSON.stringify({
-        breakVariant: null,
-        completedFocusCycles: 2,
-        cycleId: "cycle-restore",
-        endsAt: "2026-03-08T09:25:00.000Z",
-        focusDurationMs: 1_500_000,
-        lastUpdatedAt: "2026-03-08T09:00:00.000Z",
-        phase: "focus",
-        remainingMs: 1_500_000,
-        startedAt: "2026-03-08T09:00:00.000Z",
-        status: "running",
-        timerSessionId: "timer-session-restore",
-      })
-    );
+  it("restores an in-progress timer from IPC persistence", async () => {
+    const { getFocusTimerState, saveFocusTimerState } = setupFocusTimerTest({
+      breakVariant: null,
+      completedFocusCycles: 2,
+      cycleId: "cycle-restore",
+      endsAt: "2026-03-08T09:25:00.000Z",
+      focusDurationMs: 1_500_000,
+      lastCompletedBreak: null,
+      lastUpdatedAt: "2026-03-08T09:00:00.000Z",
+      phase: "focus",
+      remainingMs: 1_500_000,
+      startedAt: "2026-03-08T09:00:00.000Z",
+      status: "running",
+      timerSessionId: "timer-session-restore",
+    });
 
     renderFocusTimerHook();
 
@@ -237,17 +237,10 @@ describe("use focus timer", () => {
       await Promise.resolve();
     });
 
-    const persistedTimerState = localStorage.getItem("zucchini_focus_timer");
-
     expect(useFocusStore.getState().timerState.status).toBe("running");
     expect(useFocusStore.getState().timerState.remainingMs).toBe(1_500_000);
-    expect(persistedTimerState).not.toBeNull();
-    expect(JSON.parse(persistedTimerState as string)).toMatchObject({
-      completedFocusCycles: 2,
-      cycleId: "cycle-restore",
-      remainingMs: 1_500_000,
-      status: "running",
-    });
+    expect(getFocusTimerState).toHaveBeenCalledTimes(1);
+    expect(saveFocusTimerState).not.toHaveBeenCalled();
     teardownFocusTimerTest();
   });
 
@@ -564,15 +557,10 @@ describe("use focus timer", () => {
     teardownFocusTimerTest();
   });
 
-  it("falls back to stored pomodoro settings before runtime settings load", async () => {
+  it("falls back to default pomodoro settings before runtime settings load", async () => {
     setupFocusTimerTest();
     const recordFocusSession = vi.fn().mockResolvedValue(42);
-    writePomodoroTimerSettings({
-      focusCyclesBeforeLongBreak: 2,
-      focusDefaultDurationSeconds: 1500,
-      focusLongBreakSeconds: 20 * 60,
-      focusShortBreakSeconds: 7 * 60,
-    });
+    const defaultPomodoroSettings = createDefaultPomodoroTimerSettings();
 
     useFocusStore.getState().setTimerState({
       breakVariant: null,
@@ -603,8 +591,8 @@ describe("use focus timer", () => {
     expect(recordFocusSession.mock.calls).toHaveLength(1);
     expect(useFocusStore.getState().timerState).toMatchObject({
       breakVariant: "long",
-      completedFocusCycles: 2,
-      remainingMs: 20 * 60 * 1000,
+      completedFocusCycles: defaultPomodoroSettings.focusCyclesBeforeLongBreak,
+      remainingMs: defaultPomodoroSettings.focusLongBreakSeconds * 1000,
       status: "running",
     });
     expect(window.habits.showNotification).toHaveBeenCalledWith(
