@@ -7,9 +7,71 @@ import {
   normalizeHabitCategoryColor,
   normalizeHabitCategoryLabel,
 } from "@/shared/domain/settings";
-import type { AppSettings } from "@/shared/domain/settings";
+import type {
+  AppSettings,
+  HabitCategoryPreferences,
+} from "@/shared/domain/settings";
 
 import { normalizeThemeMode } from "./mappers";
+
+const SETTINGS_ROW_ID = 1;
+
+function serializeCategoryPreferences(
+  categoryPreferences: HabitCategoryPreferences
+): string {
+  return JSON.stringify(categoryPreferences);
+}
+
+function parseCategoryMetadata(
+  value: unknown,
+  defaults: HabitCategoryPreferences[keyof HabitCategoryPreferences]
+): HabitCategoryPreferences[keyof HabitCategoryPreferences] {
+  const candidate =
+    value && typeof value === "object"
+      ? (value as Partial<Record<"color" | "label", unknown>>)
+      : null;
+
+  return {
+    color: normalizeHabitCategoryColor(
+      typeof candidate?.color === "string" ? candidate.color : undefined,
+      defaults.color
+    ),
+    label: normalizeHabitCategoryLabel(
+      typeof candidate?.label === "string" ? candidate.label : undefined,
+      defaults.label
+    ),
+  };
+}
+
+function parseCategoryPreferences(
+  value: string,
+  defaults: HabitCategoryPreferences
+): HabitCategoryPreferences {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return defaults;
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return defaults;
+  }
+
+  const candidate = parsed as Partial<
+    Record<keyof HabitCategoryPreferences, unknown>
+  >;
+
+  return {
+    fitness: parseCategoryMetadata(candidate.fitness, defaults.fitness),
+    nutrition: parseCategoryMetadata(candidate.nutrition, defaults.nutrition),
+    productivity: parseCategoryMetadata(
+      candidate.productivity,
+      defaults.productivity
+    ),
+  };
+}
 
 export class SqliteSettingsRepository {
   private readonly client: SqliteDatabaseClient;
@@ -20,74 +82,38 @@ export class SqliteSettingsRepository {
 
   getSettings(defaultTimezone: string): AppSettings {
     return this.client.run("getSettings", () => {
-      const rows = this.client.getDrizzle().select().from(settings).all();
-      const map = new Map(rows.map((row) => [row.key, row.value]));
+      const row = this.client.getDrizzle().select().from(settings).get();
       const defaults = createDefaultAppSettings(defaultTimezone);
-      const savedLongBreakSeconds = map.get("focusLongBreakSeconds");
-      const savedShortBreakSeconds = map.get("focusShortBreakSeconds");
+
+      if (!row) {
+        return defaults;
+      }
+
       const candidateSettings: AppSettings = {
-        categoryPreferences: {
-          fitness: {
-            color: normalizeHabitCategoryColor(
-              map.get("categoryColorFitness"),
-              defaults.categoryPreferences.fitness.color
-            ),
-            label: normalizeHabitCategoryLabel(
-              map.get("categoryLabelFitness"),
-              defaults.categoryPreferences.fitness.label
-            ),
-          },
-          nutrition: {
-            color: normalizeHabitCategoryColor(
-              map.get("categoryColorNutrition"),
-              defaults.categoryPreferences.nutrition.color
-            ),
-            label: normalizeHabitCategoryLabel(
-              map.get("categoryLabelNutrition"),
-              defaults.categoryPreferences.nutrition.label
-            ),
-          },
-          productivity: {
-            color: normalizeHabitCategoryColor(
-              map.get("categoryColorProductivity"),
-              defaults.categoryPreferences.productivity.color
-            ),
-            label: normalizeHabitCategoryLabel(
-              map.get("categoryLabelProductivity"),
-              defaults.categoryPreferences.productivity.label
-            ),
-          },
-        },
-        focusCyclesBeforeLongBreak: Number(
-          map.get("focusCyclesBeforeLongBreak")
+        categoryPreferences: parseCategoryPreferences(
+          row.categoryPreferences,
+          defaults.categoryPreferences
         ),
-        focusDefaultDurationSeconds: Number(
-          map.get("focusDefaultDurationSeconds")
-        ),
-        focusLongBreakSeconds:
-          savedLongBreakSeconds === undefined
-            ? Number(map.get("focusLongBreakMinutes")) * 60
-            : Number(savedLongBreakSeconds),
-        focusShortBreakSeconds:
-          savedShortBreakSeconds === undefined
-            ? Number(map.get("focusShortBreakMinutes")) * 60
-            : Number(savedShortBreakSeconds),
-        launchAtLogin: map.get("launchAtLogin") === "true",
-        minimizeToTray: map.get("minimizeToTray") === "true",
-        reminderEnabled: map.get("reminderEnabled") === "true",
-        reminderSnoozeMinutes: Number(map.get("reminderSnoozeMinutes")),
-        reminderTime: map.get("reminderTime") ?? defaults.reminderTime,
+        focusCyclesBeforeLongBreak: row.focusCyclesBeforeLongBreak,
+        focusDefaultDurationSeconds: row.focusDefaultDurationSeconds,
+        focusLongBreakSeconds: row.focusLongBreakSeconds,
+        focusShortBreakSeconds: row.focusShortBreakSeconds,
+        launchAtLogin: row.launchAtLogin,
+        minimizeToTray: row.minimizeToTray,
+        reminderEnabled: row.reminderEnabled,
+        reminderSnoozeMinutes: row.reminderSnoozeMinutes,
+        reminderTime: row.reminderTime,
         resetFocusTimerShortcut: isValidGlobalShortcutAccelerator(
-          map.get("resetFocusTimerShortcut") ?? ""
+          row.resetFocusTimerShortcut
         )
-          ? (map.get("resetFocusTimerShortcut") as string)
+          ? row.resetFocusTimerShortcut
           : defaults.resetFocusTimerShortcut,
-        themeMode: normalizeThemeMode(map.get("themeMode")),
-        timezone: map.get("timezone") ?? defaults.timezone,
+        themeMode: normalizeThemeMode(row.themeMode),
+        timezone: row.timezone || defaults.timezone,
         toggleFocusTimerShortcut: isValidGlobalShortcutAccelerator(
-          map.get("toggleFocusTimerShortcut") ?? ""
+          row.toggleFocusTimerShortcut
         )
-          ? (map.get("toggleFocusTimerShortcut") as string)
+          ? row.toggleFocusTimerShortcut
           : defaults.toggleFocusTimerShortcut,
       };
 
@@ -101,67 +127,51 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
-      this.upsertSetting(
-        "categoryLabelNutrition",
-        nextSettings.categoryPreferences.nutrition.label
-      );
-      this.upsertSetting(
-        "categoryLabelProductivity",
-        nextSettings.categoryPreferences.productivity.label
-      );
-      this.upsertSetting(
-        "categoryLabelFitness",
-        nextSettings.categoryPreferences.fitness.label
-      );
-      this.upsertSetting(
-        "categoryColorNutrition",
-        nextSettings.categoryPreferences.nutrition.color
-      );
-      this.upsertSetting(
-        "categoryColorProductivity",
-        nextSettings.categoryPreferences.productivity.color
-      );
-      this.upsertSetting(
-        "categoryColorFitness",
-        nextSettings.categoryPreferences.fitness.color
-      );
-      this.upsertSetting(
-        "focusDefaultDurationSeconds",
-        String(nextSettings.focusDefaultDurationSeconds)
-      );
-      this.upsertSetting(
-        "focusCyclesBeforeLongBreak",
-        String(nextSettings.focusCyclesBeforeLongBreak)
-      );
-      this.upsertSetting(
-        "focusLongBreakSeconds",
-        String(nextSettings.focusLongBreakSeconds)
-      );
-      this.upsertSetting(
-        "focusShortBreakSeconds",
-        String(nextSettings.focusShortBreakSeconds)
-      );
-      this.upsertSetting("launchAtLogin", String(nextSettings.launchAtLogin));
-      this.upsertSetting("minimizeToTray", String(nextSettings.minimizeToTray));
-      this.upsertSetting(
-        "reminderEnabled",
-        String(nextSettings.reminderEnabled)
-      );
-      this.upsertSetting(
-        "reminderSnoozeMinutes",
-        String(nextSettings.reminderSnoozeMinutes)
-      );
-      this.upsertSetting("reminderTime", nextSettings.reminderTime);
-      this.upsertSetting(
-        "resetFocusTimerShortcut",
-        nextSettings.resetFocusTimerShortcut
-      );
-      this.upsertSetting("themeMode", nextSettings.themeMode);
-      this.upsertSetting(
-        "toggleFocusTimerShortcut",
-        nextSettings.toggleFocusTimerShortcut
-      );
-      this.upsertSetting("timezone", nextSettings.timezone);
+      this.client
+        .getDrizzle()
+        .insert(settings)
+        .values({
+          categoryPreferences: serializeCategoryPreferences(
+            nextSettings.categoryPreferences
+          ),
+          focusCyclesBeforeLongBreak: nextSettings.focusCyclesBeforeLongBreak,
+          focusDefaultDurationSeconds: nextSettings.focusDefaultDurationSeconds,
+          focusLongBreakSeconds: nextSettings.focusLongBreakSeconds,
+          focusShortBreakSeconds: nextSettings.focusShortBreakSeconds,
+          id: SETTINGS_ROW_ID,
+          launchAtLogin: nextSettings.launchAtLogin,
+          minimizeToTray: nextSettings.minimizeToTray,
+          reminderEnabled: nextSettings.reminderEnabled,
+          reminderSnoozeMinutes: nextSettings.reminderSnoozeMinutes,
+          reminderTime: nextSettings.reminderTime,
+          resetFocusTimerShortcut: nextSettings.resetFocusTimerShortcut,
+          themeMode: nextSettings.themeMode,
+          timezone: nextSettings.timezone,
+          toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
+        })
+        .onConflictDoUpdate({
+          set: {
+            categoryPreferences: serializeCategoryPreferences(
+              nextSettings.categoryPreferences
+            ),
+            focusCyclesBeforeLongBreak: nextSettings.focusCyclesBeforeLongBreak,
+            focusDefaultDurationSeconds:
+              nextSettings.focusDefaultDurationSeconds,
+            focusLongBreakSeconds: nextSettings.focusLongBreakSeconds,
+            focusShortBreakSeconds: nextSettings.focusShortBreakSeconds,
+            launchAtLogin: nextSettings.launchAtLogin,
+            minimizeToTray: nextSettings.minimizeToTray,
+            reminderEnabled: nextSettings.reminderEnabled,
+            reminderSnoozeMinutes: nextSettings.reminderSnoozeMinutes,
+            reminderTime: nextSettings.reminderTime,
+            resetFocusTimerShortcut: nextSettings.resetFocusTimerShortcut,
+            themeMode: nextSettings.themeMode,
+            timezone: nextSettings.timezone,
+            toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
+          },
+          target: settings.id,
+        })
+        .run();
     });
 
     return this.getSettings(defaultTimezone);
@@ -170,94 +180,31 @@ export class SqliteSettingsRepository {
   seedDefaults(timezone: string): void {
     this.client.run("seedDefaultSettings", () => {
       const defaults = createDefaultAppSettings(timezone);
-      this.insertSettingIfMissing(
-        "categoryLabelNutrition",
-        defaults.categoryPreferences.nutrition.label
-      );
-      this.insertSettingIfMissing(
-        "categoryLabelProductivity",
-        defaults.categoryPreferences.productivity.label
-      );
-      this.insertSettingIfMissing(
-        "categoryLabelFitness",
-        defaults.categoryPreferences.fitness.label
-      );
-      this.insertSettingIfMissing(
-        "categoryColorNutrition",
-        defaults.categoryPreferences.nutrition.color
-      );
-      this.insertSettingIfMissing(
-        "categoryColorProductivity",
-        defaults.categoryPreferences.productivity.color
-      );
-      this.insertSettingIfMissing(
-        "categoryColorFitness",
-        defaults.categoryPreferences.fitness.color
-      );
-      this.insertSettingIfMissing(
-        "focusDefaultDurationSeconds",
-        String(defaults.focusDefaultDurationSeconds)
-      );
-      this.insertSettingIfMissing(
-        "focusCyclesBeforeLongBreak",
-        String(defaults.focusCyclesBeforeLongBreak)
-      );
-      this.insertSettingIfMissing(
-        "focusLongBreakSeconds",
-        String(defaults.focusLongBreakSeconds)
-      );
-      this.insertSettingIfMissing(
-        "focusShortBreakSeconds",
-        String(defaults.focusShortBreakSeconds)
-      );
-      this.insertSettingIfMissing(
-        "launchAtLogin",
-        String(defaults.launchAtLogin)
-      );
-      this.insertSettingIfMissing(
-        "minimizeToTray",
-        String(defaults.minimizeToTray)
-      );
-      this.insertSettingIfMissing(
-        "reminderEnabled",
-        String(defaults.reminderEnabled)
-      );
-      this.insertSettingIfMissing(
-        "reminderSnoozeMinutes",
-        String(defaults.reminderSnoozeMinutes)
-      );
-      this.insertSettingIfMissing("reminderTime", defaults.reminderTime);
-      this.insertSettingIfMissing(
-        "resetFocusTimerShortcut",
-        defaults.resetFocusTimerShortcut
-      );
-      this.insertSettingIfMissing("themeMode", defaults.themeMode);
-      this.insertSettingIfMissing(
-        "toggleFocusTimerShortcut",
-        defaults.toggleFocusTimerShortcut
-      );
-      this.insertSettingIfMissing("timezone", defaults.timezone);
+
+      this.client
+        .getDrizzle()
+        .insert(settings)
+        .values({
+          categoryPreferences: serializeCategoryPreferences(
+            defaults.categoryPreferences
+          ),
+          focusCyclesBeforeLongBreak: defaults.focusCyclesBeforeLongBreak,
+          focusDefaultDurationSeconds: defaults.focusDefaultDurationSeconds,
+          focusLongBreakSeconds: defaults.focusLongBreakSeconds,
+          focusShortBreakSeconds: defaults.focusShortBreakSeconds,
+          id: SETTINGS_ROW_ID,
+          launchAtLogin: defaults.launchAtLogin,
+          minimizeToTray: defaults.minimizeToTray,
+          reminderEnabled: defaults.reminderEnabled,
+          reminderSnoozeMinutes: defaults.reminderSnoozeMinutes,
+          reminderTime: defaults.reminderTime,
+          resetFocusTimerShortcut: defaults.resetFocusTimerShortcut,
+          themeMode: defaults.themeMode,
+          timezone: defaults.timezone,
+          toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+        })
+        .onConflictDoNothing()
+        .run();
     });
-  }
-
-  private upsertSetting(key: string, value: string): void {
-    this.client
-      .getDrizzle()
-      .insert(settings)
-      .values({ key, value })
-      .onConflictDoUpdate({
-        set: { value },
-        target: settings.key,
-      })
-      .run();
-  }
-
-  private insertSettingIfMissing(key: string, value: string): void {
-    this.client
-      .getDrizzle()
-      .insert(settings)
-      .values({ key, value })
-      .onConflictDoNothing()
-      .run();
   }
 }

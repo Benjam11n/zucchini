@@ -626,16 +626,25 @@ export function generateTestData(
     .run();
 
   const settings = buildSettings(normalized.timezone, normalized.preset);
-  chunkValues(
-    Object.entries(settings).map(([key, value]) => ({
-      key,
-      value: String(value),
-    })),
-    20,
-    (chunk) => {
-      db.insert(schema.settings).values(chunk).run();
-    }
-  );
+  db.insert(schema.settings)
+    .values({
+      categoryPreferences: JSON.stringify(settings.categoryPreferences),
+      focusCyclesBeforeLongBreak: settings.focusCyclesBeforeLongBreak,
+      focusDefaultDurationSeconds: settings.focusDefaultDurationSeconds,
+      focusLongBreakSeconds: settings.focusLongBreakSeconds,
+      focusShortBreakSeconds: settings.focusShortBreakSeconds,
+      id: 1,
+      launchAtLogin: settings.launchAtLogin,
+      minimizeToTray: settings.minimizeToTray,
+      reminderEnabled: settings.reminderEnabled,
+      reminderSnoozeMinutes: settings.reminderSnoozeMinutes,
+      reminderTime: settings.reminderTime,
+      resetFocusTimerShortcut: settings.resetFocusTimerShortcut,
+      themeMode: settings.themeMode,
+      timezone: settings.timezone,
+      toggleFocusTimerShortcut: settings.toggleFocusTimerShortcut,
+    })
+    .run();
 
   chunkValues(
     habits.map((habit) => ({

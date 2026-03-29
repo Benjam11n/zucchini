@@ -112,8 +112,25 @@ export const reminderRuntimeState = sqliteTable("reminder_runtime_state", {
 });
 
 export const settings = sqliteTable("settings", {
-  key: text().primaryKey(),
-  value: text().notNull(),
+  categoryPreferences: text("category_preferences").notNull(),
+  focusCyclesBeforeLongBreak: integer(
+    "focus_cycles_before_long_break"
+  ).notNull(),
+  focusDefaultDurationSeconds: integer(
+    "focus_default_duration_seconds"
+  ).notNull(),
+  focusLongBreakSeconds: integer("focus_long_break_seconds").notNull(),
+  focusShortBreakSeconds: integer("focus_short_break_seconds").notNull(),
+  id: integer().primaryKey(),
+  launchAtLogin: integer("launch_at_login", { mode: "boolean" }).notNull(),
+  minimizeToTray: integer("minimize_to_tray", { mode: "boolean" }).notNull(),
+  reminderEnabled: integer("reminder_enabled", { mode: "boolean" }).notNull(),
+  reminderSnoozeMinutes: integer("reminder_snooze_minutes").notNull(),
+  reminderTime: text("reminder_time").notNull(),
+  resetFocusTimerShortcut: text("reset_focus_timer_shortcut").notNull(),
+  themeMode: text("theme_mode").notNull(),
+  timezone: text().notNull(),
+  toggleFocusTimerShortcut: text("toggle_focus_timer_shortcut").notNull(),
 });
 
 export const schema = {

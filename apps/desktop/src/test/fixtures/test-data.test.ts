@@ -77,7 +77,7 @@ function snapshotDatabase(databasePath: string): string {
     reminderRuntimeState: db
       .prepare(`select * from reminder_runtime_state order by id asc`)
       .all(),
-    settings: db.prepare(`select * from settings order by key asc`).all(),
+    settings: db.prepare(`select * from settings order by id asc`).all(),
     streakState: db.prepare(`select * from streak_state order by id asc`).all(),
   };
   db.close();

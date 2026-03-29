@@ -2,44 +2,47 @@ import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { SqliteSettingsRepository } from "./settings-repository";
 
-function createFakeClient(initialRows: { key: string; value: string }[] = []) {
-  const rows = [...initialRows];
+interface FakeSettingsRow {
+  categoryPreferences: string;
+  focusCyclesBeforeLongBreak: number;
+  focusDefaultDurationSeconds: number;
+  focusLongBreakSeconds: number;
+  focusShortBreakSeconds: number;
+  id: number;
+  launchAtLogin: boolean;
+  minimizeToTray: boolean;
+  reminderEnabled: boolean;
+  reminderSnoozeMinutes: number;
+  reminderTime: string;
+  resetFocusTimerShortcut: string;
+  themeMode: string;
+  timezone: string;
+  toggleFocusTimerShortcut: string;
+}
+
+function createFakeClient(initialRow?: FakeSettingsRow) {
+  let row = initialRow ? { ...initialRow } : null;
 
   return {
     getDrizzle() {
       return {
         insert() {
           return {
-            values(value: { key: string; value: string }) {
+            values(value: FakeSettingsRow) {
               return {
                 onConflictDoNothing() {
                   return {
                     run() {
-                      const existingRow = rows.find(
-                        (row) => row.key === value.key
-                      );
-
-                      if (existingRow) {
-                        return;
+                      if (!row) {
+                        row = { ...value };
                       }
-
-                      rows.push({ ...value });
                     },
                   };
                 },
                 onConflictDoUpdate() {
                   return {
                     run() {
-                      const existingRow = rows.find(
-                        (row) => row.key === value.key
-                      );
-
-                      if (existingRow) {
-                        existingRow.value = value.value;
-                        return;
-                      }
-
-                      rows.push({ ...value });
+                      row = { ...value };
                     },
                   };
                 },
@@ -51,8 +54,8 @@ function createFakeClient(initialRows: { key: string; value: string }[] = []) {
           return {
             from() {
               return {
-                all() {
-                  return rows;
+                get() {
+                  return row;
                 },
               };
             },
@@ -67,19 +70,34 @@ function createFakeClient(initialRows: { key: string; value: string }[] = []) {
 }
 
 describe("SqliteSettingsRepository", () => {
-  it("falls back to default category preferences when category rows are missing", () => {
+  it("falls back to default category preferences when category settings are invalid", () => {
+    const defaults = createDefaultAppSettings("Asia/Singapore");
     const repository = new SqliteSettingsRepository(
-      createFakeClient() as never
+      createFakeClient({
+        categoryPreferences: "{not-json",
+        focusCyclesBeforeLongBreak: defaults.focusCyclesBeforeLongBreak,
+        focusDefaultDurationSeconds: defaults.focusDefaultDurationSeconds,
+        focusLongBreakSeconds: defaults.focusLongBreakSeconds,
+        focusShortBreakSeconds: defaults.focusShortBreakSeconds,
+        id: 1,
+        launchAtLogin: defaults.launchAtLogin,
+        minimizeToTray: defaults.minimizeToTray,
+        reminderEnabled: defaults.reminderEnabled,
+        reminderSnoozeMinutes: defaults.reminderSnoozeMinutes,
+        reminderTime: defaults.reminderTime,
+        resetFocusTimerShortcut: defaults.resetFocusTimerShortcut,
+        themeMode: defaults.themeMode,
+        timezone: defaults.timezone,
+        toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+      }) as never
     );
 
     expect(
       repository.getSettings("Asia/Singapore").categoryPreferences
-    ).toStrictEqual(
-      createDefaultAppSettings("Asia/Singapore").categoryPreferences
-    );
+    ).toStrictEqual(defaults.categoryPreferences);
   });
 
-  it("round-trips category preferences through the settings table", () => {
+  it("round-trips category preferences through the settings row", () => {
     const client = createFakeClient();
     const repository = new SqliteSettingsRepository(client as never);
     const customSettings = {
