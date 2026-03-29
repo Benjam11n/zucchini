@@ -34,6 +34,12 @@ const PRESET_CATEGORY_COLORS = [
   "#8E8E93",
 ] as const;
 
+const CATEGORY_PREVIEW_RING_ORDER = [
+  "fitness",
+  "nutrition",
+  "productivity",
+] as const;
+
 export function CategorySettingsCard({
   fieldErrors,
   onChange,
@@ -92,7 +98,7 @@ export function CategorySettingsCard({
               fill="transparent"
               viewBox="0 0 200 200"
             >
-              {HABIT_CATEGORY_SLOTS.map(({ value }, index) => {
+              {CATEGORY_PREVIEW_RING_ORDER.map((value, index) => {
                 const categoryPresentation = getHabitCategoryPresentation(
                   value,
                   settings.categoryPreferences
