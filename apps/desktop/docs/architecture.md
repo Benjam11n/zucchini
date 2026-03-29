@@ -212,6 +212,41 @@ Important subfolders:
 - `src/main/infra/persistence`
   Repository interfaces and SQLite-backed implementations.
 
+### Persistence policy
+
+Zucchini uses a simple three-bucket persistence policy:
+
+- `canonical`
+  Real app state that must survive restart and remain the source of truth.
+  Store this in SQLite through `src/main/infra/persistence`, and access it from
+  the renderer only through preload/IPC.
+- `cache`
+  Best-effort convenience state that can be recomputed or safely discarded.
+  Keep this in feature-local renderer storage helpers such as
+  `src/renderer/**/lib/*-storage.ts`, and never treat it as authoritative.
+- `ephemeral`
+  In-memory UI state that only matters for the current session. Keep this in
+  React state, Zustand state, or local variables only.
+
+Use this checklist for new state:
+
+1. Should it still exist after restart?
+2. Would losing it feel like broken behavior or lost data?
+3. Do multiple windows need to agree on it?
+4. Is it a user preference or product state rather than a UI convenience?
+5. Can it be safely recomputed or refetched?
+
+If the answer is yes to any of 1 through 4, make it `canonical`. If the answer
+is no to 1 through 4 and yes to 5, make it `cache` or `ephemeral`. Prefer
+`ephemeral` unless persistence clearly improves the UX.
+
+Examples in the current app:
+
+- `canonical`: habits, settings, focus sessions, focus timer state
+- `cache`: today popup memory, weekly review “last seen” memory
+- `ephemeral`: dialog visibility, loading flags, temporary form state before
+  save
+
 ### `src/main/features`
 
 This folder holds feature-level backend logic.

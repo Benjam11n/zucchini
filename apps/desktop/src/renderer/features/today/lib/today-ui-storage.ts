@@ -1,3 +1,4 @@
+// Best-effort UI cache. Not source of truth.
 import type { PersistedTodayUiState } from "@/renderer/features/today/today.types";
 import {
   readJsonStorage,

@@ -3,8 +3,6 @@ import type { JsonValue } from "@/shared/types/json";
 const STORAGE_EVENT = "storage";
 
 export const STORAGE_KEYS = {
-  focusTimer: "zucchini_focus_timer",
-  pomodoroSettings: "zucchini_pomodoro_settings",
   todayUiState: "zucchini_last_state",
   weeklyReview: "zucchini_weekly_review",
 } as const;

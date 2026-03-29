@@ -24,6 +24,12 @@
 - Keep business logic in `src/main` or `src/shared`.
 - Keep renderer code focused on presentation, interaction flow, and local UI
   state.
+- Classify new state as `canonical`, `cache`, or `ephemeral` before adding
+  persistence.
+- Store canonical state in SQLite through the main process and preload/IPC
+  boundaries.
+- Document renderer-persisted cache state as non-authoritative and keep it
+  feature-local.
 - Treat preload as the only renderer boundary to privileged APIs.
 - Do not import Electron directly into renderer code.
 - Preserve existing layer boundaries and avoid moving logic into convenience
