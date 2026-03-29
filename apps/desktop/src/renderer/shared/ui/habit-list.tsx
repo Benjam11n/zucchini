@@ -121,7 +121,7 @@ function HabitListItemComponent({
       initial={HABIT_ITEM_INITIAL}
       layout
       className={cn(
-        "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
+        "group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
         habit.completed ? "text-muted-foreground/50" : "hover:bg-muted/25"
       )}
       transition={microTransition}
@@ -130,7 +130,7 @@ function HabitListItemComponent({
     >
       <Checkbox
         checked={habit.completed}
-        className="size-4 shrink-0 rounded-full border-2 transition-all duration-200"
+        className="size-4 shrink-0 rounded-full border-2 transition-all duration-200 group-hover:scale-110 group-active:scale-90"
         id={`habit-${habit.id}`}
         onCheckedChange={() => onToggle(habit.id)}
         style={
@@ -145,7 +145,9 @@ function HabitListItemComponent({
         <span
           className={cn(
             "truncate text-sm transition-all duration-150",
-            habit.completed && "line-through decoration-muted-foreground/30"
+            habit.completed
+              ? "line-through decoration-muted-foreground/30"
+              : "group-hover:brightness-125 dark:group-hover:brightness-150"
           )}
         >
           {habit.name}

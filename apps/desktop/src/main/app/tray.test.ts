@@ -12,6 +12,7 @@ const trayState = vi.hoisted(() => ({
   clickHandler: null as null | (() => void),
   destroyCount: 0,
   lastMenu: null as null | ElectronModule.MenuItemConstructorOptions[],
+  setContextMenuCount: 0,
   trayCount: 0,
 }));
 
@@ -48,6 +49,7 @@ vi.mock("electron", async (importOriginal) => {
         setContextMenu(
           menu: ElectronModule.MenuItemConstructorOptions[]
         ): void {
+          trayState.setContextMenuCount += 1;
           trayState.lastMenu = menu;
         }
 
@@ -82,6 +84,7 @@ describe("createAppTray()", () => {
     trayState.clickHandler = null;
     trayState.destroyCount = 0;
     trayState.lastMenu = null;
+    trayState.setContextMenuCount = 0;
     trayState.trayCount = 0;
   }
 
@@ -177,5 +180,28 @@ describe("createAppTray()", () => {
     trayState.clickHandler?.();
 
     expect(onOpen.mock.calls).toStrictEqual([[]]);
+  });
+
+  it("does not rebuild the tray menu for unrelated setting changes", () => {
+    resetTrayState();
+    const tray = createAppTray({
+      onOpen: vi.fn(),
+      onOpenWidget: vi.fn(),
+      onQuit: vi.fn(),
+      onSnooze: vi.fn(() => true),
+    });
+
+    tray.applySettings({
+      ...baseSettings,
+      minimizeToTray: true,
+    });
+    tray.applySettings({
+      ...baseSettings,
+      focusDefaultDurationSeconds:
+        baseSettings.focusDefaultDurationSeconds + 60,
+      minimizeToTray: true,
+    });
+
+    expect(trayState.setContextMenuCount).toBe(1);
   });
 });

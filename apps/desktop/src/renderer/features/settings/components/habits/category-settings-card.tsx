@@ -17,6 +17,11 @@ import {
 } from "@/renderer/shared/ui/card";
 import { Input } from "@/renderer/shared/ui/input";
 import { Label } from "@/renderer/shared/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/renderer/shared/ui/popover";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 
 export function CategorySettingsCard({
@@ -194,51 +199,185 @@ export function CategorySettingsCard({
                       type="text"
                       value={settings.categoryPreferences[value].label}
                     />
-                    <div className="flex flex-wrap gap-1.5">
-                      {HABIT_CATEGORY_ICON_OPTIONS.map((option) => {
-                        const OptionIcon = option.icon;
-                        const isSelected =
-                          settings.categoryPreferences[value].icon ===
-                          option.value;
-
-                        return (
-                          <button
-                            key={option.value}
-                            aria-label={`Use ${option.label} icon for ${categoryPresentation.label}`}
-                            className={cn(
-                              "flex size-8 items-center justify-center rounded-lg border transition-colors",
-                              isSelected
-                                ? "shadow-sm"
-                                : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
-                            )}
-                            onClick={() => {
-                              onChange({
-                                ...settings,
-                                categoryPreferences: {
-                                  ...settings.categoryPreferences,
-                                  [value]: {
-                                    ...settings.categoryPreferences[value],
-                                    icon: option.value,
-                                  },
-                                },
-                              });
-                            }}
-                            style={
-                              isSelected
-                                ? {
-                                    backgroundColor: `${categoryPresentation.color}18`,
-                                    borderColor: categoryPresentation.color,
-                                    color: categoryPresentation.color,
-                                  }
-                                : undefined
-                            }
-                            title={`Use ${option.label} icon`}
-                            type="button"
+                    <div className="mt-2 flex gap-4">
+                      {/* Color Picker Popover */}
+                      <div className="flex flex-1 flex-col gap-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Color
+                        </Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                              type="button"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="size-4 rounded-full border border-foreground/30 shadow-sm"
+                                  style={{
+                                    backgroundColor:
+                                      settings.categoryPreferences[value].color,
+                                  }}
+                                />
+                                <span>
+                                  {settings.categoryPreferences[value].color}
+                                </span>
+                              </div>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[18.2rem] p-3"
                           >
-                            <OptionIcon className="size-4" />
-                          </button>
-                        );
-                      })}
+                            <div className="flex flex-wrap gap-2">
+                              {[
+                                "#FF2D55",
+                                "#FF3B30",
+                                "#FF9500",
+                                "#FFCC00",
+                                "#A3F900",
+                                "#34C759",
+                                "#04C7DD",
+                                "#007AFF",
+                                "#5856D6",
+                                "#AF52DE",
+                                "#A2845E",
+                                "#8E8E93",
+                              ].map((color) => {
+                                const isSelected =
+                                  settings.categoryPreferences[value].color ===
+                                  color;
+                                return (
+                                  <button
+                                    key={color}
+                                    className={cn(
+                                      "size-8 rounded-full border-2 transition-transform hover:scale-110",
+                                      isSelected
+                                        ? "scale-110 border-foreground shadow-sm"
+                                        : "border-transparent"
+                                    )}
+                                    onClick={() => {
+                                      onChange({
+                                        ...settings,
+                                        categoryPreferences: {
+                                          ...settings.categoryPreferences,
+                                          [value]: {
+                                            ...settings.categoryPreferences[
+                                              value
+                                            ],
+                                            color,
+                                          },
+                                        },
+                                      });
+                                    }}
+                                    style={{ backgroundColor: color }}
+                                    title={`Set color to ${color}`}
+                                    type="button"
+                                  />
+                                );
+                              })}
+                              {/* Custom color picker button */}
+                              <button
+                                className="flex size-8 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/50 text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
+                                onClick={() =>
+                                  colorPickerRefs[value]?.current?.click()
+                                }
+                                title="Custom Color"
+                                type="button"
+                              >
+                                <span className="sr-only">Custom Color</span>
+                                <span className="pb-0.5 text-sm">+</span>
+                              </button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* Icon Picker Popover */}
+                      <div className="flex flex-1 flex-col gap-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Icon
+                        </Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                              type="button"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon
+                                  className="size-4"
+                                  style={{
+                                    color:
+                                      settings.categoryPreferences[value].color,
+                                  }}
+                                />
+                                <span>
+                                  {HABIT_CATEGORY_ICON_OPTIONS.find(
+                                    (opt) =>
+                                      opt.value ===
+                                      settings.categoryPreferences[value].icon
+                                  )?.label ?? "Select Icon"}
+                                </span>
+                              </div>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[18.2rem] p-3"
+                          >
+                            <div className="flex max-h-60 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                              {HABIT_CATEGORY_ICON_OPTIONS.map((option) => {
+                                const OptionIcon = option.icon;
+                                const isSelected =
+                                  settings.categoryPreferences[value].icon ===
+                                  option.value;
+
+                                return (
+                                  <button
+                                    key={option.value}
+                                    aria-label={`Use ${option.label} icon for ${categoryPresentation.label}`}
+                                    className={cn(
+                                      "flex size-9 items-center justify-center rounded-lg border transition-colors hover:scale-105",
+                                      isSelected
+                                        ? "shadow-sm"
+                                        : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+                                    )}
+                                    onClick={() => {
+                                      onChange({
+                                        ...settings,
+                                        categoryPreferences: {
+                                          ...settings.categoryPreferences,
+                                          [value]: {
+                                            ...settings.categoryPreferences[
+                                              value
+                                            ],
+                                            icon: option.value,
+                                          },
+                                        },
+                                      });
+                                    }}
+                                    style={
+                                      isSelected
+                                        ? {
+                                            backgroundColor: `${categoryPresentation.color}18`,
+                                            borderColor:
+                                              categoryPresentation.color,
+                                            color: categoryPresentation.color,
+                                          }
+                                        : undefined
+                                    }
+                                    title={`Use ${option.label} icon`}
+                                    type="button"
+                                  >
+                                    <OptionIcon className="size-5" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                   </div>
 

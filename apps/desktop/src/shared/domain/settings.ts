@@ -28,6 +28,22 @@ export const HABIT_CATEGORY_ICON_VALUES = [
   "brain",
   "dumbbell",
   "heartPulse",
+  "book",
+  "code",
+  "music",
+  "palette",
+  "camera",
+  "penTool",
+  "moon",
+  "coffee",
+  "droplet",
+  "flame",
+  "leaf",
+  "wallet",
+  "gamepad",
+  "briefcase",
+  "heart",
+  "sun",
 ] as const;
 
 export type HabitCategoryIcon = (typeof HABIT_CATEGORY_ICON_VALUES)[number];

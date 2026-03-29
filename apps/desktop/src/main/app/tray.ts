@@ -17,6 +17,21 @@ interface CreateAppTrayOptions {
   onSnooze: (settings: AppSettings) => boolean;
 }
 
+function hasTrayMenuChanged(
+  previousSettings: AppSettings | null,
+  nextSettings: AppSettings
+): boolean {
+  if (!previousSettings) {
+    return true;
+  }
+
+  return (
+    previousSettings.reminderEnabled !== nextSettings.reminderEnabled ||
+    previousSettings.reminderSnoozeMinutes !==
+      nextSettings.reminderSnoozeMinutes
+  );
+}
+
 function createTrayIcon() {
   return nativeImage
     .createFromPath(resolveRuntimeIconPath())
@@ -85,6 +100,7 @@ export function createAppTray({
   }
 
   function applySettings(nextSettings: AppSettings): void {
+    const previousSettings = settings;
     settings = nextSettings;
 
     if (!nextSettings.minimizeToTray) {
@@ -92,7 +108,14 @@ export function createAppTray({
       return;
     }
 
-    ensureTray();
+    if (!tray) {
+      ensureTray();
+      return;
+    }
+
+    if (hasTrayMenuChanged(previousSettings, nextSettings)) {
+      rebuildMenu();
+    }
   }
 
   return {
