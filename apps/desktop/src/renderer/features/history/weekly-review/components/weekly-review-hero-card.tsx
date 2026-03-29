@@ -50,17 +50,17 @@ export function WeeklyReviewHeroCard({
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-xl border border-border/60 bg-background/70 p-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-border/50 bg-card/70 p-3">
+          <div className="flex flex-col justify-between gap-6 rounded-2xl border border-border/40 bg-zinc-500/5 p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <p className="ui-eyebrow">Tracked days</p>
-                <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
+                <p className="mt-1 text-4xl font-black tracking-tight text-foreground">
                   {review.trackedDays}
                 </p>
               </div>
-              <div className="rounded-xl border border-border/50 bg-card/70 p-3">
+              <div>
                 <p className="ui-eyebrow">Habit chances</p>
-                <p className="mt-1 text-2xl font-black tracking-tight text-foreground">
+                <p className="mt-1 text-4xl font-black tracking-tight text-foreground">
                   {review.habitMetrics.reduce(
                     (total, habit) => total + habit.opportunities,
                     0

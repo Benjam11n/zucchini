@@ -38,27 +38,27 @@ const STATS = [
 
 export function WeeklyReviewStats({ review }: WeeklyReviewStatsProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      {STATS.map((stat) => {
-        const value = review[stat.key];
+    <Card className="border-border/60 bg-card/90">
+      <CardContent className="grid gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 lg:gap-8 lg:p-8">
+        {STATS.map((stat) => {
+          const value = review[stat.key];
 
-        return (
-          <Card key={stat.key} className="border-border/60 bg-card/90">
-            <CardContent className="flex items-center gap-3 px-4 py-4">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground">
-                <stat.icon className="size-4.5" />
+          return (
+            <div key={stat.key} className="flex items-center gap-4">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted/50 text-foreground ring-1 ring-border/50">
+                <stat.icon className="size-5" />
               </div>
               <div className="space-y-1">
-                <p className="ui-eyebrow">{stat.label}</p>
+                <p className="ui-eyebrow line-clamp-1">{stat.label}</p>
                 <p className="text-2xl font-black tracking-tight text-foreground">
                   {value ?? 0}
                   {"suffix" in stat ? stat.suffix : ""}
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
