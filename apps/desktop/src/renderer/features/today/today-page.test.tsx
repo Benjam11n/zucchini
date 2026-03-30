@@ -35,6 +35,13 @@ vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
   useTodayPopups: vi.fn(),
 }));
 
+vi.mock(
+  import("@/renderer/features/today/hooks/use-today-celebration"),
+  () => ({
+    useTodayCelebration: vi.fn(() => null),
+  })
+);
+
 const history: HistoryDay[] = [];
 const managedHabits: Habit[] = [
   {

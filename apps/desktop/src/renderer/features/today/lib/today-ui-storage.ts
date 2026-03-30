@@ -19,6 +19,7 @@ export function isPersistedTodayUiState(
     typeof candidate.date === "string" &&
     !!candidate.streak &&
     typeof candidate.streak.currentStreak === "number" &&
+    typeof candidate.streak.bestStreak === "number" &&
     typeof candidate.streak.availableFreezes === "number"
   );
 }

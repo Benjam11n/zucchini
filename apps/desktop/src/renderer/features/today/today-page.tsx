@@ -14,6 +14,7 @@ import { LongerHabitChecklist } from "@/renderer/features/today/components/longe
 import { StreakCard } from "@/renderer/features/today/components/streak-card";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
+import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
 import {
   staggerContainerVariants,
@@ -100,6 +101,11 @@ function TodayPageComponent({
       };
     }, [state.habits]);
   useTodayPopups({ state });
+  const celebration = useTodayCelebration({
+    completedCount,
+    dailyHabitCount: dailyHabits.length,
+    state,
+  });
 
   return (
     <LazyMotion features={domAnimation}>
@@ -116,6 +122,7 @@ function TodayPageComponent({
         <m.section variants={staggerItemVariants}>
           <StreakCard
             availableFreezes={state.streak.availableFreezes}
+            celebration={celebration}
             categoryProgress={categoryProgress}
             currentStreak={state.streak.currentStreak}
             dateLabel={state.date}

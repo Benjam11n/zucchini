@@ -3,6 +3,7 @@
 import { createElement, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { createTodayUiSnapshot } from "@/renderer/features/today/lib/today-ui-snapshot";
 import {
   readLastUiState,
   writeLastUiState,
@@ -116,10 +117,6 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
   }, [completedCount, dailyHabits.length, halfwayThreshold, state.date]);
 
   useEffect(() => {
-    writeLastUiState({
-      completedCount,
-      date: state.date,
-      streak: state.streak,
-    });
-  }, [completedCount, state.date, state.streak]);
+    writeLastUiState(createTodayUiSnapshot(state, completedCount));
+  }, [completedCount, state]);
 }

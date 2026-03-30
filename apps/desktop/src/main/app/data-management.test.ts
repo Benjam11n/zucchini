@@ -40,9 +40,16 @@ describe("createDataManagementActions()", () => {
 
     expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
     expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(
-      repository.validateDatabase.mock.invocationCallOrder[0]
-    ).toBeLessThan(repository.replaceDatabase.mock.invocationCallOrder[0]);
+    const [validateCallOrder] =
+      repository.validateDatabase.mock.invocationCallOrder;
+    const [replaceCallOrder] =
+      repository.replaceDatabase.mock.invocationCallOrder;
+
+    if (validateCallOrder === undefined || replaceCallOrder === undefined) {
+      throw new Error("Expected validate/replace calls to be recorded.");
+    }
+
+    expect(validateCallOrder).toBeLessThan(replaceCallOrder);
     expect(appLike.relaunch).toHaveBeenCalledOnce();
     expect(onBeforeQuit).toHaveBeenCalledOnce();
     expect(appLike.quit).toHaveBeenCalledOnce();
