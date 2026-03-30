@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  Snowflake,
+  Timer,
+  TrendingUp,
+} from "lucide-react";
 
 import { Badge } from "@/renderer/shared/ui/badge";
 import { Button } from "@/renderer/shared/ui/button";
@@ -29,47 +36,65 @@ export function WeeklyReviewHeroCard({
   const olderWeek =
     currentIndex === -1 ? undefined : availableWeeks[currentIndex + 1];
 
+  const STATS = [
+    {
+      icon: TrendingUp,
+      label: "Completed",
+      value: review.completedDays,
+    },
+    {
+      icon: Snowflake,
+      label: "Freezes",
+      value: review.freezeDays,
+    },
+    {
+      icon: Flame,
+      label: "Streak",
+      value: review.endingStreak,
+    },
+    {
+      icon: Timer,
+      label: "Focus",
+      value: `${review.focusMinutes}m`,
+    },
+  ];
+
   return (
     <Card className="overflow-hidden border-border/60 bg-card py-0">
       <CardContent className="relative overflow-hidden px-6 py-6 sm:px-7">
-        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)] lg:items-end">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary">Weekly review</Badge>
+              <span className="text-sm font-medium text-muted-foreground">
+                {review.label}
+              </span>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">{review.label}</p>
+            <div className="flex items-baseline gap-3">
               <h2 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
                 {review.completionRate}%
               </h2>
-              <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-                {review.completedDays} fully completed days, {review.freezeDays}{" "}
-                freeze saves, and a {review.longestCleanRun}-day clean run.
-              </p>
+              <p className="text-sm text-muted-foreground">completion rate</p>
             </div>
           </div>
 
-          <div className="flex flex-col justify-between gap-6 rounded-2xl border border-border/40 bg-zinc-500/5 p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="ui-eyebrow">Tracked days</p>
-                <p className="mt-1 text-4xl font-black tracking-tight text-foreground">
-                  {review.trackedDays}
-                </p>
-              </div>
-              <div>
-                <p className="ui-eyebrow">Habit chances</p>
-                <p className="mt-1 text-4xl font-black tracking-tight text-foreground">
-                  {review.habitMetrics.reduce(
-                    (total, habit) => total + habit.opportunities,
-                    0
-                  )}
-                </p>
-              </div>
+          <div className="flex flex-col gap-5 rounded-2xl border border-border/40 bg-zinc-500/5 p-5">
+            <div className="grid grid-cols-4 gap-4 sm:gap-6">
+              {STATS.map((stat) => (
+                <div key={stat.label} className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <stat.icon className="size-3.5" />
+                    <p className="ui-eyebrow text-[0.65rem]">{stat.label}</p>
+                  </div>
+                  <p className="text-2xl font-bold tracking-tight text-foreground">
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
 
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-4 border-t border-border/40 pt-4">
               <Button
                 disabled={!olderWeek || isLoading}
                 onClick={() => {
@@ -79,10 +104,19 @@ export function WeeklyReviewHeroCard({
                 }}
                 size="sm"
                 variant="outline"
+                className="h-8"
               >
                 <ChevronLeft className="size-3.5" />
-                Older week
+                Older
               </Button>
+              <div className="text-xs font-medium text-muted-foreground">
+                {review.trackedDays} days /{" "}
+                {review.habitMetrics.reduce(
+                  (total, habit) => total + habit.opportunities,
+                  0
+                )}{" "}
+                chances
+              </div>
               <Button
                 disabled={!newerWeek || isLoading}
                 onClick={() => {
@@ -92,8 +126,9 @@ export function WeeklyReviewHeroCard({
                 }}
                 size="sm"
                 variant="ghost"
+                className="h-8"
               >
-                Newer week
+                Newer
                 <ChevronRight className="size-3.5" />
               </Button>
             </div>

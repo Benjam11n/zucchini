@@ -5,7 +5,6 @@ import { Suspense, lazy } from "react";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card";
-import { WeeklyReviewStats } from "@/renderer/features/history/weekly-review/components/weekly-review-stats";
 import {
   Card,
   CardContent,
@@ -124,7 +123,6 @@ export function WeeklyReviewSection({
         onSelectWeek={onSelectWeeklyReview}
         review={review}
       />
-      <WeeklyReviewStats review={review} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <Suspense fallback={<ChartSectionFallback />}>

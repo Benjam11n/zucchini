@@ -122,10 +122,6 @@ vi.mock(
   () => ({ WeeklyReviewMostMissedCard: () => <div>most missed card</div> })
 );
 vi.mock(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-stats"),
-  () => ({ WeeklyReviewStats: () => <div>weekly stats</div> })
-);
-vi.mock(
   import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart"),
   () => ({ WeeklyReviewTrendChart: () => <div>trend chart</div> })
 );
