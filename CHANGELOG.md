@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1-beta.15 - 2026-03-30
+
+Changes since `v0.1.1-beta.14`.
+
+### Features
+- Implement streak milestone and record celebration system for completed daily habits
+- Update date display to use dynamic current date instead of hardcoded string
+- Add zucchini release agent skill
+- Add focus minutes to today state and display in streak card
+- Add archive button to habit row editor component
+
+### Refactors
+- Make getReachedStreakMilestone private to encapsulate streak logic
+- Update mascot asset resolution to use BASE_URL and improve filename extraction logic
+- Improve desktop notification availability logic and add developer guidance comments
+- Encapsulate main process state into a context object and optimize runtime initialization
+- Consolidate weekly review stats into the hero card and remove the dedicated stats component
+- Remove redundant labels and adjust spacing in category settings card
+- Simplify weekly review dialog and remove redundant category settings description
+
+### Maintenance
+- Clean up folders and move files to the right places
+
+### Other
+- Add focusMinutes property to TodayState mock objects across test suites
+
 ## 0.1.1-beta.14 - 2026-03-29
 
 Changes since `v0.1.1-beta.13`.
@@ -141,3 +167,4 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
+
