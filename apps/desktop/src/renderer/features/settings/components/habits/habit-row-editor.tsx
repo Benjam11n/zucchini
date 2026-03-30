@@ -260,6 +260,17 @@ export function HabitRowEditor({
               >
                 <ArrowDown className="size-3.5" />
               </Button>
+              <Button
+                aria-label={`Archive ${habit.name}`}
+                onClick={async () => {
+                  await onArchiveHabit(habit.id);
+                }}
+                size="icon-sm"
+                type="button"
+                variant="destructive"
+              >
+                <Archive className="size-3.5" />
+              </Button>
             </div>
           </div>
 
