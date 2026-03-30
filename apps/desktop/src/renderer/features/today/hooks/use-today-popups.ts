@@ -33,6 +33,8 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
     const iconFilename = mascot.startsWith("/mascot/")
       ? mascot.replace("/mascot/", "")
       : undefined;
+    const shouldShowDesktopNotification =
+      document.visibilityState !== "visible" || !document.hasFocus();
 
     toast(title, {
       description: message,
@@ -44,8 +46,12 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
       }),
     });
 
+    if (!shouldShowDesktopNotification) {
+      return;
+    }
+
     window.habits.showNotification(title, message, iconFilename).catch(() => {
-      // Desktop notifications are best-effort alongside the in-app toast.
+      // Desktop notifications are best-effort when the app is not frontmost.
     });
   };
 

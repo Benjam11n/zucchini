@@ -127,6 +127,9 @@ export function ReminderSettingsCard({
             "America/Los_Angeles",
           ];
 
+    // CHECK: this hardcoded fallback list is tiny compared with the real IANA
+    // timezone set. If `Intl.supportedValuesOf` is unavailable, do we want a
+    // fuller bundled list instead of silently narrowing the choices?
     return [...new Set([settings.timezone, ...supportedTimezones])];
   }, [settings.timezone]);
 

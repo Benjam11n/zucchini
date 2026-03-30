@@ -288,14 +288,14 @@ describe("notifications", () => {
     });
   });
 
-  it("maps macOS active console sessions to unknown", async () => {
+  it("maps macOS active console sessions to available", async () => {
     resetState();
     setPlatform("darwin");
     macNotificationState.current = "SESSION_ON_CONSOLE_KEY";
 
     await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
-      availability: "unknown",
-      reason: "platform-error",
+      availability: "available",
+      reason: null,
     });
   });
 
@@ -337,14 +337,14 @@ describe("notifications", () => {
     });
   });
 
-  it("maps Windows accepts notifications to unknown", async () => {
+  it("maps Windows accepts notifications to available", async () => {
     resetState();
     setPlatform("win32");
     windowsNotificationState.current = "QUNS_ACCEPTS_NOTIFICATIONS";
 
     await expect(getDesktopNotificationStatus()).resolves.toStrictEqual({
-      availability: "unknown",
-      reason: "platform-error",
+      availability: "available",
+      reason: null,
     });
   });
 

@@ -38,6 +38,9 @@ const INITIAL_UPDATE_SETTINGS_STATE: UpdateSettingsViewState = {
   state: null,
 };
 
+// CHECK: this reducer/load/subscribe/action flow is very similar to the shell
+// `UpdateButton`. Consider extracting a shared updater state hook instead of
+// maintaining two near-duplicate implementations.
 function updateSettingsReducer(
   state: UpdateSettingsViewState,
   action: UpdateSettingsAction

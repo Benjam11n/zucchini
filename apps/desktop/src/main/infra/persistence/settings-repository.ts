@@ -57,6 +57,9 @@ function parseCategoryPreferences(
   try {
     parsed = JSON.parse(value);
   } catch {
+    // CHECK: malformed stored category preferences are silently reset to
+    // defaults. Do we want lightweight diagnostics here so corrupted user data
+    // is easier to notice and debug?
     return defaults;
   }
 

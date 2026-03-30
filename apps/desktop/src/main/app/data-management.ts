@@ -81,6 +81,9 @@ export function createDataManagementActions({
       return false;
     }
 
+    // CHECK: import currently replaces the live database in place and relies on
+    // relaunch to recover. Should we create an automatic rollback backup first
+    // or require an explicit confirmation step before this becomes user-facing?
     repository.validateDatabase(selectedBackupPath);
     repository.replaceDatabase(selectedBackupPath);
     appLike.relaunch();

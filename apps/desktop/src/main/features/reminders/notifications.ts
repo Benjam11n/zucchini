@@ -45,6 +45,13 @@ function createUnknownStatus(): DesktopNotificationStatus {
   };
 }
 
+function createAvailableStatus(): DesktopNotificationStatus {
+  return {
+    availability: "available",
+    reason: null,
+  };
+}
+
 function warnMissingNativeAddon(packageName: string): void {
   if (warnedMissingAddons.has(packageName)) {
     return;
@@ -108,6 +115,9 @@ async function getMacOsNotificationStatus(): Promise<DesktopNotificationStatus> 
       case "DO_NOT_DISTURB": {
         return createBlockedStatus("do-not-disturb");
       }
+      case "SESSION_ON_CONSOLE_KEY": {
+        return createAvailableStatus();
+      }
       case "SESSION_SCREEN_IS_LOCKED": {
         return createBlockedStatus("session-locked");
       }
@@ -136,6 +146,9 @@ async function getWindowsNotificationStatus(): Promise<DesktopNotificationStatus
       (await import("windows-notification-state")) as WindowsNotificationStateModule;
 
     switch (module.getNotificationState()) {
+      case "QUNS_ACCEPTS_NOTIFICATIONS": {
+        return createAvailableStatus();
+      }
       case "QUNS_APP": {
         return createBlockedStatus("other-app-active");
       }

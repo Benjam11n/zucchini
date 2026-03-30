@@ -111,6 +111,9 @@ const INITIAL_UPDATE_BUTTON_STATE: UpdateButtonViewState = {
   state: null,
 };
 
+// CHECK: this reducer/load/subscribe/action flow is very similar to
+// `UpdateSettingsCard`. Consider extracting a shared updater view-model hook so
+// the two surfaces do not drift.
 function updateButtonViewReducer(
   state: UpdateButtonViewState,
   action: UpdateButtonAction
