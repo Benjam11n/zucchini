@@ -18,7 +18,7 @@ interface ResolveTodayCelebrationInput {
   streak: PersistedTodayUiState["streak"];
 }
 
-export function getReachedStreakMilestone(
+function getReachedStreakMilestone(
   previousStreak: number,
   currentStreak: number
 ): number | null {
