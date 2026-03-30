@@ -9,6 +9,7 @@ import type { WeeklyReview } from "@/shared/domain/weekly-review";
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   return {
     date: "2026-03-10",
+    focusMinutes: 0,
     habits: [],
     settings: {
       ...createDefaultAppSettings("Asia/Singapore"),

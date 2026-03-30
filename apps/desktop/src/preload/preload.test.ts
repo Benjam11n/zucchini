@@ -60,6 +60,7 @@ describe("preload habits API", () => {
     await loadPreloadModule();
     const todayState = {
       date: "2026-03-08",
+      focusMinutes: 0,
       habits: [],
       settings: {
         ...createDefaultAppSettings("Asia/Singapore"),

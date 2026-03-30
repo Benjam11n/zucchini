@@ -50,6 +50,7 @@ const managedHabits: Habit[] = [
 
 const state: TodayState = {
   date: "2026-03-13",
+  focusMinutes: 0,
   habits: [
     {
       category: "productivity",

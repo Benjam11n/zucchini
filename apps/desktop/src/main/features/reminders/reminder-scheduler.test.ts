@@ -56,6 +56,7 @@ function buildTodayState(
 ): TodayState {
   return {
     date,
+    focusMinutes: 0,
     habits,
     settings: DEFAULT_SETTINGS,
     streak: {
