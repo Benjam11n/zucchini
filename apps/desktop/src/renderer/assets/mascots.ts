@@ -1,5 +1,5 @@
 function resolveMascotAsset(filename: string): string {
-  return new URL(`../../../../public/mascot/${filename}`, import.meta.url).href;
+  return `${import.meta.env.BASE_URL}mascot/${filename}`;
 }
 
 export const MASCOTS = {

@@ -14,6 +14,16 @@ import { isDailyHabit } from "@/shared/domain/habit";
 
 const POPUP_TIMEOUT_MS = 5000;
 
+function getMascotIconFilename(mascotUrl: string): string | undefined {
+  try {
+    const { pathname } = new URL(mascotUrl, window.location.href);
+    const filename = pathname.split("/").pop();
+    return filename || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 interface UseTodayPopupsOptions {
   state: TodayState;
 }
@@ -30,9 +40,7 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
   });
 
   const addPopup = (mascot: string, title: string, message: string) => {
-    const iconFilename = mascot.startsWith("/mascot/")
-      ? mascot.replace("/mascot/", "")
-      : undefined;
+    const iconFilename = getMascotIconFilename(mascot);
     const shouldShowDesktopNotification =
       document.visibilityState !== "visible" || !document.hasFocus();
 
