@@ -16,6 +16,7 @@ export interface HistoryPageProps {
   historyScope: "full" | "recent";
   isHistoryLoading: boolean;
   onLoadOlderHistory: () => void;
+  onNavigateToToday: () => void;
   todayDate: string;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: HabitsIpcError | null;

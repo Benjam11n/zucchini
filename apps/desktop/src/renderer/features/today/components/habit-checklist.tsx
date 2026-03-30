@@ -17,6 +17,7 @@ interface HabitChecklistProps {
   onToggleHabit: (habitId: number) => void;
   completedCount: number;
   emptyMessage?: string;
+  emptyAction?: ReactNode;
   headerActions?: ReactNode;
   title?: string;
   icon?: React.ElementType;
@@ -32,6 +33,7 @@ function HabitChecklistComponent({
   onToggleHabit,
   completedCount,
   emptyMessage = "Add habits in Settings to get started.",
+  emptyAction: _emptyAction,
   headerActions,
   title = "Today",
   icon: Icon,
@@ -91,6 +93,7 @@ function HabitChecklistComponent({
             transition={{ duration: 0.2 }}
           >
             <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+            {_emptyAction ? <div className="mt-4">{_emptyAction}</div> : null}
           </m.div>
         ) : null}
 

@@ -89,6 +89,7 @@ export function TodayHistoryCarousel({
             History for {selectedDay?.date}
           </DialogTitle>
           <HistoryDayPanel
+            onNavigateToToday={() => setSelectedDay(null)}
             selectedDay={selectedDay}
             isToday={selectedDay?.date === todayDate}
           />

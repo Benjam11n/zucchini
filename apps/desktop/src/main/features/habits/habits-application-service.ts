@@ -176,24 +176,32 @@ export class HabitsApplicationService implements HabitsService {
     this.initialized = true;
   }
 
-  getHabits(): Habit[] {
+  private withInitialized<A>(execute: () => A): A {
     this.initialize();
-    return this.repository.runInTransaction("getHabits", () =>
+    return execute();
+  }
+
+  private inInitializedTransaction<A>(label: string, execute: () => A): A {
+    return this.withInitialized(() =>
+      this.repository.runInTransaction(label, execute)
+    );
+  }
+
+  getHabits(): Habit[] {
+    return this.inInitializedTransaction("getHabits", () =>
       this.repository.getHabits()
     );
   }
 
   getTodayState(): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("getTodayState", () => {
+    return this.inInitializedTransaction("getTodayState", () => {
       this.syncRollingState();
       return buildTodayState(this.repository, this.clock);
     });
   }
 
   toggleHabit(habitId: number): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("toggleHabit", () => {
+    return this.inInitializedTransaction("toggleHabit", () => {
       const today = this.clock.todayKey();
       this.syncRollingState();
       this.repository.ensureStatusRowsForDate(today);
@@ -203,24 +211,21 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
-    this.initialize();
-    return this.repository.runInTransaction("getFocusSessions", () =>
+    return this.inInitializedTransaction("getFocusSessions", () =>
       this.repository.getFocusSessions(limit)
     );
   }
 
   recordFocusSession(input: CreateFocusSessionInput): FocusSession {
-    this.initialize();
     assertValidFocusSessionInput(input);
 
-    return this.repository.runInTransaction("recordFocusSession", () =>
+    return this.inInitializedTransaction("recordFocusSession", () =>
       this.repository.saveFocusSession(input)
     );
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
-    this.initialize();
-    return this.repository.runInTransaction("getPersistedFocusTimerState", () =>
+    return this.inInitializedTransaction("getPersistedFocusTimerState", () =>
       this.repository.getPersistedFocusTimerState()
     );
   }
@@ -228,18 +233,15 @@ export class HabitsApplicationService implements HabitsService {
   savePersistedFocusTimerState(
     state: PersistedFocusTimerState
   ): PersistedFocusTimerState {
-    this.initialize();
     assertValidPersistedFocusTimerState(state);
 
-    return this.repository.runInTransaction(
-      "savePersistedFocusTimerState",
-      () => this.repository.savePersistedFocusTimerState(state)
+    return this.inInitializedTransaction("savePersistedFocusTimerState", () =>
+      this.repository.savePersistedFocusTimerState(state)
     );
   }
 
   getHistory(limit?: number): HistoryDay[] {
-    this.initialize();
-    return this.repository.runInTransaction("getHistory", () => {
+    return this.inInitializedTransaction("getHistory", () => {
       this.syncRollingState();
       const todayState = buildTodayState(this.repository, this.clock);
       const settledHistoryLimit =
@@ -274,8 +276,7 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   getWeeklyReviewOverview(): WeeklyReviewOverview {
-    this.initialize();
-    return this.repository.runInTransaction("getWeeklyReviewOverview", () => {
+    return this.inInitializedTransaction("getWeeklyReviewOverview", () => {
       this.syncRollingState();
       const firstTrackedDate = this.repository.getFirstTrackedDate();
       const latestTrackedDate = this.repository.getLatestTrackedDate();
@@ -320,8 +321,7 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   getWeeklyReview(weekStart: string): WeeklyReview {
-    this.initialize();
-    return this.repository.runInTransaction("getWeeklyReview", () => {
+    return this.inInitializedTransaction("getWeeklyReview", () => {
       this.syncRollingState();
       const normalizedWeekStart = startOfIsoWeek(weekStart);
       const weekEnd = endOfIsoWeek(normalizedWeekStart);
@@ -345,18 +345,21 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
-    this.initialize();
-    return this.repository.getReminderRuntimeState();
+    return this.withInitialized(() =>
+      this.repository.getReminderRuntimeState()
+    );
   }
 
   updateSettings(settings: AppSettings): AppSettings {
-    this.initialize();
-    return this.repository.saveSettings(settings, this.clock.timezone());
+    return this.withInitialized(() =>
+      this.repository.saveSettings(settings, this.clock.timezone())
+    );
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
-    this.initialize();
-    this.repository.saveReminderRuntimeState(state);
+    this.withInitialized(() => {
+      this.repository.saveReminderRuntimeState(state);
+    });
   }
 
   createHabit(
@@ -370,8 +373,7 @@ export class HabitsApplicationService implements HabitsService {
       return this.getTodayState();
     }
 
-    this.initialize();
-    return this.repository.runInTransaction("createHabit", () => {
+    return this.inInitializedTransaction("createHabit", () => {
       const today = this.clock.todayKey();
       this.syncRollingState();
       const habitId = this.repository.insertHabit(
@@ -400,23 +402,24 @@ export class HabitsApplicationService implements HabitsService {
       return this.getTodayState();
     }
 
-    this.initialize();
-    this.repository.renameHabit(habitId, trimmedName);
-    return buildTodayState(this.repository, this.clock);
+    return this.withInitialized(() => {
+      this.repository.renameHabit(habitId, trimmedName);
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState {
-    this.initialize();
-    this.repository.updateHabitCategory(
-      habitId,
-      normalizeHabitCategory(category)
-    );
-    return buildTodayState(this.repository, this.clock);
+    return this.withInitialized(() => {
+      this.repository.updateHabitCategory(
+        habitId,
+        normalizeHabitCategory(category)
+      );
+      return buildTodayState(this.repository, this.clock);
+    });
   }
 
   updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("updateHabitFrequency", () => {
+    return this.inInitializedTransaction("updateHabitFrequency", () => {
       this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
       this.repository.updateHabitFrequency(
         habitId,
@@ -431,8 +434,7 @@ export class HabitsApplicationService implements HabitsService {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("updateHabitWeekdays", () => {
+    return this.inInitializedTransaction("updateHabitWeekdays", () => {
       this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
       this.repository.updateHabitWeekdays(
         habitId,
@@ -444,8 +446,7 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   archiveHabit(habitId: number): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("archiveHabit", () => {
+    return this.inInitializedTransaction("archiveHabit", () => {
       this.repository.archiveHabit(habitId);
       this.repository.normalizeHabitOrder();
       this.syncRollingState();
@@ -454,8 +455,7 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   unarchiveHabit(habitId: number): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("unarchiveHabit", () => {
+    return this.inInitializedTransaction("unarchiveHabit", () => {
       this.repository.unarchiveHabit(habitId);
       this.repository.reorderHabits([
         ...this.repository
@@ -471,8 +471,7 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   reorderHabits(habitIds: number[]): TodayState {
-    this.initialize();
-    return this.repository.runInTransaction("reorderHabits", () => {
+    return this.inInitializedTransaction("reorderHabits", () => {
       const activeHabits = this.repository.getHabits();
       const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
 

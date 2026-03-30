@@ -42,7 +42,13 @@ const selectedDay: HistoryDay = {
 
 describe("history day panel", () => {
   it("shows category icons alongside the history progress breakdown", () => {
-    render(<HistoryDayPanel isToday={false} selectedDay={selectedDay} />);
+    render(
+      <HistoryDayPanel
+        isToday={false}
+        onNavigateToToday={vi.fn()}
+        selectedDay={selectedDay}
+      />
+    );
     const categoryPreferences = createDefaultHabitCategoryPreferences();
 
     for (const category of ["fitness", "nutrition", "productivity"] as const) {
@@ -56,7 +62,13 @@ describe("history day panel", () => {
   });
 
   it("shows focus minutes for the selected day", () => {
-    render(<HistoryDayPanel isToday={false} selectedDay={selectedDay} />);
+    render(
+      <HistoryDayPanel
+        isToday={false}
+        onNavigateToToday={vi.fn()}
+        selectedDay={selectedDay}
+      />
+    );
 
     expect(screen.getByText("45")).toBeInTheDocument();
   });

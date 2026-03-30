@@ -6,7 +6,7 @@
  * celebration toasts.
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { ListChecks } from "lucide-react";
+import { ListChecks, Plus } from "lucide-react";
 import { memo, useMemo } from "react";
 
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
@@ -19,6 +19,7 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
+import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type {
@@ -126,7 +127,31 @@ function TodayPageComponent({
           <HabitChecklist
             icon={ListChecks}
             completedCount={completedCount}
-            emptyMessage="No daily habits yet. Add one right now to power the rings and streak."
+            emptyMessage="No daily habits yet. Create one to start building momentum."
+            emptyAction={
+              <TodayHabitManagerDialog
+                habits={managedHabits}
+                onArchiveHabit={onArchiveHabit}
+                onCreateHabit={onCreateHabit}
+                onRenameHabit={onRenameHabit}
+                onReorderHabits={onReorderHabits}
+                onUnarchiveHabit={onUnarchiveHabit}
+                onUpdateHabitCategory={onUpdateHabitCategory}
+                onUpdateHabitFrequency={onUpdateHabitFrequency}
+                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                trigger={
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <Plus className="size-4" />
+                    Create your first habit
+                  </Button>
+                }
+              />
+            }
             headerActions={
               <TodayHabitManagerDialog
                 habits={managedHabits}

@@ -1,5 +1,11 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import { CheckCircle2, Snowflake, Timer, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Snowflake,
+  Timer,
+  XCircle,
+} from "lucide-react";
 
 import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import {
@@ -15,6 +21,7 @@ import {
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { Badge } from "@/renderer/shared/ui/badge";
+import { Button } from "@/renderer/shared/ui/button";
 import { Card, CardContent } from "@/renderer/shared/ui/card";
 import { Progress } from "@/renderer/shared/ui/progress";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -23,11 +30,13 @@ import { formatDateKey } from "@/shared/utils/date";
 import { HistoryHabitColumn } from "./history-habit-column";
 
 interface HistoryDayPanelProps {
+  onNavigateToToday: () => void;
   selectedDay: HistoryDay | null;
   isToday?: boolean;
 }
 
 export function HistoryDayPanel({
+  onNavigateToToday,
   selectedDay,
   isToday,
 }: HistoryDayPanelProps) {
@@ -35,9 +44,18 @@ export function HistoryDayPanel({
 
   if (!selectedDay) {
     return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 p-4 text-sm text-muted-foreground">
-        No tracked days yet. Start completing habits to unlock the calendar
-        browser.
+      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 p-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          No tracked days yet. Start completing habits to build your history.
+        </p>
+        <Button
+          className="mt-4 rounded-full"
+          onClick={onNavigateToToday}
+          size="sm"
+          variant="outline"
+        >
+          Go to Today <ArrowRight className="size-4" />
+        </Button>
       </div>
     );
   }

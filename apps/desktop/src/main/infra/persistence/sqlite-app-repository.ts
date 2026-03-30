@@ -75,6 +75,10 @@ export class SqliteAppRepository implements AppRepository {
     await this.client.exportBackup(destinationPath);
   }
 
+  validateDatabase(sourcePath: string): void {
+    this.client.validateDatabase(sourcePath);
+  }
+
   replaceDatabase(sourcePath: string): void {
     this.client.replaceDatabase(sourcePath);
   }

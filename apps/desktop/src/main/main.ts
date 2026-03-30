@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 /**
  * Electron main-process composition root.
  *
@@ -8,7 +6,6 @@
  */
 import path from "node:path";
 
-import { Effect } from "effect";
 import {
   app,
   BrowserWindow,
@@ -69,25 +66,72 @@ function loadAppWindow(window: BrowserWindow, search = ""): void {
   });
 }
 
-let isQuitting = false;
-let trayEnabled = false;
-let mainWindow: BrowserWindow | null = null;
-let focusWidgetWindow: BrowserWindow | null = null;
-let runtime: AppRuntime | null = null;
+function createMainProcessContext() {
+  let isQuitting = false;
+  let trayEnabled = false;
+  let mainWindow: BrowserWindow | null = null;
+  let focusWidgetWindow: BrowserWindow | null = null;
+  let runtime: AppRuntime | null = null;
+
+  return {
+    clearFocusWidgetWindow(window: BrowserWindow) {
+      if (focusWidgetWindow === window) {
+        focusWidgetWindow = null;
+      }
+    },
+    clearMainWindow(window: BrowserWindow) {
+      if (mainWindow === window) {
+        mainWindow = null;
+      }
+    },
+    getFocusWidgetWindow() {
+      return focusWidgetWindow && !focusWidgetWindow.isDestroyed()
+        ? focusWidgetWindow
+        : null;
+    },
+    getIsQuitting() {
+      return isQuitting;
+    },
+    getMainWindow() {
+      return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+    },
+    getRuntime() {
+      if (!runtime) {
+        throw new Error("App runtime is not initialized.");
+      }
+
+      return runtime;
+    },
+    getRuntimeOrNull() {
+      return runtime;
+    },
+    getTrayEnabled() {
+      return trayEnabled;
+    },
+    markQuitting() {
+      isQuitting = true;
+    },
+    setFocusWidgetWindow(window: BrowserWindow) {
+      focusWidgetWindow = window;
+    },
+    setMainWindow(window: BrowserWindow) {
+      mainWindow = window;
+    },
+    setRuntime(nextRuntime: AppRuntime) {
+      runtime = nextRuntime;
+    },
+    setTrayEnabled(nextTrayEnabled: boolean) {
+      trayEnabled = nextTrayEnabled;
+    },
+  };
+}
+
+const context = createMainProcessContext();
 
 const focusTimerCoordinator = createFocusTimerCoordinator();
 
-function getRuntime(): AppRuntime {
-  if (!runtime) {
-    throw new Error("App runtime is not initialized.");
-  }
-
-  return runtime;
-}
-
 function ensureMainWindow(): BrowserWindow {
-  const existingWindow =
-    mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+  const existingWindow = context.getMainWindow();
 
   if (existingWindow) {
     return existingWindow;
@@ -95,48 +139,37 @@ function ensureMainWindow(): BrowserWindow {
 
   const window = createMainWindow({
     backgroundColor: getWindowBackgroundColor(),
-    getIsQuitting: () => isQuitting,
+    getIsQuitting: () => context.getIsQuitting(),
     iconPath: resolveRuntimeIconPath(),
-    onClosed: () => {
-      if (mainWindow === window) {
-        mainWindow = null;
-      }
-    },
+    onClosed: () => context.clearMainWindow(window),
     shouldHideToTray: ({ isQuitting: quitting }) =>
       shouldHideOnWindowClose({
         isQuitting: quitting,
-        trayEnabled,
+        trayEnabled: context.getTrayEnabled(),
       }),
   });
 
   configureWindowSecurity(window);
   loadAppWindow(window);
-  mainWindow = window;
+  context.setMainWindow(window);
   return window;
 }
 
 function ensureFocusWidgetWindow(): BrowserWindow {
-  const existingWindow =
-    focusWidgetWindow && !focusWidgetWindow.isDestroyed()
-      ? focusWidgetWindow
-      : null;
+  const existingWindow = context.getFocusWidgetWindow();
 
   if (existingWindow) {
     return existingWindow;
   }
 
   const window = createFocusWidgetWindow({
-    getIsQuitting: () => isQuitting,
+    getIsQuitting: () => context.getIsQuitting(),
     iconPath: resolveRuntimeIconPath(),
-    onClosed: () => {
-      if (focusWidgetWindow === window) {
-        focusWidgetWindow = null;
-      }
-    },
+    onClosed: () => context.clearFocusWidgetWindow(window),
   });
 
   configureWindowSecurity(window);
-  focusWidgetWindow = window;
+  context.setFocusWidgetWindow(window);
   return window;
 }
 
@@ -153,10 +186,7 @@ function positionFocusWidgetWindow(window: BrowserWindow): void {
 }
 
 function resizeFocusWidget(width: number, height: number): void {
-  const window =
-    focusWidgetWindow && !focusWidgetWindow.isDestroyed()
-      ? focusWidgetWindow
-      : null;
+  const window = context.getFocusWidgetWindow();
 
   if (!window) {
     return;
@@ -226,11 +256,13 @@ function getPreferredFocusTimerWindow(): BrowserWindow | null {
     return focusedWindow;
   }
 
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  const mainWindow = context.getMainWindow();
+  if (mainWindow) {
     return mainWindow;
   }
 
-  if (focusWidgetWindow && !focusWidgetWindow.isDestroyed()) {
+  const focusWidgetWindow = context.getFocusWidgetWindow();
+  if (focusWidgetWindow) {
     return focusWidgetWindow;
   }
 
@@ -269,9 +301,15 @@ function registerFocusTimerGlobalShortcuts(settings: {
 
 function cleanupRuntime(): void {
   focusTimerGlobalShortcutManager.unregisterAll();
-  runtime?.reminders.cancel();
-  runtime?.tray.destroy();
-  runtime?.repository.close();
+  const runtime = context.getRuntimeOrNull();
+
+  if (!runtime) {
+    return;
+  }
+
+  runtime.reminders.cancel();
+  runtime.tray.destroy();
+  runtime.repository.close();
 }
 
 const reportFatalMainProcessError = createFatalErrorReporter({
@@ -288,6 +326,29 @@ function reportAppReadyFailure(error: unknown): void {
   );
 }
 
+function warmAppRuntime(nextRuntime: AppRuntime): void {
+  try {
+    const todayState = nextRuntime.service.getTodayState();
+    context.setTrayEnabled(
+      applyRuntimeSettings({
+        appLike: app,
+        applyThemeMode: applyWindowThemeMode,
+        runtime: nextRuntime,
+        settings: todayState.settings,
+      })
+    );
+    registerFocusTimerGlobalShortcuts(todayState.settings);
+  } catch (error) {
+    console.error("Failed to warm app runtime.", error);
+  }
+}
+
+function scheduleRuntimeWarmup(nextRuntime: AppRuntime): void {
+  queueMicrotask(() => {
+    warmAppRuntime(nextRuntime);
+  });
+}
+
 process.on("uncaughtException", (error) => {
   reportFatalMainProcessError("uncaughtException", error);
 });
@@ -296,112 +357,103 @@ process.on("unhandledRejection", (reason) => {
   reportFatalMainProcessError("unhandledRejection", reason);
 });
 
-function bootstrapApp(): void {
-  app
-    .whenReady()
-    .then(() => {
-      Effect.runSync(
-        Effect.sync(() => {
-          const nextRuntime = createAppRuntime({
-            onOpenFocusWidget: showFocusWidget,
-            onOpenMainWindow: showMainWindow,
-            onQuit: () => {
-              isQuitting = true;
-              app.quit();
-            },
-          });
-          runtime = nextRuntime;
+async function bootstrapApp(): Promise<void> {
+  try {
+    await app.whenReady();
 
-          if (process.platform === "darwin" && app.dock) {
-            const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
-            if (!icon.isEmpty()) {
-              app.dock.setIcon(icon);
-            }
-          }
+    const appRuntime = createAppRuntime({
+      onOpenFocusWidget: showFocusWidget,
+      onOpenMainWindow: showMainWindow,
+      onQuit: () => {
+        context.markQuitting();
+        app.quit();
+      },
+    });
+    context.setRuntime(appRuntime);
 
-          const dataManagement = createDataManagementActions({
+    if (process.platform === "darwin" && app.dock) {
+      const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
+      if (!icon.isEmpty()) {
+        app.dock.setIcon(icon);
+      }
+    }
+
+    const dataManagement = createDataManagementActions({
+      appLike: app,
+      clock: systemClock,
+      dialogLike: dialog,
+      repository: appRuntime.repository,
+      service: appRuntime.service,
+      shellLike: shell,
+    });
+
+    registerIpcHandlers({
+      broadcastFocusSessionRecorded,
+      broadcastFocusTimerStateChanged,
+      focusTimerCoordinator,
+      getFocusTimerShortcutStatus: () =>
+        focusTimerGlobalShortcutManager.getStatus(),
+      onExportBackup: dataManagement.exportBackup,
+      onImportBackup: () =>
+        dataManagement.importBackup(() => {
+          context.markQuitting();
+        }),
+      onOpenDataFolder: dataManagement.openDataFolder,
+      onResizeFocusWidget: resizeFocusWidget,
+      onSettingsChanged: (settings) => {
+        context.setTrayEnabled(
+          applyRuntimeSettings({
             appLike: app,
-            clock: systemClock,
-            dialogLike: dialog,
-            repository: nextRuntime.repository,
-            service: nextRuntime.service,
-            shellLike: shell,
-          });
-
-          registerIpcHandlers({
-            broadcastFocusSessionRecorded,
-            broadcastFocusTimerStateChanged,
-            focusTimerCoordinator,
-            getFocusTimerShortcutStatus: () =>
-              focusTimerGlobalShortcutManager.getStatus(),
-            onExportBackup: dataManagement.exportBackup,
-            onImportBackup: () =>
-              dataManagement.importBackup(() => {
-                isQuitting = true;
-              }),
-            onOpenDataFolder: dataManagement.openDataFolder,
-            onResizeFocusWidget: resizeFocusWidget,
-            onSettingsChanged: (settings) => {
-              trayEnabled = applyRuntimeSettings({
-                appLike: app,
-                applyThemeMode: applyWindowThemeMode,
-                runtime: nextRuntime,
-                settings,
-              });
-              registerFocusTimerGlobalShortcuts(settings);
-            },
-            onShowFocusWidget: showFocusWidget,
-            onShowMainWindow: showMainWindow,
-            service: nextRuntime.service,
-          });
-
-          const updaterController = registerUpdaterRuntime({
-            appLike: app,
-            autoUpdater,
-            broadcastState: broadcastUpdateState,
-            ipcMainLike: ipcMain,
-            log: console,
-          });
-
-          ensureMainWindow();
-          ensureFocusWidgetWindow();
-
-          setTimeout(() => {
-            try {
-              const todayState = nextRuntime.service.getTodayState();
-              trayEnabled = applyRuntimeSettings({
-                appLike: app,
-                applyThemeMode: applyWindowThemeMode,
-                runtime: nextRuntime,
-                settings: todayState.settings,
-              });
-              registerFocusTimerGlobalShortcuts(todayState.settings);
-            } catch (error) {
-              console.error("Failed to warm app runtime.", error);
-            }
-          }, 0);
-
-          updaterController.start();
-        })
-      );
-
-      app.on("activate", () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-          ensureMainWindow();
-          return;
-        }
-
-        showMainWindow();
-      });
-
-      powerMonitor.on("resume", () => {
-        const nextRuntime = getRuntime();
-        nextRuntime.reminders.schedule(
-          nextRuntime.service.getTodayState().settings
+            applyThemeMode: applyWindowThemeMode,
+            runtime: appRuntime,
+            settings,
+          })
         );
-      });
-    })
-    .catch(reportAppReadyFailure);
+        registerFocusTimerGlobalShortcuts(settings);
+      },
+      onShowFocusWidget: showFocusWidget,
+      onShowMainWindow: showMainWindow,
+      service: appRuntime.service,
+    });
+
+    const updaterController = registerUpdaterRuntime({
+      appLike: app,
+      autoUpdater,
+      broadcastState: broadcastUpdateState,
+      ipcMainLike: ipcMain,
+      log: console,
+    });
+
+    ensureMainWindow();
+    ensureFocusWidgetWindow();
+    scheduleRuntimeWarmup(appRuntime);
+    updaterController.start();
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        ensureMainWindow();
+        return;
+      }
+
+      showMainWindow();
+    });
+
+    powerMonitor.on("resume", () => {
+      const runtime = context.getRuntime();
+      runtime.reminders.schedule(runtime.service.getTodayState().settings);
+    });
+  } catch (error) {
+    reportAppReadyFailure(error);
+  }
+}
+
+async function showMainWindowWhenReady(): Promise<void> {
+  try {
+    await app.whenReady();
+    showMainWindow();
+  } catch (error) {
+    reportAppReadyFailure(error);
+  }
 }
 
 if (acquireSingleInstanceLock(app)) {
@@ -411,7 +463,7 @@ if (acquireSingleInstanceLock(app)) {
       return;
     }
 
-    app.whenReady().then(showMainWindow).catch(reportAppReadyFailure);
+    showMainWindowWhenReady();
   });
   bootstrapApp();
 } else {
@@ -419,7 +471,7 @@ if (acquireSingleInstanceLock(app)) {
 }
 
 app.on("before-quit", () => {
-  isQuitting = true;
+  context.markQuitting();
   cleanupRuntime();
 });
 
@@ -427,7 +479,7 @@ app.on("window-all-closed", () => {
   if (
     shouldQuitWhenAllWindowsClosed({
       platform: process.platform,
-      trayEnabled,
+      trayEnabled: context.getTrayEnabled(),
     })
   ) {
     app.quit();

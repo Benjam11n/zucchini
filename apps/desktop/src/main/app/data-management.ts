@@ -12,7 +12,7 @@ interface CreateDataManagementActionsOptions {
   dialogLike: Pick<Dialog, "showOpenDialog" | "showSaveDialog">;
   repository: Pick<
     SqliteAppRepository,
-    "exportBackup" | "getDatabasePath" | "replaceDatabase"
+    "exportBackup" | "getDatabasePath" | "replaceDatabase" | "validateDatabase"
   >;
   service: Pick<HabitsApplicationService, "initialize">;
   shellLike: Pick<Shell, "openPath">;
@@ -81,6 +81,7 @@ export function createDataManagementActions({
       return false;
     }
 
+    repository.validateDatabase(selectedBackupPath);
     repository.replaceDatabase(selectedBackupPath);
     appLike.relaunch();
     onBeforeQuit();

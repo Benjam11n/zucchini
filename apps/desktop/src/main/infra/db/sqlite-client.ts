@@ -118,6 +118,38 @@ export class SqliteDatabaseClient {
     await this.getSqlite().backup(destinationPath);
   }
 
+  validateDatabase(sourcePath: string): void {
+    this.runWithDatabaseError("validateDatabase", () => {
+      const database = new Database(sourcePath, {
+        fileMustExist: true,
+        readonly: true,
+      });
+
+      try {
+        const integrityCheck = database.pragma("integrity_check(1)", {
+          simple: true,
+        });
+
+        if (integrityCheck !== "ok") {
+          throw new Error("SQLite integrity check failed.");
+        }
+
+        const hasSettingsTable = database
+          .prepare(
+            "select 1 from sqlite_master where type = 'table' and name = ?"
+          )
+          .pluck()
+          .get("settings");
+
+        if (hasSettingsTable !== 1) {
+          throw new Error("Backup is missing the Zucchini settings table.");
+        }
+      } finally {
+        database.close();
+      }
+    });
+  }
+
   replaceDatabase(sourcePath: string): void {
     const databasePath = this.getDatabasePath();
 

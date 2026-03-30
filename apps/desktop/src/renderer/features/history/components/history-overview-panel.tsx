@@ -27,6 +27,7 @@ export function HistoryOverviewPanel({
   historyByDate,
   isHistoryLoading,
   onLoadOlderHistory,
+  onNavigateToToday,
   selectedDay,
   setViewState,
   stats,
@@ -42,6 +43,7 @@ export function HistoryOverviewPanel({
   historyByDate: HistoryCalendarContextValue["historyByDate"];
   isHistoryLoading: HistoryPageProps["isHistoryLoading"];
   onLoadOlderHistory: HistoryPageProps["onLoadOlderHistory"];
+  onNavigateToToday: HistoryPageProps["onNavigateToToday"];
   selectedDay: HistoryPageProps["history"][number] | null;
   setViewState: Dispatch<SetStateAction<HistoryViewState>>;
   stats: HistoryStats;
@@ -157,6 +159,7 @@ export function HistoryOverviewPanel({
           visibleMonth={viewState.visibleMonth}
         />
         <HistoryDayPanel
+          onNavigateToToday={onNavigateToToday}
           selectedDay={selectedDay}
           isToday={selectedDay?.date === todayDate}
         />

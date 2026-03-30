@@ -32,6 +32,7 @@ export function HistoryPage({
   historyScope,
   isHistoryLoading,
   onLoadOlderHistory,
+  onNavigateToToday,
   todayDate,
   onSelectWeeklyReview,
   selectedWeeklyReview,
@@ -98,6 +99,7 @@ export function HistoryPage({
               historyScope={historyScope}
               isHistoryLoading={isHistoryLoading}
               onLoadOlderHistory={onLoadOlderHistory}
+              onNavigateToToday={onNavigateToToday}
               selectedDay={selectedDay}
               setViewState={setViewState}
               stats={stats}

@@ -99,9 +99,14 @@ export function FocusSessionList({
         ) : null}
 
         {phase !== "loading" && !sessionsLoadError && sessions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No completed focus sessions yet.
-          </p>
+          <div className="rounded-xl border border-dashed border-border py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              No completed focus sessions yet.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/60">
+              Start a timer above to begin your first session.
+            </p>
+          </div>
         ) : null}
 
         {sessions.length > 0 && historySessions.length > 0 ? (

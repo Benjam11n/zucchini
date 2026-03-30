@@ -165,6 +165,7 @@ function MainApp() {
           historyScope={state.historyScope}
           isHistoryLoading={state.isHistoryLoading}
           onLoadOlderHistory={actions.handleLoadOlderHistory}
+          onNavigateToToday={() => actions.handleTabChange("today")}
           todayDate={state.todayState.date}
           onSelectWeeklyReview={actions.handleWeeklyReviewSelect}
           selectedWeeklyReview={state.selectedWeeklyReview}
