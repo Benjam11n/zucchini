@@ -1,3 +1,10 @@
+/**
+ * History and weekly review action creators.
+ *
+ * Provides actions for loading full history, managing weekly review overview
+ * data, selecting individual weekly reviews, and toggling the weekly review
+ * spotlight dialog.
+ */
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 

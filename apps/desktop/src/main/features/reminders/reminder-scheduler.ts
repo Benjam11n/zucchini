@@ -1,3 +1,11 @@
+/**
+ * Reminder scheduling engine.
+ *
+ * Manages the lifecycle of desktop habit reminders: scheduling daily
+ * notifications at the configured time, handling snooze cycles, catch-up
+ * reminders for missed days, and midnight warnings. Persists runtime state
+ * (last reminder time, snooze expiration) across app restarts.
+ */
 import type { Clock } from "@/main/app/clock";
 import { systemClock } from "@/main/app/clock";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";

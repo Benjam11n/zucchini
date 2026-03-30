@@ -1,3 +1,10 @@
+/**
+ * Fatal error reporting and graceful shutdown.
+ *
+ * Handles uncaught exceptions and unhandled rejections in the main process.
+ * Shows a native error dialog, cleans up runtime resources, and exits the
+ * process. Uses Electron's `showErrorBox` for macOS/Windows compatibility.
+ */
 const FATAL_ERROR_TITLE = "Zucchini needs to close";
 const FATAL_ERROR_MESSAGE =
   "Zucchini hit an unexpected desktop error and will close. Please reopen the app.";

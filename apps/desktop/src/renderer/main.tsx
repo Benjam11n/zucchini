@@ -1,3 +1,11 @@
+/**
+ * Renderer process entry point.
+ *
+ * Mounts the React application into the DOM. Detects whether the page is
+ * loaded as the main window or the floating focus widget (via the `view`
+ * query parameter) and sets the appropriate data attribute on the root
+ * elements so CSS can scope widget-specific styles.
+ */
 import React from "react";
 import ReactDOM from "react-dom/client";
 

@@ -1,3 +1,11 @@
+/**
+ * Shared action utility functions.
+ *
+ * Provides helpers for batched store updates (optimistic rollbacks, reload
+ * results, boot failure resets) and small computations like history limits
+ * and today-state reordering. All multi-store writes use
+ * `unstable_batchedUpdates` to avoid intermediate renders.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import { unstable_batchedUpdates } from "react-dom";

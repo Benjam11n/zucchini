@@ -1,3 +1,11 @@
+/**
+ * Today page popup and notification hook.
+ *
+ * Monitors the today state for milestone changes (new streaks, streak
+ * improvements, streak breaks) and shows toast notifications with mascot
+ * images. Persists the last-seen UI snapshot to avoid duplicate popups
+ * across re-renders.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import { createElement, useEffect, useRef } from "react";

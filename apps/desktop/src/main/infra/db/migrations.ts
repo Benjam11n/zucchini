@@ -1,3 +1,10 @@
+/**
+ * Database migration runner.
+ *
+ * Uses Drizzle Kit's `migrate` function to apply SQL migrations from the
+ * `drizzle/` folder. Resolves the migrations path from either the current
+ * working directory or the Electron app's packaged path.
+ */
 import fs from "node:fs";
 import path from "node:path";
 

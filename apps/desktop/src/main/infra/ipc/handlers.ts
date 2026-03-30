@@ -1,3 +1,11 @@
+/**
+ * IPC handler registration for the main process.
+ *
+ * Maps every IPC channel defined in `HABITS_IPC_CHANNELS` to a handler that
+ * validates input, calls the appropriate service or coordinator method, and
+ * wraps the result in a typed `HabitsIpcResponse`. Broadcast callbacks are
+ * used for push events (focus session recorded, timer state changed).
+ */
 import { ipcMain } from "electron";
 
 import type { FocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";

@@ -1,3 +1,10 @@
+/**
+ * History page type definitions.
+ *
+ * Defines props for the history page, calendar context, and weekly review
+ * phase type. The `HistoryCalendarContextValue` provides shared state for
+ * the calendar grid and day detail panel components.
+ */
 import type { HistoryStatus } from "@/renderer/features/history/history-status";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";

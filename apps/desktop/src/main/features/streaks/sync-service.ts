@@ -1,3 +1,11 @@
+/**
+ * Rolling streak synchronization service.
+ *
+ * Catches up streak evaluation from the last persisted checkpoint to
+ * yesterday. For each unprocessed day, it settles the streak outcome
+ * (complete, missed, or freeze) and writes a daily summary row.
+ * This runs on every read path so the streak is always current.
+ */
 import type { Clock } from "@/main/app/clock";
 import { createRollingStreakState } from "@/main/features/today/state-builder";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";

@@ -1,3 +1,11 @@
+/**
+ * Focus page Zustand store.
+ *
+ * Manages the Pomodoro timer state, focus session history, and save error
+ * messages. Provides actions for loading sessions (with dedup), prepending
+ * newly recorded sessions, and updating the timer state synced from the
+ * main process via IPC broadcast.
+ */
 import { create } from "zustand";
 
 import type {

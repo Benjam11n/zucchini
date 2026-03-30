@@ -1,3 +1,10 @@
+/**
+ * History page Zustand store.
+ *
+ * Tracks the loaded history days, loading scope (recent vs full), and any
+ * load errors. The `loadFullHistory` action fetches all available history
+ * through the preload bridge and switches the scope to `"full"`.
+ */
 import { create } from "zustand";
 
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";

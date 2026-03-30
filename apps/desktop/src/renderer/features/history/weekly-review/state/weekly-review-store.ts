@@ -1,3 +1,11 @@
+/**
+ * Weekly review Zustand store.
+ *
+ * Manages the weekly review overview loading, individual weekly review
+ * selection, and the spotlight dialog visibility. Provides actions for
+ * loading the overview, selecting a specific week, and opening/closing
+ * the spotlight.
+ */
 import { create } from "zustand";
 
 import type { WeeklyReviewPhase } from "@/renderer/features/history/history.types";

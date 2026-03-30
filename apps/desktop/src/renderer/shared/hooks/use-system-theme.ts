@@ -1,3 +1,10 @@
+/**
+ * System theme detection hook.
+ *
+ * Listens for OS-level dark/light mode changes via `prefers-color-scheme`
+ * and returns the current system theme. Used by the UI store and theme
+ * application logic.
+ */
 import { useEffect, useState } from "react";
 
 import {

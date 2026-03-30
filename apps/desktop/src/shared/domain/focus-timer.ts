@@ -1,3 +1,10 @@
+/**
+ * Focus timer persisted state domain types.
+ *
+ * Represents the full Pomodoro timer state that is saved to the database
+ * and synced across renderer windows via IPC. Includes phase (focus/break),
+ * status (idle/running/paused), remaining time, and cycle tracking.
+ */
 export type FocusTimerPhase = "focus" | "break";
 export type FocusTimerStatus = "idle" | "running" | "paused";
 export type FocusBreakVariant = "short" | "long";

@@ -1,3 +1,11 @@
+/**
+ * Settings auto-save behavior hook.
+ *
+ * Watches the settings draft for changes, validates against the Zod schema,
+ * and debounces saves (600 ms) through the controller's `handleUpdateSettings`
+ * action. Tracks save phase transitions (idle → pending → saving → saved/error)
+ * and surfaces validation errors at the field level.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import { useEffect, useRef } from "react";

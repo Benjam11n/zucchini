@@ -1,3 +1,10 @@
+/**
+ * App lifecycle policy functions.
+ *
+ * Pure helpers that determine whether the app should hide to the system tray
+ * on window close, quit when all windows are closed, or auto-start at login.
+ * Decoupled from Electron APIs so they are easy to test.
+ */
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function buildLoginItemSettings(settings: AppSettings): {

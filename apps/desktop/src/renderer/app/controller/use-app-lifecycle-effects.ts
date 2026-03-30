@@ -1,3 +1,10 @@
+/**
+ * App lifecycle React effects.
+ *
+ * Manages side effects that run during the app's lifecycle: initial boot,
+ * weekly review overview loading, spotlight triggers, system theme syncing,
+ * and the midnight rollover that refreshes data when the calendar day changes.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import { useEffect } from "react";

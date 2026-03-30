@@ -1,3 +1,11 @@
+/**
+ * Weekly review data builder.
+ *
+ * Assembles the chart-ready `WeeklyReview` and `WeeklyReviewOverview`
+ * objects from raw daily summaries, focus sessions, and habit period
+ * statuses. Computes per-habit completion rates, daily cadence points,
+ * trend data, and most-missed habit rankings.
+ */
 import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { DailySummary } from "@/shared/domain/streak";

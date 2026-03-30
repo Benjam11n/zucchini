@@ -1,3 +1,10 @@
+/**
+ * Settings page action creators.
+ *
+ * Manages the settings draft lifecycle: draft changes, validation errors,
+ * save phases, and the actual settings update that persists through the
+ * preload bridge and syncs the today store.
+ */
 import type {
   SettingsFieldErrors,
   SettingsSavePhase,

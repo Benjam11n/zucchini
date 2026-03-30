@@ -1,3 +1,10 @@
+/**
+ * Auto-updater IPC contract.
+ *
+ * Defines the channel names, API interface, and error types for the
+ * `electron-updater` integration. The preload bridge implements `AppUpdaterApi`
+ * and exposes it as `window.updater` to the renderer.
+ */
 export const APP_UPDATER_CHANNELS = {
   checkForUpdates: "app-updater:check",
   downloadUpdate: "app-updater:download",

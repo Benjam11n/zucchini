@@ -1,3 +1,10 @@
+/**
+ * Clock abstraction for time-dependent logic.
+ *
+ * Decouples business logic from `Date.now()` so tests can inject fixed
+ * timestamps and timezones. The `systemClock` singleton is the production
+ * implementation used at runtime.
+ */
 import { addDays, toDateKey } from "@/shared/utils/date";
 
 export interface Clock {

@@ -1,3 +1,11 @@
+/**
+ * App runtime factory — creates and wires the long-lived main-process objects.
+ *
+ * Builds the repository, application service, reminder scheduler, system tray,
+ * and focus timer coordinator. Also exposes {@link applyRuntimeSettings} which
+ * syncs OS-level settings (login items, reminders, theme, tray) whenever the
+ * user changes preferences.
+ */
 import { systemClock } from "@/main/app/clock";
 import { createAppTray } from "@/main/app/tray";
 import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";

@@ -1,3 +1,10 @@
+/**
+ * Focus session domain types.
+ *
+ * Represents a completed or partial Pomodoro/focus session persisted to the
+ * database. Used by both the main-process repository and the renderer's
+ * focus store.
+ */
 export type FocusSessionEntryKind = "completed" | "partial";
 
 export interface FocusSession {

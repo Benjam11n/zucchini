@@ -1,3 +1,10 @@
+/**
+ * Today state builder — assembles the read-model the renderer consumes.
+ *
+ * Pure functions that query the repository and compose the {@link TodayState},
+ * {@link HistoryDay}, and streak preview objects. Called on every read path
+ * after streak synchronization.
+ */
 import type { Clock } from "@/main/app/clock";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";

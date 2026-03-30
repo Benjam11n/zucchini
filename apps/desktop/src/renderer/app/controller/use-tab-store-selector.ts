@@ -1,3 +1,10 @@
+/**
+ * Tab-aware Zustand store selector hook.
+ *
+ * Returns `null` when the specified tab is not active, allowing the store
+ * subscription to skip re-renders for invisible tabs. Uses `useShallow` to
+ * prevent unnecessary updates when the selected value is referentially stable.
+ */
 import type { StoreApi, UseBoundStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 

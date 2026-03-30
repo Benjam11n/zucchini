@@ -1,3 +1,10 @@
+/**
+ * React error boundary for the desktop app.
+ *
+ * Catches unhandled rendering errors in the main app or focus widget and
+ * displays a fallback UI with a reload button. Prevents the entire app
+ * from crashing due to unexpected component errors.
+ */
 import { Component } from "react";
 import type { ReactNode } from "react";
 

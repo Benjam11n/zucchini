@@ -1,3 +1,10 @@
+/**
+ * Theme mode application hook.
+ *
+ * Toggles the `dark` class on `<html>` based on the user's theme preference
+ * and current system theme. When themeMode is `"system"`, defers to the
+ * system theme value.
+ */
 import { useEffect } from "react";
 
 import type { ThemeMode } from "@/shared/domain/settings";

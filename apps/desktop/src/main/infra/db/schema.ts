@@ -1,3 +1,12 @@
+/**
+ * Drizzle ORM schema — SQLite table definitions.
+ *
+ * Defines all tables used by Zucchini: habits, habit_period_status,
+ * daily_summary, focus_sessions, focus_timer_state, streak_state,
+ * reminder_runtime_state, and settings. This is the single source of
+ * truth for the database shape and is used by both the runtime client
+ * and Drizzle Kit for migrations.
+ */
 import {
   index,
   integer,

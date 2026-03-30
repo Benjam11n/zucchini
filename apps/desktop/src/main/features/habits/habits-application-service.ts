@@ -1,3 +1,15 @@
+/**
+ * Core application service for habit management.
+ *
+ * Implements the {@link HabitsService} interface — the single entry point the
+ * IPC layer calls for every user-facing operation. Each method runs inside a
+ * SQLite transaction, synchronizes rolling streak state on read paths, and
+ * returns fresh `TodayState` snapshots so the renderer stays in sync.
+ *
+ * @see AppRepository for the data access contract it delegates to.
+ * @see syncRollingState for the streak catch-up logic.
+ * @see buildTodayState for how the read-model is assembled.
+ */
 import type { Clock } from "@/main/app/clock";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { syncRollingState } from "@/main/features/streaks/sync-service";

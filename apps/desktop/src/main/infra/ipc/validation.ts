@@ -1,3 +1,11 @@
+/**
+ * IPC input validation layer.
+ *
+ * Provides typed validators for every IPC channel parameter. Each validator
+ * parses the incoming `unknown` value against the corresponding Zod schema
+ * and throws `IpcValidationError` on mismatch, which the handler wrapper
+ * serializes into a `VALIDATION_ERROR` response.
+ */
 import type { ZodType } from "zod";
 
 import {

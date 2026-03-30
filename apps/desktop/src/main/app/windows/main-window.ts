@@ -1,3 +1,10 @@
+/**
+ * Main application window creation.
+ *
+ * Creates the primary BrowserWindow with title bar configuration,
+ * minimum dimensions, and close-to-tray behavior. The window loads
+ * the renderer's `index.html` (or the Vite dev server in development).
+ */
 import path from "node:path";
 
 import { BrowserWindow } from "electron";

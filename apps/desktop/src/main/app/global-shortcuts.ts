@@ -1,3 +1,10 @@
+/**
+ * Global keyboard shortcut management for the focus timer.
+ *
+ * Registers and tracks Electron global shortcuts for toggling and resetting
+ * the Pomodoro timer. Handles registration failures gracefully and reports
+ * the status of each shortcut so the renderer can display warnings.
+ */
 import type {
   FocusTimerAction,
   FocusTimerShortcutRegistration,

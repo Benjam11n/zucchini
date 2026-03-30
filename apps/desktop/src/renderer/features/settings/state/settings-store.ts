@@ -1,3 +1,11 @@
+/**
+ * Settings page Zustand store.
+ *
+ * Holds the mutable settings draft, field-level validation errors, save phase
+ * transitions (idle → pending → saving → saved/error), and the error message
+ * string. The draft is synced from the today store and auto-saved by the
+ * `useSettingsAutosave` hook.
+ */
 import { create } from "zustand";
 
 import type {

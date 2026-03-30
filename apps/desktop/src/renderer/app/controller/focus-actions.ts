@@ -1,3 +1,9 @@
+/**
+ * Focus page action creators.
+ *
+ * Wraps the focus Zustand store to expose session recording, save error
+ * management, and widget visibility actions used by the controller.
+ */
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 

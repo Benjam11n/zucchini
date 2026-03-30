@@ -1,3 +1,10 @@
+/**
+ * Habit completion celebration hook.
+ *
+ * Triggers a timed celebration animation when all daily habits are completed.
+ * Compares the current UI snapshot against the last-seen state to detect
+ * fresh completions and prevents re-triggering on re-renders.
+ */
 import { useEffect, useRef, useState } from "react";
 
 import type { TodayCelebration } from "@/renderer/features/today/lib/today-celebration";

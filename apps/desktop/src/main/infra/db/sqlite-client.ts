@@ -1,3 +1,11 @@
+/**
+ * SQLite database client wrapper.
+ *
+ * Manages the `better-sqlite3` connection in WAL mode, exposes a Drizzle ORM
+ * instance with the full schema, and provides transaction, backup, and
+ * replacement helpers. The `DatabaseError` class is used by the IPC error
+ * serializer to distinguish database failures from validation errors.
+ */
 import fs from "node:fs";
 import path from "node:path";
 

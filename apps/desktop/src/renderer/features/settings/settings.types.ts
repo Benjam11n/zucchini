@@ -1,3 +1,10 @@
+/**
+ * Settings page type definitions.
+ *
+ * Defines the save phase lifecycle (`idle` → `pending` → `saving` → `saved`/`error`),
+ * field-level error map, and the full props interface for the settings page
+ * component including habit management callbacks.
+ */
 import type {
   Habit,
   HabitCategory,

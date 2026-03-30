@@ -1,3 +1,10 @@
+/**
+ * Streak domain types.
+ *
+ * Defines the persisted streak tracking state and the daily summary record
+ * written after each day settles. These types are shared between the main
+ * process (persistence layer) and the renderer (display layer).
+ */
 export interface StreakState {
   currentStreak: number;
   bestStreak: number;

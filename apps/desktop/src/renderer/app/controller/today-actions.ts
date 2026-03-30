@@ -1,3 +1,11 @@
+/**
+ * Today page action creators.
+ *
+ * Provides the primary mutation surface for habit toggles, CRUD operations,
+ * tab navigation, and data reloading. Each action calls through the preload
+ * bridge (`window.habits`) and optimistically updates the Zustand store on
+ * success. Reorder and toggle actions include optimistic rollback on failure.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import type { AppTab } from "@/renderer/app/app.types";

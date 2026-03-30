@@ -1,3 +1,10 @@
+/**
+ * Window theme mode application.
+ *
+ * Syncs Electron's `nativeTheme.themeSource` with the user's preference
+ * and updates the background color of all open windows to match the
+ * current light/dark mode.
+ */
 import { BrowserWindow, nativeTheme } from "electron";
 
 import type { ThemeMode } from "@/shared/domain/settings";

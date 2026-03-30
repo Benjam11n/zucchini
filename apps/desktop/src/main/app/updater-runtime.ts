@@ -1,3 +1,10 @@
+/**
+ * Auto-updater runtime registration.
+ *
+ * Wires `electron-updater` IPC handlers for checking, downloading, and
+ * installing updates. Broadcasts update state changes to all renderer
+ * windows and respects platform support (skipped in dev/Windows portable).
+ */
 import { existsSync } from "node:fs";
 import path from "node:path";
 

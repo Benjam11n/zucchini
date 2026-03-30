@@ -1,3 +1,10 @@
+/**
+ * Keyboard shortcut registration hook.
+ *
+ * Registers a global keydown listener for a specific key code with optional
+ * modifier keys. Skips events from editable inputs by default. Supports
+ * Ctrl/Cmd, Alt, and Shift modifiers.
+ */
 import { useEffect, useRef } from "react";
 
 function isEditableTarget(target: EventTarget | null): boolean {

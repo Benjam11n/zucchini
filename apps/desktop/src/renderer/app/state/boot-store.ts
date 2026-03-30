@@ -1,3 +1,11 @@
+/**
+ * Boot phase state store.
+ *
+ * Tracks whether the app is still loading initial data, has finished
+ * bootstrapping, or encountered a fatal error. The boot phase gates the
+ * entire renderer — the app root shows loading/error UI until phase is
+ * `"ready"`.
+ */
 import { create } from "zustand";
 
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";

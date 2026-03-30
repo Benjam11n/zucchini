@@ -1,3 +1,10 @@
+/**
+ * Global UI state store.
+ *
+ * Tracks the active tab (today/focus/history/settings) and the OS-level
+ * system theme (dark/light). Updated by tab navigation and theme detection
+ * hooks. Does not hold any feature-specific data.
+ */
 import { create } from "zustand";
 
 import type { AppTab } from "@/renderer/app/app.types";

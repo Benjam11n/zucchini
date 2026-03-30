@@ -1,3 +1,13 @@
+/**
+ * Repository data-access contract.
+ *
+ * Defines every read and write operation the application service needs.
+ * The concrete implementation (`SqliteAppRepository`) delegates to
+ * domain-specific sub-repositories backed by SQLite via Drizzle ORM.
+ *
+ * This interface is the single boundary between business logic and
+ * persistence — service code never imports database clients directly.
+ */
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import type {
   CreateFocusSessionInput,

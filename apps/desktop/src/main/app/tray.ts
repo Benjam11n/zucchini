@@ -1,3 +1,10 @@
+/**
+ * System tray creation and management.
+ *
+ * Creates the macOS/Windows system tray icon with a context menu for
+ * opening the main window, focus widget, snoozing reminders, and quitting.
+ * Respects the `minimizeToTray` setting to show/hide the tray icon.
+ */
 import { Menu, Tray, nativeImage } from "electron";
 
 import type { AppSettings } from "@/shared/domain/settings";

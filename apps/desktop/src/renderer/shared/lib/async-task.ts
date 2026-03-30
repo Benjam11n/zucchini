@@ -1,3 +1,11 @@
+/**
+ * Async task execution utility.
+ *
+ * Provides a structured way to run async operations with lifecycle callbacks
+ * (`onStart`, `onSuccess`, `onError`, `onFinally`) and optional error
+ * mapping. Used throughout the renderer for IPC calls that update Zustand
+ * stores on success or failure.
+ */
 type MaybePromise<T> = Promise<T> | T;
 
 interface RunAsyncTaskOptions<TResult, THandledError> {

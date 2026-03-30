@@ -1,3 +1,10 @@
+/**
+ * Single-instance lock enforcement.
+ *
+ * Ensures only one instance of Zucchini runs at a time. If a second instance
+ * is launched, it forwards the focus event to the existing instance instead
+ * of starting a new window.
+ */
 interface SingleInstanceLockAppLike {
   requestSingleInstanceLock(): boolean;
 }

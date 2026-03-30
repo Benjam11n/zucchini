@@ -1,3 +1,11 @@
+/**
+ * Data export/import and backup management.
+ *
+ * Provides actions for exporting the SQLite database as a timestamped backup,
+ * importing (replacing) the database from a backup file, and opening the
+ * app's data folder in the system file explorer. Import prompts an app
+ * restart to apply the restored data.
+ */
 import path from "node:path";
 
 import type { App, Dialog, Shell } from "electron";

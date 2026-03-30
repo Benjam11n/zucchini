@@ -1,3 +1,11 @@
+/**
+ * Focus timer logic hook.
+ *
+ * Manages the full Pomodoro timer lifecycle: start, pause, resume, tick,
+ * cycle transitions, and break handling. Syncs state with the main process
+ * via IPC broadcast listeners and persists timer state on meaningful
+ * transitions. Records completed focus sessions when cycles finish.
+ */
 /* eslint-disable promise/prefer-await-to-then */
 
 import { useEffect, useRef, useState } from "react";

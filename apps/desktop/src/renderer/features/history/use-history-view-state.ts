@@ -1,3 +1,10 @@
+/**
+ * History page view state hook.
+ *
+ * Manages calendar navigation (selected date, year), computes history stats
+ * (total days, completion rate), builds the day lookup map, and provides
+ * callbacks for selecting dates and navigating between years.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {

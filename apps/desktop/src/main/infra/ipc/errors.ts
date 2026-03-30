@@ -1,3 +1,10 @@
+/**
+ * IPC error serialization.
+ *
+ * Converts internal error types (`IpcValidationError`, `DatabaseError`, or
+ * unknown errors) into the `SerializedHabitsIpcError` shape that the preload
+ * bridge can safely forward to the renderer.
+ */
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { IpcValidationError } from "@/main/infra/ipc/validation";
 import type { SerializedHabitsIpcError } from "@/shared/contracts/habits-ipc";

@@ -1,3 +1,14 @@
+/**
+ * Focus timer coordinator for the main process.
+ *
+ * Manages two cross-window concerns that need serialization:
+ * 1. **Leadership claims** — TTL-based mutex so only one window instance
+ *    owns the running timer at a time.
+ * 2. **Cycle completion dedup** — prevents the same Pomodoro cycle from
+ *    being recorded twice when multiple windows race.
+ *
+ * Created once at app startup and shared across all IPC handlers.
+ */
 export interface FocusTimerCoordinator {
   claimCycleCompletion: (cycleId: string) => boolean;
   claimLeadership: (instanceId: string, ttlMs: number) => boolean;

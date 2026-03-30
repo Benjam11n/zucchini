@@ -1,3 +1,13 @@
+/**
+ * Concrete SQLite implementation of {@link AppRepository}.
+ *
+ * Delegates every operation to domain-specific sub-repositories
+ * (habits, history, focus sessions, streaks, settings, reminders)
+ * that share a single `SqliteDatabaseClient`. The client manages
+ * WAL-mode connections and transaction boundaries.
+ *
+ * @see AppRepository for the full interface contract.
+ */
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";

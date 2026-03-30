@@ -1,3 +1,11 @@
+/**
+ * App controller type definitions.
+ *
+ * Describes the full shape of state returned by the `useAppController` hook.
+ * This interface aggregates data from every feature store (boot, today, focus,
+ * history, settings, weekly review) into a single read-model consumed by the
+ * app shell and page components.
+ */
 import type {
   FocusSessionsPhase,
   PersistedFocusTimerState,

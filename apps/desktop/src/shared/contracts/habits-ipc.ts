@@ -1,8 +1,16 @@
 /**
- * Shared IPC contract for habit-related renderer <-> main communication.
+ * Shared IPC contract for habit-related renderer ↔ main communication.
  *
- * This file defines the channel names, request/response error shape, and the
- * high-level API the renderer expects the preload bridge to expose.
+ * Defines the channel name constants, request/response error shape, the
+ * `HabitsApi` interface the preload bridge implements, and the `TodayState`
+ * type returned by most mutation endpoints. Also provides `HabitsIpcError`
+ * and `toHabitsIpcError` for renderer-side error handling.
+ *
+ * This file is imported by main-process handlers, the preload script, and
+ * renderer controller code — it is the shared contract layer.
+ *
+ * @see HabitsApi for the full typed API surface.
+ * @see HABITS_IPC_CHANNELS for the channel name constants.
  */
 import type {
   CreateFocusSessionInput,

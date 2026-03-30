@@ -1,3 +1,12 @@
+/**
+ * Controller state composition utilities.
+ *
+ * Provides selector hooks and resolver functions that pull state from
+ * individual feature Zustand stores and compose them into the unified
+ * `AppControllerState` shape. Tab-aware selectors (`useTabStoreSelector`)
+ * skip store subscriptions when the corresponding tab is not active to
+ * reduce unnecessary re-renders.
+ */
 import { useShallow } from "zustand/react/shallow";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
