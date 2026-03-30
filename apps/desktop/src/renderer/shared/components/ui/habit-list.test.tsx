@@ -3,7 +3,7 @@
 import { cleanup, render } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type { Checkbox as CheckboxComponent } from "@/renderer/shared/ui/checkbox";
+import type { Checkbox as CheckboxComponent } from "@/renderer/shared/components/ui/checkbox";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 const checkboxRenderCounts = new Map<string, number>();
@@ -34,7 +34,8 @@ function renderCountingCheckbox(
 async function loadHabitListItemModule() {
   vi.resetModules();
 
-  const checkboxModule = await import("@/renderer/shared/ui/checkbox");
+  const checkboxModule =
+    await import("@/renderer/shared/components/ui/checkbox");
   vi.spyOn(checkboxModule, "Checkbox").mockImplementation(
     renderCountingCheckbox
   );

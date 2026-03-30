@@ -2,8 +2,8 @@
 
 import { Suspense, lazy } from "react";
 
-import { Card, CardContent } from "@/renderer/shared/ui/card";
-import { Spinner } from "@/renderer/shared/ui/spinner";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { WeeklyReviewTrendPoint } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewTrendChartProps {

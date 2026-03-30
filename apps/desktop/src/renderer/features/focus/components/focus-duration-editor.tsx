@@ -3,11 +3,10 @@ import type { FocusEvent } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
+import { sanitizeTimerPart } from "@/renderer/features/focus/lib/focus-timer-view-model";
 import { clampFocusDurationMs } from "@/renderer/features/focus/lib/focus-timer.constants";
+import { normalizeDurationInputValue } from "@/renderer/shared/components/ui/duration-input";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
-import { normalizeDurationInputValue } from "@/renderer/shared/ui/duration-input";
-
-import { sanitizeTimerPart } from "./focus-timer-view-model";
 
 interface FocusDurationEditorProps {
   canEditDuration: boolean;

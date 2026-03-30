@@ -14,16 +14,16 @@ import {
   getActivitySummary,
 } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
+import { Progress } from "@/renderer/shared/components/ui/progress";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Button } from "@/renderer/shared/ui/button";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
-import { Progress } from "@/renderer/shared/ui/progress";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 

@@ -7,7 +7,7 @@ import type * as HistoryCalendarCardModule from "@/renderer/features/history/com
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import type * as GitHubCalendarModule from "@/renderer/shared/components/github-calendar";
-import type * as TabsModule from "@/renderer/shared/ui/tabs";
+import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
   WeeklyReview,
@@ -29,7 +29,7 @@ vi.mock(import("framer-motion"), (importOriginal) =>
 );
 
 vi.mock<typeof TabsModule>(
-  import("@/renderer/shared/ui/tabs"),
+  import("@/renderer/shared/components/ui/tabs"),
   async (importOriginal) => {
     const actual = await importOriginal();
 

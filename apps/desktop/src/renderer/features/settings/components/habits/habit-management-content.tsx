@@ -1,6 +1,7 @@
 import { domAnimation, LazyMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
+import { reorderHabitListByDropPosition } from "@/renderer/features/settings/lib/reorder-habits";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type {
@@ -17,7 +18,6 @@ import { HabitManagementFeedback } from "./habit-management-feedback";
 import { HabitManagementList } from "./habit-management-list";
 import type { HabitManagementCardProps } from "./habit-management.types";
 import { NewHabitForm } from "./new-habit-form";
-import { reorderHabitListByDropPosition } from "./reorder-habits";
 
 const FEEDBACK_TIMEOUT_MS = 2200;
 const UNDO_TIMEOUT_MS = 5000;

@@ -8,15 +8,15 @@ import {
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
 import { buildFocusHistorySessions } from "@/renderer/features/focus/lib/focus-session-groups";
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
-import { Spinner } from "@/renderer/shared/ui/spinner";
+} from "@/renderer/shared/components/ui/card";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 import { FocusRunList } from "./focus-run-list";

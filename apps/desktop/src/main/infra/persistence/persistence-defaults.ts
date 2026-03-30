@@ -1,0 +1,1 @@
+export const DEFAULT_FOCUS_SESSION_LIMIT = 30;

@@ -15,16 +15,20 @@ import { BarChart3, CalendarDays, Settings2, Timer } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { AppTab } from "@/renderer/app/app.types";
-import { UpdateButton } from "@/renderer/app/components/update-button";
-import { MASCOTS } from "@/renderer/shared/assets/mascots";
-import { pageVariants } from "@/renderer/shared/lib/motion";
-import { Card, CardHeader, CardTitle } from "@/renderer/shared/ui/card";
+import { UpdateButton } from "@/renderer/app/shell/update-button";
+import { MASCOTS } from "@/renderer/assets/mascots";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/renderer/shared/ui/tabs";
+} from "@/renderer/shared/components/ui/tabs";
+import { pageVariants } from "@/renderer/shared/lib/motion";
 
 interface AppShellProps {
   children: ReactNode;

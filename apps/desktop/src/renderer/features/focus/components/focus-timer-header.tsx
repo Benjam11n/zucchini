@@ -1,12 +1,12 @@
 import { Settings2 } from "lucide-react";
 
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Button } from "@/renderer/shared/ui/button";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 
 interface FocusTimerHeaderProps {
   onOpenPomodoroSettings: () => void;

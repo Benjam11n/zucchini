@@ -11,10 +11,10 @@ import type {
 } from "@/renderer/features/history/history.types";
 import type { HistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { GitHubCalendar } from "@/renderer/shared/components/github-calendar";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Button } from "@/renderer/shared/ui/button";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
 import { parseDateKey } from "@/shared/utils/date";
 
 export function HistoryOverviewPanel({

@@ -7,14 +7,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -22,14 +22,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/renderer/shared/ui/dialog";
+} from "@/renderer/shared/components/ui/dialog";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
   ItemGroup,
-} from "@/renderer/shared/ui/item";
+} from "@/renderer/shared/components/ui/item";
 
 type DataAction = "export" | "import" | "open" | null;
 

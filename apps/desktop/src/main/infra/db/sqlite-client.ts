@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
 import Database from "better-sqlite3";
@@ -7,25 +6,8 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { Effect } from "effect";
 
+import { getElectronApp } from "./electron-app";
 import { schema } from "./schema";
-
-const require = createRequire(import.meta.url);
-
-function getElectronApp(): {
-  getPath: (name: "userData") => string;
-} | null {
-  try {
-    const electron = require("electron") as {
-      app?: {
-        getPath: (name: "userData") => string;
-      };
-    };
-
-    return electron.app ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export class DatabaseError extends Error {
   override cause: unknown;

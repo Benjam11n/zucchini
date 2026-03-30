@@ -2,16 +2,16 @@ import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useReducer, useRef } from "react";
 
-import { cn } from "@/renderer/shared/lib/class-names";
-import { microTransition } from "@/renderer/shared/lib/motion";
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/renderer/shared/ui/collapsible";
-import { Input } from "@/renderer/shared/ui/input";
-import { Label } from "@/renderer/shared/ui/label";
+} from "@/renderer/shared/components/ui/collapsible";
+import { Input } from "@/renderer/shared/components/ui/input";
+import { Label } from "@/renderer/shared/components/ui/label";
+import { cn } from "@/renderer/shared/lib/class-names";
+import { microTransition } from "@/renderer/shared/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,

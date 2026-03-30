@@ -2,22 +2,22 @@ import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";
 import {
-  getHabitCategoryColor,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
-import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 import {
   ChartContainer,
   ChartResponsiveContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/renderer/shared/ui/chart";
-import type { ChartConfig } from "@/renderer/shared/ui/chart";
+} from "@/renderer/shared/components/ui/chart";
+import type { ChartConfig } from "@/renderer/shared/components/ui/chart";
+import {
+  getHabitCategoryColor,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
 const chartConfig = {

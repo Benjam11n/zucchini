@@ -8,7 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-ipc";
 
 export function PomodoroSettingsCard({

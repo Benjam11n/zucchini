@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 
 import { HabitManagementContent } from "@/renderer/features/settings/components/habits/habit-management-content";
 import type { HabitManagementCardProps } from "@/renderer/features/settings/components/habits/habit-management.types";
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/renderer/shared/ui/dialog";
+} from "@/renderer/shared/components/ui/dialog";
 
 interface TodayHabitManagerDialogProps extends HabitManagementCardProps {
   trigger?: ReactElement;

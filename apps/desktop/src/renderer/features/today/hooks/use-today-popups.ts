@@ -3,12 +3,12 @@
 import { createElement, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { MASCOTS } from "@/renderer/assets/mascots";
 import { createTodayUiSnapshot } from "@/renderer/features/today/lib/today-ui-snapshot";
 import {
   readLastUiState,
   writeLastUiState,
 } from "@/renderer/features/today/lib/today-ui-storage";
-import { MASCOTS } from "@/renderer/shared/assets/mascots";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isDailyHabit } from "@/shared/domain/habit";
 

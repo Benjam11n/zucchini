@@ -16,17 +16,17 @@ import { UpdateSettingsCard } from "@/renderer/features/settings/components/gene
 import { CategorySettingsCard } from "@/renderer/features/settings/components/habits/category-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import {
-  staggerContainerVariants,
-  staggerItemVariants,
-} from "@/renderer/shared/lib/motion";
-import { Badge } from "@/renderer/shared/ui/badge";
+import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/renderer/shared/ui/tabs";
+} from "@/renderer/shared/components/ui/tabs";
+import {
+  staggerContainerVariants,
+  staggerItemVariants,
+} from "@/renderer/shared/lib/motion";
 
 function getSaveStatus(savePhase: SettingsPageProps["savePhase"]) {
   if (savePhase === "pending") {

@@ -8,8 +8,7 @@ import type {
 } from "@/shared/domain/focus-session";
 
 import { mapFocusSession } from "./mappers";
-
-const DEFAULT_FOCUS_SESSION_LIMIT = 30;
+import { DEFAULT_FOCUS_SESSION_LIMIT } from "./persistence-defaults";
 
 export class SqliteFocusSessionRepository {
   private readonly client: SqliteDatabaseClient;

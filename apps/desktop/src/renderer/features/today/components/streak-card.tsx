@@ -9,17 +9,17 @@ import {
 } from "lucide-react";
 import { memo, useMemo } from "react";
 
+import { MASCOTS } from "@/renderer/assets/mascots";
 import type { TodayCelebration } from "@/renderer/features/today/lib/today-celebration";
-import { MASCOTS } from "@/renderer/shared/assets/mascots";
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   hoverLift,
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { formatDateKey } from "@/shared/utils/date";
 

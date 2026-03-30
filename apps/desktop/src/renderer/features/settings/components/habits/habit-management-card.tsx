@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 
 import { HabitManagementContent } from "./habit-management-content";
 import type { HabitManagementCardProps } from "./habit-management.types";

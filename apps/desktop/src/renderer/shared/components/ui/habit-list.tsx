@@ -4,6 +4,15 @@ import type { LucideIcon } from "lucide-react";
 import { memo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/components/ui/card";
+import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
+import { Progress } from "@/renderer/shared/components/ui/progress";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
@@ -14,15 +23,6 @@ import {
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/ui/card";
-import { Checkbox } from "@/renderer/shared/ui/checkbox";
-import { Progress } from "@/renderer/shared/ui/progress";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface HabitListCardProps {

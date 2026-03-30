@@ -3,13 +3,13 @@ import {
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/renderer/shared/ui/tooltip";
+} from "@/renderer/shared/components/ui/tooltip";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 function formatSessionTime(value: string): string {
   return new Intl.DateTimeFormat(undefined, {

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { Button } from "@/renderer/shared/ui/button";
-import { DurationInput } from "@/renderer/shared/ui/duration-input";
-import { Input } from "@/renderer/shared/ui/input";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { DurationInput } from "@/renderer/shared/components/ui/duration-input";
+import { Input } from "@/renderer/shared/components/ui/input";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
   ItemGroup,
-} from "@/renderer/shared/ui/item";
-import { Label } from "@/renderer/shared/ui/label";
+} from "@/renderer/shared/components/ui/item";
+import { Label } from "@/renderer/shared/components/ui/label";
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
 import { createDefaultFocusTimerShortcutSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";

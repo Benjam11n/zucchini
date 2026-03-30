@@ -1,19 +1,19 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
-import {
-  getHabitCategoryUi,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
-import { microTransition } from "@/renderer/shared/lib/motion";
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemGroup,
-} from "@/renderer/shared/ui/item";
+} from "@/renderer/shared/components/ui/item";
+import {
+  getHabitCategoryUi,
+  useHabitCategoryPreferences,
+} from "@/renderer/shared/lib/habit-category-presentation";
+import { microTransition } from "@/renderer/shared/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface HistoryHabitColumnProps {

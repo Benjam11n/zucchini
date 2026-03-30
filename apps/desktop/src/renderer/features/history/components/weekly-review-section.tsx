@@ -11,8 +11,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
-import { Spinner } from "@/renderer/shared/ui/spinner";
+} from "@/renderer/shared/components/ui/card";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
 
 const WeeklyReviewDailyCadenceChart = lazy(() =>
   import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart").then(

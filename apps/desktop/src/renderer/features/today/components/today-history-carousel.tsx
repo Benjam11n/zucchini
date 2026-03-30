@@ -7,12 +7,12 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-} from "@/renderer/shared/ui/carousel";
+} from "@/renderer/shared/components/ui/carousel";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-} from "@/renderer/shared/ui/dialog";
+} from "@/renderer/shared/components/ui/dialog";
 import type { HistoryDay } from "@/shared/domain/history";
 import { parseDateKey } from "@/shared/utils/date";
 
@@ -20,6 +20,8 @@ interface TodayHistoryCarouselProps {
   history: HistoryDay[];
   todayDate: string;
 }
+
+const MAX_HISTORY_DAYS = 14;
 
 export function TodayHistoryCarousel({
   history,
@@ -31,9 +33,7 @@ export function TodayHistoryCarousel({
     return null;
   }
 
-  // Get the last string of days up to 14, reverse to show chronological order
-  // CHECK: can we move all of these magic strings to maybe a config file? yaml or json or whatever
-  const days = [...history].slice(0, 14).toReversed();
+  const days = [...history].slice(0, MAX_HISTORY_DAYS).toReversed();
 
   return (
     <>

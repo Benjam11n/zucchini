@@ -16,11 +16,11 @@ import { TodayHabitManagerDialog } from "@/renderer/features/today/components/to
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import { Button } from "@/renderer/shared/ui/button";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type {

@@ -2,20 +2,20 @@ import { ChevronDown, Palette, RotateCcw, Tags } from "lucide-react";
 import { useState, useRef } from "react";
 
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
+import { Button } from "@/renderer/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/renderer/shared/components/ui/card";
+import { Input } from "@/renderer/shared/components/ui/input";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { HABIT_CATEGORY_ICON_OPTIONS } from "@/renderer/shared/lib/habit-categories";
 import {
   getDefaultHabitCategoryPreferences,
   getHabitCategoryPresentation,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import { Button } from "@/renderer/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/renderer/shared/ui/card";
-import { Input } from "@/renderer/shared/ui/input";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 
 const PRESET_CATEGORY_COLORS = [

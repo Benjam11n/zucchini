@@ -18,14 +18,14 @@ import {
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/renderer/shared/ui/dialog";
+} from "@/renderer/shared/components/ui/dialog";
 
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";

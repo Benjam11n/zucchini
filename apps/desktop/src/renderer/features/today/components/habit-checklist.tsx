@@ -4,11 +4,14 @@ import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
 import {
+  HabitListCard,
+  HabitListItem,
+} from "@/renderer/shared/components/ui/habit-list";
+import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
-import { HabitListCard, HabitListItem } from "@/renderer/shared/ui/habit-list";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 

@@ -11,7 +11,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-import { Spinner } from "@/renderer/shared/ui/spinner";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 const UPDATE_TOAST_ID = "app-update";

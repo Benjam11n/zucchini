@@ -1,15 +1,15 @@
 import { Component } from "react";
 import type { ReactNode } from "react";
 
-import { MASCOTS } from "@/renderer/shared/assets/mascots";
-import { Button } from "@/renderer/shared/ui/button";
+import { MASCOTS } from "@/renderer/assets/mascots";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 
 interface AppErrorBoundaryProps {
   children: ReactNode;

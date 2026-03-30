@@ -3,21 +3,22 @@ import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
 import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { reorderHabitList } from "@/renderer/features/settings/lib/reorder-habits";
+import { Button } from "@/renderer/shared/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/renderer/shared/components/ui/collapsible";
+import { Input } from "@/renderer/shared/components/ui/input";
+import { Item } from "@/renderer/shared/components/ui/item";
+import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
-import { Button } from "@/renderer/shared/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/renderer/shared/ui/collapsible";
-import { Input } from "@/renderer/shared/ui/input";
-import { Item } from "@/renderer/shared/ui/item";
-import { Label } from "@/renderer/shared/ui/label";
 import {
   HABIT_FREQUENCY_DEFINITIONS,
   HABIT_WEEKDAY_DEFINITIONS,
@@ -28,7 +29,6 @@ import { HabitCategorySelector } from "./habit-category-selector";
 import { HabitFrequencySelector } from "./habit-frequency-selector";
 import type { HabitManagementCardProps } from "./habit-management.types";
 import { HabitWeekdaySelector } from "./habit-weekday-selector";
-import { reorderHabitList } from "./reorder-habits";
 
 const HABIT_DRAG_DATA_TYPE = "text/plain";
 

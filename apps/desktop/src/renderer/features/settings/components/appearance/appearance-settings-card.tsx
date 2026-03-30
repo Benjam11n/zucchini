@@ -3,18 +3,18 @@ import { Palette } from "lucide-react";
 
 import { THEME_OPTIONS } from "@/renderer/features/settings/components/appearance/theme-options";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/renderer/shared/components/ui/card";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   hoverLift,
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/ui/card";
 
 export function AppearanceSettingsCard({
   fieldErrors,

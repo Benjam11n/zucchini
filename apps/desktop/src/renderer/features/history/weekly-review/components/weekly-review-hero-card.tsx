@@ -7,9 +7,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Button } from "@/renderer/shared/ui/button";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import type {
   WeeklyReview,
   WeeklyReviewListItem,

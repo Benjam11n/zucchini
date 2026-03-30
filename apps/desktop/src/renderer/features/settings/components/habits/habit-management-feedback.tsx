@@ -1,5 +1,5 @@
+import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { Button } from "@/renderer/shared/ui/button";
 
 import type { HabitFeedback } from "./habit-management-content.types";
 

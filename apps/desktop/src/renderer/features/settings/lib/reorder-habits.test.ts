@@ -1,10 +1,9 @@
-import type { HabitWithStatus } from "@/shared/domain/habit";
-
 import {
   reorderHabitList,
   reorderHabitListByDropPosition,
   reorderHabitListByIndex,
-} from "./reorder-habits";
+} from "@/renderer/features/settings/lib/reorder-habits";
+import type { HabitWithStatus } from "@/shared/domain/habit";
 
 function createHabit(id: number): HabitWithStatus {
   return {

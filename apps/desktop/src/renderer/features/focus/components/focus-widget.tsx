@@ -2,9 +2,9 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 
 import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls";
-import { useFocusWidgetSizeSync } from "@/renderer/features/focus/components/use-focus-widget-size-sync";
-import { useFocusWidgetSnapshot } from "@/renderer/features/focus/components/use-focus-widget-snapshot";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
+import { useFocusWidgetSizeSync } from "@/renderer/features/focus/hooks/use-focus-widget-size-sync";
+import { useFocusWidgetSnapshot } from "@/renderer/features/focus/hooks/use-focus-widget-snapshot";
 import {
   resetFocusTimer,
   toggleFocusTimer,

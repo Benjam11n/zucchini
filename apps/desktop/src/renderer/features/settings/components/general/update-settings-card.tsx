@@ -3,22 +3,22 @@
 import { Download, RefreshCw, Rocket } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
   ItemGroup,
-} from "@/renderer/shared/ui/item";
-import { Spinner } from "@/renderer/shared/ui/spinner";
+} from "@/renderer/shared/components/ui/item";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 interface UpdateSettingsViewState {

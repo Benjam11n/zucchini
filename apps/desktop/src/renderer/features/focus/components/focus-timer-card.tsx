@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import { FocusDurationEditor } from "@/renderer/features/focus/components/focus-duration-editor";
 import { FocusTimerActions } from "@/renderer/features/focus/components/focus-timer-actions";
 import { FocusTimerHeader } from "@/renderer/features/focus/components/focus-timer-header";
+import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card";
+import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
+import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
   getCycleChipLabel,
   getFocusTimerDisplay,
   getFocusTimerPhaseBadge,
   getNextBreakVariant,
   getSkipBreakLabel,
-} from "@/renderer/features/focus/components/focus-timer-view-model";
-import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card";
-import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
-import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
+} from "@/renderer/features/focus/lib/focus-timer-view-model";
 import { clampFocusDurationMs } from "@/renderer/features/focus/lib/focus-timer.constants";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
-import { Button } from "@/renderer/shared/ui/button";
-import { Card, CardContent } from "@/renderer/shared/ui/card";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
 interface FocusTimerCardProps {

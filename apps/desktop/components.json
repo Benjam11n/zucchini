@@ -15,7 +15,7 @@
   "aliases": {
     "components": "@/components",
     "utils": "@/renderer/shared/lib/class-names",
-    "ui": "@/renderer/shared/ui",
+    "ui": "@/renderer/shared/components/ui",
     "lib": "@/renderer/shared/lib",
     "hooks": "@/hooks"
   },

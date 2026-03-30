@@ -6,9 +6,9 @@ import {
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { Badge } from "@/renderer/shared/ui/badge";
-import { Button } from "@/renderer/shared/ui/button";
 
 import { FocusRunTimeline } from "./focus-run-timeline";
 

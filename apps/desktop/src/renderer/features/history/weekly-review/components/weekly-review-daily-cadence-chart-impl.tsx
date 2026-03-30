@@ -5,14 +5,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
+} from "@/renderer/shared/components/ui/card";
 import {
   ChartContainer,
   ChartResponsiveContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/renderer/shared/ui/chart";
-import type { ChartConfig } from "@/renderer/shared/ui/chart";
+} from "@/renderer/shared/components/ui/chart";
+import type { ChartConfig } from "@/renderer/shared/components/ui/chart";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 const chartConfig = {

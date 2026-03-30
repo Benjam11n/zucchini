@@ -1,6 +1,6 @@
 import { ArrowRight, BarChart3, CalendarDays } from "lucide-react";
 
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/renderer/shared/ui/dialog";
+} from "@/renderer/shared/components/ui/dialog";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewSpotlightDialogProps {

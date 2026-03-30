@@ -2,8 +2,11 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import {
+  HabitListCard,
+  HabitListItem,
+} from "@/renderer/shared/components/ui/habit-list";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
-import { HabitListCard, HabitListItem } from "@/renderer/shared/ui/habit-list";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";

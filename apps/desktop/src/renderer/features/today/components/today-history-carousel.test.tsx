@@ -3,32 +3,35 @@
 import { render } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as CarouselModule from "@/renderer/shared/ui/carousel";
+import type * as CarouselModule from "@/renderer/shared/components/ui/carousel";
 import type { HistoryDay } from "@/shared/domain/history";
 
 import { TodayHistoryCarousel } from "./today-history-carousel";
 
 const carouselSpy = vi.fn();
 
-vi.mock<typeof CarouselModule>(import("@/renderer/shared/ui/carousel"), () => ({
-  Carousel: ({
-    children,
-    opts,
-  }: ComponentProps<typeof CarouselModule.Carousel>) => {
-    carouselSpy(opts);
-    return <div>{children}</div>;
-  },
-  CarouselContent: ({
-    children,
-  }: ComponentProps<typeof CarouselModule.CarouselContent>) => (
-    <div>{children}</div>
-  ),
-  CarouselItem: ({
-    children,
-  }: ComponentProps<typeof CarouselModule.CarouselItem>) => (
-    <div>{children}</div>
-  ),
-}));
+vi.mock<typeof CarouselModule>(
+  import("@/renderer/shared/components/ui/carousel"),
+  () => ({
+    Carousel: ({
+      children,
+      opts,
+    }: ComponentProps<typeof CarouselModule.Carousel>) => {
+      carouselSpy(opts);
+      return <div>{children}</div>;
+    },
+    CarouselContent: ({
+      children,
+    }: ComponentProps<typeof CarouselModule.CarouselContent>) => (
+      <div>{children}</div>
+    ),
+    CarouselItem: ({
+      children,
+    }: ComponentProps<typeof CarouselModule.CarouselItem>) => (
+      <div>{children}</div>
+    ),
+  })
+);
 
 vi.mock(
   import("@/renderer/features/history/components/history-day-panel"),

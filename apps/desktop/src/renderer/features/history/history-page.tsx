@@ -16,15 +16,15 @@ import {
 } from "@/renderer/features/history/lib/history-contributions";
 import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import {
-  staggerContainerVariants,
-  staggerItemVariants,
-} from "@/renderer/shared/lib/motion";
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/renderer/shared/ui/tabs";
+} from "@/renderer/shared/components/ui/tabs";
+import {
+  staggerContainerVariants,
+  staggerItemVariants,
+} from "@/renderer/shared/lib/motion";
 
 export function HistoryPage({
   history,

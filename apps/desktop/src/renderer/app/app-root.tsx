@@ -7,22 +7,22 @@
 import { lazy, Suspense } from "react";
 
 import { AppErrorBoundary } from "@/renderer/app/app-error-boundary";
+import { getBootErrorDisplay } from "@/renderer/app/boot/boot-errors";
 import { useAppController } from "@/renderer/app/controller/use-app-controller";
-import { getBootErrorDisplay } from "@/renderer/app/lib/boot-errors";
 import { AppShell } from "@/renderer/app/shell/app-shell";
+import { MASCOTS } from "@/renderer/assets/mascots";
 import { TodayPage } from "@/renderer/features/today/today-page";
-import { MASCOTS } from "@/renderer/shared/assets/mascots";
-import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
-import { Button } from "@/renderer/shared/ui/button";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/renderer/shared/ui/card";
-import { Toaster } from "@/renderer/shared/ui/sonner";
-import { Spinner } from "@/renderer/shared/ui/spinner";
+} from "@/renderer/shared/components/ui/card";
+import { Toaster } from "@/renderer/shared/components/ui/sonner";
+import { Spinner } from "@/renderer/shared/components/ui/spinner";
+import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 
 const FocusWidget = lazy(async () => {
   const module =
