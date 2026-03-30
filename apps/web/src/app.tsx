@@ -291,7 +291,13 @@ export default function App() {
                         <CalendarDays size={16} />
                       </span>
                       <div>
-                        <strong>Sat 28 Mar</strong>
+                        <strong>
+                          {new Date().toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "short",
+                            weekday: "short",
+                          })}
+                        </strong>
                         <small>DATE</small>
                       </div>
                     </div>
