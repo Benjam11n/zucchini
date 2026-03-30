@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zucchini Release Agent"
+  short_description: "Create and publish Zucchini desktop releases end to end."
+  default_prompt: "Use $zucchini-release-agent to create a Zucchini desktop release by bumping the version, generating the changelog, tagging, pushing, waiting for GitHub Actions, and publishing the GitHub release."
