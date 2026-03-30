@@ -147,6 +147,7 @@ export function toHabitsIpcError(error: unknown): HabitsIpcError {
 
 export interface TodayState {
   date: string;
+  focusMinutes: number;
   habits: HabitWithStatus[];
   streak: StreakState;
   settings: AppSettings;

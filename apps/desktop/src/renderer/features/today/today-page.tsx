@@ -115,9 +115,10 @@ function TodayPageComponent({
         <m.section variants={staggerItemVariants}>
           <StreakCard
             availableFreezes={state.streak.availableFreezes}
-            currentStreak={state.streak.currentStreak}
             categoryProgress={categoryProgress}
+            currentStreak={state.streak.currentStreak}
             dateLabel={state.date}
+            focusMinutes={state.focusMinutes}
           />
         </m.section>
 

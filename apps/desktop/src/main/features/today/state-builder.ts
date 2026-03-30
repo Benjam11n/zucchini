@@ -22,8 +22,17 @@ export function buildTodayState(
     dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed)
   );
 
+  const focusSessions = repository.getFocusSessionsInRange(today, today);
+  const totalSeconds = focusSessions.reduce(
+    (total, session) => total + session.durationSeconds,
+    0
+  );
+  const focusMinutes =
+    totalSeconds > 0 ? Math.max(1, Math.round(totalSeconds / 60)) : 0;
+
   return {
     date: today,
+    focusMinutes,
     habits,
     settings: repository.getSettings(clock.timezone()),
     streak: {

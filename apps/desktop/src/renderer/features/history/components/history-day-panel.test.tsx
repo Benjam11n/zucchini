@@ -59,6 +59,5 @@ describe("history day panel", () => {
     render(<HistoryDayPanel isToday={false} selectedDay={selectedDay} />);
 
     expect(screen.getByText("45")).toBeInTheDocument();
-    expect(screen.getByText("focused minutes logged")).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
-import { CalendarDays, Flame, Snowflake } from "lucide-react";
+import { CalendarDays, Flame, Snowflake, Timer } from "lucide-react";
 import { memo, useMemo } from "react";
 
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
@@ -14,24 +14,27 @@ import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { formatDateKey } from "@/shared/utils/date";
 
 interface StreakCardProps {
-  currentStreak: number;
   availableFreezes: number;
   categoryProgress: HabitCategoryProgress[];
+  currentStreak: number;
   dateLabel: string;
+  focusMinutes: number;
 }
 
 interface StatConfig {
   color: string | undefined;
   icon: React.ElementType;
   label: string;
+  suffix?: string;
   value: number | string;
 }
 
 function StreakCardComponent({
-  currentStreak,
   availableFreezes,
   categoryProgress,
+  currentStreak,
   dateLabel,
+  focusMinutes,
 }: StreakCardProps) {
   const formattedDate = useMemo(
     () =>
@@ -58,13 +61,20 @@ function StreakCardComponent({
         value: availableFreezes,
       },
       {
+        color: RING_COLORS.nutrition.base,
+        icon: Timer,
+        label: "Focus",
+        suffix: "m",
+        value: focusMinutes,
+      },
+      {
         color: undefined,
         icon: CalendarDays,
         label: "Date",
         value: formattedDate,
       },
     ],
-    [availableFreezes, currentStreak, formattedDate]
+    [availableFreezes, currentStreak, focusMinutes, formattedDate]
   );
 
   return (
@@ -114,6 +124,7 @@ function StreakCardComponent({
                             transition={microTransition}
                           >
                             {stat.value}
+                            {stat.suffix}
                           </m.p>
                         </AnimatePresence>
                         <p className="text-xs uppercase tracking-wide text-muted-foreground">

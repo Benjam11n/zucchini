@@ -176,9 +176,6 @@ export function HistoryDayPanel({
                       {selectedDay.focusMinutes === 1 ? "" : "s"} logged
                     </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Total focus completed on this day.
-                  </p>
                 </CardContent>
               </Card>
             </div>
