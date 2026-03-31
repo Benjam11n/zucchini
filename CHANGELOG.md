@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 Changes since `v0.1.1-beta.16`.
 
 ### Fixes
+
 - Pin web lucide-react below Bun age gate
 
 ## 0.1.1-beta.16 - 2026-03-31
@@ -14,25 +15,31 @@ Changes since `v0.1.1-beta.16`.
 Changes since `v0.1.1-beta.15`.
 
 ### Features
+
 - Persist dismissed update toast
 - Implement structured JSON logging and secure session permission handlers for desktop app
 
 ### Fixes
+
 - Update dependabot ignore pattern to correctly target @effect scoped packages
 
 ### Refactors
+
 - Remove unused scripts
 - Add comprehensive JSDoc documentation across main and renderer modules
 
 ### Documentation
+
 - Add comprehensive JSDoc comments to core domain, infrastructure, and application modules
 - Remove outdated release documentation and references
 
 ### Maintenance
+
 - Implement dependency review, pin Bun version, and add supply-chain protection to bunfig
 - Fix format error in changelog
 
 ### Other
+
 - Hide redundant card descriptions using VisuallyHidden in focus components
 
 ## 0.1.1-beta.15 - 2026-03-30
@@ -204,5 +211,3 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
-
-
