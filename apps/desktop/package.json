@@ -4,7 +4,6 @@
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
-    "assets:mascot": "bun run scripts/process-mascots.ts",
     "db:generate": "drizzle-kit generate",
     "rebuild:native": "node scripts/install-native-deps.mjs",
     "dev": "concurrently -k \"bun run dev:renderer\" \"bun run dev:bundle\" \"bun run dev:electron\"",
@@ -18,10 +17,7 @@
     "dist:release": "bun run build && bun run scripts/release-desktop.mjs",
     "dist:release:win": "electron-builder --config electron-builder.config.ts --win nsis --publish always",
     "dist:release:mac": "electron-builder --config electron-builder.config.ts --mac dmg zip --publish always",
-    "changelog:release": "bun run scripts/generate-changelog.mjs --write-changelog",
     "testdata:generate": "electron -r tsx/cjs scripts/generate-test-data.ts",
-    "testdata:generate:medium": "electron -r tsx/cjs scripts/generate-test-data.ts --preset medium --overwrite",
-    "testdata:generate:stress": "electron -r tsx/cjs scripts/generate-test-data.ts --preset stress --overwrite",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "audit": "bun audit",
     "audit:ci": "bun audit --production --audit-level=high",
@@ -30,7 +26,6 @@
     "format:check": "oxfmt --check .",
     "knip": "knip",
     "test": "vitest run",
-    "test:watch": "vitest",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff",
     "postinstall": "node scripts/install-native-deps.mjs"
   },

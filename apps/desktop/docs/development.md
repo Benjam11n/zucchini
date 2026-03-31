@@ -78,13 +78,6 @@ Generate local SQLite fixtures for manual smoke testing and larger local data
 loads:
 
 ```bash
-bun run --cwd apps/desktop testdata:generate:medium
-bun run --cwd apps/desktop testdata:generate:stress
-```
-
-You can also choose a preset explicitly:
-
-```bash
 bun run --cwd apps/desktop testdata:generate -- --preset medium --overwrite
 bun run --cwd apps/desktop testdata:generate -- --preset stress --overwrite
 ```
