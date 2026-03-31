@@ -25,7 +25,7 @@ updates:
           - "react"
           - "next"
           - "typescript"
-          - "@effect/"
+          - "@effect/*"
         update-types:
           - "minor"
           - "patch"
