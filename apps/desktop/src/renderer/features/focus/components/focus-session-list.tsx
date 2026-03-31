@@ -1,3 +1,5 @@
+import { VisuallyHidden } from "radix-ui";
+
 import type {
   PersistedFocusTimerState,
   FocusSessionsPhase,
@@ -66,7 +68,9 @@ export function FocusSessionList({
     <Card className="border-border/70 bg-card/95">
       <CardHeader className="gap-3">
         <div className="space-y-1">
-          <CardDescription>Recent focus</CardDescription>
+          <VisuallyHidden.Root>
+            <CardDescription>Recent focus</CardDescription>
+          </VisuallyHidden.Root>
           <CardTitle>Recent focus sessions</CardTitle>
         </div>
 

@@ -1,4 +1,5 @@
 import { Settings2 } from "lucide-react";
+import { VisuallyHidden } from "radix-ui";
 
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -26,7 +27,9 @@ export function FocusTimerHeader({
     <CardHeader className="gap-4 pb-0">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-2">
-          <CardDescription>Pomodoro</CardDescription>
+          <VisuallyHidden.Root>
+            <CardDescription>Pomodoro</CardDescription>
+          </VisuallyHidden.Root>
           <CardTitle>Focused work timer</CardTitle>
         </div>
         <div className="flex items-center gap-2">
