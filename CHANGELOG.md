@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1-beta.17 - 2026-03-31
+
+Changes since `v0.1.1-beta.16`.
+
+### Fixes
+- Pin web lucide-react below Bun age gate
+
 ## 0.1.1-beta.16 - 2026-03-31
 
 Changes since `v0.1.1-beta.15`.
@@ -197,4 +204,5 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
+
 
