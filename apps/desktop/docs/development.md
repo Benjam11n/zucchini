@@ -36,7 +36,6 @@ bun run lint:desktop
 bun run test:desktop
 bun run --cwd apps/desktop knip
 bun run --cwd apps/desktop react-doctor
-bun run --cwd apps/desktop package
 bun run --cwd apps/desktop dist:desktop
 ```
 

@@ -14,8 +14,6 @@
     "lint:desktop": "bun run --cwd apps/desktop lint",
     "lint:web": "bun run --cwd apps/web lint",
     "format": "ultracite fix .",
-    "format:check": "oxfmt --check .",
-    "react-doctor:web": "bun run --cwd apps/web react-doctor",
     "check": "bun run lint:desktop && bun run lint:web && bun run test:desktop && bun run build:web"
   },
   "devDependencies": {
