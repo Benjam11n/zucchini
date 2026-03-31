@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "bun run typecheck && vite build",
+    "audit": "bun audit",
+    "audit:ci": "bun audit --production --audit-level=high",
     "lint": "oxlint -c ../../.oxlintrc.json .",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "format": "ultracite fix .",

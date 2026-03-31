@@ -14,6 +14,7 @@ import {
   ipcMain,
   nativeImage,
   powerMonitor,
+  session as electronSession,
   shell,
 } from "electron";
 import { autoUpdater } from "electron-updater";
@@ -27,8 +28,10 @@ import {
   shouldHideOnWindowClose,
   shouldQuitWhenAllWindowsClosed,
 } from "@/main/app/lifecycle";
+import { createDesktopLogger } from "@/main/app/logger";
 import { applyRuntimeSettings, createAppRuntime } from "@/main/app/runtime";
 import type { AppRuntime } from "@/main/app/runtime";
+import { configureSessionSecurity } from "@/main/app/session-security";
 import {
   acquireSingleInstanceLock,
   registerSecondInstanceHandler,
@@ -127,6 +130,9 @@ function createMainProcessContext() {
 }
 
 const context = createMainProcessContext();
+const logger = createDesktopLogger({
+  appLike: app,
+});
 
 const focusTimerCoordinator = createFocusTimerCoordinator();
 
@@ -224,9 +230,12 @@ function broadcastUpdateState(state: AppUpdateState): void {
   }
 }
 
-function broadcastFocusSessionRecorded(session: FocusSession): void {
+function broadcastFocusSessionRecorded(focusSession: FocusSession): void {
   for (const window of BrowserWindow.getAllWindows()) {
-    window.webContents.send(HABITS_IPC_CHANNELS.focusSessionRecorded, session);
+    window.webContents.send(
+      HABITS_IPC_CHANNELS.focusSessionRecorded,
+      focusSession
+    );
   }
 }
 
@@ -316,14 +325,11 @@ const reportFatalMainProcessError = createFatalErrorReporter({
   appLike: app,
   cleanup: cleanupRuntime,
   dialogLike: dialog,
-  log: console,
+  log: logger,
 });
 
 function reportAppReadyFailure(error: unknown): void {
-  console.error(
-    "Failed while waiting for the Electron app to be ready.",
-    error
-  );
+  logger.error("Failed while waiting for the Electron app to be ready.", error);
 }
 
 function warmAppRuntime(nextRuntime: AppRuntime): void {
@@ -339,7 +345,7 @@ function warmAppRuntime(nextRuntime: AppRuntime): void {
     );
     registerFocusTimerGlobalShortcuts(todayState.settings);
   } catch (error) {
-    console.error("Failed to warm app runtime.", error);
+    logger.error("Failed to warm app runtime.", error);
   }
 }
 
@@ -360,6 +366,7 @@ process.on("unhandledRejection", (reason) => {
 async function bootstrapApp(): Promise<void> {
   try {
     await app.whenReady();
+    configureSessionSecurity(electronSession.defaultSession, logger);
 
     const appRuntime = createAppRuntime({
       onOpenFocusWidget: showFocusWidget,
@@ -421,7 +428,7 @@ async function bootstrapApp(): Promise<void> {
       autoUpdater,
       broadcastState: broadcastUpdateState,
       ipcMainLike: ipcMain,
-      log: console,
+      log: logger,
     });
 
     ensureMainWindow();
