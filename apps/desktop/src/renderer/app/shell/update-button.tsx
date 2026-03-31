@@ -14,6 +14,11 @@ import { toast } from "sonner";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
+import {
+  readDismissedUpdateVersion,
+  writeDismissedUpdateVersion,
+} from "./update-toast-storage";
+
 const UPDATE_TOAST_ID = "app-update";
 
 function shouldRenderUpdateButton(state: AppUpdateState): boolean {
@@ -151,8 +156,12 @@ export function UpdateButton() {
     updateButtonViewReducer,
     INITIAL_UPDATE_BUTTON_STATE
   );
-  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(
-    () => new Set()
+  const [dismissedVersions, setDismissedVersions] = useState<Set<string>>(
+    () => {
+      const dismissedVersion = readDismissedUpdateVersion();
+
+      return dismissedVersion ? new Set([dismissedVersion]) : new Set();
+    }
   );
 
   useEffect(() => {
@@ -191,8 +200,11 @@ export function UpdateButton() {
     };
   }, []);
 
-  const handleDismiss = (dismissalKey: string) => {
-    setDismissedKeys((currentKeys) => new Set([...currentKeys, dismissalKey]));
+  const handleDismiss = (dismissedVersion: string) => {
+    writeDismissedUpdateVersion(dismissedVersion);
+    setDismissedVersions(
+      (currentKeys) => new Set([...currentKeys, dismissedVersion])
+    );
     toast.dismiss(UPDATE_TOAST_ID);
   };
 
@@ -247,13 +259,12 @@ export function UpdateButton() {
       return null;
     }
 
-    const dismissalKey = [
-      viewState.state.status,
-      viewState.state.availableVersion,
-      viewState.state.errorMessage,
-    ].join(":");
+    const dismissalKey = viewState.state.availableVersion;
+    if (dismissalKey === null) {
+      return null;
+    }
 
-    if (dismissedKeys.has(dismissalKey)) {
+    if (dismissedVersions.has(dismissalKey)) {
       return null;
     }
 
@@ -261,7 +272,7 @@ export function UpdateButton() {
       dismissalKey,
       state: viewState.state,
     };
-  }, [dismissedKeys, viewState.state]);
+  }, [dismissedVersions, viewState.state]);
 
   useEffect(() => {
     if (visibleState === null) {

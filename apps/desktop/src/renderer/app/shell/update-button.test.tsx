@@ -4,6 +4,7 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import type { ExternalToast } from "sonner";
 
+import { STORAGE_KEYS } from "@/renderer/shared/lib/storage";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 import { UpdateButton } from "./update-button";
@@ -19,6 +20,20 @@ interface ToastAction {
 }
 
 type ToastFn = (message: string, data?: ExternalToast) => string | number;
+
+const storage = new Map<string, string>();
+
+const localStorageMock = {
+  getItem(key: string): string | null {
+    return storage.get(key) ?? null;
+  },
+  removeItem(key: string): void {
+    storage.delete(key);
+  },
+  setItem(key: string, value: string): void {
+    storage.set(key, value);
+  },
+};
 
 vi.mock(import("sonner"), async (importOriginal) => {
   const actual = await importOriginal();
@@ -68,6 +83,14 @@ function setUpdaterState(state: AppUpdateState) {
 }
 
 describe("update button", () => {
+  beforeEach(() => {
+    storage.clear();
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: localStorageMock,
+    });
+  });
+
   it("stays hidden while the updater is idle", async () => {
     sonnerState.toastMock.mockClear();
     sonnerState.dismissToastMock.mockClear();
@@ -271,6 +294,98 @@ describe("update button", () => {
         })
       );
     });
+  });
+
+  it("persists a dismissed release version and hides the toast after remount", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    const updater = setUpdaterState({
+      ...IDLE_UPDATE_STATE,
+      availableVersion: "0.1.1-beta.10",
+      status: "available",
+    });
+
+    const rendered = render(<UpdateButton />);
+
+    await waitFor(() => {
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          description: "Version 0.1.1-beta.10 is available",
+        })
+      );
+    });
+
+    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.cancel as ToastAction;
+
+    act(() => {
+      cancel.onClick({} as never);
+    });
+
+    expect(localStorage.getItem(STORAGE_KEYS.updateToastDismissal)).toBe(
+      JSON.stringify({
+        dismissedVersion: "0.1.1-beta.10",
+      })
+    );
+
+    rendered.unmount();
+    sonnerState.toastMock.mockClear();
+
+    render(<UpdateButton />);
+
+    await waitFor(() => {
+      expect(updater.getState.mock.calls.length).toBeGreaterThan(1);
+    });
+
+    expect(sonnerState.toastMock).not.toHaveBeenCalledWith(
+      "Update available",
+      expect.anything()
+    );
+  });
+
+  it("does not re-toast the same release after dismissal when the updater state changes", async () => {
+    sonnerState.toastMock.mockClear();
+    sonnerState.dismissToastMock.mockClear();
+    const updater = setUpdaterState({
+      ...IDLE_UPDATE_STATE,
+      availableVersion: "0.1.1-beta.10",
+      status: "available",
+    });
+
+    render(<UpdateButton />);
+
+    await waitFor(() => {
+      expect(sonnerState.toastMock).toHaveBeenCalledWith(
+        "Update available",
+        expect.objectContaining({
+          description: "Version 0.1.1-beta.10 is available",
+        })
+      );
+    });
+
+    const cancel = sonnerState.toastMock.mock.calls.at(-1)?.[1]
+      ?.cancel as ToastAction;
+
+    act(() => {
+      cancel.onClick({} as never);
+    });
+
+    sonnerState.toastMock.mockClear();
+
+    act(() => {
+      updater.emitStateChange({
+        ...IDLE_UPDATE_STATE,
+        availableVersion: "0.1.1-beta.10",
+        status: "downloaded",
+      });
+    });
+
+    await waitFor(() => {
+      expect(updater.onStateChange).toHaveBeenCalledTimes(1);
+    });
+
+    expect(sonnerState.toastMock).not.toHaveBeenCalled();
   });
 
   it("stays hidden when the updater is unavailable", async () => {

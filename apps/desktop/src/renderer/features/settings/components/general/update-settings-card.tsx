@@ -3,6 +3,7 @@
 import { Download, RefreshCw, Rocket } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { clearDismissedUpdateVersion } from "@/renderer/app/shell/update-toast-storage";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
@@ -226,6 +227,7 @@ export function UpdateSettingsCard() {
         return;
       }
 
+      clearDismissedUpdateVersion();
       await window.updater.checkForUpdates();
     } catch (error) {
       dispatch({

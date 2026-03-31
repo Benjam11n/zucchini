@@ -9,6 +9,7 @@ import type { JsonValue } from "@/shared/types/json";
 
 export const STORAGE_KEYS = {
   todayUiState: "zucchini_last_state",
+  updateToastDismissal: "zucchini_update_toast_dismissal",
   weeklyReview: "zucchini_weekly_review",
 } as const;
 
@@ -31,6 +32,15 @@ export function readJsonStorage(key: string): JsonValue | null {
 export function writeJsonStorage<T>(key: string, value: T): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function removeStorage(key: string): boolean {
+  try {
+    localStorage.removeItem(key);
     return true;
   } catch {
     return false;
