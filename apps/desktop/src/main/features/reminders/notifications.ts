@@ -1,3 +1,11 @@
+/**
+ * Desktop notification delivery.
+ *
+ * Sends Electron `Notification` instances for habit reminders, including
+ * catch-up, snoozed, midnight warning, and missed-reminder variants.
+ * Queries the macOS native addon (when available) to check for
+ * Do Not Disturb and screen lock state before sending.
+ */
 import { nativeImage, Notification } from "electron";
 
 import { resolveMascotAssetPath } from "@/main/app/assets";

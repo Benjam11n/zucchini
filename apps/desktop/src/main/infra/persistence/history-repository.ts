@@ -1,3 +1,10 @@
+/**
+ * History data repository.
+ *
+ * Queries daily summaries, habit period statuses, and status rows to
+ * build history views and settled-day summaries. Handles status row
+ * creation, toggling, and date-range queries for weekly review data.
+ */
 import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
 import { dailySummary, habitPeriodStatus } from "@/main/infra/db/schema";

@@ -1,3 +1,11 @@
+/**
+ * Persistence layer data mappers.
+ *
+ * Converts between SQLite row types (Drizzle inferred selects) and
+ * domain objects (`Habit`, `FocusSession`, `DailySummary`, `StreakState`,
+ * `AppSettings`). Handles null normalization and category/frequency
+ * validation on reads.
+ */
 import type { FocusSession } from "@/shared/domain/focus-session";
 import {
   normalizeHabitCategory,

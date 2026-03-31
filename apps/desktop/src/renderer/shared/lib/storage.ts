@@ -1,3 +1,10 @@
+/**
+ * Local storage utilities for renderer-persisted cache state.
+ *
+ * Provides typed JSON read/write helpers for `localStorage`. Used by
+ * feature-local cache layers (today UI snapshot, weekly review last-seen)
+ * that are non-authoritative — canonical state lives in SQLite.
+ */
 import type { JsonValue } from "@/shared/types/json";
 
 export const STORAGE_KEYS = {

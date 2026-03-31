@@ -1,3 +1,10 @@
+/**
+ * Focus session data repository.
+ *
+ * CRUD operations for focus sessions persisted in SQLite. Supports
+ * listing recent sessions (with optional limit), date-range queries,
+ * and inserting new sessions with auto-generated IDs.
+ */
 import { and, asc, desc, gte, lte } from "drizzle-orm";
 
 import { focusSessions } from "@/main/infra/db/schema";

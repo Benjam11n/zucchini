@@ -1,3 +1,9 @@
+/**
+ * Reminder timing policy logic.
+ *
+ * Pure functions that determine whether a reminder should fire based on
+ * the current time, habit period boundaries, and completion state.
+ */
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 

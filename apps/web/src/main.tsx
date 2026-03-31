@@ -1,3 +1,10 @@
+/**
+ * Web app entry point.
+ *
+ * Mounts the marketing/landing page React application into the DOM.
+ * This is a simple Vite-powered static site — no Electron, no state
+ * management, no data fetching beyond external links.
+ */
 import React from "react";
 import ReactDOM from "react-dom/client";
 

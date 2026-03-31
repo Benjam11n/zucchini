@@ -1,3 +1,10 @@
+/**
+ * Marketing landing page root component.
+ *
+ * Renders the Zucchini product landing page with feature highlights,
+ * mascot branding, and a link to the latest GitHub release for download.
+ * No routing or state management — just static content and external links.
+ */
 import {
   ArrowUpRight,
   CalendarDays,

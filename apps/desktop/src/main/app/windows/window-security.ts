@@ -1,3 +1,10 @@
+/**
+ * BrowserWindow security configuration.
+ *
+ * Prevents the renderer from opening new windows and blocks navigation
+ * to untrusted origins. Only the Vite dev server URL (in development)
+ * and `file://` protocol (in production) are permitted.
+ */
 import type { BrowserWindow } from "electron";
 
 function isTrustedAppUrl(url: string): boolean {

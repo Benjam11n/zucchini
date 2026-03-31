@@ -9,4 +9,3 @@ or by using the root wrapper scripts such as `bun run build:desktop`.
 
 - [Development](./development.md): local setup, scripts, architecture, and
   quality checks.
-

@@ -1,3 +1,10 @@
+/**
+ * Content Security Policy header generation.
+ *
+ * Builds a strict CSP string for the Electron renderer. In production,
+ * only `self` sources are allowed. Development mode additionally permits
+ * the Vite dev server for HMR connections.
+ */
 export type ContentSecurityPolicyMode = "development" | "production";
 
 const CONTENT_SECURITY_POLICY_DIRECTIVES = [

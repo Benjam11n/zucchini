@@ -1,3 +1,10 @@
+/**
+ * Habit CRUD repository.
+ *
+ * Handles inserting, renaming, archiving, reordering, and querying habits
+ * from the `habits` SQLite table. Delegates to Drizzle ORM for all queries
+ * and maps rows to domain `Habit` objects via shared mappers.
+ */
 import { and, asc, eq, sql } from "drizzle-orm";
 
 import { habits } from "@/main/infra/db/schema";

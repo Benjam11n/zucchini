@@ -1,3 +1,10 @@
+/**
+ * Persistence layer type definitions.
+ *
+ * Re-exports Drizzle inferred row types for each table and defines
+ * the `HabitPeriodStatusSnapshot` shape used by the history and
+ * weekly review query pipelines.
+ */
 import type {
   dailySummary,
   focusSessions,

@@ -1,3 +1,11 @@
+/**
+ * Focus widget position and size clamping.
+ *
+ * Ensures the floating widget window stays within the visible screen
+ * work area with a configurable margin. Provides default bounds and
+ * a clamp function that repositions/resizes if the widget would
+ * overflow the display.
+ */
 import { screen } from "electron";
 
 export const FOCUS_WIDGET_DEFAULT_HEIGHT = 48;

@@ -1,3 +1,10 @@
+/**
+ * Habit period boundary calculations.
+ *
+ * Determines the start and end dates for a habit's current period
+ * (daily, weekly, monthly) so the reminder scheduler and streak engine
+ * can check whether habits are closing or already settled.
+ */
 import {
   endOfWeek,
   parseDateKey,

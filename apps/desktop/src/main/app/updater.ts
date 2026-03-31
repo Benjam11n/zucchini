@@ -1,3 +1,11 @@
+/**
+ * Auto-update logic for `electron-updater`.
+ *
+ * Manages the update lifecycle: checking for updates on a schedule,
+ * downloading, and installing. Registers IPC handlers so the renderer
+ * can trigger actions and receive state change broadcasts. Respects
+ * platform support mode (development, disabled, production).
+ */
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type {
   AppUpdateState,

@@ -1,3 +1,11 @@
+/**
+ * Focus widget floating window creation.
+ *
+ * Creates a small, frameless, always-on-top BrowserWindow for the
+ * Pomodoro timer widget. The window loads the same renderer with a
+ * `?view=widget` query parameter so CSS and React can scope widget-
+ * specific styles.
+ */
 import path from "node:path";
 
 import { BrowserWindow } from "electron";
