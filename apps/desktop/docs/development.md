@@ -18,11 +18,10 @@ Install dependencies from the repository root:
 bun install
 ```
 
-If this clone was installed before native notification addons were trusted by
-default, rerun:
+If the desktop app later reports a native module load failure during local
+development, rebuild the desktop native dependencies explicitly:
 
 ```bash
-bun install
 bun run --cwd apps/desktop rebuild:native
 ```
 

@@ -24,8 +24,7 @@
     "format:check": "oxfmt --check .",
     "knip": "knip",
     "test": "vitest run",
-    "react-doctor": "npx -y react-doctor@latest . --verbose --diff",
-    "postinstall": "node scripts/install-native-deps.mjs"
+    "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
