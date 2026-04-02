@@ -1,5 +1,5 @@
 :root {
-  --bg: oklch(0.1487 0.0066 158.2141);
+  --bg: oklch(0% 0 0);
   --foreground: oklch(0.8352 0.0611 157.0203);
   --text: oklch(0.8352 0.0611 157.0203);
   --text-muted: oklch(0.6747 0.0656 156.3922);
@@ -30,17 +30,6 @@
 
 body {
   background-color: var(--bg);
-  background-image:
-    radial-gradient(
-      circle at 50% -20%,
-      oklch(0.6369 0.1241 153.2123 / 0.15),
-      transparent 80%
-    ),
-    radial-gradient(
-      circle at 0% 0%,
-      oklch(0.6369 0.1241 153.2123 / 0.05),
-      transparent 50%
-    );
   color: var(--text);
   font-family: var(--font-main);
   line-height: 1.5;
