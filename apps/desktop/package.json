@@ -21,7 +21,7 @@
     "audit:ci": "bun audit --production --audit-level=high",
     "lint": "oxlint -c ../../.oxlintrc.json .",
     "format": "ultracite fix .",
-    "format:check": "oxfmt --check .",
+    "format:check": "ultracite check .",
     "knip": "knip",
     "test": "vitest run",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"

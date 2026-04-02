@@ -14,6 +14,7 @@
     "lint:desktop": "bun run --cwd apps/desktop lint",
     "lint:web": "bun run --cwd apps/web lint",
     "format": "ultracite fix .",
+    "format:check": "ultracite check .",
     "check": "bun run lint:desktop && bun run lint:web && bun run test:desktop && bun run build:web"
   },
   "devDependencies": {

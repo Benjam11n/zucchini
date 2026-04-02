@@ -10,7 +10,7 @@
     "lint": "oxlint -c ../../.oxlintrc.json .",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "format": "ultracite fix .",
-    "format:check": "oxfmt --check .",
+    "format:check": "ultracite check .",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {
