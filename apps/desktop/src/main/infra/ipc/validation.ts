@@ -147,7 +147,7 @@ export const validateGoalFrequency = createValidator<GoalFrequency>(
   goalFrequencySchema
 );
 
-export const validateFocusQuotaTargetMinutes = createValidator(
+const validateFocusQuotaTargetMinutes = createValidator(
   "focus quota target minutes",
   focusQuotaTargetMinutesSchema
 );

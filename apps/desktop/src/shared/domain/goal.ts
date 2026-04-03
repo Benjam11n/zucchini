@@ -31,7 +31,7 @@ export interface FocusQuotaGoalWithStatus extends FocusQuotaGoal {
   periodStart: string;
 }
 
-export function isGoalFrequency(value: string): value is GoalFrequency {
+function isGoalFrequency(value: string): value is GoalFrequency {
   return GOAL_FREQUENCY_DEFINITIONS.some(
     (definition) => definition.value === value
   );
