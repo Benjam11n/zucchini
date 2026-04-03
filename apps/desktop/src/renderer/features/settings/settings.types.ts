@@ -1,3 +1,7 @@
+import type {
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
 /**
  * Settings page type definitions.
  *
@@ -24,6 +28,7 @@ export type SettingsFieldErrors = Partial<Record<keyof AppSettings, string>>;
 
 export interface SettingsPageProps {
   fieldErrors: SettingsFieldErrors;
+  focusQuotaGoals: FocusQuotaGoalWithStatus[];
   habits: Habit[];
   settings: AppSettings;
   saveErrorMessage: string | null;
@@ -55,6 +60,11 @@ export interface SettingsPageProps {
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;
   onArchiveHabit: (habitId: number) => Promise<void>;
+  onArchiveFocusQuotaGoal: (goalId: number) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
+  onUpsertFocusQuotaGoal: (
+    frequency: GoalFrequency,
+    targetMinutes: number
+  ) => Promise<void>;
   onReorderHabits: (habits: Habit[]) => Promise<void>;
 }

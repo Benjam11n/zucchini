@@ -151,7 +151,9 @@ export function createControllerActions({
   actions: ReturnType<typeof createAppActions>;
   weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
 }) {
+  // oxlint-disable-next-line eslint/sort-keys
   return {
+    handleArchiveFocusQuotaGoal: actions.handleArchiveFocusQuotaGoal,
     handleArchiveHabit: actions.handleArchiveHabit,
     handleCreateHabit: actions.handleCreateHabit,
     handleDecrementHabitProgress: actions.handleDecrementHabitProgress,
@@ -175,7 +177,9 @@ export function createControllerActions({
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
+    handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,
     handleUnarchiveHabit: actions.handleUnarchiveHabit,
+    handleUpsertFocusQuotaGoal: actions.handleUpsertFocusQuotaGoal,
     handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
     handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
     handleUpdateHabitTargetCount: actions.handleUpdateHabitTargetCount,

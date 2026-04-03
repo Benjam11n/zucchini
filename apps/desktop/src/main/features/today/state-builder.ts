@@ -40,6 +40,7 @@ export function buildTodayState(
   return {
     date: today,
     focusMinutes,
+    focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
     habits,
     settings: repository.getSettings(clock.timezone()),
     streak: {
@@ -71,7 +72,8 @@ export function buildTodayPreviewSummary(
 export function buildHistoryDay(
   summary: DailySummary,
   habits: HabitWithStatus[],
-  focusMinutes: number
+  focusMinutes: number,
+  focusQuotaGoals: HistoryDay["focusQuotaGoals"]
 ): HistoryDay {
   return {
     categoryProgress: getHabitCategoryProgress(habits.filter(isDailyHabit)),
@@ -79,6 +81,7 @@ export function buildHistoryDay(
     focusMinutes,
     habits,
     summary,
+    ...(focusQuotaGoals ? { focusQuotaGoals } : {}),
   };
 }
 

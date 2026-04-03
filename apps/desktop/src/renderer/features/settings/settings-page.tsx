@@ -170,11 +170,14 @@ export function SettingsPage(props: SettingsPageProps) {
                 settings={props.settings}
               />
               <HabitManagementCard
+                focusQuotaGoals={props.focusQuotaGoals}
                 habits={props.habits}
                 onArchiveHabit={props.onArchiveHabit}
+                onArchiveFocusQuotaGoal={props.onArchiveFocusQuotaGoal}
                 onCreateHabit={props.onCreateHabit}
                 onRenameHabit={props.onRenameHabit}
                 onReorderHabits={props.onReorderHabits}
+                onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
                 onUnarchiveHabit={props.onUnarchiveHabit}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}

@@ -87,6 +87,17 @@ export const focusSessions = sqliteTable(
   ]
 );
 
+export const focusQuotaGoals = sqliteTable("focus_quota_goals", {
+  archivedAt: text("archived_at"),
+  createdAt: text("created_at").notNull(),
+  frequency: text().notNull(),
+  id: integer().primaryKey({ autoIncrement: true }),
+  isArchived: integer("is_archived", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  targetMinutes: integer("target_minutes").notNull(),
+});
+
 export const focusTimerState = sqliteTable("focus_timer_state", {
   breakVariant: text("break_variant"),
   completedFocusCycles: integer("completed_focus_cycles").notNull(),
@@ -147,6 +158,7 @@ export const settings = sqliteTable("settings", {
 
 export const schema = {
   dailySummary,
+  focusQuotaGoals,
   focusSessions,
   focusTimerState,
   habitPeriodStatus,

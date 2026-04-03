@@ -201,10 +201,12 @@ function TodayPageComponent({
             />
           </m.section>
 
-          {periodicHabits.length > 0 ? (
+          {periodicHabits.length > 0 ||
+          (state.focusQuotaGoals ?? []).length > 0 ? (
             <m.section variants={staggerItemVariants}>
               <LongerHabitChecklist
                 dateKey={state.date}
+                focusQuotaGoals={state.focusQuotaGoals ?? []}
                 habits={periodicHabits}
                 onDecrementHabitProgress={
                   onDecrementHabitProgress ?? noopHabitProgress

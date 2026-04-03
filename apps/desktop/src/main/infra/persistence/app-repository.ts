@@ -15,6 +15,11 @@ import type {
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
+  FocusQuotaGoal,
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -35,6 +40,11 @@ export interface AppRepository {
   runInTransaction<A>(label: string, execute: () => A): A;
   seedDefaults(nowIso: string, timezone: string): void;
   getHabits(): Habit[];
+  getFocusQuotaGoals(includeArchived?: boolean): FocusQuotaGoal[];
+  getFocusQuotaGoalsWithStatusForDate(date: string): FocusQuotaGoalWithStatus[];
+  getHistoricalFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
   getHabitProgress(date: string, habitId: number): number;
@@ -92,6 +102,13 @@ export interface AppRepository {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): void;
+  upsertFocusQuotaGoal(
+    frequency: GoalFrequency,
+    targetMinutes: number,
+    createdAt: string
+  ): void;
+  archiveFocusQuotaGoal(goalId: number, archivedAt: string): void;
+  unarchiveFocusQuotaGoal(goalId: number, restoredAt: string): void;
   archiveHabit(habitId: number): void;
   unarchiveHabit(habitId: number): void;
   normalizeHabitOrder(): void;

@@ -19,6 +19,7 @@ const handlers = new Map<
 vi.mock<typeof ElectronModule>(import("electron"), async (importOriginal) => {
   const actual = await importOriginal();
 
+  // oxlint-disable-next-line eslint/sort-keys
   return {
     ...actual,
     ipcMain: {
@@ -57,6 +58,7 @@ const defaultSettings: AppSettings = {
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
+/* oxlint-disable eslint/sort-keys */
 function createService() {
   const focusTimerState: PersistedFocusTimerState = {
     breakVariant: null,
@@ -74,6 +76,7 @@ function createService() {
   };
 
   return {
+    archiveFocusQuotaGoal: vi.fn(),
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
     decrementHabitProgress: vi.fn(),
@@ -99,7 +102,9 @@ function createService() {
     savePersistedFocusTimerState: vi.fn((state) => state),
     saveReminderRuntimeState: vi.fn(),
     toggleHabit: vi.fn(),
+    unarchiveFocusQuotaGoal: vi.fn(),
     unarchiveHabit: vi.fn(),
+    upsertFocusQuotaGoal: vi.fn(),
     updateHabitCategory: vi.fn(),
     updateHabitFrequency: vi.fn(),
     updateHabitTargetCount: vi.fn(),
@@ -107,6 +112,7 @@ function createService() {
     updateSettings: vi.fn(() => defaultSettings),
   };
 }
+/* oxlint-enable eslint/sort-keys */
 
 function createFocusTimerCoordinator() {
   return {
@@ -223,6 +229,27 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(service.getHistory).toHaveBeenCalledWith(14);
+  });
+
+  it("rejects focus quota targets outside the selected cadence bounds", async () => {
+    resetHandlers();
+    const service = createService();
+
+    registerIpcHandlers(createRegisterOptions({ service }));
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.upsertFocusQuotaGoal);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, "weekly", 20_000)
+    ).resolves.toStrictEqual(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          code: "VALIDATION_ERROR",
+        }),
+        ok: false,
+      })
+    );
+    expect(service.upsertFocusQuotaGoal).not.toHaveBeenCalled();
   });
 
   it("returns desktop notification status through IPC", async () => {

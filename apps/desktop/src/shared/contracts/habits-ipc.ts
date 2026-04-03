@@ -18,6 +18,10 @@ import type {
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -55,7 +59,9 @@ export interface FocusTimerShortcutStatus {
   toggle: FocusTimerShortcutRegistration;
 }
 
+// oxlint-disable-next-line eslint/sort-keys
 export const HABITS_IPC_CHANNELS = {
+  archiveFocusQuotaGoal: "habits:archiveFocusQuotaGoal",
   archiveHabit: "habits:archiveHabit",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
@@ -88,7 +94,9 @@ export const HABITS_IPC_CHANNELS = {
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
   toggleHabit: "habits:toggleHabit",
+  unarchiveFocusQuotaGoal: "habits:unarchiveFocusQuotaGoal",
   unarchiveHabit: "habits:unarchiveHabit",
+  upsertFocusQuotaGoal: "habits:upsertFocusQuotaGoal",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
   updateHabitTargetCount: "habits:updateHabitTargetCount",
@@ -159,6 +167,7 @@ export function toHabitsIpcError(error: unknown): HabitsIpcError {
 export interface TodayState {
   date: string;
   focusMinutes: number;
+  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
   habits: HabitWithStatus[];
   streak: StreakState;
   settings: AppSettings;
@@ -252,7 +261,13 @@ export interface HabitsApi {
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<TodayState>;
   archiveHabit: (habitId: number) => Promise<TodayState>;
+  archiveFocusQuotaGoal: (goalId: number) => Promise<TodayState>;
   unarchiveHabit: (habitId: number) => Promise<TodayState>;
+  unarchiveFocusQuotaGoal: (goalId: number) => Promise<TodayState>;
+  upsertFocusQuotaGoal: (
+    frequency: GoalFrequency,
+    targetMinutes: number
+  ) => Promise<TodayState>;
   reorderHabits: (habitIds: number[]) => Promise<TodayState>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;

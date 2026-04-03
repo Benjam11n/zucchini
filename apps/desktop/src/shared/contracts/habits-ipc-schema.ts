@@ -7,6 +7,7 @@
 import { z } from "zod";
 
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
+import { GOAL_FREQUENCY_DEFINITIONS } from "@/shared/domain/goal";
 import {
   isValidGlobalShortcutAccelerator,
   isValidHabitCategoryColor,
@@ -76,6 +77,17 @@ const habitCategoryPreferencesSchema = z
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
 export const habitTargetCountSchema = z.number().int().min(1).max(31);
+export const goalFrequencySchema = z.enum(
+  GOAL_FREQUENCY_DEFINITIONS.map((definition) => definition.value) as [
+    (typeof GOAL_FREQUENCY_DEFINITIONS)[number]["value"],
+    ...(typeof GOAL_FREQUENCY_DEFINITIONS)[number]["value"][],
+  ]
+);
+export const focusQuotaTargetMinutesSchema = z
+  .number()
+  .int()
+  .min(30, "Focus quota target minutes must be at least 30 minutes.")
+  .max(44_640, "Focus quota target minutes must be at most 44,640 minutes.");
 const habitWeekdaySchema = z.union([
   z.literal(0),
   z.literal(1),

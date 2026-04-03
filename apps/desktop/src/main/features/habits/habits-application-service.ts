@@ -31,6 +31,12 @@ import type {
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import {
+  isValidFocusQuotaTargetMinutes,
+  normalizeFocusQuotaTargetMinutes,
+  normalizeGoalFrequency,
+} from "@/shared/domain/goal";
+import type { GoalFrequency } from "@/shared/domain/goal";
+import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
   normalizeHabitTargetCount,
@@ -92,6 +98,12 @@ export interface HabitsService {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState;
+  upsertFocusQuotaGoal(
+    frequency: GoalFrequency,
+    targetMinutes: number
+  ): TodayState;
+  archiveFocusQuotaGoal(goalId: number): TodayState;
+  unarchiveFocusQuotaGoal(goalId: number): TodayState;
   archiveHabit(habitId: number): TodayState;
   unarchiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
@@ -303,13 +315,15 @@ export class HabitsApplicationService implements HabitsService {
         buildHistoryDay(
           buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
           this.repository.getHabitsWithStatus(this.clock.todayKey()),
-          focusMinutesByDate.get(todayState.date) ?? 0
+          focusMinutesByDate.get(todayState.date) ?? 0,
+          this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
         ),
         ...settledSummaries.map((summary) =>
           buildHistoryDay(
             summary,
             this.repository.getHistoricalHabitsWithStatus(summary.date),
-            focusMinutesByDate.get(summary.date) ?? 0
+            focusMinutesByDate.get(summary.date) ?? 0,
+            this.repository.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
           )
         ),
       ];
@@ -532,6 +546,50 @@ export class HabitsApplicationService implements HabitsService {
         normalizeHabitWeekdays(selectedWeekdays)
       );
       this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  upsertFocusQuotaGoal(
+    frequency: GoalFrequency,
+    targetMinutes: number
+  ): TodayState {
+    return this.inInitializedTransaction("upsertFocusQuotaGoal", () => {
+      this.syncRollingState();
+      const normalizedFrequency = normalizeGoalFrequency(frequency);
+      if (!isValidFocusQuotaTargetMinutes(normalizedFrequency, targetMinutes)) {
+        throw new RangeError(
+          `Invalid ${normalizedFrequency} focus quota target minutes.`
+        );
+      }
+
+      this.repository.upsertFocusQuotaGoal(
+        normalizedFrequency,
+        normalizeFocusQuotaTargetMinutes(normalizedFrequency, targetMinutes),
+        this.clock.now().toISOString()
+      );
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  archiveFocusQuotaGoal(goalId: number): TodayState {
+    return this.inInitializedTransaction("archiveFocusQuotaGoal", () => {
+      this.syncRollingState();
+      this.repository.archiveFocusQuotaGoal(
+        goalId,
+        this.clock.now().toISOString()
+      );
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  unarchiveFocusQuotaGoal(goalId: number): TodayState {
+    return this.inInitializedTransaction("unarchiveFocusQuotaGoal", () => {
+      this.syncRollingState();
+      this.repository.unarchiveFocusQuotaGoal(
+        goalId,
+        this.clock.now().toISOString()
+      );
       return buildTodayState(this.repository, this.clock);
     });
   }

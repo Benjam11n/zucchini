@@ -14,6 +14,7 @@ import { useHistoryStore } from "@/renderer/features/history/state/history-store
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   Habit,
   HabitCategory,
@@ -84,8 +85,12 @@ export function createTodayActions({
     return nextTodayState;
   }
 
+  // oxlint-disable-next-line eslint/sort-keys
   return {
     applyTodayMutation,
+    async handleArchiveFocusQuotaGoal(goalId: number) {
+      await applyTodayMutation(window.habits.archiveFocusQuotaGoal(goalId));
+    },
     async handleArchiveHabit(habitId: number) {
       await applyTodayMutation(window.habits.archiveHabit(habitId));
     },
@@ -181,8 +186,19 @@ export function createTodayActions({
         throw error;
       }
     },
+    async handleUnarchiveFocusQuotaGoal(goalId: number) {
+      await applyTodayMutation(window.habits.unarchiveFocusQuotaGoal(goalId));
+    },
     async handleUnarchiveHabit(habitId: number) {
       await applyTodayMutation(window.habits.unarchiveHabit(habitId));
+    },
+    async handleUpsertFocusQuotaGoal(
+      frequency: GoalFrequency,
+      targetMinutes: number
+    ) {
+      await refreshToday(
+        window.habits.upsertFocusQuotaGoal(frequency, targetMinutes)
+      );
     },
     async handleUpdateHabitCategory(habitId: number, category: HabitCategory) {
       await applyTodayMutation(

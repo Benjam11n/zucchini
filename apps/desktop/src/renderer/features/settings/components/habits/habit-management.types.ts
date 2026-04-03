@@ -1,4 +1,8 @@
 import type {
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -6,8 +10,10 @@ import type {
 } from "@/shared/domain/habit";
 
 export interface HabitManagementCardProps {
+  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
   habits: Habit[];
   onArchiveHabit: (habitId: number) => Promise<void>;
+  onArchiveFocusQuotaGoal?: (goalId: number) => Promise<void>;
   onCreateHabit: (
     name: string,
     category: HabitCategory,
@@ -33,6 +39,10 @@ export interface HabitManagementCardProps {
   onUpdateHabitWeekdays: (
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
+  ) => Promise<void>;
+  onUpsertFocusQuotaGoal?: (
+    frequency: GoalFrequency,
+    targetMinutes: number
   ) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
 }

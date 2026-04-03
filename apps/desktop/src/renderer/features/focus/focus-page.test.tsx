@@ -199,9 +199,9 @@ describe("focus tab", () => {
     resetFocusStore();
     render(<FocusPageHarness />);
 
-    expect(screen.getByText("Total set: 2h 10m")).toBeInTheDocument();
+    expect(screen.getByText("Total set: 130m")).toBeInTheDocument();
     expect(screen.getByText("0m")).toBeInTheDocument();
-    expect(screen.getByText("2h 10m")).toBeInTheDocument();
+    expect(screen.getByText("130m")).toBeInTheDocument();
   });
 
   it("opens the advanced pomodoro settings in a dialog", () => {

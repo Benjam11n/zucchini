@@ -71,6 +71,20 @@
       "when": 1775203200000,
       "tag": "0009_habit_targets",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1775206800000,
+      "tag": "0010_focus_quota_goals",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1775210400000,
+      "tag": "0011_focus_quota_goal_history",
+      "breakpoints": true
     }
   ]
 }

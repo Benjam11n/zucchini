@@ -122,7 +122,7 @@ describe("focus session list", () => {
       .closest("[data-slot='card']") as HTMLElement;
 
     expect(sessionListCard).toHaveTextContent(
-      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*1h 20m session window[\s\S]*2 completed loops[\s\S]*Interrupted/
+      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*80 min session window[\s\S]*2 completed loops[\s\S]*Interrupted/
     );
     expect(sessionListCard).toHaveTextContent(/Show details/);
     expect(screen.getAllByLabelText("5 minute break")).toHaveLength(2);

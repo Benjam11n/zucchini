@@ -11,6 +11,15 @@ import type {
   FocusSession,
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import {
+  getFocusQuotaGoalPeriod,
+  isFocusQuotaGoalComplete,
+} from "@/shared/domain/goal";
+import type {
+  FocusQuotaGoal,
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
 import type {
   Habit,
   HabitCategory,
@@ -112,6 +121,7 @@ class FakeRepository implements AppRepository {
     snoozedUntil: null,
   };
   focusSessions: FocusSession[] = [];
+  focusQuotaGoals: FocusQuotaGoal[] = [];
   focusTimerState: PersistedFocusTimerState | null = null;
 
   // oxlint-disable-next-line class-methods-use-this
@@ -130,6 +140,24 @@ class FakeRepository implements AppRepository {
     return this.habits
       .filter((habit) => !habit.isArchived)
       .toSorted((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  getFocusQuotaGoals(includeArchived = false): FocusQuotaGoal[] {
+    return this.focusQuotaGoals
+      .filter((goal) => includeArchived || !goal.isArchived)
+      .toSorted((left, right) => left.frequency.localeCompare(right.frequency));
+  }
+
+  getFocusQuotaGoalsWithStatusForDate(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.buildFocusQuotaGoalsWithStatus(date);
+  }
+
+  getHistoricalFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.buildFocusQuotaGoalsWithStatus(date);
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
@@ -497,6 +525,59 @@ class FakeRepository implements AppRepository {
     }
   }
 
+  upsertFocusQuotaGoal(
+    frequency: GoalFrequency,
+    targetMinutes: number,
+    createdAt: string
+  ): void {
+    const existing = this.focusQuotaGoals.find(
+      (goal) => goal.frequency === frequency && !goal.isArchived
+    );
+
+    if (existing) {
+      if (existing.targetMinutes === targetMinutes) {
+        return;
+      }
+
+      existing.archivedAt = createdAt;
+      existing.isArchived = true;
+    }
+
+    this.focusQuotaGoals.push({
+      archivedAt: null,
+      createdAt,
+      frequency,
+      id: this.focusQuotaGoals.length + 1,
+      isArchived: false,
+      targetMinutes,
+    });
+  }
+
+  archiveFocusQuotaGoal(goalId: number, archivedAt: string): void {
+    const goal = this.focusQuotaGoals.find((item) => item.id === goalId);
+    if (goal) {
+      goal.archivedAt = archivedAt;
+      goal.isArchived = true;
+    }
+  }
+
+  unarchiveFocusQuotaGoal(goalId: number, restoredAt: string): void {
+    const goal = this.focusQuotaGoals.find((item) => item.id === goalId);
+    if (!goal) {
+      return;
+    }
+
+    for (const candidate of this.focusQuotaGoals) {
+      if (candidate.frequency === goal.frequency && !candidate.isArchived) {
+        candidate.archivedAt = restoredAt;
+        candidate.isArchived = true;
+      }
+    }
+
+    goal.archivedAt = null;
+    goal.isArchived = false;
+  }
+
   archiveHabit(habitId: number): void {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
@@ -575,6 +656,38 @@ class FakeRepository implements AppRepository {
     periodStart: string
   ): string {
     return `${frequency}:${periodStart}`;
+  }
+
+  private buildFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.focusQuotaGoals
+      .filter((goal) => {
+        const createdOn = goal.createdAt.slice(0, 10);
+        const archivedOn = goal.archivedAt?.slice(0, 10) ?? null;
+        return createdOn <= date && (archivedOn === null || archivedOn > date);
+      })
+      .toSorted((left, right) => left.frequency.localeCompare(right.frequency))
+      .map((goal) => {
+        const period = getFocusQuotaGoalPeriod(goal.frequency, date);
+        const completedMinutes = this.getFocusSessionsInRange(
+          period.start,
+          period.end
+        ).reduce(
+          (total, session) =>
+            total + Math.max(1, Math.round(session.durationSeconds / 60)),
+          0
+        );
+
+        return {
+          ...goal,
+          completed: isFocusQuotaGoalComplete(goal, completedMinutes),
+          completedMinutes,
+          kind: "focus-quota",
+          periodEnd: period.end,
+          periodStart: period.start,
+        };
+      });
   }
 }
 
@@ -910,6 +1023,63 @@ describe("history retrieval", () => {
       "2026-03-08",
       "2026-03-07",
     ]);
+  });
+
+  it("keeps historical focus quota targets after later updates", () => {
+    const repository = new FakeRepository();
+    repository.dailySummaries.set("2026-03-07", {
+      allCompleted: true,
+      completedAt: "2026-03-07T21:00:00.000Z",
+      date: "2026-03-07",
+      freezeUsed: false,
+      streakCountAfterDay: 4,
+    });
+    repository.focusSessions.push({
+      completedAt: "2026-03-07T09:30:00.000Z",
+      completedDate: "2026-03-07",
+      durationSeconds: 120 * 60,
+      entryKind: "completed",
+      id: 1,
+      startedAt: "2026-03-07T07:30:00.000Z",
+      timerSessionId: "quota-history-1",
+    });
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
+    );
+    service.upsertFocusQuotaGoal("weekly", 300);
+
+    const nextDayService = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+    nextDayService.upsertFocusQuotaGoal("weekly", 480);
+
+    const history = nextDayService.getHistory();
+    const march7 = history.find((day) => day.date === "2026-03-07");
+    const march8 = history.find((day) => day.date === "2026-03-08");
+
+    expect(march7?.focusQuotaGoals?.[0]).toMatchObject({
+      completedMinutes: 120,
+      targetMinutes: 300,
+    });
+    expect(march8?.focusQuotaGoals?.[0]).toMatchObject({
+      targetMinutes: 480,
+    });
+  });
+
+  it("rejects invalid focus quota targets instead of silently clamping them", () => {
+    const repository = new FakeRepository();
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    expect(() => service.upsertFocusQuotaGoal("weekly", 20_000)).toThrow(
+      RangeError
+    );
+    expect(repository.getFocusQuotaGoals()).toHaveLength(0);
   });
 
   it("keeps the full history path uncapped when no limit is provided", () => {

@@ -1,4 +1,5 @@
 import { Settings2 } from "lucide-react";
+import { VisuallyHidden } from "radix-ui";
 import { useState } from "react";
 import type { ReactElement } from "react";
 
@@ -37,13 +38,15 @@ export function TodayHabitManagerDialog({
       <DialogContent className="flex max-h-[88vh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Manage habits</DialogTitle>
-          <DialogDescription className="pb-2">
-            Add new habits and adjust names, categories, frequencies, or
-            ordering without leaving today&apos;s flow.
-          </DialogDescription>
+          <VisuallyHidden.Root>
+            <DialogDescription>
+              Add new habits and adjust names, categories, frequencies, or
+              ordering without leaving today&apos;s flow.
+            </DialogDescription>
+          </VisuallyHidden.Root>
         </DialogHeader>
 
-        <div className="min-h-0 overflow-y-auto px-6 pb-6">
+        <div className="min-h-0 overflow-y-auto px-6 py-6">
           <div className="grid gap-3">
             <HabitManagementContent {...props} />
           </div>

@@ -1,3 +1,4 @@
+import type { FocusQuotaGoalWithStatus } from "./goal";
 /**
  * History domain shape used by the renderer and weekly review features.
  *
@@ -12,6 +13,7 @@ export interface HistoryDay {
   categoryProgress: HabitCategoryProgress[];
   date: string;
   focusMinutes: number;
+  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
   habits: HabitWithStatus[];
   summary: DailySummary;
 }

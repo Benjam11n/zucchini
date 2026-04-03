@@ -32,18 +32,7 @@ function formatSessionRangeLabel(
 }
 
 function formatSessionWindow(sessionSpanMinutes: number): string {
-  if (sessionSpanMinutes < 60) {
-    return `${sessionSpanMinutes}m session window`;
-  }
-
-  const hours = Math.floor(sessionSpanMinutes / 60);
-  const minutes = sessionSpanMinutes % 60;
-
-  if (minutes === 0) {
-    return `${hours}h session window`;
-  }
-
-  return `${hours}h ${minutes}m session window`;
+  return `${sessionSpanMinutes} min session window`;
 }
 
 function formatEntryRange(startedAt: string, completedAt: string): string {

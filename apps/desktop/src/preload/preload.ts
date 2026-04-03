@@ -29,6 +29,7 @@ import type {
 } from "@/shared/contracts/habits-ipc";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -64,7 +65,10 @@ async function invokeUpdater<T>(channel: string): Promise<T> {
   throw new AppUpdaterIpcError(response.error);
 }
 
+// oxlint-disable-next-line eslint/sort-keys
 const habitsApi: HabitsApi = {
+  archiveFocusQuotaGoal: (goalId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.archiveFocusQuotaGoal, goalId),
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
@@ -220,8 +224,16 @@ const habitsApi: HabitsApi = {
     ),
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
+  unarchiveFocusQuotaGoal: (goalId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.unarchiveFocusQuotaGoal, goalId),
   unarchiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.unarchiveHabit, habitId),
+  upsertFocusQuotaGoal: (frequency: GoalFrequency, targetMinutes: number) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.upsertFocusQuotaGoal,
+      frequency,
+      targetMinutes
+    ),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
   updateHabitFrequency: (

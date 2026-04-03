@@ -66,6 +66,7 @@ export function HistoryDayPanel({
 
   const dailyHabits = uniqueHabits.filter((h) => h.frequency === "daily");
   const longTermHabits = uniqueHabits.filter((h) => h.frequency !== "daily");
+  const focusQuotaGoals = selectedDay.focusQuotaGoals ?? [];
 
   const completedDaily = dailyHabits.filter((habit) => habit.completed);
   const remainingDaily = dailyHabits.filter((habit) => !habit.completed);
@@ -218,10 +219,34 @@ export function HistoryDayPanel({
             />
           </div>
 
-          {longTermHabits.length > 0 && (
+          {longTermHabits.length > 0 || focusQuotaGoals.length > 0 ? (
             <div className="space-y-3">
               <h4 className="ui-eyebrow">Long-term goals</h4>
               <div className="flex flex-wrap gap-2">
+                {focusQuotaGoals.map((goal) => (
+                  <div
+                    key={`${goal.kind}-${goal.id}`}
+                    className={cn(
+                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium",
+                      goal.completed
+                        ? "border-primary/50 bg-primary/10 text-primary"
+                        : "border-border/60 bg-background/50 text-muted-foreground"
+                    )}
+                  >
+                    {goal.completed ? (
+                      <CheckCircle2 className="size-3.5" />
+                    ) : (
+                      <div className="size-3.5 rounded-full border border-current" />
+                    )}
+                    {`Focus quota • ${goal.completedMinutes}/${goal.targetMinutes} min`}
+                    <Badge
+                      className="ml-1 h-4 px-1 text-[0.65rem] capitalize"
+                      variant="secondary"
+                    >
+                      {goal.frequency}
+                    </Badge>
+                  </div>
+                ))}
                 {longTermHabits.map((habit) => (
                   <div
                     key={habit.id}
@@ -248,7 +273,7 @@ export function HistoryDayPanel({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </m.div>
       </AnimatePresence>
     </LazyMotion>

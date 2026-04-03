@@ -18,6 +18,7 @@ import {
   focusTimerLeaseTtlSchema,
   persistedFocusTimerStateSchema,
   focusWidgetSizeSchema,
+  goalFrequencySchema,
   habitCategorySchema,
   habitFrequencySchema,
   habitIdSchema,
@@ -28,10 +29,16 @@ import {
   notificationBodySchema,
   notificationIconFilenameSchema,
   notificationTitleSchema,
+  focusQuotaTargetMinutesSchema,
   reorderHabitIdsSchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import {
+  getFocusQuotaTargetMinutesBounds,
+  isValidFocusQuotaTargetMinutes,
+} from "@/shared/domain/goal";
+import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   HabitCategory,
   HabitFrequency,
@@ -134,6 +141,34 @@ export const validateHabitWeekdays = createValidator<HabitWeekday[]>(
   "habit weekdays",
   habitWeekdaysSchema
 );
+
+export const validateGoalFrequency = createValidator<GoalFrequency>(
+  "goal frequency",
+  goalFrequencySchema
+);
+
+export const validateFocusQuotaTargetMinutes = createValidator(
+  "focus quota target minutes",
+  focusQuotaTargetMinutesSchema
+);
+
+export function validateFocusQuotaTargetMinutesForFrequency(
+  frequency: GoalFrequency,
+  value: unknown
+): number {
+  const targetMinutes = validateFocusQuotaTargetMinutes(value);
+  if (isValidFocusQuotaTargetMinutes(frequency, targetMinutes)) {
+    return targetMinutes;
+  }
+
+  const { max, min } = getFocusQuotaTargetMinutesBounds(frequency);
+  throw new IpcValidationError(
+    "Invalid payload for focus quota target minutes.",
+    [
+      `Focus quota target minutes for ${frequency} goals must be between ${min.toLocaleString()} and ${max.toLocaleString()} minutes.`,
+    ]
+  );
+}
 
 export const validateAppSettings = createValidator<AppSettings>(
   "app settings",

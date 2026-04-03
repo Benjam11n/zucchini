@@ -9,7 +9,9 @@ export type MockHabitsApi = {
 function createMockHabitsApi(
   overrides: Partial<MockHabitsApi> = {}
 ): MockHabitsApi {
+  // oxlint-disable-next-line eslint/sort-keys
   const mock = {
+    archiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     archiveHabit: vi.fn().mockResolvedValue(null),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
@@ -58,7 +60,9 @@ function createMockHabitsApi(
     showMainWindow: vi.fn().mockResolvedValue(null),
     showNotification: vi.fn().mockResolvedValue(null),
     toggleHabit: vi.fn().mockResolvedValue(null),
+    unarchiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     unarchiveHabit: vi.fn().mockResolvedValue(null),
+    upsertFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     updateHabitCategory: vi.fn().mockResolvedValue(null),
     updateHabitFrequency: vi.fn().mockResolvedValue(null),
     updateHabitTargetCount: vi.fn().mockResolvedValue(null),

@@ -11,6 +11,7 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
+import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
@@ -18,6 +19,7 @@ import { parseDateKey } from "@/shared/utils/date";
 
 interface LongerHabitChecklistProps {
   dateKey: string;
+  focusQuotaGoals: FocusQuotaGoalWithStatus[];
   habits: HabitWithStatus[];
   onDecrementHabitProgress: (habitId: number) => void;
   onIncrementHabitProgress: (habitId: number) => void;
@@ -146,17 +148,22 @@ function LongerHabitListItem({
 
 export function LongerHabitChecklist({
   dateKey,
+  focusQuotaGoals,
   habits,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
 }: LongerHabitChecklistProps) {
   const categoryPreferences = useHabitCategoryPreferences();
-  let totalTargetCount = 0;
-  let totalCompletedCount = 0;
+  let trackedGoalCount = 0;
+  let completedGoalCount = 0;
+  let aggregateCompletionRatio = 0;
 
   const sections = PERIOD_SECTIONS.map((section) => {
     const sectionHabits = habits.filter(
       (habit) => habit.frequency === section.value
+    );
+    const sectionFocusQuotaGoals = focusQuotaGoals.filter(
+      (goal) => goal.frequency === section.value
     );
     const period = getHabitPeriod(section.value, dateKey);
     const completedCount = sectionHabits.reduce(
@@ -167,30 +174,65 @@ export function LongerHabitChecklist({
       (total, habit) => total + (habit.targetCount ?? 1),
       0
     );
+    const completedMinutes = sectionFocusQuotaGoals.reduce(
+      (total, goal) => total + goal.completedMinutes,
+      0
+    );
+    const targetMinutes = sectionFocusQuotaGoals.reduce(
+      (total, goal) => total + goal.targetMinutes,
+      0
+    );
 
-    totalTargetCount += targetCount;
-    totalCompletedCount += completedCount;
+    const completedHabitGoals = sectionHabits.filter(
+      (habit) => habit.completed
+    ).length;
+    const goalCount = sectionHabits.length + sectionFocusQuotaGoals.length;
+    let sectionCompletionRatio = 0;
+    for (const habit of sectionHabits) {
+      const target = habit.targetCount ?? 1;
+      sectionCompletionRatio += (habit.completedCount ?? 0) / target;
+    }
+    for (const goal of sectionFocusQuotaGoals) {
+      sectionCompletionRatio += goal.completedMinutes / goal.targetMinutes;
+    }
 
+    trackedGoalCount += goalCount;
+    completedGoalCount +=
+      completedHabitGoals +
+      sectionFocusQuotaGoals.filter((goal) => goal.completed).length;
+    aggregateCompletionRatio += sectionCompletionRatio;
+
+    // oxlint-disable-next-line eslint/sort-keys
     return {
       ...section,
       categoryProgress: getHabitCategoryProgress(sectionHabits),
       completedCount,
+      completedHabitGoalCount: completedHabitGoals,
+      completedMinutes,
+      completedQuotaGoalCount: sectionFocusQuotaGoals.filter(
+        (goal) => goal.completed
+      ).length,
+      focusQuotaGoals: sectionFocusQuotaGoals,
       habits: sectionHabits,
+      goalCount,
       resetLabel: formatResetLabel(period.end),
       targetCount,
+      targetMinutes,
     };
-  }).filter((section) => section.habits.length > 0);
+  }).filter(
+    (section) => section.habits.length > 0 || section.focusQuotaGoals.length > 0
+  );
 
   if (sections.length === 0) {
     return null;
   }
 
   const progressProps =
-    totalTargetCount > 0
+    trackedGoalCount > 0
       ? {
-          progressLabel: `${totalCompletedCount}/${totalTargetCount}`,
+          progressLabel: `${completedGoalCount}/${trackedGoalCount} goals complete`,
           progressValue: Math.round(
-            (totalCompletedCount / totalTargetCount) * 100
+            (aggregateCompletionRatio / trackedGoalCount) * 100
           ),
         }
       : {};
@@ -227,14 +269,57 @@ export function LongerHabitChecklist({
                 </p>
               </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="tabular-nums">
-                  {section.completedCount}/{section.targetCount}
-                </span>
+                {section.habits.length > 0 ? (
+                  <span className="tabular-nums">
+                    {section.completedHabitGoalCount}/{section.habits.length}{" "}
+                    habits
+                  </span>
+                ) : null}
+                {section.focusQuotaGoals.length > 0 ? (
+                  <span className="tabular-nums">
+                    {section.completedQuotaGoalCount}/
+                    {section.focusQuotaGoals.length} focus
+                  </span>
+                ) : null}
                 <span>{section.resetLabel}</span>
               </div>
             </div>
 
             <div className="grid gap-px">
+              {section.focusQuotaGoals.map((goal) => (
+                <div
+                  key={`${goal.kind}-${goal.id}`}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="truncate text-sm">Focus quota</span>
+                      <span className="shrink-0 text-[0.68rem] uppercase tracking-wide text-primary/80">
+                        {section.title}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round(
+                                (goal.completedMinutes / goal.targetMinutes) *
+                                  100
+                              )
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {goal.completedMinutes}/{goal.targetMinutes} min
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
               {section.habits.map((habit) => (
                 <LongerHabitListItem
                   key={habit.id}

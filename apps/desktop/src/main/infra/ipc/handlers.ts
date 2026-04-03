@@ -22,8 +22,10 @@ import {
   validateFocusTimerLeaseTtl,
   validatePersistedFocusTimerState,
   validateFocusWidgetSize,
+  validateGoalFrequency,
   validateCreateFocusSessionInput,
   validateDateKey,
+  validateFocusQuotaTargetMinutesForFrequency,
   validateFocusSessionLimit,
   validateHabitCategory,
   validateHabitFrequency,
@@ -266,6 +268,28 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.reorderHabits, (habitIds: unknown) =>
     service.reorderHabits(validateReorderHabitIds(habitIds))
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.upsertFocusQuotaGoal,
+    (frequency: unknown, targetMinutes: unknown) => {
+      const normalizedFrequency = validateGoalFrequency(frequency);
+      return service.upsertFocusQuotaGoal(
+        normalizedFrequency,
+        validateFocusQuotaTargetMinutesForFrequency(
+          normalizedFrequency,
+          targetMinutes
+        )
+      );
+    }
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.archiveFocusQuotaGoal,
+    (goalId: unknown) => service.archiveFocusQuotaGoal(validateHabitId(goalId))
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.unarchiveFocusQuotaGoal,
+    (goalId: unknown) =>
+      service.unarchiveFocusQuotaGoal(validateHabitId(goalId))
   );
   registerHandler(
     HABITS_IPC_CHANNELS.showNotification,

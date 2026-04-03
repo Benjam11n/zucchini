@@ -17,6 +17,11 @@ import type {
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type {
+  FocusQuotaGoal,
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
+import type {
   Habit,
   HabitCategory,
   HabitFrequency,
@@ -27,6 +32,7 @@ import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 
 import type { AppRepository, SettledHistoryOptions } from "./app-repository";
+import { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
 import { SqliteFocusSessionRepository } from "./focus-session-repository";
 import { SqliteFocusTimerStateRepository } from "./focus-timer-state-repository";
 import { SqliteHabitsRepository } from "./habit-repository";
@@ -45,6 +51,7 @@ export class SqliteAppRepository implements AppRepository {
   private readonly habitsRepository: SqliteHabitsRepository;
   private readonly historyRepository: SqliteHistoryRepository;
   private readonly focusSessionRepository: SqliteFocusSessionRepository;
+  private readonly focusQuotaGoalRepository: SqliteFocusQuotaGoalRepository;
   private readonly focusTimerStateRepository: SqliteFocusTimerStateRepository;
   private readonly settingsRepository: SqliteSettingsRepository;
   private readonly reminderRuntimeStateRepository: SqliteReminderRuntimeStateRepository;
@@ -59,9 +66,13 @@ export class SqliteAppRepository implements AppRepository {
         : {}
     );
     this.habitsRepository = new SqliteHabitsRepository(this.client);
+    this.focusQuotaGoalRepository = new SqliteFocusQuotaGoalRepository(
+      this.client
+    );
     this.historyRepository = new SqliteHistoryRepository(
       this.client,
-      this.habitsRepository
+      this.habitsRepository,
+      this.focusQuotaGoalRepository
     );
     this.focusSessionRepository = new SqliteFocusSessionRepository(this.client);
     this.focusTimerStateRepository = new SqliteFocusTimerStateRepository(
@@ -108,6 +119,22 @@ export class SqliteAppRepository implements AppRepository {
 
   getHabits(): Habit[] {
     return this.habitsRepository.getHabits();
+  }
+
+  getFocusQuotaGoals(includeArchived = false): FocusQuotaGoal[] {
+    return this.focusQuotaGoalRepository.getGoals(includeArchived);
+  }
+
+  getFocusQuotaGoalsWithStatusForDate(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.historyRepository.getFocusQuotaGoalsWithStatus(date);
+  }
+
+  getHistoricalFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.historyRepository.getHistoricalFocusQuotaGoalsWithStatus(date);
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
@@ -282,6 +309,26 @@ export class SqliteAppRepository implements AppRepository {
     selectedWeekdays: HabitWeekday[] | null
   ): void {
     this.habitsRepository.updateHabitWeekdays(habitId, selectedWeekdays);
+  }
+
+  upsertFocusQuotaGoal(
+    frequency: GoalFrequency,
+    targetMinutes: number,
+    createdAt: string
+  ): void {
+    this.focusQuotaGoalRepository.upsertGoal(
+      frequency,
+      targetMinutes,
+      createdAt
+    );
+  }
+
+  archiveFocusQuotaGoal(goalId: number, archivedAt: string): void {
+    this.focusQuotaGoalRepository.archiveGoal(goalId, archivedAt);
+  }
+
+  unarchiveFocusQuotaGoal(goalId: number, restoredAt: string): void {
+    this.focusQuotaGoalRepository.unarchiveGoal(goalId, restoredAt);
   }
 
   archiveHabit(habitId: number): void {

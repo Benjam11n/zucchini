@@ -7,8 +7,20 @@
  */
 import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
-import { dailySummary, habitPeriodStatus } from "@/main/infra/db/schema";
+import {
+  dailySummary,
+  focusQuotaGoals,
+  focusSessions,
+  habitPeriodStatus,
+} from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import {
+  getFocusQuotaGoalPeriod,
+  isFocusQuotaGoalComplete,
+  normalizeFocusQuotaTargetMinutes,
+  normalizeGoalFrequency,
+} from "@/shared/domain/goal";
+import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import {
   isHabitScheduledForDate,
   normalizeHabitCategory,
@@ -21,6 +33,7 @@ import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { DailySummary } from "@/shared/domain/streak";
 
 import type { SettledHistoryOptions } from "./app-repository";
+import type { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
 import type { SqliteHabitsRepository } from "./habit-repository";
 import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";
 import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
@@ -30,13 +43,22 @@ const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 export class SqliteHistoryRepository {
   private readonly client: SqliteDatabaseClient;
   private readonly habitsRepository: SqliteHabitsRepository;
+  private readonly focusQuotaGoalRepository: SqliteFocusQuotaGoalRepository;
 
   constructor(
     client: SqliteDatabaseClient,
-    habitsRepository: SqliteHabitsRepository
+    habitsRepository: SqliteHabitsRepository,
+    focusQuotaGoalRepository: SqliteFocusQuotaGoalRepository
   ) {
     this.client = client;
     this.habitsRepository = habitsRepository;
+    this.focusQuotaGoalRepository = focusQuotaGoalRepository;
+  }
+
+  getFocusQuotaGoalsWithStatus(date: string): FocusQuotaGoalWithStatus[] {
+    return this.client.run("getFocusQuotaGoalsWithStatus", () =>
+      this.buildFocusQuotaGoalsWithStatus(date)
+    );
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
@@ -151,6 +173,17 @@ export class SqliteHistoryRepository {
             row.targetCount
           ),
         }))
+    );
+  }
+
+  getHistoricalFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[] {
+    return this.client.run("getHistoricalFocusQuotaGoalsWithStatus", () =>
+      this.buildFocusQuotaGoalsWithStatus(
+        date,
+        this.getHistoricalFocusQuotaGoalsForDate(date)
+      )
     );
   }
 
@@ -546,5 +579,91 @@ export class SqliteHistoryRepository {
     habitId: number
   ): string {
     return `${frequency}:${periodStart}:${habitId}`;
+  }
+
+  private buildFocusQuotaGoalsWithStatus(
+    date: string,
+    goals = this.focusQuotaGoalRepository.getGoals()
+  ): FocusQuotaGoalWithStatus[] {
+    return goals.map((goal) => {
+      const period = getFocusQuotaGoalPeriod(goal.frequency, date);
+      const completedMinutes = this.getFocusMinutesInRange(
+        period.start,
+        period.end
+      );
+
+      return {
+        ...goal,
+        completed: isFocusQuotaGoalComplete(goal, completedMinutes),
+        completedMinutes,
+        kind: "focus-quota",
+        periodEnd: period.end,
+        periodStart: period.start,
+      };
+    });
+  }
+
+  private getHistoricalFocusQuotaGoalsForDate(date: string) {
+    const rows = this.client
+      .getDrizzle()
+      .select()
+      .from(focusQuotaGoals)
+      .orderBy(asc(focusQuotaGoals.frequency), desc(focusQuotaGoals.createdAt))
+      .all();
+    const goalsByFrequency = new Map<string, (typeof rows)[number]>();
+
+    for (const row of rows) {
+      const frequency = normalizeGoalFrequency(row.frequency);
+      const createdOn = row.createdAt.slice(0, 10);
+      const archivedOn = row.archivedAt?.slice(0, 10) ?? null;
+
+      if (createdOn > date) {
+        continue;
+      }
+
+      if (archivedOn !== null && archivedOn <= date) {
+        continue;
+      }
+
+      if (!goalsByFrequency.has(frequency)) {
+        goalsByFrequency.set(frequency, row);
+      }
+    }
+
+    return [...goalsByFrequency.values()]
+      .map((row) => {
+        const frequency = normalizeGoalFrequency(row.frequency);
+        return {
+          archivedAt: row.archivedAt,
+          createdAt: row.createdAt,
+          frequency,
+          id: row.id,
+          isArchived: row.isArchived,
+          targetMinutes: normalizeFocusQuotaTargetMinutes(
+            frequency,
+            row.targetMinutes
+          ),
+        };
+      })
+      .toSorted((left, right) => left.frequency.localeCompare(right.frequency));
+  }
+
+  private getFocusMinutesInRange(start: string, end: string): number {
+    const row = this.client
+      .getDrizzle()
+      .select({
+        totalSeconds: sql<number>`coalesce(sum(${focusSessions.durationSeconds}), 0)`,
+      })
+      .from(focusSessions)
+      .where(
+        and(
+          gte(focusSessions.completedDate, start),
+          lte(focusSessions.completedDate, end)
+        )
+      )
+      .get();
+
+    const totalSeconds = row?.totalSeconds ?? 0;
+    return totalSeconds <= 0 ? 0 : Math.max(1, Math.round(totalSeconds / 60));
   }
 }

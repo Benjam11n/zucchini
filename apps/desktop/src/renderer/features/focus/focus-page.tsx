@@ -1,3 +1,4 @@
+import { VisuallyHidden } from "radix-ui";
 /**
  * Focus tab page.
  *
@@ -27,21 +28,27 @@ import {
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
 
+import { FocusQuotaGoalsCard } from "./components/focus-quota-goals-card";
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";
+
+const EMPTY_FOCUS_QUOTA_GOALS: NonNullable<FocusPageProps["focusQuotaGoals"]> =
+  [];
 
 function FocusPageComponent({
   fieldErrors,
   focusSaveErrorMessage,
+  focusQuotaGoals = EMPTY_FOCUS_QUOTA_GOALS,
   phase,
   sessions,
   sessionsLoadError,
   settings,
-  settingsSavePhase,
   timerState,
   todayDate,
+  onArchiveFocusQuotaGoal,
   onChangeSettings,
   onShowWidget,
+  onUpsertFocusQuotaGoal,
   onRetryLoad,
 }: FocusPageProps) {
   const clearFocusSaveError = useFocusStore(
@@ -135,6 +142,16 @@ function FocusPageComponent({
         />
       </div>
 
+      <FocusQuotaGoalsCard
+        focusQuotaGoals={focusQuotaGoals}
+        onArchiveGoal={async (goalId) => {
+          await onArchiveFocusQuotaGoal?.(goalId);
+        }}
+        onSaveGoal={async (frequency, targetMinutes) => {
+          await onUpsertFocusQuotaGoal?.(frequency, targetMinutes);
+        }}
+      />
+
       <FocusSessionList
         phase={phase}
         sessions={sessions}
@@ -151,24 +168,16 @@ function FocusPageComponent({
         <DialogContent className="max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Pomodoro settings</DialogTitle>
-            <DialogDescription>
-              Fine-tune your default focus duration, break lengths, and cycle
-              cadence. Changes save automatically.
-            </DialogDescription>
+            <VisuallyHidden.Root>
+              <DialogDescription>
+                Fine-tune your default focus duration, break lengths, and cycle
+                cadence. Changes save automatically.
+              </DialogDescription>
+            </VisuallyHidden.Root>
           </DialogHeader>
 
           <Card className="border-0 bg-transparent shadow-none ring-0">
             <CardContent className="space-y-4 px-6 pb-6">
-              {settingsSavePhase === "invalid" ? (
-                <p className="text-sm text-destructive">
-                  Fix the highlighted pomodoro settings before they can save.
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Idle changes update the next start immediately. Active timers
-                  keep running and pick up new defaults on the next phase.
-                </p>
-              )}
               <PomodoroSettingsFields
                 fieldErrors={fieldErrors}
                 idPrefix="focus-page-pomodoro-dialog"

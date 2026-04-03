@@ -15,6 +15,10 @@ import type {
   PersistedCompletedBreakState,
   PersistedFocusTimerState,
 } from "@/shared/domain/focus-timer";
+import type {
+  FocusQuotaGoalWithStatus,
+  GoalFrequency,
+} from "@/shared/domain/goal";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export type FocusSessionsPhase = AsyncPhase;
@@ -33,6 +37,7 @@ export interface FocusTodaySummary {
 
 export interface FocusPageProps {
   focusSaveErrorMessage: string | null;
+  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
   fieldErrors: Partial<Record<keyof AppSettings, string>>;
   phase: FocusSessionsPhase;
   sessions: FocusSession[];
@@ -41,7 +46,12 @@ export interface FocusPageProps {
   settingsSavePhase: SettingsSavePhase;
   timerState: PersistedFocusTimerState;
   todayDate: string;
+  onArchiveFocusQuotaGoal?: (goalId: number) => Promise<void>;
   onChangeSettings: (settings: AppSettings) => void;
   onShowWidget: () => Promise<void>;
+  onUpsertFocusQuotaGoal?: (
+    frequency: GoalFrequency,
+    targetMinutes: number
+  ) => Promise<void>;
   onRetryLoad: () => Promise<void>;
 }

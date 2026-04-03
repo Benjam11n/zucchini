@@ -193,6 +193,7 @@ function MainApp() {
         <FocusPage
           fieldErrors={state.settingsFieldErrors}
           focusSaveErrorMessage={state.focusSaveErrorMessage}
+          focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
           phase={state.focusSessionsPhase}
           sessions={state.focusSessions}
           sessionsLoadError={state.focusSessionsLoadError}
@@ -200,8 +201,10 @@ function MainApp() {
           settingsSavePhase={state.settingsSavePhase}
           timerState={state.timerState}
           todayDate={state.todayState.date}
+          onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
           onChangeSettings={actions.handleSettingsDraftChange}
           onShowWidget={actions.handleShowFocusWidget}
+          onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
           onRetryLoad={actions.handleRetryFocusLoad}
         />
       </Suspense>
@@ -220,15 +223,18 @@ function MainApp() {
       >
         <SettingsPage
           fieldErrors={state.settingsFieldErrors}
+          focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
           habits={state.managedHabits}
           settings={state.settingsDraft ?? state.todayState.settings}
           saveErrorMessage={state.settingsSaveErrorMessage}
           savePhase={state.settingsSavePhase}
           onArchiveHabit={actions.handleArchiveHabit}
+          onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
           onChange={actions.handleSettingsDraftChange}
           onCreateHabit={actions.handleCreateHabit}
           onRenameHabit={actions.handleRenameHabit}
           onReorderHabits={actions.handleReorderHabits}
+          onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
           onUnarchiveHabit={actions.handleUnarchiveHabit}
           onUpdateHabitCategory={actions.handleUpdateHabitCategory}
           onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
