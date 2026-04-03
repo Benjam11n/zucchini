@@ -9,15 +9,15 @@ interface RoadmapSegment {
 }
 
 const SEGMENT_TONE_CLASS = {
-  focus: "bg-amber-400/90",
+  focus: "bg-emerald-400/90",
   longBreak: "bg-orange-400/90",
-  shortBreak: "bg-emerald-400/85",
+  shortBreak: "bg-amber-400/90",
 } as const;
 
 const ACTIVE_SEGMENT_CLASS = {
-  focus: "ring-2 ring-amber-200/80",
+  focus: "ring-2 ring-emerald-200/80",
   longBreak: "ring-2 ring-orange-200/80",
-  shortBreak: "ring-2 ring-emerald-200/80",
+  shortBreak: "ring-2 ring-amber-200/80",
 } as const;
 
 function formatDuration(durationMs: number): string {
@@ -122,11 +122,11 @@ export function PomodoroRoadmapCard({
   return (
     <div className="space-y-2.5">
       <div className="overflow-hidden rounded-xl border border-border/60 bg-background/40 p-2.5">
-        <div className="flex h-5 overflow-hidden rounded-xl bg-muted/20">
+        <div className="flex h-5 items-stretch overflow-hidden rounded-xl bg-muted/20">
           {segments.map((segment) => (
             <div
               aria-label={`${segment.label} ${formatDuration(segment.durationMs)}`}
-              className={`min-w-2 transition-all ${SEGMENT_TONE_CLASS[segment.tone]} ${
+              className={`min-w-2 self-stretch ${SEGMENT_TONE_CLASS[segment.tone]} ${
                 segment.key === activeKey
                   ? ACTIVE_SEGMENT_CLASS[segment.tone]
                   : ""

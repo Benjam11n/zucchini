@@ -37,7 +37,7 @@ export function TodayHistoryCarousel({
 
   return (
     <>
-      <div className="mb-4 min-w-0 max-w-full overflow-hidden">
+      <div className="mb-2 min-w-0 max-w-full overflow-hidden px-1 py-1 sm:px-2">
         <Carousel
           opts={{
             align: "start",
@@ -58,7 +58,7 @@ export function TodayHistoryCarousel({
                 >
                   <button
                     type="button"
-                    className="flex cursor-pointer flex-col items-center gap-2 rounded-xl p-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex cursor-pointer flex-col items-center gap-2 rounded-xl p-2 transition-opacity hover:bg-background/45 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setSelectedDay(day)}
                   >
                     <HabitActivityRingGlyph

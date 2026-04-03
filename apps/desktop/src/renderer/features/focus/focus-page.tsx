@@ -28,27 +28,20 @@ import {
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
 
-import { FocusQuotaGoalsCard } from "./components/focus-quota-goals-card";
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";
-
-const EMPTY_FOCUS_QUOTA_GOALS: NonNullable<FocusPageProps["focusQuotaGoals"]> =
-  [];
 
 function FocusPageComponent({
   fieldErrors,
   focusSaveErrorMessage,
-  focusQuotaGoals = EMPTY_FOCUS_QUOTA_GOALS,
   phase,
   sessions,
   sessionsLoadError,
   settings,
   timerState,
   todayDate,
-  onArchiveFocusQuotaGoal,
   onChangeSettings,
   onShowWidget,
-  onUpsertFocusQuotaGoal,
   onRetryLoad,
 }: FocusPageProps) {
   const clearFocusSaveError = useFocusStore(
@@ -141,17 +134,6 @@ function FocusPageComponent({
           }}
         />
       </div>
-
-      <FocusQuotaGoalsCard
-        focusQuotaGoals={focusQuotaGoals}
-        onArchiveGoal={async (goalId) => {
-          await onArchiveFocusQuotaGoal?.(goalId);
-        }}
-        onSaveGoal={async (frequency, targetMinutes) => {
-          await onUpsertFocusQuotaGoal?.(frequency, targetMinutes);
-        }}
-      />
-
       <FocusSessionList
         phase={phase}
         sessions={sessions}

@@ -78,6 +78,7 @@ describe("focus tab", () => {
       screen.getByText("No completed focus sessions yet.")
     ).toBeInTheDocument();
     expect(screen.getByText("Recent focus sessions")).toBeInTheDocument();
+    expect(screen.queryByText("Focus quota")).not.toBeInTheDocument();
   });
 
   it("supports start, pause, resume, and reset controls", async () => {

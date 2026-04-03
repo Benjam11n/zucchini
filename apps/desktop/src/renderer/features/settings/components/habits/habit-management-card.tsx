@@ -65,6 +65,7 @@ export function HabitManagementCard({
         />
         {onArchiveFocusQuotaGoal && onUpsertFocusQuotaGoal ? (
           <FocusQuotaGoalsCard
+            archiveButtonVariant="destructive"
             embedded
             focusQuotaGoals={focusQuotaGoals}
             onArchiveGoal={onArchiveFocusQuotaGoal}

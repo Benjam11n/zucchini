@@ -26,6 +26,7 @@ function buildDrafts(
 }
 
 interface FocusQuotaGoalsCardProps {
+  archiveButtonVariant?: "destructive" | "ghost";
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   embedded?: boolean;
   onArchiveGoal: (goalId: number) => Promise<void>;
@@ -36,6 +37,7 @@ interface FocusQuotaGoalsCardProps {
 }
 
 export function FocusQuotaGoalsCard({
+  archiveButtonVariant = "ghost",
   embedded = false,
   focusQuotaGoals,
   onArchiveGoal,
@@ -100,7 +102,7 @@ export function FocusQuotaGoalsCard({
                     }}
                     size="sm"
                     type="button"
-                    variant="ghost"
+                    variant={archiveButtonVariant}
                   >
                     <Archive className="size-4" />
                   </Button>

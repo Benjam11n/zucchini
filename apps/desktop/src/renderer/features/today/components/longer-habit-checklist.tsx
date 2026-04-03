@@ -1,8 +1,7 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { CalendarRange, CheckCircle2, Minus, Plus } from "lucide-react";
-import type { CSSProperties } from "react";
+import { CalendarRange, CheckCircle2, Minus, Plus, Timer } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -10,9 +9,13 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import { staggerItemVariants } from "@/renderer/shared/lib/motion";
+import {
+  hoverLift,
+  microTransition,
+  staggerItemVariants,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
-import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { parseDateKey } from "@/shared/utils/date";
@@ -25,18 +28,12 @@ interface LongerHabitChecklistProps {
   onIncrementHabitProgress: (habitId: number) => void;
 }
 
-const PERIOD_SECTIONS: {
-  description: string;
-  title: string;
-  value: HabitFrequency;
-}[] = [
+const PERIOD_SECTIONS: { title: string; value: HabitFrequency }[] = [
   {
-    description: "Complete any time before the week closes.",
     title: "This Week",
     value: "weekly",
   },
   {
-    description: "Complete any time before the month closes.",
     title: "This Month",
     value: "monthly",
   },
@@ -48,6 +45,21 @@ function formatResetLabel(periodEnd: string): string {
     month: "short",
     weekday: "short",
   })}`;
+}
+
+function formatQuotaLabel(
+  completed: number,
+  target: number,
+  suffix: ReactNode
+): ReactNode {
+  return (
+    <>
+      <span className="font-medium text-foreground">{completed}</span>
+      <span>/</span>
+      <span>{target}</span>
+      <span>{suffix}</span>
+    </>
+  );
 }
 
 function LongerHabitListItem({
@@ -65,30 +77,64 @@ function LongerHabitListItem({
   const targetCount = habit.targetCount ?? 1;
 
   return (
-    <div
+    <m.div
+      animate={{ opacity: 1, scale: 1, x: 0 }}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
-        habit.completed ? "bg-muted/20" : "hover:bg-muted/25"
+        "group flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors duration-150",
+        habit.completed
+          ? "bg-muted/15 text-muted-foreground/65"
+          : "hover:bg-muted/25"
       )}
+      initial={{ opacity: 0, scale: 0.98, x: -8 }}
+      layout
+      transition={microTransition}
+      whileTap={tapPress}
+      {...(habit.completed ? {} : { whileHover: hoverLift })}
     >
-      <Button
-        aria-label={`Decrease progress for ${habit.name}`}
-        className="shrink-0"
-        disabled={completedCount === 0}
-        onClick={() => onDecrement(habit.id)}
-        size="icon-sm"
-        type="button"
-        variant="outline"
-      >
-        <Minus className="size-3.5" />
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          aria-label={`Increase progress for ${habit.name}`}
+          className="rounded-full"
+          disabled={completedCount >= targetCount}
+          onClick={() => onIncrement(habit.id)}
+          size="icon-xs"
+          style={
+            habit.completed
+              ? ({
+                  backgroundColor: presentation.color,
+                  borderColor: presentation.color,
+                  color: presentation.selectedTextColor,
+                } as CSSProperties)
+              : undefined
+          }
+          type="button"
+          variant={habit.completed ? "default" : "outline"}
+        >
+          {habit.completed ? (
+            <CheckCircle2 className="size-3" />
+          ) : (
+            <Plus className="size-3" />
+          )}
+        </Button>
+        <Button
+          aria-label={`Decrease progress for ${habit.name}`}
+          className="rounded-full"
+          disabled={completedCount === 0}
+          onClick={() => onDecrement(habit.id)}
+          size="icon-xs"
+          type="button"
+          variant="ghost"
+        >
+          <Minus className="size-3" />
+        </Button>
+      </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <div className="min-w-0 flex flex-1 items-center gap-2 overflow-hidden">
+        <div className="min-w-0 flex flex-1 items-center gap-2 overflow-hidden">
           <span
             className={cn(
-              "truncate text-sm",
-              habit.completed && "text-muted-foreground"
+              "truncate text-sm transition-all duration-150",
+              habit.completed && "line-through decoration-muted-foreground/30"
             )}
           >
             {habit.name}
@@ -100,48 +146,38 @@ function LongerHabitListItem({
             {presentation.label}
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full transition-all"
-              style={
-                {
-                  backgroundColor: presentation.color,
-                  width: `${Math.round((completedCount / targetCount) * 100)}%`,
-                } as CSSProperties
-              }
-            />
-          </div>
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {completedCount}/{targetCount}
-          </span>
-        </div>
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+          {habit.completed ? (
+            <span style={{ color: presentation.color }}>Complete</span>
+          ) : (
+            <span>{targetCount - completedCount} left</span>
+          )}
+        </span>
+        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
+          {formatQuotaLabel(completedCount, targetCount, " done")}
+        </span>
       </div>
+    </m.div>
+  );
+}
 
-      <Button
-        aria-label={`Increase progress for ${habit.name}`}
-        className="shrink-0"
-        disabled={completedCount >= targetCount}
-        onClick={() => onIncrement(habit.id)}
-        size="icon-sm"
-        style={
-          habit.completed
-            ? ({
-                backgroundColor: presentation.color,
-                borderColor: presentation.color,
-                color: presentation.selectedTextColor,
-              } as CSSProperties)
-            : undefined
-        }
-        type="button"
-        variant={habit.completed ? "default" : "outline"}
-      >
-        {habit.completed ? (
-          <CheckCircle2 className="size-3.5" />
+function FocusQuotaRow({ goal }: { goal: FocusQuotaGoalWithStatus }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
+      <div className="min-w-0 flex flex-1 items-center gap-2">
+        <Timer className="size-3.5 shrink-0 text-primary/80" />
+        <div className="truncate">Focus quota</div>
+        {goal.completed ? (
+          <span className="shrink-0 text-xs text-primary">Complete</span>
         ) : (
-          <Plus className="size-3.5" />
+          <span className="shrink-0 text-xs text-muted-foreground">
+            In progress
+          </span>
         )}
-      </Button>
+      </div>
+      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
+        {formatQuotaLabel(goal.completedMinutes, goal.targetMinutes, " min")}
+      </span>
     </div>
   );
 }
@@ -205,7 +241,6 @@ export function LongerHabitChecklist({
     // oxlint-disable-next-line eslint/sort-keys
     return {
       ...section,
-      categoryProgress: getHabitCategoryProgress(sectionHabits),
       completedCount,
       completedHabitGoalCount: completedHabitGoals,
       completedMinutes,
@@ -227,7 +262,7 @@ export function LongerHabitChecklist({
   const progressProps =
     trackedGoalCount > 0
       ? {
-          progressLabel: `${completedGoalCount}/${trackedGoalCount} goals complete`,
+          progressLabel: `${completedGoalCount}/${trackedGoalCount}`,
           progressValue: Math.round(
             (aggregateCompletionRatio / trackedGoalCount) * 100
           ),
@@ -239,32 +274,18 @@ export function LongerHabitChecklist({
       <HabitListCard
         title="Beyond Today"
         icon={CalendarRange}
-        description=""
         {...progressProps}
       >
         {sections.map((section) => (
           <m.div
             key={section.value}
-            className="grid gap-3"
+            className="grid gap-2.5"
             variants={staggerItemVariants}
           >
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div className="grid gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full border border-border/70 bg-card/70 p-1 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.7)]">
-                    <HabitActivityRingGlyph
-                      categoryProgress={section.categoryProgress}
-                      size={24}
-                    />
-                  </span>
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {section.title}
-                  </h3>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {section.description}
-                </p>
-              </div>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-sm font-medium text-foreground">
+                {section.title}
+              </h3>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 {section.habits.length > 0 ? (
                   <span className="tabular-nums">
@@ -276,37 +297,9 @@ export function LongerHabitChecklist({
               </div>
             </div>
 
-            <div className="grid gap-px">
+            <div className="grid gap-1">
               {section.focusQuotaGoals.map((goal) => (
-                <div
-                  key={`${goal.kind}-${goal.id}`}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <span className="truncate text-sm">Focus quota</span>
-                    </div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              Math.round(
-                                (goal.completedMinutes / goal.targetMinutes) *
-                                  100
-                              )
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs tabular-nums text-muted-foreground">
-                        {goal.completedMinutes}/{goal.targetMinutes} min
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <FocusQuotaRow key={`${goal.kind}-${goal.id}`} goal={goal} />
               ))}
               {section.habits.map((habit) => (
                 <LongerHabitListItem
