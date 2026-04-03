@@ -60,7 +60,7 @@ export function WeeklyReviewHeroCard({
   ];
 
   return (
-    <Card className="overflow-hidden border-border/60 bg-card py-0">
+    <Card className="overflow-hidden py-0">
       <CardContent className="relative overflow-hidden px-6 py-6 sm:px-7">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-4">

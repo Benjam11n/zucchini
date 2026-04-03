@@ -40,7 +40,7 @@ const WeeklyReviewTrendChart = lazy(() =>
 
 function ChartSectionFallback() {
   return (
-    <Card className="border-border/60 bg-card/95">
+    <Card>
       <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
         <Spinner className="size-4 text-primary/70" />
         Loading chart...
@@ -71,7 +71,7 @@ export function WeeklyReviewSection({
     !review
   ) {
     return (
-      <Card className="border-border/60 bg-card/95">
+      <Card>
         <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
           <Spinner className="size-4 text-primary/70" />
           Building weekly review...
@@ -83,7 +83,7 @@ export function WeeklyReviewSection({
   if (!review) {
     if (weeklyReviewError) {
       return (
-        <Card className="border-border/60 bg-card/95">
+        <Card>
           <CardHeader>
             <CardDescription>Weekly Review</CardDescription>
             <CardTitle>Could not load weekly review</CardTitle>
@@ -96,7 +96,7 @@ export function WeeklyReviewSection({
     }
 
     return (
-      <Card className="border-border/60 bg-card/95">
+      <Card>
         <CardHeader>
           <CardDescription>Weekly Review</CardDescription>
           <CardTitle>Not enough history yet</CardTitle>

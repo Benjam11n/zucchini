@@ -41,7 +41,7 @@ export function WeeklyReviewHabitChartImpl({
     );
 
   return (
-    <Card className="border-border/60 bg-card/90">
+    <Card>
       <CardHeader>
         <CardTitle>Habit completion</CardTitle>
       </CardHeader>

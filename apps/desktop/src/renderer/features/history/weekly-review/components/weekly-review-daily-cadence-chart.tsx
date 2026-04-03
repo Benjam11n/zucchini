@@ -12,7 +12,7 @@ interface WeeklyReviewDailyCadenceChartProps {
 
 function WeeklyReviewChartFallback() {
   return (
-    <Card className="border-border/60 bg-card/90">
+    <Card>
       <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
         <Spinner className="size-4 text-primary/70" />
         Loading chart...

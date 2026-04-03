@@ -34,7 +34,7 @@ export function WeeklyReviewTrendChartImpl({
   trend,
 }: WeeklyReviewTrendChartImplProps) {
   return (
-    <Card className="border-border/60 bg-card/90">
+    <Card>
       <CardHeader>
         <CardTitle>Trend line</CardTitle>
       </CardHeader>

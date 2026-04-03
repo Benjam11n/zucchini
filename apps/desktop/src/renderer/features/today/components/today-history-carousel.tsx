@@ -37,7 +37,7 @@ export function TodayHistoryCarousel({
 
   return (
     <>
-      <div className="mb-2 min-w-0 max-w-full overflow-hidden px-1 py-1 sm:px-2">
+      <div className="min-w-0 max-w-full overflow-hidden px-1 sm:px-2 bg-card/70 rounded-md border border-card">
         <Carousel
           opts={{
             align: "start",

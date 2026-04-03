@@ -158,6 +158,7 @@ function FocusPageComponent({
             </VisuallyHidden.Root>
           </DialogHeader>
 
+          {/* CHECK: why is this in a Card? */}
           <Card className="border-0 bg-transparent shadow-none ring-0">
             <CardContent className="space-y-4 px-6 pb-6">
               <PomodoroSettingsFields

@@ -110,7 +110,7 @@ export function FocusTimerCard({
   };
 
   return (
-    <Card className="overflow-hidden border-border/60 bg-card/95">
+    <Card className="overflow-hidden">
       <FocusTimerHeader
         onOpenPomodoroSettings={onOpenPomodoroSettings}
         onShowWidget={onShowWidget}

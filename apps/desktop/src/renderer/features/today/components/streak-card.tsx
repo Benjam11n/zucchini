@@ -79,7 +79,7 @@ function StreakCardComponent({
 
   return (
     <LazyMotion features={domAnimation}>
-      <Card className="border border-border/70 bg-card/95">
+      <Card>
         <CardContent className="grid gap-6 p-0 lg:p-2">
           <div className="flex justify-center">
             <HabitActivityCard categoryProgress={categoryProgress} />

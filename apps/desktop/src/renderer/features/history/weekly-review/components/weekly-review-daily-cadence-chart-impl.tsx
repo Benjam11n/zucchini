@@ -34,7 +34,7 @@ export function WeeklyReviewDailyCadenceChartImpl({
   review,
 }: WeeklyReviewDailyCadenceChartImplProps) {
   return (
-    <Card className="border-border/60 bg-card/90">
+    <Card>
       <CardHeader>
         <CardTitle>Daily cadence</CardTitle>
       </CardHeader>

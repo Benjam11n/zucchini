@@ -65,7 +65,7 @@ export function FocusSessionList({
   const historySessions = buildFocusHistorySessions(sessions, timerState);
 
   return (
-    <Card className="border-border/70 bg-card/95">
+    <Card>
       <CardHeader className="gap-3">
         <div className="space-y-1">
           <VisuallyHidden.Root>

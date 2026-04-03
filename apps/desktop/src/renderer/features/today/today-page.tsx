@@ -117,6 +117,7 @@ function TodayPageComponent({
       };
     }, [state.habits]);
   useTodayPopups({ state });
+
   const celebration = useTodayCelebration({
     completedCount,
     dailyHabitCount: dailyHabits.length,

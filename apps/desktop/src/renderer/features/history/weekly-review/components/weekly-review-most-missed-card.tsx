@@ -17,7 +17,7 @@ export function WeeklyReviewMostMissedCard({
   habits,
 }: WeeklyReviewMostMissedCardProps) {
   return (
-    <Card className="border-border/60 bg-card/90">
+    <Card>
       <CardHeader>
         <CardTitle>Most missed habits</CardTitle>
       </CardHeader>
