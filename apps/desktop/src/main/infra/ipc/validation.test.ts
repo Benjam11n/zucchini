@@ -6,6 +6,12 @@ import {
   validateAppSettings,
   validateCreateFocusSessionInput,
   validateFocusSessionLimit,
+  validateHabitCategory,
+  validateHabitFrequency,
+  validateHabitId,
+  validateHabitName,
+  validateHabitTargetCount,
+  validateHabitWeekdays,
   validateNotificationIconFilename,
   validateReorderHabitIds,
 } from "./validation";
@@ -135,5 +141,86 @@ describe("ipc validation", () => {
 
   it("rejects invalid focus session limits", () => {
     expect(() => validateFocusSessionLimit(0)).toThrow(IpcValidationError);
+  });
+
+  it("rejects empty habit names", () => {
+    expect(() => validateHabitName("")).toThrow(IpcValidationError);
+    expect(() => validateHabitName("   ")).toThrow(IpcValidationError);
+  });
+
+  it("accepts long habit names up to the schema limit", () => {
+    expect(validateHabitName("a".repeat(100))).toBe("a".repeat(100));
+  });
+
+  it("accepts valid habit names", () => {
+    expect(validateHabitName("Morning run")).toBe("Morning run");
+    expect(validateHabitName("Read 30 min")).toBe("Read 30 min");
+  });
+
+  it("rejects invalid habit ids", () => {
+    expect(() => validateHabitId("not-a-number")).toThrow(IpcValidationError);
+    expect(() => validateHabitId(-1)).toThrow(IpcValidationError);
+    expect(() => validateHabitId(0)).toThrow(IpcValidationError);
+    expect(() => validateHabitId(1.5)).toThrow(IpcValidationError);
+  });
+
+  it("accepts valid habit ids", () => {
+    expect(validateHabitId(1)).toBe(1);
+    expect(validateHabitId(42)).toBe(42);
+  });
+
+  it("rejects unsupported habit categories", () => {
+    expect(() => validateHabitCategory("invalid")).toThrow(IpcValidationError);
+    expect(() => validateHabitCategory(null)).toThrow(IpcValidationError);
+  });
+
+  it("accepts supported habit categories", () => {
+    expect(validateHabitCategory("fitness")).toBe("fitness");
+    expect(validateHabitCategory("nutrition")).toBe("nutrition");
+    expect(validateHabitCategory("productivity")).toBe("productivity");
+  });
+
+  it("rejects unsupported habit frequencies", () => {
+    expect(() => validateHabitFrequency("hourly")).toThrow(IpcValidationError);
+    expect(() => validateHabitFrequency(null)).toThrow(IpcValidationError);
+  });
+
+  it("accepts supported habit frequencies", () => {
+    expect(validateHabitFrequency("daily")).toBe("daily");
+    expect(validateHabitFrequency("weekly")).toBe("weekly");
+    expect(validateHabitFrequency("monthly")).toBe("monthly");
+  });
+
+  it("rejects invalid habit target counts", () => {
+    expect(() => validateHabitTargetCount(0)).toThrow(IpcValidationError);
+    expect(() => validateHabitTargetCount(-1)).toThrow(IpcValidationError);
+    expect(() => validateHabitTargetCount(1.5)).toThrow(IpcValidationError);
+  });
+
+  it("accepts valid habit target counts", () => {
+    expect(validateHabitTargetCount(1)).toBe(1);
+    expect(validateHabitTargetCount(5)).toBe(5);
+  });
+
+  it("rejects invalid habit weekday values", () => {
+    expect(() => validateHabitWeekdays([7])).toThrow(IpcValidationError);
+    expect(() => validateHabitWeekdays([0, 0, 1])).toThrow(IpcValidationError);
+  });
+
+  it("accepts valid habit weekday arrays", () => {
+    expect(validateHabitWeekdays([1, 3, 5])).toStrictEqual([1, 3, 5]);
+    expect(validateHabitWeekdays([0, 1, 2, 3, 4, 5, 6])).toStrictEqual([
+      0, 1, 2, 3, 4, 5, 6,
+    ]);
+  });
+
+  it("rejects reorder payloads with non-numeric ids", () => {
+    expect(() => validateReorderHabitIds([1, "two", 3] as never)).toThrow(
+      IpcValidationError
+    );
+  });
+
+  it("accepts reorder payloads with empty arrays", () => {
+    expect(validateReorderHabitIds([])).toStrictEqual([]);
   });
 });

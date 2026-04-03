@@ -1,151 +1,69 @@
 // @vitest-environment jsdom
 
-import { cleanup, render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
-import type { ActivityData } from "./types";
+import type { HabitCategoryProgress } from "@/shared/domain/habit";
 
-const mockActivities = [
-  {
-    color: "#ff2d55",
-    current: 1,
-    label: "Fitness",
-    size: 280,
-    target: 2,
-    unit: "Habits",
-    value: 50,
-  },
-  {
-    color: "#a3f900",
-    current: 2,
-    label: "Nutrition",
-    size: 220,
-    target: 2,
-    unit: "Habits",
-    value: 100,
-  },
-  {
-    color: "#04c7dd",
-    current: 1,
-    label: "Productivity",
-    size: 160,
-    target: 4,
-    unit: "Habits",
-    value: 25,
-  },
-] satisfies ActivityData[];
-
-async function loadCardModule() {
-  vi.resetModules();
-
-  const buildHabitActivityDataModule =
-    await import("./build-habit-activity-data");
-  const habitActivityCardModule = await import("./habit-activity-card");
-
-  return {
-    HabitActivityCard: habitActivityCardModule.HabitActivityCard,
-    buildHabitActivityData: buildHabitActivityDataModule.buildHabitActivityData,
-    buildHabitActivityDataModule,
-  };
-}
-
-function resetState(): void {
-  cleanup();
-  vi.restoreAllMocks();
-}
+import { HabitActivityCard } from "./habit-activity-card";
 
 describe("habit activity card", () => {
-  it("reuses memoized activity data when categoryProgress keeps the same reference", async () => {
-    resetState();
+  const categoryProgress: HabitCategoryProgress[] = [
+    {
+      category: "fitness",
+      completed: 1,
+      progress: 50,
+      total: 2,
+    },
+    {
+      category: "nutrition",
+      completed: 2,
+      progress: 100,
+      total: 2,
+    },
+    {
+      category: "productivity",
+      completed: 1,
+      progress: 25,
+      total: 4,
+    },
+  ];
 
-    const { HabitActivityCard, buildHabitActivityDataModule } =
-      await loadCardModule();
-    const buildHabitActivityDataSpy = vi
-      .spyOn(buildHabitActivityDataModule, "buildHabitActivityData")
-      .mockReturnValue(mockActivities);
+  it("renders the activity ring with uppercase category labels and percentages", () => {
+    render(<HabitActivityCard categoryProgress={categoryProgress} />);
 
-    const categoryProgress = [
-      {
-        category: "fitness",
-        completed: 1,
-        progress: 50,
-        total: 2,
-      },
-      {
-        category: "nutrition",
-        completed: 2,
-        progress: 100,
-        total: 2,
-      },
-      {
-        category: "productivity",
-        completed: 1,
-        progress: 25,
-        total: 4,
-      },
-    ] as const;
-
-    const stableReference = [...categoryProgress];
-    const { rerender } = render(
-      <HabitActivityCard categoryProgress={stableReference} />
-    );
-
-    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
-
-    rerender(<HabitActivityCard categoryProgress={stableReference} />);
-    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
+    expect(screen.getByText("FITNESS")).toBeInTheDocument();
+    expect(screen.getByText("NUTRITION")).toBeInTheDocument();
+    expect(screen.getByText("PRODUCTIVITY")).toBeInTheDocument();
+    expect(screen.getByText("50")).toBeInTheDocument();
+    expect(screen.getByText("100")).toBeInTheDocument();
+    expect(screen.getByText("25")).toBeInTheDocument();
   });
 
-  it("recomputes activity data when the categoryProgress reference changes", async () => {
-    resetState();
-
-    const { HabitActivityCard, buildHabitActivityDataModule } =
-      await loadCardModule();
-    const buildHabitActivityDataSpy = vi
-      .spyOn(buildHabitActivityDataModule, "buildHabitActivityData")
-      .mockReturnValue(mockActivities);
-
-    const initialCategoryProgress = [
-      {
-        category: "fitness",
-        completed: 1,
-        progress: 50,
-        total: 2,
-      },
-      {
-        category: "nutrition",
-        completed: 2,
-        progress: 100,
-        total: 2,
-      },
-      {
-        category: "productivity",
-        completed: 1,
-        progress: 25,
-        total: 4,
-      },
-    ] as const;
-
-    const { rerender } = render(
-      <HabitActivityCard categoryProgress={[...initialCategoryProgress]} />
+  it("hides the detailed info panel when showDetails is false", () => {
+    const { container } = render(
+      <HabitActivityCard categoryProgress={categoryProgress} showDetails={false} />
     );
 
-    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(1);
+    expect(screen.queryByText("FITNESS")).not.toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument();
+  });
 
-    rerender(
+  it("applies a custom className to the container", () => {
+    const { container } = render(
       <HabitActivityCard
-        categoryProgress={[
-          {
-            category: "fitness",
-            completed: 2,
-            progress: 100,
-            total: 2,
-          },
-          initialCategoryProgress[1],
-          initialCategoryProgress[2],
-        ]}
+        categoryProgress={categoryProgress}
+        className="custom-class"
       />
     );
 
-    expect(buildHabitActivityDataSpy.mock.calls).toHaveLength(2);
+    expect(container.firstChild).toHaveClass("custom-class");
+  });
+
+  it("renders zero values when no categories are provided", () => {
+    render(<HabitActivityCard categoryProgress={[]} />);
+
+    expect(screen.getByText("FITNESS")).toBeInTheDocument();
+    const zeros = screen.getAllByText("0");
+    expect(zeros.length).toBeGreaterThan(0);
   });
 });

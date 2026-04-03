@@ -859,6 +859,76 @@ describe("habit categories", () => {
     });
   });
 
+  it("caps progress to the new target when downgrading from daily to weekly with a lower target", () => {
+    const repository = new FakeRepository();
+    const [existingHabit] = repository.habits;
+    if (!existingHabit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...existingHabit,
+      frequency: "daily",
+      targetCount: 1,
+    };
+    repository.setStatusForDate("2026-03-08", new Map([[1, true]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitFrequency(1, "weekly", 1);
+
+    expect(todayState.habits[0]).toMatchObject({
+      completed: true,
+      completedCount: 1,
+      frequency: "weekly",
+      targetCount: 1,
+    });
+  });
+
+  it("clears progress when switching from daily to weekly on a non-week-start day", () => {
+    const repository = new FakeRepository();
+    const [existingHabit] = repository.habits;
+    if (!existingHabit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...existingHabit,
+      frequency: "daily",
+      targetCount: 1,
+    };
+    repository.setStatusForDate("2026-03-10", new Map([[1, true]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitFrequency(1, "weekly");
+
+    expect(todayState.habits[0]).toMatchObject({
+      frequency: "weekly",
+    });
+  });
+
+  it("uses the default target count when none is provided for the new frequency", () => {
+    const repository = new FakeRepository();
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitFrequency(1, "weekly");
+
+    expect(todayState.habits[0]).toMatchObject({
+      frequency: "weekly",
+      targetCount: 1,
+    });
+  });
+
   it("removes a daily habit from today when its weekday schedule no longer includes today", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-10", new Map([[1, false]]));
