@@ -2,36 +2,67 @@
 
 import { render, screen } from "@testing-library/react";
 
+import type { AppTab } from "@/renderer/app/app.types";
+
 import { AppShell } from "./app-shell";
 
-describe("app shell", () => {
-  it("constrains the main content column to avoid horizontal width leaks", () => {
-    Object.defineProperty(window, "updater", {
-      configurable: true,
-      value: {
-        checkForUpdates: vi.fn(() => Promise.resolve()),
-        getState: vi.fn(() =>
-          Promise.resolve({
-            downloadedVersion: null,
-            errorMessage: null,
-            phase: "idle",
-          })
-        ),
-        onStateChange: vi.fn(() => () => {}),
-        quitAndInstall: vi.fn(() => Promise.resolve()),
-      },
-    });
+function setupUpdaterMock() {
+  Object.defineProperty(window, "updater", {
+    configurable: true,
+    value: {
+      checkForUpdates: vi.fn(() => Promise.resolve()),
+      getState: vi.fn(() =>
+        Promise.resolve({
+          downloadedVersion: null,
+          errorMessage: null,
+          phase: "idle",
+        })
+      ),
+      onStateChange: vi.fn(() => () => {}),
+      quitAndInstall: vi.fn(() => Promise.resolve()),
+    },
+  });
+}
 
-    const { container } = render(
-      <AppShell onTabChange={vi.fn()} tab="today">
-        <div>content</div>
+describe("app shell", () => {
+  function renderAppShell(tab: AppTab = "today") {
+    return render(
+      <AppShell onTabChange={vi.fn()} tab={tab}>
+        <div data-testid="content">page content</div>
       </AppShell>
     );
+  }
+
+  it("renders all navigation tabs for both desktop and mobile layouts", () => {
+    setupUpdaterMock();
+    renderAppShell("today");
+
+    expect(screen.getAllByRole("tab", { name: "Today" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "Focus" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "History" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "Settings" })).toHaveLength(2);
+  });
+
+  it("constrains the main content column to avoid horizontal width leaks", () => {
+    setupUpdaterMock();
+    const { container } = renderAppShell();
 
     expect(container.querySelector("section")).toHaveClass(
       "min-w-0",
       "overflow-x-hidden"
     );
-    expect(screen.getByRole("tabpanel")).toHaveClass("min-w-0");
+    const [tabpanel] = screen.getAllByRole("tabpanel");
+    if (!tabpanel) {
+      throw new Error("Expected a tabpanel element.");
+    }
+
+    expect(tabpanel).toHaveClass("min-w-0");
+  });
+
+  it("renders children inside the active tab panel", () => {
+    setupUpdaterMock();
+    renderAppShell("today");
+
+    expect(screen.getByTestId("content")).toHaveTextContent("page content");
   });
 });
