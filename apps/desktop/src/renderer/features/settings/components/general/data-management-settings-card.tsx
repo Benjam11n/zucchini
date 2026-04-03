@@ -7,14 +7,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -66,19 +61,17 @@ export function DataManagementSettingsCard() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardDescription>Data safety</CardDescription>
-          <div className="flex items-center gap-2">
-            <HardDriveDownload className="size-4 text-primary" />
-            <CardTitle>Backups & data</CardTitle>
-          </div>
-        </CardHeader>
+        <SettingsCardHeader
+          description="Open local app data or move your data with backups."
+          icon={HardDriveDownload}
+          title="Backups & data"
+        />
         <CardContent className="space-y-3">
           <ItemGroup className="gap-0">
             <Item className="py-2">
               <ItemContent>
                 <p className="text-sm font-medium">Open data folder</p>
-                <ItemDescription className="text-xs leading-snug">
+                <ItemDescription>
                   Reveal the local folder that stores your database and app
                   state.
                 </ItemDescription>
@@ -106,7 +99,7 @@ export function DataManagementSettingsCard() {
             <Item className="py-2">
               <ItemContent>
                 <p className="text-sm font-medium">Export backup</p>
-                <ItemDescription className="text-xs leading-snug">
+                <ItemDescription>
                   Save a copy of your current `zucchini.db` to a location you
                   choose.
                 </ItemDescription>
@@ -139,7 +132,7 @@ export function DataManagementSettingsCard() {
             <Item className="py-2">
               <ItemContent>
                 <p className="text-sm font-medium">Import backup</p>
-                <ItemDescription className="text-xs leading-snug">
+                <ItemDescription>
                   Restore from a backup file. Zucchini will restart after the
                   import finishes.
                 </ItemDescription>
@@ -184,7 +177,7 @@ export function DataManagementSettingsCard() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-6 py-4">
+          <div className="grid gap-4 px-6">
             <div
               className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
               role="alert"

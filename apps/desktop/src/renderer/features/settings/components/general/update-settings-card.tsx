@@ -4,14 +4,9 @@ import { Download, RefreshCw, Rocket } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
 import { clearDismissedUpdateVersion } from "@/renderer/app/shell/update-toast-storage";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Item,
   ItemActions,
@@ -246,19 +241,17 @@ export function UpdateSettingsCard() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardDescription>Maintenance</CardDescription>
-        <div className="flex items-center gap-2">
-          <RefreshCw className="size-4 text-primary" />
-          <CardTitle>App updates</CardTitle>
-        </div>
-      </CardHeader>
+      <SettingsCardHeader
+        description="Check for new desktop releases and install them."
+        icon={RefreshCw}
+        title="App updates"
+      />
       <CardContent>
         <ItemGroup className="gap-0">
           <Item className="py-2">
             <ItemContent>
               <p className="text-sm font-medium">Update status</p>
-              <ItemDescription className="text-xs leading-snug">
+              <ItemDescription>
                 {viewState.actionError ?? getStatusCopy(viewState.state)}
               </ItemDescription>
             </ItemContent>

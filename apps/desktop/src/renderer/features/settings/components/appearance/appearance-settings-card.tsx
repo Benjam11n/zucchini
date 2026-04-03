@@ -2,13 +2,9 @@ import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
 import { THEME_OPTIONS } from "@/renderer/features/settings/components/appearance/theme-options";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   hoverLift,
@@ -23,12 +19,11 @@ export function AppearanceSettingsCard({
 }: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Palette className="size-4 text-primary" />
-          <CardTitle>Appearance</CardTitle>
-        </div>
-      </CardHeader>
+      <SettingsCardHeader
+        description="Choose how Zucchini looks on this device."
+        icon={Palette}
+        title="Appearance"
+      />
       <CardContent className="grid gap-4">
         <div className="flex gap-3">
           {THEME_OPTIONS.map((option) => {

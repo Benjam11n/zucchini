@@ -1,14 +1,8 @@
 import { ListTodo } from "lucide-react";
-import { VisuallyHidden } from "radix-ui";
 
 import { FocusQuotaGoalsCard } from "@/renderer/features/focus/components/focus-quota-goals-card";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 
 import { HabitManagementContent } from "./habit-management-content";
 import type { HabitManagementCardProps } from "./habit-management.types";
@@ -41,15 +35,11 @@ export function HabitManagementCard({
 
   return (
     <Card>
-      <CardHeader>
-        <VisuallyHidden.Root>
-          <CardDescription>Habits</CardDescription>
-        </VisuallyHidden.Root>
-        <div className="flex items-center gap-2">
-          <ListTodo className="size-4 text-primary" />
-          <CardTitle>Manage Habits</CardTitle>
-        </div>
-      </CardHeader>
+      <SettingsCardHeader
+        description="Create, reorder, archive, and restore habits."
+        icon={ListTodo}
+        title="Manage habits"
+      />
       <CardContent className="grid gap-3">
         <HabitManagementContent
           habits={habits}

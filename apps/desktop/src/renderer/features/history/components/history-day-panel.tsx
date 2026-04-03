@@ -77,7 +77,7 @@ export function HistoryDayPanel({
         <m.div
           key={selectedDay.date}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4 rounded-xl border border-border/60 bg-background/35 p-4"
+          className="space-y-3 rounded-xl border border-border/60 bg-background/35 p-4"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: 10 }}
           transition={microTransition}
@@ -109,12 +109,12 @@ export function HistoryDayPanel({
             </Badge>
           </div>
 
-          <div className="grid gap-4">
-            <Card className="border-border/60 bg-card/85">
-              <CardContent className="flex flex-col items-center gap-3 px-4 py-5">
+          <div className="grid gap-3">
+            <Card>
+              <CardContent className="flex flex-col items-center gap-2">
                 <HabitActivityRingGlyph
                   categoryProgress={selectedDay.categoryProgress}
-                  size={132}
+                  size={118}
                 />
                 <p className="text-xs text-muted-foreground">
                   Streak after day: {selectedDay.summary.streakCountAfterDay}
@@ -122,7 +122,7 @@ export function HistoryDayPanel({
                 {selectedDay.summary.freezeUsed ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-2 rounded-full border border-secondary/60 bg-secondary/12 px-3 py-1 text-xs text-secondary-foreground dark:text-secondary"
+                    className="flex items-center gap-1.5 rounded-full border border-secondary/60 bg-secondary/12 px-2.5 py-1 text-xs text-secondary-foreground dark:text-secondary"
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >
@@ -133,9 +133,9 @@ export function HistoryDayPanel({
               </CardContent>
             </Card>
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
-              <Card className="border-border/60 bg-card/85">
-                <CardContent className="grid gap-4 p-4">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px]">
+              <Card>
+                <CardContent className="grid gap-3">
                   {selectedDay.categoryProgress.map((progress) => {
                     const categoryPresentation = getHabitCategoryPresentation(
                       progress.category,
@@ -151,7 +151,7 @@ export function HistoryDayPanel({
                         transition={microTransition}
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-1.5">
                             <CategoryIcon
                               aria-hidden="true"
                               className="size-3 shrink-0 opacity-60"
@@ -170,7 +170,7 @@ export function HistoryDayPanel({
                           </span>
                         </div>
                         <Progress
-                          className="mt-1.5 h-1.5 bg-muted/60"
+                          className="mt-1 h-1.5 bg-muted/60"
                           indicatorStyle={categoryPresentation.progressStyle}
                           value={progress.progress}
                         />
@@ -180,17 +180,17 @@ export function HistoryDayPanel({
                 </CardContent>
               </Card>
 
-              <Card className="border-border/60 bg-card/85">
-                <CardContent className="flex h-full flex-col justify-between gap-3 p-4">
-                  <div className="space-y-2">
-                    <div className="ui-eyebrow flex items-center gap-2">
+              <Card>
+                <CardContent className="flex h-full flex-col justify-center gap-2">
+                  <div className="space-y-1.5">
+                    <div className="ui-eyebrow flex items-center gap-1.5">
                       <Timer className="size-3.5" />
                       Focus
                     </div>
-                    <p className="text-3xl font-black tracking-tight text-foreground">
+                    <p className="text-2xl font-black tracking-tight text-foreground">
                       {selectedDay.focusMinutes}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       focused minute
                       {selectedDay.focusMinutes === 1 ? "" : "s"} logged
                     </p>
@@ -200,7 +200,7 @@ export function HistoryDayPanel({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2">
             <HistoryHabitColumn
               emptyLabel="Nothing was completed on this day."
               habits={completedDaily}
@@ -220,14 +220,14 @@ export function HistoryDayPanel({
           </div>
 
           {longTermHabits.length > 0 || focusQuotaGoals.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <h4 className="ui-eyebrow">Long-term goals</h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {focusQuotaGoals.map((goal) => (
                   <div
                     key={`${goal.kind}-${goal.id}`}
                     className={cn(
-                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium",
+                      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
                       goal.completed
                         ? "border-primary/50 bg-primary/10 text-primary"
                         : "border-border/60 bg-background/50 text-muted-foreground"
@@ -240,7 +240,7 @@ export function HistoryDayPanel({
                     )}
                     {`Focus quota • ${goal.completedMinutes}/${goal.targetMinutes} min`}
                     <Badge
-                      className="ml-1 h-4 px-1 text-[0.65rem] capitalize"
+                      className="ml-0.5 h-4 px-1 text-[0.65rem] capitalize"
                       variant="secondary"
                     >
                       {goal.frequency}
@@ -251,7 +251,7 @@ export function HistoryDayPanel({
                   <div
                     key={habit.id}
                     className={cn(
-                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium",
+                      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
                       habit.completed
                         ? "border-primary/50 bg-primary/10 text-primary"
                         : "border-border/60 bg-background/50 text-muted-foreground"
@@ -264,8 +264,8 @@ export function HistoryDayPanel({
                     )}
                     {habit.name}
                     <Badge
+                      className="ml-0.5 h-4 px-1 text-[0.65rem] capitalize"
                       variant="secondary"
-                      className="ml-1 text-[0.65rem] h-4 px-1 capitalize"
                     >
                       {habit.frequency}
                     </Badge>

@@ -2,13 +2,9 @@ import { TimerReset } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-ipc";
 
 export function PomodoroSettingsCard({
@@ -55,12 +51,11 @@ export function PomodoroSettingsCard({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <TimerReset className="size-4 text-primary" />
-          <CardTitle>Pomodoro</CardTitle>
-        </div>
-      </CardHeader>
+      <SettingsCardHeader
+        description="Adjust timer lengths and review global keyboard shortcuts."
+        icon={TimerReset}
+        title="Pomodoro"
+      />
       <CardContent>
         {shortcutWarnings.map((registration) => (
           <p

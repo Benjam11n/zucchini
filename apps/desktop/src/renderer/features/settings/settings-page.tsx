@@ -110,7 +110,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
         <Tabs className="w-full" defaultValue="general">
           <m.section variants={staggerItemVariants}>
-            <TabsList className="mb-6 w-full bg-muted/80 p-1">
+            <TabsList className="mb-6 w-full">
               <TabsTrigger className="flex-1" value="general">
                 <Bell className="size-4" />
                 General

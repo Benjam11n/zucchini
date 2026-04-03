@@ -3,14 +3,9 @@
 import { Bell, Globe2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Item,
   ItemActions,
@@ -180,13 +175,11 @@ export function ReminderSettingsCard({
 
   return (
     <Card>
-      <CardHeader>
-        <CardDescription>Settings</CardDescription>
-        <div className="flex items-center gap-2">
-          <Bell className="size-4 text-primary" />
-          <CardTitle>Reminders</CardTitle>
-        </div>
-      </CardHeader>
+      <SettingsCardHeader
+        description="Configure daily reminders and the timezone used for them."
+        icon={Bell}
+        title="Reminders"
+      />
       <CardContent className="space-y-3">
         <ItemGroup className="gap-0">
           <Item className="py-2">
@@ -194,7 +187,7 @@ export function ReminderSettingsCard({
               <Label htmlFor="reminder-enabled" className="text-sm font-medium">
                 Enable reminder
               </Label>
-              <ItemDescription className="text-xs leading-snug">
+              <ItemDescription>
                 Receive daily notifications for incomplete habits.
               </ItemDescription>
             </ItemContent>
@@ -224,9 +217,7 @@ export function ReminderSettingsCard({
               <Label htmlFor="reminder-time" className="text-sm font-medium">
                 Time
               </Label>
-              <ItemDescription className="text-xs leading-snug">
-                When should we remind you?
-              </ItemDescription>
+              <ItemDescription>When should we remind you?</ItemDescription>
             </ItemContent>
             <ItemActions>
               <TimeInput
@@ -252,11 +243,11 @@ export function ReminderSettingsCard({
               >
                 Timezone
               </Label>
-              <ItemDescription className="text-xs leading-snug">
+              <ItemDescription>
                 Choose the timezone used for reminder timing.
               </ItemDescription>
             </ItemContent>
-            <ItemActions className="max-w-[220px]">
+            <ItemActions>
               <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
                 <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
                 <select
@@ -288,8 +279,8 @@ export function ReminderSettingsCard({
 
         <ItemSeparator />
 
-        <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-          <div className="mb-4 space-y-1">
+        <div className="space-y-3">
+          <div className="space-y-1 px-3">
             <p className="text-sm font-medium">Background reminders</p>
             <p className="text-sm text-muted-foreground">
               Only turn these on if you want reminders to keep working after you
@@ -297,8 +288,8 @@ export function ReminderSettingsCard({
             </p>
           </div>
 
-          <ItemGroup className="gap-3">
-            <Item className="px-0 py-0">
+          <ItemGroup className="gap-0">
+            <Item className="py-2">
               <ItemContent>
                 <Label
                   htmlFor="launch-at-login"
@@ -321,7 +312,7 @@ export function ReminderSettingsCard({
               </ItemActions>
             </Item>
 
-            <Item className="px-0 py-0">
+            <Item className="py-2">
               <ItemContent>
                 <Label
                   htmlFor="minimize-to-tray"
@@ -344,7 +335,7 @@ export function ReminderSettingsCard({
               </ItemActions>
             </Item>
 
-            <Item className="px-0 py-0">
+            <Item className="py-2">
               <ItemContent>
                 <Label
                   htmlFor="reminder-snooze"

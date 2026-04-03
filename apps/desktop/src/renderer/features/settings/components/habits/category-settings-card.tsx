@@ -1,14 +1,10 @@
 import { ChevronDown, Palette, RotateCcw, Tags } from "lucide-react";
 import { useState, useRef } from "react";
 
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/renderer/shared/components/ui/card";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { HABIT_CATEGORY_ICON_OPTIONS } from "@/renderer/shared/lib/habit-categories";
@@ -62,12 +58,8 @@ export function CategorySettingsCard({
 
   return (
     <Card>
-      <CardHeader>
-        <CardDescription className="flex items-center gap-2">
-          <Tags className="size-4" />
-          Categories
-        </CardDescription>
-        <div className="flex items-center justify-end gap-3">
+      <SettingsCardHeader
+        action={
           <Button
             onClick={() => {
               onChange({
@@ -82,8 +74,11 @@ export function CategorySettingsCard({
             <RotateCcw className="size-4" />
             Reset to defaults
           </Button>
-        </div>
-      </CardHeader>
+        }
+        description="Rename categories and update their icons and colors."
+        icon={Tags}
+        title="Categories"
+      />
       <CardContent>
         <div className="flex flex-col items-center gap-10 md:flex-row md:items-center">
           {/* INTERACTIVE 3-RING DISPLAY */}

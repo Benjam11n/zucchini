@@ -37,13 +37,13 @@ export function HistoryHabitColumn({
 
   return (
     <LazyMotion features={domAnimation}>
-      <Card className="border-border/60 bg-card/85">
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+      <Card>
+        <CardContent>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
             <Icon className={iconClassName} />
             {title}
           </div>
-          <ItemGroup className="gap-2">
+          <ItemGroup className="gap-1.5">
             {habits.length > 0 ? (
               habits.map((habit) => {
                 const ui = getHabitCategoryUi(
@@ -59,7 +59,7 @@ export function HistoryHabitColumn({
                     transition={microTransition}
                   >
                     <Item
-                      className="rounded-xl border-border/50 bg-background/60"
+                      className="rounded-xl border-border/50 bg-background/60 px-3 py-2"
                       variant="outline"
                     >
                       <ItemContent>
