@@ -31,12 +31,14 @@ export const habits = sqliteTable("habits", {
   name: text().notNull(),
   selectedWeekdays: text("selected_weekdays"),
   sortOrder: integer("sort_order").notNull(),
+  targetCount: integer("target_count").notNull().default(1),
 });
 
 export const habitPeriodStatus = sqliteTable(
   "habit_period_status",
   {
     completed: integer({ mode: "boolean" }).notNull().default(false),
+    completedCount: integer("completed_count").notNull().default(0),
     frequency: text().notNull().default(DEFAULT_HABIT_FREQUENCY),
     habitCategory: text("habit_category")
       .notNull()
@@ -46,6 +48,7 @@ export const habitPeriodStatus = sqliteTable(
     habitName: text("habit_name").notNull(),
     habitSelectedWeekdays: text("habit_selected_weekdays"),
     habitSortOrder: integer("habit_sort_order").notNull().default(0),
+    habitTargetCount: integer("habit_target_count").notNull().default(1),
     periodEnd: text("period_end").notNull(),
     periodStart: text("period_start").notNull(),
   },

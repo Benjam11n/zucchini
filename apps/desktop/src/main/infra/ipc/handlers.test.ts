@@ -76,6 +76,7 @@ function createService() {
   return {
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
+    decrementHabitProgress: vi.fn(),
     getFocusSessions: vi.fn(() => []),
     getHabits: vi.fn(() => []),
     getHistory: vi.fn(() => []),
@@ -90,6 +91,7 @@ function createService() {
       latestReview: null,
       trend: [],
     })),
+    incrementHabitProgress: vi.fn(),
     initialize: vi.fn(),
     recordFocusSession: vi.fn(),
     renameHabit: vi.fn(),
@@ -100,6 +102,7 @@ function createService() {
     unarchiveHabit: vi.fn(),
     updateHabitCategory: vi.fn(),
     updateHabitFrequency: vi.fn(),
+    updateHabitTargetCount: vi.fn(),
     updateHabitWeekdays: vi.fn(),
     updateSettings: vi.fn(() => defaultSettings),
   };

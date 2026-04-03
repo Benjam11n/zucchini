@@ -75,6 +75,7 @@ const habitCategoryPreferencesSchema = z
   .strict();
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
+export const habitTargetCountSchema = z.number().int().min(1).max(31);
 const habitWeekdaySchema = z.union([
   z.literal(0),
   z.literal(1),

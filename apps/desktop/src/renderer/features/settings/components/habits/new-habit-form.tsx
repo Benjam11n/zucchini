@@ -15,6 +15,7 @@ import { microTransition } from "@/renderer/shared/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
+  normalizeHabitTargetCount,
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type {
@@ -26,6 +27,7 @@ import type {
 import { HabitCategorySelector } from "./habit-category-selector";
 import { HabitFrequencySelector } from "./habit-frequency-selector";
 import type { HabitManagementCardProps } from "./habit-management.types";
+import { HabitTargetCountStepper } from "./habit-target-count-stepper";
 import { HabitWeekdaySelector } from "./habit-weekday-selector";
 
 const CREATION_FEEDBACK_TIMEOUT_MS = 2200;
@@ -37,6 +39,7 @@ interface NewHabitFormState {
   isAdvancedOpen: boolean;
   name: string;
   selectedWeekdays: HabitWeekday[] | null;
+  targetCount: number;
 }
 
 type NewHabitFormAction =
@@ -45,6 +48,7 @@ type NewHabitFormAction =
   | { type: "setCategory"; value: HabitCategory }
   | { type: "setFrequency"; value: HabitFrequency }
   | { type: "setName"; value: string }
+  | { type: "setTargetCount"; value: number }
   | { type: "setWeekdays"; value: HabitWeekday[] | null }
   | { type: "submitSuccess"; createdHabitName: string };
 
@@ -55,6 +59,7 @@ const initialState: NewHabitFormState = {
   isAdvancedOpen: false,
   name: "",
   selectedWeekdays: null,
+  targetCount: 1,
 };
 
 function reducer(
@@ -86,6 +91,7 @@ function reducer(
         frequency: action.value,
         selectedWeekdays:
           action.value === "daily" ? state.selectedWeekdays : null,
+        targetCount: normalizeHabitTargetCount(action.value, state.targetCount),
       };
     }
     case "setName": {
@@ -100,6 +106,12 @@ function reducer(
         selectedWeekdays: action.value,
       };
     }
+    case "setTargetCount": {
+      return {
+        ...state,
+        targetCount: normalizeHabitTargetCount(state.frequency, action.value),
+      };
+    }
     case "submitSuccess": {
       return {
         ...state,
@@ -108,6 +120,7 @@ function reducer(
         frequency: DEFAULT_HABIT_FREQUENCY,
         name: "",
         selectedWeekdays: null,
+        targetCount: 1,
       };
     }
     default: {
@@ -152,7 +165,8 @@ export function NewHabitForm({
       state.frequency,
       state.frequency === "daily"
         ? normalizeHabitWeekdays(state.selectedWeekdays)
-        : null
+        : null,
+      state.frequency === "daily" ? 1 : state.targetCount
     );
     dispatch({
       createdHabitName: trimmedName,
@@ -295,7 +309,24 @@ export function NewHabitForm({
                     selectedWeekdays={state.selectedWeekdays}
                   />
                 </div>
-              ) : null}
+              ) : (
+                <div className="grid gap-2">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Goal
+                  </Label>
+                  <HabitTargetCountStepper
+                    compact
+                    frequency={state.frequency}
+                    onChange={(value) => {
+                      dispatch({
+                        type: "setTargetCount",
+                        value,
+                      });
+                    }}
+                    value={state.targetCount}
+                  />
+                </div>
+              )}
             </div>
           </CollapsibleContent>
         </form>

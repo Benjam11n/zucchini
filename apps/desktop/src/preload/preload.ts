@@ -79,15 +79,19 @@ const habitsApi: HabitsApi = {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ) =>
     invokeHabits(
       HABITS_IPC_CHANNELS.createHabit,
       name,
       category,
       frequency,
-      selectedWeekdays
+      selectedWeekdays,
+      targetCount
     ),
+  decrementHabitProgress: (habitId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.decrementHabitProgress, habitId),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getDesktopNotificationStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
@@ -110,6 +114,8 @@ const habitsApi: HabitsApi = {
   getWeeklyReviewOverview: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
   importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
+  incrementHabitProgress: (habitId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.incrementHabitProgress, habitId),
   onFocusSessionRecorded: (listener) => {
     const handleFocusSessionRecorded = (
       _event: IpcRendererEvent,
@@ -218,8 +224,23 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.unarchiveHabit, habitId),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>
     invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
-  updateHabitFrequency: (habitId: number, frequency: HabitFrequency) =>
-    invokeHabits(HABITS_IPC_CHANNELS.updateHabitFrequency, habitId, frequency),
+  updateHabitFrequency: (
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount?: number | null
+  ) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.updateHabitFrequency,
+      habitId,
+      frequency,
+      targetCount
+    ),
+  updateHabitTargetCount: (habitId: number, targetCount: number) =>
+    invokeHabits(
+      HABITS_IPC_CHANNELS.updateHabitTargetCount,
+      habitId,
+      targetCount
+    ),
   updateHabitWeekdays: (
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null

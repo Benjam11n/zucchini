@@ -93,12 +93,25 @@ export function createTodayActions({
       name: string,
       category: HabitCategory,
       frequency: HabitFrequency,
-      selectedWeekdays: HabitWeekday[] | null = null
+      selectedWeekdays: HabitWeekday[] | null = null,
+      targetCount: number | null = null
     ) {
       await applyTodayMutation(
-        window.habits.createHabit(name, category, frequency, selectedWeekdays)
+        window.habits.createHabit(
+          name,
+          category,
+          frequency,
+          selectedWeekdays,
+          targetCount
+        )
       );
       updateSettingsDraftFromToday();
+    },
+    async handleDecrementHabitProgress(habitId: number) {
+      await refreshToday(window.habits.decrementHabitProgress(habitId));
+    },
+    async handleIncrementHabitProgress(habitId: number) {
+      await refreshToday(window.habits.incrementHabitProgress(habitId));
     },
     async handleRenameHabit(habitId: number, name: string) {
       await applyTodayMutation(window.habits.renameHabit(habitId, name));
@@ -178,10 +191,16 @@ export function createTodayActions({
     },
     async handleUpdateHabitFrequency(
       habitId: number,
-      frequency: HabitFrequency
+      frequency: HabitFrequency,
+      targetCount: number | null = null
     ) {
       await applyTodayMutation(
-        window.habits.updateHabitFrequency(habitId, frequency)
+        window.habits.updateHabitFrequency(habitId, frequency, targetCount)
+      );
+    },
+    async handleUpdateHabitTargetCount(habitId: number, targetCount: number) {
+      await applyTodayMutation(
+        window.habits.updateHabitTargetCount(habitId, targetCount)
       );
     },
     async handleUpdateHabitWeekdays(

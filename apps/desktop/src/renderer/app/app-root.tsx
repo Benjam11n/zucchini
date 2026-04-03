@@ -138,6 +138,8 @@ function MainApp() {
       managedHabits={state.managedHabits}
       onArchiveHabit={actions.handleArchiveHabit}
       onCreateHabit={actions.handleCreateHabit}
+      onDecrementHabitProgress={actions.handleDecrementHabitProgress}
+      onIncrementHabitProgress={actions.handleIncrementHabitProgress}
       onRenameHabit={actions.handleRenameHabit}
       onReorderHabits={actions.handleReorderHabits}
       onUnarchiveHabit={actions.handleUnarchiveHabit}
@@ -145,6 +147,7 @@ function MainApp() {
       onToggleHabit={actions.handleToggleHabit}
       onUpdateHabitCategory={actions.handleUpdateHabitCategory}
       onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
+      onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
       onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
     />
   );
@@ -229,6 +232,7 @@ function MainApp() {
           onUnarchiveHabit={actions.handleUnarchiveHabit}
           onUpdateHabitCategory={actions.handleUpdateHabitCategory}
           onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
+          onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
           onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
         />
       </Suspense>

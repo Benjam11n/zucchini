@@ -28,6 +28,7 @@ import {
   validateHabitCategory,
   validateHabitFrequency,
   validateHabitId,
+  validateHabitTargetCount,
   validateHabitWeekdays,
   validateHistoryLimit,
   validateHabitName,
@@ -104,6 +105,16 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.incrementHabitProgress,
+    (habitId: unknown) =>
+      service.incrementHabitProgress(validateHabitId(habitId))
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.decrementHabitProgress,
+    (habitId: unknown) =>
+      service.decrementHabitProgress(validateHabitId(habitId))
   );
   registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
     service.getFocusSessions(validateFocusSessionLimit(limit))
@@ -190,7 +201,8 @@ export function registerIpcHandlers({
       name: unknown,
       category: unknown,
       frequency: unknown,
-      weekdays?: unknown
+      weekdays?: unknown,
+      targetCount?: unknown
     ) =>
       service.createHabit(
         validateHabitName(name),
@@ -198,7 +210,10 @@ export function registerIpcHandlers({
         validateHabitFrequency(frequency),
         weekdays === undefined || weekdays === null
           ? null
-          : validateHabitWeekdays(weekdays)
+          : validateHabitWeekdays(weekdays),
+        targetCount === undefined || targetCount === null
+          ? null
+          : validateHabitTargetCount(targetCount)
       )
   );
   registerHandler(
@@ -216,10 +231,21 @@ export function registerIpcHandlers({
   );
   registerHandler(
     HABITS_IPC_CHANNELS.updateHabitFrequency,
-    (habitId: unknown, frequency: unknown) =>
+    (habitId: unknown, frequency: unknown, targetCount?: unknown) =>
       service.updateHabitFrequency(
         validateHabitId(habitId),
-        validateHabitFrequency(frequency)
+        validateHabitFrequency(frequency),
+        targetCount === undefined || targetCount === null
+          ? null
+          : validateHabitTargetCount(targetCount)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.updateHabitTargetCount,
+    (habitId: unknown, targetCount: unknown) =>
+      service.updateHabitTargetCount(
+        validateHabitId(habitId),
+        validateHabitTargetCount(targetCount)
       )
   );
   registerHandler(

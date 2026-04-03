@@ -15,6 +15,7 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
+import { normalizeHabitTargetCount } from "@/shared/domain/habit";
 
 import { mapHabit } from "./mappers";
 
@@ -92,6 +93,7 @@ export class SqliteHabitsRepository {
     category: HabitCategory,
     frequency: HabitFrequency,
     selectedWeekdays: HabitWeekday[] | null,
+    targetCount: number,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -106,6 +108,7 @@ export class SqliteHabitsRepository {
           name,
           selectedWeekdays: serializeHabitWeekdays(selectedWeekdays),
           sortOrder,
+          targetCount: normalizeHabitTargetCount(frequency, targetCount),
         })
         .returning({
           id: habits.id,
@@ -138,7 +141,11 @@ export class SqliteHabitsRepository {
     });
   }
 
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): void {
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount: number
+  ): void {
     this.client.run("updateHabitFrequency", () => {
       this.client
         .getDrizzle()
@@ -146,6 +153,25 @@ export class SqliteHabitsRepository {
         .set({
           frequency,
           selectedWeekdays: null,
+          targetCount: normalizeHabitTargetCount(frequency, targetCount),
+        })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
+    });
+  }
+
+  updateHabitTargetCount(habitId: number, targetCount: number): void {
+    this.client.run("updateHabitTargetCount", () => {
+      const habit = this.getHabitById(habitId);
+      if (!habit) {
+        return;
+      }
+
+      this.client
+        .getDrizzle()
+        .update(habits)
+        .set({
+          targetCount: normalizeHabitTargetCount(habit.frequency, targetCount),
         })
         .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
         .run();

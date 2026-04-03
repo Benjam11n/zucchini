@@ -10,6 +10,7 @@ import type { FocusSession } from "@/shared/domain/focus-session";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitTargetCount,
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
@@ -38,6 +39,10 @@ export function mapHabit(row: HabitRow): Habit {
       row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
     ),
     sortOrder: row.sortOrder,
+    targetCount: normalizeHabitTargetCount(
+      normalizeHabitFrequency(row.frequency),
+      row.targetCount
+    ),
   };
 }
 
@@ -69,6 +74,7 @@ export function mapHabitPeriodStatusSnapshot(
   return {
     category: normalizeHabitCategory(row.habitCategory),
     completed: row.completed,
+    completedCount: row.completedCount,
     frequency: normalizeHabitFrequency(row.frequency),
     habitId: row.habitId,
     name: row.habitName,
@@ -78,6 +84,10 @@ export function mapHabitPeriodStatusSnapshot(
       row.habitSelectedWeekdays ? JSON.parse(row.habitSelectedWeekdays) : null
     ),
     sortOrder: row.habitSortOrder,
+    targetCount: normalizeHabitTargetCount(
+      normalizeHabitFrequency(row.frequency),
+      row.habitTargetCount
+    ),
   };
 }
 

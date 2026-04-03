@@ -20,6 +20,7 @@ export function HabitManagementCard({
   onUnarchiveHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: HabitManagementCardProps) {
   return (
@@ -42,6 +43,7 @@ export function HabitManagementCard({
           onUpdateHabitCategory={onUpdateHabitCategory}
           onUpdateHabitFrequency={onUpdateHabitFrequency}
           onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+          {...(onUpdateHabitTargetCount ? { onUpdateHabitTargetCount } : {})}
         />
       </CardContent>
     </Card>

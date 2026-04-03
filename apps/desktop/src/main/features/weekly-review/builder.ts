@@ -106,12 +106,21 @@ function buildHabitMetrics(
   const metricsByHabit = new Map<number, WeeklyReviewHabitMetric>();
 
   for (const status of habitStatuses) {
+    const opportunityCount = status.targetCount ?? 1;
+    const completedCount = Math.min(
+      opportunityCount,
+      Math.max(
+        0,
+        status.completedCount ?? (status.completed ? opportunityCount : 0)
+      )
+    );
+    const missedCount = opportunityCount - completedCount;
     const existing = metricsByHabit.get(status.habitId);
     if (existing) {
       existing.category = status.category;
-      existing.opportunities += 1;
-      existing.completedOpportunities += status.completed ? 1 : 0;
-      existing.missedOpportunities += status.completed ? 0 : 1;
+      existing.opportunities += opportunityCount;
+      existing.completedOpportunities += completedCount;
+      existing.missedOpportunities += missedCount;
       existing.completionRate = toRate(
         existing.completedOpportunities,
         existing.opportunities
@@ -124,13 +133,13 @@ function buildHabitMetrics(
 
     metricsByHabit.set(status.habitId, {
       category: status.category,
-      completedOpportunities: status.completed ? 1 : 0,
-      completionRate: status.completed ? 100 : 0,
+      completedOpportunities: completedCount,
+      completionRate: toRate(completedCount, opportunityCount),
       frequency: status.frequency,
       habitId: status.habitId,
-      missedOpportunities: status.completed ? 0 : 1,
+      missedOpportunities: missedCount,
       name: status.name,
-      opportunities: 1,
+      opportunities: opportunityCount,
       sortOrder: status.sortOrder,
     });
   }

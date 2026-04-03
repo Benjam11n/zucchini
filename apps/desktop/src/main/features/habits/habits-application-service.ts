@@ -33,6 +33,7 @@ import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitTargetCount,
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type {
@@ -58,6 +59,8 @@ export interface HabitsService {
   getHabits(): Habit[];
   getTodayState(): TodayState;
   toggleHabit(habitId: number): TodayState;
+  incrementHabitProgress(habitId: number): TodayState;
+  decrementHabitProgress(habitId: number): TodayState;
   getFocusSessions(limit?: number): FocusSession[];
   recordFocusSession(input: CreateFocusSessionInput): FocusSession;
   getPersistedFocusTimerState(): PersistedFocusTimerState | null;
@@ -74,11 +77,17 @@ export interface HabitsService {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ): TodayState;
   renameHabit(habitId: number, name: string): TodayState;
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState;
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState;
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount?: number | null
+  ): TodayState;
+  updateHabitTargetCount(habitId: number, targetCount: number): TodayState;
   updateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
@@ -218,6 +227,26 @@ export class HabitsApplicationService implements HabitsService {
       this.syncRollingState();
       this.repository.ensureStatusRowsForDate(today);
       this.repository.toggleHabit(today, habitId);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  incrementHabitProgress(habitId: number): TodayState {
+    return this.inInitializedTransaction("incrementHabitProgress", () => {
+      const today = this.clock.todayKey();
+      this.syncRollingState();
+      this.repository.ensureStatusRowsForDate(today);
+      this.repository.adjustHabitProgress(today, habitId, 1);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  decrementHabitProgress(habitId: number): TodayState {
+    return this.inInitializedTransaction("decrementHabitProgress", () => {
+      const today = this.clock.todayKey();
+      this.syncRollingState();
+      this.repository.ensureStatusRowsForDate(today);
+      this.repository.adjustHabitProgress(today, habitId, -1);
       return buildTodayState(this.repository, this.clock);
     });
   }
@@ -378,7 +407,8 @@ export class HabitsApplicationService implements HabitsService {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays: HabitWeekday[] | null = null
+    selectedWeekdays: HabitWeekday[] | null = null,
+    targetCount: number | null = null
   ): TodayState {
     const trimmedName = name.trim();
     if (!trimmedName) {
@@ -393,6 +423,10 @@ export class HabitsApplicationService implements HabitsService {
         normalizeHabitCategory(category),
         normalizeHabitFrequency(frequency),
         normalizeHabitWeekdays(selectedWeekdays),
+        normalizeHabitTargetCount(
+          normalizeHabitFrequency(frequency),
+          targetCount
+        ),
         this.repository.getMaxSortOrder() + 1,
         this.clock.now().toISOString()
       );
@@ -430,14 +464,59 @@ export class HabitsApplicationService implements HabitsService {
     });
   }
 
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): TodayState {
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount: number | null = null
+  ): TodayState {
     return this.inInitializedTransaction("updateHabitFrequency", () => {
-      this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
+      const today = this.clock.todayKey();
+      const previousProgress = this.repository.getHabitProgress(today, habitId);
+      const normalizedFrequency = normalizeHabitFrequency(frequency);
+      const normalizedTargetCount = normalizeHabitTargetCount(
+        normalizedFrequency,
+        targetCount
+      );
+
+      this.repository.removeStatusRowsForDate(today, habitId);
       this.repository.updateHabitFrequency(
         habitId,
-        normalizeHabitFrequency(frequency)
+        normalizedFrequency,
+        normalizedTargetCount
       );
-      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      this.repository.ensureStatusRow(today, habitId);
+      this.repository.setHabitProgress(
+        today,
+        habitId,
+        Math.min(previousProgress, normalizedTargetCount)
+      );
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  updateHabitTargetCount(habitId: number, targetCount: number): TodayState {
+    return this.inInitializedTransaction("updateHabitTargetCount", () => {
+      const today = this.clock.todayKey();
+      const habit = this.repository
+        .getHabits()
+        .find((candidate) => candidate.id === habitId);
+
+      if (!habit) {
+        return buildTodayState(this.repository, this.clock);
+      }
+
+      const previousProgress = this.repository.getHabitProgress(today, habitId);
+      const normalizedTargetCount = normalizeHabitTargetCount(
+        habit.frequency,
+        targetCount
+      );
+      this.repository.updateHabitTargetCount(habitId, normalizedTargetCount);
+      this.repository.ensureStatusRow(today, habitId);
+      this.repository.setHabitProgress(
+        today,
+        habitId,
+        Math.min(previousProgress, normalizedTargetCount)
+      );
       return buildTodayState(this.repository, this.clock);
     });
   }

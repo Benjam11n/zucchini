@@ -40,8 +40,11 @@ interface TodayPageProps {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ) => Promise<void>;
+  onDecrementHabitProgress?: (habitId: number) => void;
+  onIncrementHabitProgress?: (habitId: number) => void;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (habits: Habit[]) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
@@ -53,7 +56,12 @@ interface TodayPageProps {
   ) => Promise<void>;
   onUpdateHabitFrequency: (
     habitId: number,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    targetCount?: number | null
+  ) => Promise<void>;
+  onUpdateHabitTargetCount?: (
+    habitId: number,
+    targetCount: number
   ) => Promise<void>;
   onUpdateHabitWeekdays: (
     habitId: number,
@@ -61,11 +69,17 @@ interface TodayPageProps {
   ) => Promise<void>;
 }
 
+function noopHabitProgress(_habitId: number) {
+  return null;
+}
+
 function TodayPageComponent({
   history,
   managedHabits,
   onArchiveHabit,
   onCreateHabit,
+  onDecrementHabitProgress,
+  onIncrementHabitProgress,
   onRenameHabit,
   onReorderHabits,
   onUnarchiveHabit,
@@ -73,6 +87,7 @@ function TodayPageComponent({
   onToggleHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: TodayPageProps) {
   const { categoryProgress, completedCount, dailyHabits, periodicHabits } =
@@ -146,6 +161,9 @@ function TodayPageComponent({
                 onUpdateHabitCategory={onUpdateHabitCategory}
                 onUpdateHabitFrequency={onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                {...(onUpdateHabitTargetCount
+                  ? { onUpdateHabitTargetCount }
+                  : {})}
                 trigger={
                   <Button
                     className="rounded-full"
@@ -170,6 +188,9 @@ function TodayPageComponent({
                 onUpdateHabitCategory={onUpdateHabitCategory}
                 onUpdateHabitFrequency={onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                {...(onUpdateHabitTargetCount
+                  ? { onUpdateHabitTargetCount }
+                  : {})}
               />
             }
             habits={dailyHabits}
@@ -182,7 +203,12 @@ function TodayPageComponent({
             <LongerHabitChecklist
               dateKey={state.date}
               habits={periodicHabits}
-              onToggleHabit={onToggleHabit}
+              onDecrementHabitProgress={
+                onDecrementHabitProgress ?? noopHabitProgress
+              }
+              onIncrementHabitProgress={
+                onIncrementHabitProgress ?? noopHabitProgress
+              }
             />
           </m.section>
         ) : null}

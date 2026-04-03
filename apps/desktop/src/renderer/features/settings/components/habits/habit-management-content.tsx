@@ -31,6 +31,7 @@ export function HabitManagementContent({
   onUnarchiveHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: HabitManagementCardProps) {
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
@@ -158,13 +159,28 @@ export function HabitManagementContent({
   async function handleUpdateHabitFrequency(
     habitId: number,
     frequency: HabitFrequency,
+    targetCount: number | null | undefined,
     habitName: string
   ) {
     await runHabitAction({
       onSuccess: () => {
         showSavedFeedback(`Saved changes to "${habitName}".`);
       },
-      task: () => onUpdateHabitFrequency(habitId, frequency),
+      task: () => onUpdateHabitFrequency(habitId, frequency, targetCount),
+    });
+  }
+
+  async function handleUpdateHabitTargetCount(
+    habitId: number,
+    targetCount: number,
+    habitName: string
+  ) {
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Saved changes to "${habitName}".`);
+      },
+      task: () =>
+        onUpdateHabitTargetCount?.(habitId, targetCount) ?? Promise.resolve(),
     });
   }
 
@@ -224,7 +240,8 @@ export function HabitManagementContent({
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ) {
     const trimmedName = name.trim();
     await runHabitAction({
@@ -233,7 +250,8 @@ export function HabitManagementContent({
           setPendingCreatedHabitName(trimmedName);
         }
       },
-      task: () => onCreateHabit(name, category, frequency, selectedWeekdays),
+      task: () =>
+        onCreateHabit(name, category, frequency, selectedWeekdays, targetCount),
     });
   }
 
@@ -285,6 +303,7 @@ export function HabitManagementContent({
         onReorderHabits={handleReorderHabits}
         onUpdateHabitCategory={handleUpdateHabitCategory}
         onUpdateHabitFrequency={handleUpdateHabitFrequency}
+        onUpdateHabitTargetCount={handleUpdateHabitTargetCount}
         onUpdateHabitWeekdays={handleUpdateHabitWeekdays}
       />
     </LazyMotion>

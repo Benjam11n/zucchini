@@ -41,6 +41,12 @@ interface HabitManagementListProps {
   onUpdateHabitFrequency: (
     habitId: number,
     frequency: HabitFrequency,
+    targetCount: number | null | undefined,
+    habitName: string
+  ) => Promise<void>;
+  onUpdateHabitTargetCount: (
+    habitId: number,
+    targetCount: number,
     habitName: string
   ) => Promise<void>;
   onUpdateHabitWeekdays: (
@@ -62,6 +68,7 @@ export function HabitManagementList({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: HabitManagementListProps) {
   return (
@@ -127,7 +134,15 @@ export function HabitManagementList({
                 onUpdateHabitCategory(habitId, category, habit.name)
               }
               onUpdateHabitFrequency={(habitId, frequency) =>
-                onUpdateHabitFrequency(habitId, frequency, habit.name)
+                onUpdateHabitFrequency(
+                  habitId,
+                  frequency,
+                  habit.targetCount ?? 1,
+                  habit.name
+                )
+              }
+              onUpdateHabitTargetCount={(habitId, targetCount) =>
+                onUpdateHabitTargetCount(habitId, targetCount, habit.name)
               }
               onUpdateHabitWeekdays={(habitId, selectedWeekdays) =>
                 onUpdateHabitWeekdays(habitId, selectedWeekdays, habit.name)

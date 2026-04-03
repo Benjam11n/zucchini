@@ -27,6 +27,7 @@ export type StreakStateRow = typeof streakState.$inferSelect;
 export interface HabitPeriodStatusSnapshot {
   category: HabitCategory;
   completed: boolean;
+  completedCount?: number;
   frequency: HabitFrequency;
   habitId: number;
   name: string;
@@ -34,4 +35,5 @@ export interface HabitPeriodStatusSnapshot {
   periodStart: string;
   selectedWeekdays?: HabitWeekday[] | null;
   sortOrder: number;
+  targetCount?: number;
 }

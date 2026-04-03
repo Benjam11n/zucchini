@@ -23,6 +23,7 @@ import {
   habitIdSchema,
   historyLimitSchema,
   habitNameSchema,
+  habitTargetCountSchema,
   habitWeekdaysSchema,
   notificationBodySchema,
   notificationIconFilenameSchema,
@@ -124,6 +125,10 @@ export const validateHabitCategory = createValidator<HabitCategory>(
 export const validateHabitFrequency = createValidator<HabitFrequency>(
   "habit frequency",
   habitFrequencySchema
+);
+export const validateHabitTargetCount = createValidator(
+  "habit target count",
+  habitTargetCountSchema
 );
 export const validateHabitWeekdays = createValidator<HabitWeekday[]>(
   "habit weekdays",

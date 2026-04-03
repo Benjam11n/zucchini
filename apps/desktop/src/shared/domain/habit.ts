@@ -95,6 +95,7 @@ export interface Habit {
   id: number;
   name: string;
   frequency: HabitFrequency;
+  targetCount?: number;
   selectedWeekdays?: HabitWeekday[] | null;
   sortOrder: number;
   isArchived: boolean;
@@ -103,6 +104,7 @@ export interface Habit {
 
 export type HabitWithStatus = Habit & {
   completed: boolean;
+  completedCount?: number;
 };
 
 export interface HabitCategoryProgress {
@@ -134,6 +136,24 @@ export function normalizeHabitCategory(value: string): HabitCategory {
 
 export function normalizeHabitFrequency(value: string): HabitFrequency {
   return isHabitFrequency(value) ? value : DEFAULT_HABIT_FREQUENCY;
+}
+
+export function normalizeHabitTargetCount(
+  frequency: HabitFrequency,
+  targetCount: number | null | undefined
+): number {
+  if (frequency === "daily") {
+    return 1;
+  }
+
+  const numericTargetCount =
+    typeof targetCount === "number" && Number.isFinite(targetCount)
+      ? targetCount
+      : 1;
+  const roundedTargetCount = Math.round(numericTargetCount);
+  const upperBound = frequency === "weekly" ? 7 : 31;
+
+  return Math.min(Math.max(roundedTargetCount, 1), upperBound);
 }
 
 export function normalizeHabitWeekdays(

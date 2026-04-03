@@ -179,6 +179,11 @@ export function SettingsPage(props: SettingsPageProps) {
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
+                {...(props.onUpdateHabitTargetCount
+                  ? {
+                      onUpdateHabitTargetCount: props.onUpdateHabitTargetCount,
+                    }
+                  : {})}
               />
             </m.div>
           </TabsContent>

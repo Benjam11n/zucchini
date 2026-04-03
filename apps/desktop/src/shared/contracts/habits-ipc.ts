@@ -60,6 +60,7 @@ export const HABITS_IPC_CHANNELS = {
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   createHabit: "habits:createHabit",
+  decrementHabitProgress: "habits:decrementHabitProgress",
   exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
   focusTimerActionRequested: "habits:focusTimerActionRequested",
@@ -75,6 +76,7 @@ export const HABITS_IPC_CHANNELS = {
   getWeeklyReview: "habits:getWeeklyReview",
   getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
   importBackup: "habits:importBackup",
+  incrementHabitProgress: "habits:incrementHabitProgress",
   openDataFolder: "habits:openDataFolder",
   recordFocusSession: "habits:recordFocusSession",
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
@@ -89,6 +91,7 @@ export const HABITS_IPC_CHANNELS = {
   unarchiveHabit: "habits:unarchiveHabit",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
+  updateHabitTargetCount: "habits:updateHabitTargetCount",
   updateHabitWeekdays: "habits:updateHabitWeekdays",
   updateSettings: "habits:updateSettings",
 } as const;
@@ -201,6 +204,8 @@ export interface HabitsApi {
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
   importBackup: () => Promise<boolean>;
+  incrementHabitProgress: (habitId: number) => Promise<TodayState>;
+  decrementHabitProgress: (habitId: number) => Promise<TodayState>;
   onFocusTimerActionRequested: (
     listener: (request: FocusTimerActionRequest) => void
   ) => () => void;
@@ -225,7 +230,8 @@ export interface HabitsApi {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ) => Promise<TodayState>;
   renameHabit: (habitId: number, name: string) => Promise<TodayState>;
   updateHabitCategory: (
@@ -234,7 +240,12 @@ export interface HabitsApi {
   ) => Promise<TodayState>;
   updateHabitFrequency: (
     habitId: number,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    targetCount?: number | null
+  ) => Promise<TodayState>;
+  updateHabitTargetCount: (
+    habitId: number,
+    targetCount: number
   ) => Promise<TodayState>;
   updateHabitWeekdays: (
     habitId: number,

@@ -154,6 +154,7 @@ export function createControllerActions({
   return {
     handleArchiveHabit: actions.handleArchiveHabit,
     handleCreateHabit: actions.handleCreateHabit,
+    handleDecrementHabitProgress: actions.handleDecrementHabitProgress,
     handleDismissWeeklyReviewSpotlight: () => {
       const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
       if (latestReview) {
@@ -161,6 +162,7 @@ export function createControllerActions({
       }
       actions.dismissWeeklyReviewSpotlight();
     },
+    handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadOlderHistory: actions.loadFullHistory,
     handleRenameHabit: actions.handleRenameHabit,
     handleReorderHabits: actions.handleReorderHabits,
@@ -176,6 +178,7 @@ export function createControllerActions({
     handleUnarchiveHabit: actions.handleUnarchiveHabit,
     handleUpdateHabitCategory: actions.handleUpdateHabitCategory,
     handleUpdateHabitFrequency: actions.handleUpdateHabitFrequency,
+    handleUpdateHabitTargetCount: actions.handleUpdateHabitTargetCount,
     handleUpdateHabitWeekdays: actions.handleUpdateHabitWeekdays,
     handleWeeklyReviewOpen: async () => {
       const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;

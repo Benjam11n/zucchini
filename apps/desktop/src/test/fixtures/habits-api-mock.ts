@@ -14,6 +14,7 @@ function createMockHabitsApi(
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     createHabit: vi.fn().mockResolvedValue(null),
+    decrementHabitProgress: vi.fn().mockResolvedValue(null),
     exportBackup: vi.fn().mockResolvedValue(null),
     getDesktopNotificationStatus: vi.fn().mockResolvedValue({
       availability: "available" as const,
@@ -41,6 +42,7 @@ function createMockHabitsApi(
     getWeeklyReview: vi.fn().mockResolvedValue(null),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(null),
     importBackup: vi.fn().mockResolvedValue(false),
+    incrementHabitProgress: vi.fn().mockResolvedValue(null),
     onFocusSessionRecorded: vi.fn(() => vi.fn()),
     onFocusTimerActionRequested: vi.fn(() => vi.fn()),
     onFocusTimerShortcutStatusChanged: vi.fn(() => vi.fn()),
@@ -59,6 +61,7 @@ function createMockHabitsApi(
     unarchiveHabit: vi.fn().mockResolvedValue(null),
     updateHabitCategory: vi.fn().mockResolvedValue(null),
     updateHabitFrequency: vi.fn().mockResolvedValue(null),
+    updateHabitTargetCount: vi.fn().mockResolvedValue(null),
     updateHabitWeekdays: vi.fn().mockResolvedValue(null),
     updateSettings: vi.fn((settings: unknown) => Promise.resolve(settings)),
   } satisfies Record<keyof HabitsApi, ReturnType<typeof vi.fn>>;

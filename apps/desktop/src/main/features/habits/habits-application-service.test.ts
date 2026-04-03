@@ -78,6 +78,7 @@ class FakeRepository implements AppRepository {
       name: "Habit 1",
       selectedWeekdays: null,
       sortOrder: 0,
+      targetCount: 1,
     },
   ];
 
@@ -87,7 +88,7 @@ class FakeRepository implements AppRepository {
       end: string;
       frequency: HabitFrequency;
       start: string;
-      values: Map<number, boolean>;
+      values: Map<number, number>;
     }
   >();
   dailySummaries = new Map<string, DailySummary>();
@@ -137,7 +138,10 @@ class FakeRepository implements AppRepository {
       .map((habit) => ({
         ...habit,
         completed:
-          this.getStatusValues(date, habit.frequency).get(habit.id) ?? false,
+          (this.getStatusValues(date, habit.frequency).get(habit.id) ?? 0) >=
+          (habit.targetCount ?? 1),
+        completedCount:
+          this.getStatusValues(date, habit.frequency).get(habit.id) ?? 0,
       }));
   }
 
@@ -155,6 +159,15 @@ class FakeRepository implements AppRepository {
       .map((habit) => ({
         ...habit,
         completed:
+          ([...this.statusByPeriod.values()]
+            .find(
+              (entry) =>
+                entry.end === date &&
+                entry.frequency === habit.frequency &&
+                entry.values.has(habit.id)
+            )
+            ?.values.get(habit.id) ?? 0) >= (habit.targetCount ?? 1),
+        completedCount:
           [...this.statusByPeriod.values()]
             .find(
               (entry) =>
@@ -162,8 +175,17 @@ class FakeRepository implements AppRepository {
                 entry.frequency === habit.frequency &&
                 entry.values.has(habit.id)
             )
-            ?.values.get(habit.id) ?? false,
+            ?.values.get(habit.id) ?? 0,
       }));
+  }
+
+  getHabitProgress(date: string, habitId: number): number {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (!habit || !isHabitScheduledForDate(habit, date)) {
+      return 0;
+    }
+
+    return this.getStatusValues(date, habit.frequency).get(habitId) ?? 0;
   }
 
   ensureStatusRowsForDate(date: string): void {
@@ -174,7 +196,7 @@ class FakeRepository implements AppRepository {
     for (const habit of scheduledHabits) {
       this.getStatusValues(date, habit.frequency).set(
         habit.id,
-        this.getStatusValues(date, habit.frequency).get(habit.id) ?? false
+        this.getStatusValues(date, habit.frequency).get(habit.id) ?? 0
       );
     }
   }
@@ -185,7 +207,7 @@ class FakeRepository implements AppRepository {
       return;
     }
 
-    this.getStatusValues(date, habit.frequency).set(habitId, false);
+    this.getStatusValues(date, habit.frequency).set(habitId, 0);
   }
 
   removeStatusRowsForDate(date: string, habitId: number): void {
@@ -218,8 +240,36 @@ class FakeRepository implements AppRepository {
     }
 
     const values = this.getStatusValues(date, habit.frequency);
-    const current = values.get(habitId) ?? false;
-    values.set(habitId, !current);
+    const current = values.get(habitId) ?? 0;
+    values.set(habitId, current > 0 ? 0 : (habit.targetCount ?? 1));
+  }
+
+  setHabitProgress(
+    date: string,
+    habitId: number,
+    completedCount: number
+  ): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (!habit || !isHabitScheduledForDate(habit, date)) {
+      return;
+    }
+
+    this.getStatusValues(date, habit.frequency).set(
+      habitId,
+      Math.max(0, Math.min(habit.targetCount ?? 1, Math.round(completedCount)))
+    );
+  }
+
+  adjustHabitProgress(date: string, habitId: number, delta: number): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (!habit) {
+      return;
+    }
+
+    const values = this.getStatusValues(date, habit.frequency);
+    const current = values.get(habitId) ?? 0;
+    const targetCount = habit.targetCount ?? 1;
+    values.set(habitId, Math.max(0, Math.min(targetCount, current + delta)));
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
@@ -291,7 +341,7 @@ class FakeRepository implements AppRepository {
     return [...this.statusByPeriod.values()]
       .filter((entry) => entry.end >= start && entry.end <= end)
       .flatMap((entry) =>
-        [...entry.values.entries()].map(([habitId, completed]) => {
+        [...entry.values.entries()].map(([habitId, completedCount]) => {
           const habit = this.habits.find((item) => item.id === habitId);
 
           if (!habit) {
@@ -300,7 +350,8 @@ class FakeRepository implements AppRepository {
 
           return {
             category: habit.category,
-            completed,
+            completed: completedCount >= (habit.targetCount ?? 1),
+            completedCount,
             frequency: entry.frequency,
             habitId,
             name: habit.name,
@@ -308,6 +359,7 @@ class FakeRepository implements AppRepository {
             periodStart: entry.start,
             selectedWeekdays: habit.selectedWeekdays ?? null,
             sortOrder: habit.sortOrder,
+            targetCount: habit.targetCount ?? 1,
           };
         })
       )
@@ -382,6 +434,7 @@ class FakeRepository implements AppRepository {
     category: HabitCategory,
     frequency: HabitFrequency,
     selectedWeekdays: HabitWeekday[] | null,
+    targetCount: number,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -395,6 +448,7 @@ class FakeRepository implements AppRepository {
       name,
       selectedWeekdays,
       sortOrder,
+      targetCount,
     });
     return id;
   }
@@ -413,11 +467,23 @@ class FakeRepository implements AppRepository {
     }
   }
 
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): void {
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount: number
+  ): void {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
       habit.frequency = frequency;
       habit.selectedWeekdays = null;
+      habit.targetCount = targetCount;
+    }
+  }
+
+  updateHabitTargetCount(habitId: number, targetCount: number): void {
+    const habit = this.habits.find((item) => item.id === habitId);
+    if (habit) {
+      habit.targetCount = targetCount;
     }
   }
 
@@ -472,7 +538,12 @@ class FakeRepository implements AppRepository {
         end: period.end,
         frequency,
         start: period.start,
-        values,
+        values: new Map(
+          [...values.entries()].map(([habitId, completed]) => [
+            habitId,
+            completed ? 1 : 0,
+          ])
+        ),
       }
     );
   }
@@ -480,7 +551,7 @@ class FakeRepository implements AppRepository {
   private getStatusValues(
     date: string,
     frequency: HabitFrequency
-  ): Map<number, boolean> {
+  ): Map<number, number> {
     const period = getHabitPeriod(frequency, date);
     const key = FakeRepository.getPeriodKey(frequency, period.start);
     const existing = this.statusByPeriod.get(key);
@@ -489,7 +560,7 @@ class FakeRepository implements AppRepository {
       return existing.values;
     }
 
-    const values = new Map<number, boolean>();
+    const values = new Map<number, number>();
     this.statusByPeriod.set(key, {
       end: period.end,
       frequency,
@@ -613,6 +684,66 @@ describe("habit categories", () => {
     const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
+  });
+
+  it("preserves current progress when updating a habit target count", () => {
+    const repository = new FakeRepository();
+    const [existingHabit] = repository.habits;
+    if (!existingHabit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...existingHabit,
+      frequency: "weekly",
+      targetCount: 3,
+    };
+    repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
+    repository.adjustHabitProgress("2026-03-08", 1, 1);
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitTargetCount(1, 4);
+
+    expect(todayState.habits[0]).toMatchObject({
+      completed: false,
+      completedCount: 2,
+      frequency: "weekly",
+      targetCount: 4,
+    });
+  });
+
+  it("carries forward current progress when changing a habit frequency", () => {
+    const repository = new FakeRepository();
+    const [existingHabit] = repository.habits;
+    if (!existingHabit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...existingHabit,
+      frequency: "weekly",
+      targetCount: 3,
+    };
+    repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
+    repository.adjustHabitProgress("2026-03-08", 1, 1);
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.updateHabitFrequency(1, "monthly", 5);
+
+    expect(todayState.habits[0]).toMatchObject({
+      completed: false,
+      completedCount: 2,
+      frequency: "monthly",
+      targetCount: 5,
+    });
   });
 
   it("removes a daily habit from today when its weekday schedule no longer includes today", () => {

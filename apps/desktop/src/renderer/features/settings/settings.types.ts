@@ -33,7 +33,8 @@ export interface SettingsPageProps {
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null
+    selectedWeekdays?: HabitWeekday[] | null,
+    targetCount?: number | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onUpdateHabitCategory: (
@@ -42,7 +43,12 @@ export interface SettingsPageProps {
   ) => Promise<void>;
   onUpdateHabitFrequency: (
     habitId: number,
-    frequency: HabitFrequency
+    frequency: HabitFrequency,
+    targetCount?: number | null
+  ) => Promise<void>;
+  onUpdateHabitTargetCount?: (
+    habitId: number,
+    targetCount: number
   ) => Promise<void>;
   onUpdateHabitWeekdays: (
     habitId: number,

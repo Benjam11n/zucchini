@@ -19,15 +19,13 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
-import {
-  HABIT_FREQUENCY_DEFINITIONS,
-  HABIT_WEEKDAY_DEFINITIONS,
-} from "@/shared/domain/habit";
+import { HABIT_WEEKDAY_DEFINITIONS } from "@/shared/domain/habit";
 import type { Habit, HabitWeekday } from "@/shared/domain/habit";
 
 import { HabitCategorySelector } from "./habit-category-selector";
 import { HabitFrequencySelector } from "./habit-frequency-selector";
 import type { HabitManagementCardProps } from "./habit-management.types";
+import { HabitTargetCountStepper } from "./habit-target-count-stepper";
 import { HabitWeekdaySelector } from "./habit-weekday-selector";
 
 const HABIT_DRAG_DATA_TYPE = "text/plain";
@@ -45,6 +43,7 @@ interface HabitRowEditorProps extends Pick<
   | "onReorderHabits"
   | "onUpdateHabitCategory"
   | "onUpdateHabitFrequency"
+  | "onUpdateHabitTargetCount"
   | "onUpdateHabitWeekdays"
 > {
   habit: Habit;
@@ -59,10 +58,6 @@ interface HabitRowEditorProps extends Pick<
   onExpandedChange: (open: boolean) => void;
 }
 
-const FREQUENCY_LABELS = Object.fromEntries(
-  HABIT_FREQUENCY_DEFINITIONS.map(({ label, value }) => [value, label])
-) as Record<Habit["frequency"], string>;
-
 const WEEKDAY_LABELS = Object.fromEntries(
   HABIT_WEEKDAY_DEFINITIONS.map(({ label, value }) => [value, label])
 ) as Record<HabitWeekday, string>;
@@ -72,8 +67,12 @@ const WEEKDAYS: HabitWeekday[] = HABIT_WEEKDAY_DEFINITIONS.map(
 );
 
 function getCadenceSummary(habit: Habit): string {
-  if (habit.frequency !== "daily") {
-    return FREQUENCY_LABELS[habit.frequency];
+  if (habit.frequency === "weekly") {
+    return `${habit.targetCount ?? 1}x / week`;
+  }
+
+  if (habit.frequency === "monthly") {
+    return `${habit.targetCount ?? 1}x / month`;
   }
 
   const weekdays = habit.selectedWeekdays ?? WEEKDAYS;
@@ -109,6 +108,7 @@ export function HabitRowEditor({
   onReorderHabits,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: HabitRowEditorProps) {
   const categoryPreferences = useHabitCategoryPreferences();
@@ -332,7 +332,11 @@ export function HabitRowEditor({
                     compact
                     name={`habit-frequency-${habit.id}`}
                     onChange={async (frequency) => {
-                      await onUpdateHabitFrequency(habit.id, frequency);
+                      await onUpdateHabitFrequency(
+                        habit.id,
+                        frequency,
+                        habit.targetCount ?? 1
+                      );
                     }}
                     selectedFrequency={habit.frequency}
                   />
@@ -353,7 +357,21 @@ export function HabitRowEditor({
                     selectedWeekdays={habit.selectedWeekdays ?? null}
                   />
                 </div>
-              ) : null}
+              ) : (
+                <div className="grid max-w-full gap-2">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Goal
+                  </Label>
+                  <HabitTargetCountStepper
+                    compact
+                    frequency={habit.frequency}
+                    onChange={async (targetCount) => {
+                      await onUpdateHabitTargetCount?.(habit.id, targetCount);
+                    }}
+                    value={habit.targetCount ?? 1}
+                  />
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
                 <p className="text-xs text-muted-foreground">

@@ -37,10 +37,13 @@ export interface AppRepository {
   getHabits(): Habit[];
   getHabitsWithStatus(date: string): HabitWithStatus[];
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
+  getHabitProgress(date: string, habitId: number): number;
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
   removeStatusRowsForDate(date: string, habitId: number): void;
+  setHabitProgress(date: string, habitId: number, completedCount: number): void;
   toggleHabit(date: string, habitId: number): void;
+  adjustHabitProgress(date: string, habitId: number, delta: number): void;
   getFocusSessions(limit?: number): FocusSession[];
   getFocusSessionsInRange(start: string, end: string): FocusSession[];
   saveFocusSession(input: CreateFocusSessionInput): FocusSession;
@@ -73,12 +76,18 @@ export interface AppRepository {
     category: HabitCategory,
     frequency: HabitFrequency,
     selectedWeekdays: HabitWeekday[] | null,
+    targetCount: number,
     sortOrder: number,
     createdAt: string
   ): number;
   renameHabit(habitId: number, name: string): void;
   updateHabitCategory(habitId: number, category: HabitCategory): void;
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): void;
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount: number
+  ): void;
+  updateHabitTargetCount(habitId: number, targetCount: number): void;
   updateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null

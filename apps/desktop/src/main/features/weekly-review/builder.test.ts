@@ -23,21 +23,27 @@ function createStatus(
   completed: boolean,
   overrides: Partial<{
     category: "fitness" | "nutrition" | "productivity";
+    completedCount: number;
     frequency: "daily" | "monthly" | "weekly";
     name: string;
     periodStart: string;
     sortOrder: number;
+    targetCount: number;
   }> = {}
 ) {
   return {
     category: overrides.category ?? "productivity",
     completed,
+    completedCount:
+      overrides.completedCount ??
+      (completed ? (overrides.targetCount ?? 1) : 0),
     frequency: overrides.frequency ?? "daily",
     habitId,
     name: overrides.name ?? `Habit ${habitId}`,
     periodEnd,
     periodStart: overrides.periodStart ?? periodEnd,
     sortOrder: overrides.sortOrder ?? habitId - 1,
+    targetCount: overrides.targetCount ?? 1,
   } as const;
 }
 
@@ -221,6 +227,35 @@ describe("buildWeeklyReview()", () => {
       completedOpportunities: 1,
       name: "Weekly reset",
       opportunities: 1,
+    });
+  });
+
+  it("uses partial weekly progress in completion and missed calculations", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(7, "2026-03-08", false, {
+          completedCount: 2,
+          frequency: "weekly",
+          name: "Weekly reset",
+          periodStart: "2026-03-02",
+          targetCount: 3,
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.completionRate).toBe(67);
+    expect(review.habitMetrics[0]).toMatchObject({
+      completedOpportunities: 2,
+      completionRate: 67,
+      missedOpportunities: 1,
+      opportunities: 3,
+    });
+    expect(review.mostMissedHabits[0]).toMatchObject({
+      missedOpportunities: 1,
+      name: "Weekly reset",
     });
   });
 

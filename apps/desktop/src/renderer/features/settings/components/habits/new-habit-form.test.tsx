@@ -55,7 +55,8 @@ describe("new habit form", () => {
         "Drink water",
         "productivity",
         "daily",
-        null
+        null,
+        1
       );
     });
 

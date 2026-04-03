@@ -13,6 +13,7 @@ import {
   isHabitScheduledForDate,
   normalizeHabitCategory,
   normalizeHabitFrequency,
+  normalizeHabitTargetCount,
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
@@ -71,8 +72,36 @@ export class SqliteHistoryRepository {
           return {
             ...habit,
             completed: status?.completed ?? false,
+            completedCount: status?.completedCount ?? 0,
           };
         });
+    });
+  }
+
+  getHabitProgress(date: string, habitId: number): number {
+    return this.client.run("getHabitProgress", () => {
+      const habit = this.habitsRepository.getHabitById(habitId);
+      if (!habit || !isHabitScheduledForDate(habit, date)) {
+        return 0;
+      }
+
+      const period = getHabitPeriod(habit.frequency, date);
+      const row = this.client
+        .getDrizzle()
+        .select({
+          completedCount: habitPeriodStatus.completedCount,
+        })
+        .from(habitPeriodStatus)
+        .where(
+          and(
+            eq(habitPeriodStatus.frequency, habit.frequency),
+            eq(habitPeriodStatus.periodStart, period.start),
+            eq(habitPeriodStatus.habitId, habitId)
+          )
+        )
+        .get();
+
+      return row?.completedCount ?? 0;
     });
   }
 
@@ -83,12 +112,14 @@ export class SqliteHistoryRepository {
         .select({
           category: habitPeriodStatus.habitCategory,
           completed: habitPeriodStatus.completed,
+          completedCount: habitPeriodStatus.completedCount,
           createdAt: habitPeriodStatus.habitCreatedAt,
           frequency: habitPeriodStatus.frequency,
           id: habitPeriodStatus.habitId,
           name: habitPeriodStatus.habitName,
           selectedWeekdays: habitPeriodStatus.habitSelectedWeekdays,
           sortOrder: habitPeriodStatus.habitSortOrder,
+          targetCount: habitPeriodStatus.habitTargetCount,
         })
         .from(habitPeriodStatus)
         .where(
@@ -105,6 +136,7 @@ export class SqliteHistoryRepository {
         .map((row) => ({
           category: normalizeHabitCategory(row.category),
           completed: row.completed,
+          completedCount: row.completedCount,
           createdAt: row.createdAt,
           frequency: normalizeHabitFrequency(row.frequency),
           id: row.id,
@@ -114,6 +146,10 @@ export class SqliteHistoryRepository {
             row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
           ),
           sortOrder: row.sortOrder,
+          targetCount: normalizeHabitTargetCount(
+            normalizeHabitFrequency(row.frequency),
+            row.targetCount
+          ),
         }))
     );
   }
@@ -139,6 +175,7 @@ export class SqliteHistoryRepository {
         .values(
           dueHabits.map((habit) => ({
             completed: false,
+            completedCount: 0,
             frequency: habit.frequency,
             habitCategory: habit.category,
             habitCreatedAt: habit.createdAt,
@@ -148,6 +185,7 @@ export class SqliteHistoryRepository {
               ? JSON.stringify(habit.selectedWeekdays)
               : null,
             habitSortOrder: habit.sortOrder,
+            habitTargetCount: habit.targetCount,
             periodEnd: getHabitPeriod(habit.frequency, date).end,
             periodStart: getHabitPeriod(habit.frequency, date).start,
           }))
@@ -169,6 +207,7 @@ export class SqliteHistoryRepository {
         .insert(habitPeriodStatus)
         .values({
           completed: false,
+          completedCount: 0,
           frequency: habit.frequency,
           habitCategory: habit.category,
           habitCreatedAt: habit.createdAt,
@@ -178,6 +217,7 @@ export class SqliteHistoryRepository {
             ? JSON.stringify(habit.selectedWeekdays)
             : null,
           habitSortOrder: habit.sortOrder,
+          habitTargetCount: habit.targetCount,
           periodEnd: getHabitPeriod(habit.frequency, date).end,
           periodStart: getHabitPeriod(habit.frequency, date).start,
         })
@@ -231,6 +271,82 @@ export class SqliteHistoryRepository {
         .update(habitPeriodStatus)
         .set({
           completed: sql<boolean>`case when ${habitPeriodStatus.completed} = 1 then 0 else 1 end`,
+          completedCount: sql<number>`case when ${habitPeriodStatus.completed} = 1 then 0 else ${habit.targetCount} end`,
+        })
+        .where(
+          and(
+            eq(habitPeriodStatus.frequency, habit.frequency),
+            eq(habitPeriodStatus.periodStart, period.start),
+            eq(habitPeriodStatus.habitId, habitId)
+          )
+        )
+        .run();
+    });
+  }
+
+  setHabitProgress(
+    date: string,
+    habitId: number,
+    completedCount: number
+  ): void {
+    this.client.run("setHabitProgress", () => {
+      const habit = this.habitsRepository.getHabitById(habitId);
+      if (!habit || !isHabitScheduledForDate(habit, date)) {
+        return;
+      }
+
+      const period = getHabitPeriod(habit.frequency, date);
+      const safeCompletedCount = Math.max(
+        0,
+        Math.min(habit.targetCount ?? 1, Math.round(completedCount))
+      );
+
+      this.client
+        .getDrizzle()
+        .update(habitPeriodStatus)
+        .set({
+          completed: safeCompletedCount >= (habit.targetCount ?? 1),
+          completedCount: safeCompletedCount,
+          habitCategory: habit.category,
+          habitName: habit.name,
+          habitSelectedWeekdays: habit.selectedWeekdays
+            ? JSON.stringify(habit.selectedWeekdays)
+            : null,
+          habitSortOrder: habit.sortOrder,
+          habitTargetCount: habit.targetCount ?? 1,
+        })
+        .where(
+          and(
+            eq(habitPeriodStatus.frequency, habit.frequency),
+            eq(habitPeriodStatus.periodStart, period.start),
+            eq(habitPeriodStatus.habitId, habitId)
+          )
+        )
+        .run();
+    });
+  }
+
+  adjustHabitProgress(date: string, habitId: number, delta: number): void {
+    this.client.run("adjustHabitProgress", () => {
+      const habit = this.habitsRepository.getHabitById(habitId);
+      if (
+        !habit ||
+        !isHabitScheduledForDate(habit, date) ||
+        habit.frequency === "daily" ||
+        delta === 0
+      ) {
+        return;
+      }
+
+      const period = getHabitPeriod(habit.frequency, date);
+      const safeDelta = Math.round(delta);
+
+      this.client
+        .getDrizzle()
+        .update(habitPeriodStatus)
+        .set({
+          completed: sql<boolean>`case when max(0, min(${habit.targetCount}, ${habitPeriodStatus.completedCount} + ${safeDelta})) >= ${habit.targetCount} then 1 else 0 end`,
+          completedCount: sql<number>`max(0, min(${habit.targetCount}, ${habitPeriodStatus.completedCount} + ${safeDelta}))`,
         })
         .where(
           and(

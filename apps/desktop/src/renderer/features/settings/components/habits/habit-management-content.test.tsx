@@ -134,7 +134,8 @@ describe("habit management content", () => {
         "Drink water",
         "productivity",
         "daily",
-        null
+        null,
+        1
       );
     });
 

@@ -118,6 +118,10 @@ export class SqliteAppRepository implements AppRepository {
     return this.historyRepository.getHistoricalHabitsWithStatus(date);
   }
 
+  getHabitProgress(date: string, habitId: number): number {
+    return this.historyRepository.getHabitProgress(date, habitId);
+  }
+
   ensureStatusRowsForDate(date: string): void {
     this.historyRepository.ensureStatusRowsForDate(date);
   }
@@ -130,8 +134,20 @@ export class SqliteAppRepository implements AppRepository {
     this.historyRepository.removeStatusRowsForDate(date, habitId);
   }
 
+  setHabitProgress(
+    date: string,
+    habitId: number,
+    completedCount: number
+  ): void {
+    this.historyRepository.setHabitProgress(date, habitId, completedCount);
+  }
+
   toggleHabit(date: string, habitId: number): void {
     this.historyRepository.toggleHabit(date, habitId);
+  }
+
+  adjustHabitProgress(date: string, habitId: number, delta: number): void {
+    this.historyRepository.adjustHabitProgress(date, habitId, delta);
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
@@ -226,6 +242,7 @@ export class SqliteAppRepository implements AppRepository {
     category: HabitCategory,
     frequency: HabitFrequency,
     selectedWeekdays: HabitWeekday[] | null,
+    targetCount: number,
     sortOrder: number,
     createdAt: string
   ): number {
@@ -234,6 +251,7 @@ export class SqliteAppRepository implements AppRepository {
       category,
       frequency,
       selectedWeekdays,
+      targetCount,
       sortOrder,
       createdAt
     );
@@ -247,8 +265,16 @@ export class SqliteAppRepository implements AppRepository {
     this.habitsRepository.updateHabitCategory(habitId, category);
   }
 
-  updateHabitFrequency(habitId: number, frequency: HabitFrequency): void {
-    this.habitsRepository.updateHabitFrequency(habitId, frequency);
+  updateHabitFrequency(
+    habitId: number,
+    frequency: HabitFrequency,
+    targetCount: number
+  ): void {
+    this.habitsRepository.updateHabitFrequency(habitId, frequency, targetCount);
+  }
+
+  updateHabitTargetCount(habitId: number, targetCount: number): void {
+    this.habitsRepository.updateHabitTargetCount(habitId, targetCount);
   }
 
   updateHabitWeekdays(

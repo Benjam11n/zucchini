@@ -190,7 +190,7 @@ describe("habit row editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
 
     expect(onUpdateHabitCategory).toHaveBeenCalledWith(2, "nutrition");
-    expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly");
+    expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly", 1);
     expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(2, [1, 3, 5]);
     expect(onArchiveHabit).toHaveBeenCalledWith(2);
   });
