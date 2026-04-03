@@ -6,28 +6,53 @@
  * No routing or state management — just static content and external links.
  */
 import {
-  ArrowUpRight,
+  ArrowRight,
   CalendarDays,
   Flame,
-  ArrowRight,
+  ArrowUpRight,
   ListChecks,
   Snowflake,
   Utensils,
 } from "lucide-react";
 
-const latestReleaseUrl =
-  "https://github.com/Benjam11n/zucchini/releases/latest";
+import { latestReleaseUrl } from "./constants";
+import PixelBlast from "./pixel-blast";
 
 export default function App() {
   return (
     <div className="page-shell">
+      <div aria-hidden="true" className="pixel-blast" role="presentation">
+        <PixelBlast
+          className="pixel-blast-layer"
+          color="#669c35"
+          edgeFade={0.25}
+          enableRipples
+          liquid={false}
+          liquidRadius={1.2}
+          liquidStrength={0.12}
+          liquidWobbleSpeed={5}
+          patternDensity={1}
+          patternScale={2}
+          pixelSize={4}
+          pixelSizeJitter={0}
+          rippleIntensityScale={1.5}
+          rippleSpeed={0.4}
+          rippleThickness={0.12}
+          speed={0.5}
+          style={{ opacity: 0.65 }}
+          transparent
+          variant="square"
+        />
+        <div className="pixel-blast-noise" />
+        <div className="pixel-blast-vignette" />
+      </div>
       <nav className="nav">
         <div className="logo">
           <img
             alt="Zucchini"
-            src="/mascot/mascot-icon.jpeg"
-            width="32"
-            height="32"
+            src="/branding/app-icon.png"
+            width="40"
+            height="40"
           />
           <span>Zucchini</span>
         </div>
@@ -42,12 +67,15 @@ export default function App() {
 
       <main>
         <section className="hero">
+          <div className="hero-badge">
+            <span className="hero-badge-dot" />
+            Local-first habit tracker for macOS
+          </div>
           <h1>Track habits with momentum.</h1>
           <p className="lede">
             Stay consistent without the cloud. Zucchini keeps your routines
-            where they belong—on your machine.
+            where they belong, on your machine.
           </p>
-
           <div className="actions">
             <a href={latestReleaseUrl} className="btn btn-primary">
               Download for macOS <ArrowUpRight size={16} />

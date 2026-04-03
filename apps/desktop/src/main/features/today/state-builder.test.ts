@@ -1,20 +1,22 @@
 import type { Clock } from "@/main/app/clock";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import {
   buildHistoryDay,
   buildTodayPreviewSummary,
   buildTodayState,
   createRollingStreakState,
 } from "@/main/features/today/state-builder";
+import type { AppRepository } from "@/main/infra/persistence/app-repository";
 
-function createRepository(overrides: {
-  ensureStatusRowsForDate?: ReturnType<typeof vi.fn>;
-  getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
-  getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
-  getHabitsWithStatus?: ReturnType<typeof vi.fn>;
-  getPersistedStreakState?: ReturnType<typeof vi.fn>;
-  getSettings?: ReturnType<typeof vi.fn>;
-} = {}): AppRepository {
+function createRepository(
+  overrides: {
+    ensureStatusRowsForDate?: ReturnType<typeof vi.fn>;
+    getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
+    getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
+    getHabitsWithStatus?: ReturnType<typeof vi.fn>;
+    getPersistedStreakState?: ReturnType<typeof vi.fn>;
+    getSettings?: ReturnType<typeof vi.fn>;
+  } = {}
+): AppRepository {
   return {
     ensureStatusRowsForDate: overrides.ensureStatusRowsForDate ?? vi.fn(),
     getFocusQuotaGoalsWithStatusForDate:
@@ -338,12 +340,7 @@ describe("state builder", () => {
         },
       ];
 
-      const historyDay = buildHistoryDay(
-        summary,
-        habits,
-        30,
-        focusQuotaGoals
-      );
+      const historyDay = buildHistoryDay(summary, habits, 30, focusQuotaGoals);
 
       expect(historyDay.focusQuotaGoals).toStrictEqual(focusQuotaGoals);
     });
@@ -373,7 +370,12 @@ describe("state builder", () => {
       };
       const habits: never[] = [];
 
-      const historyDay = buildHistoryDay(summary, habits, 0, undefined as never);
+      const historyDay = buildHistoryDay(
+        summary,
+        habits,
+        0,
+        undefined as never
+      );
 
       expect("focusQuotaGoals" in historyDay).toBe(false);
     });

@@ -209,9 +209,6 @@ export function LongerHabitChecklist({
       completedCount,
       completedHabitGoalCount: completedHabitGoals,
       completedMinutes,
-      completedQuotaGoalCount: sectionFocusQuotaGoals.filter(
-        (goal) => goal.completed
-      ).length,
       focusQuotaGoals: sectionFocusQuotaGoals,
       habits: sectionHabits,
       goalCount,
@@ -275,12 +272,6 @@ export function LongerHabitChecklist({
                     habits
                   </span>
                 ) : null}
-                {section.focusQuotaGoals.length > 0 ? (
-                  <span className="tabular-nums">
-                    {section.completedQuotaGoalCount}/
-                    {section.focusQuotaGoals.length} focus
-                  </span>
-                ) : null}
                 <span>{section.resetLabel}</span>
               </div>
             </div>
@@ -294,9 +285,6 @@ export function LongerHabitChecklist({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <span className="truncate text-sm">Focus quota</span>
-                      <span className="shrink-0 text-[0.68rem] uppercase tracking-wide text-primary/80">
-                        {section.title}
-                      </span>
                     </div>
                     <div className="mt-1 flex items-center gap-2">
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
