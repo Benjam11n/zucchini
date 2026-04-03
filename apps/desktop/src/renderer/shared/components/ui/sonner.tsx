@@ -64,7 +64,7 @@ export function Toaster(props: ToasterProps) {
             "rounded-md border border-border bg-card text-card-foreground hover:bg-accent",
           closeButton:
             "border border-border bg-card text-muted-foreground hover:text-foreground",
-          description: "text-muted-foreground",
+          description: "!text-card-foreground/85",
           toast:
             "border border-border/80 bg-card text-card-foreground shadow-lg",
         },

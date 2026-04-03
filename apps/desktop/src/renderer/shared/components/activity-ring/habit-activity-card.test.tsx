@@ -41,7 +41,10 @@ describe("habit activity card", () => {
 
   it("hides the detailed info panel when showDetails is false", () => {
     const { container } = render(
-      <HabitActivityCard categoryProgress={categoryProgress} showDetails={false} />
+      <HabitActivityCard
+        categoryProgress={categoryProgress}
+        showDetails={false}
+      />
     );
 
     expect(screen.queryByText("FITNESS")).not.toBeInTheDocument();

@@ -92,9 +92,9 @@ describe("createDataManagementActions()", () => {
       throw new Error("invalid backup");
     });
 
-    await expect(mocks.actions.importBackup(mocks.onBeforeQuit)).rejects.toThrow(
-      "invalid backup"
-    );
+    await expect(
+      mocks.actions.importBackup(mocks.onBeforeQuit)
+    ).rejects.toThrow("invalid backup");
 
     expect(mocks.repository.replaceDatabase).not.toHaveBeenCalled();
     expect(mocks.appLike.relaunch).not.toHaveBeenCalled();

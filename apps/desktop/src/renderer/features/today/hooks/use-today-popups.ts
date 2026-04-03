@@ -53,6 +53,9 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
       document.visibilityState !== "visible" || !document.hasFocus();
 
     toast(title, {
+      classNames: {
+        icon: "!size-12 !items-center !justify-center !mx-0",
+      },
       description: message,
       duration: POPUP_TIMEOUT_MS,
       icon: createElement("img", {
@@ -66,9 +69,15 @@ export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
       return;
     }
 
-    window.habits.showNotification(title, message, iconFilename).catch(() => {
-      // Desktop notifications are best-effort when the app is not frontmost.
-    });
+    const showDesktopNotification = async () => {
+      try {
+        await window.habits.showNotification(title, message, iconFilename);
+      } catch {
+        // Desktop notifications are best-effort when the app is not frontmost.
+      }
+    };
+
+    showDesktopNotification();
   };
 
   useEffect(() => {
