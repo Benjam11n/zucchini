@@ -13,7 +13,7 @@ import { createTodayUiSnapshot } from "@/renderer/features/today/lib/today-ui-sn
 import { readLastUiState } from "@/renderer/features/today/lib/today-ui-storage";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 
-const CELEBRATION_DURATION_MS = 4200;
+const CELEBRATION_DURATION_MS = 2200;
 
 interface UseTodayCelebrationOptions {
   completedCount: number;

@@ -12,6 +12,7 @@ import { memo, useMemo } from "react";
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
 import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
 import { StreakCard } from "@/renderer/features/today/components/streak-card";
+import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
@@ -124,95 +125,98 @@ function TodayPageComponent({
 
   return (
     <LazyMotion features={domAnimation}>
-      <m.div
-        animate="animate"
-        className="grid min-w-0 gap-6"
-        initial="initial"
-        variants={staggerContainerVariants}
-      >
-        <m.section className="min-w-0" variants={staggerItemVariants}>
-          <TodayHistoryCarousel history={history} todayDate={state.date} />
-        </m.section>
+      <>
+        <TodayCelebrationOverlay celebration={celebration} />
 
-        <m.section variants={staggerItemVariants}>
-          <StreakCard
-            availableFreezes={state.streak.availableFreezes}
-            celebration={celebration}
-            categoryProgress={categoryProgress}
-            currentStreak={state.streak.currentStreak}
-            dateLabel={state.date}
-            focusMinutes={state.focusMinutes}
-          />
-        </m.section>
+        <m.div
+          animate="animate"
+          className="grid min-w-0 gap-6"
+          initial="initial"
+          variants={staggerContainerVariants}
+        >
+          <m.section className="min-w-0" variants={staggerItemVariants}>
+            <TodayHistoryCarousel history={history} todayDate={state.date} />
+          </m.section>
 
-        <m.section variants={staggerItemVariants}>
-          <HabitChecklist
-            icon={ListChecks}
-            completedCount={completedCount}
-            emptyMessage="No daily habits yet. Create one to start building momentum."
-            emptyAction={
-              <TodayHabitManagerDialog
-                habits={managedHabits}
-                onArchiveHabit={onArchiveHabit}
-                onCreateHabit={onCreateHabit}
-                onRenameHabit={onRenameHabit}
-                onReorderHabits={onReorderHabits}
-                onUnarchiveHabit={onUnarchiveHabit}
-                onUpdateHabitCategory={onUpdateHabitCategory}
-                onUpdateHabitFrequency={onUpdateHabitFrequency}
-                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                {...(onUpdateHabitTargetCount
-                  ? { onUpdateHabitTargetCount }
-                  : {})}
-                trigger={
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    <Plus className="size-4" />
-                    Create your first habit
-                  </Button>
-                }
-              />
-            }
-            headerActions={
-              <TodayHabitManagerDialog
-                habits={managedHabits}
-                onArchiveHabit={onArchiveHabit}
-                onCreateHabit={onCreateHabit}
-                onRenameHabit={onRenameHabit}
-                onReorderHabits={onReorderHabits}
-                onUnarchiveHabit={onUnarchiveHabit}
-                onUpdateHabitCategory={onUpdateHabitCategory}
-                onUpdateHabitFrequency={onUpdateHabitFrequency}
-                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                {...(onUpdateHabitTargetCount
-                  ? { onUpdateHabitTargetCount }
-                  : {})}
-              />
-            }
-            habits={dailyHabits}
-            onToggleHabit={onToggleHabit}
-          />
-        </m.section>
-
-        {periodicHabits.length > 0 ? (
           <m.section variants={staggerItemVariants}>
-            <LongerHabitChecklist
-              dateKey={state.date}
-              habits={periodicHabits}
-              onDecrementHabitProgress={
-                onDecrementHabitProgress ?? noopHabitProgress
-              }
-              onIncrementHabitProgress={
-                onIncrementHabitProgress ?? noopHabitProgress
-              }
+            <StreakCard
+              availableFreezes={state.streak.availableFreezes}
+              categoryProgress={categoryProgress}
+              currentStreak={state.streak.currentStreak}
+              dateLabel={state.date}
+              focusMinutes={state.focusMinutes}
             />
           </m.section>
-        ) : null}
-      </m.div>
+
+          <m.section variants={staggerItemVariants}>
+            <HabitChecklist
+              icon={ListChecks}
+              completedCount={completedCount}
+              emptyMessage="No daily habits yet. Create one to start building momentum."
+              emptyAction={
+                <TodayHabitManagerDialog
+                  habits={managedHabits}
+                  onArchiveHabit={onArchiveHabit}
+                  onCreateHabit={onCreateHabit}
+                  onRenameHabit={onRenameHabit}
+                  onReorderHabits={onReorderHabits}
+                  onUnarchiveHabit={onUnarchiveHabit}
+                  onUpdateHabitCategory={onUpdateHabitCategory}
+                  onUpdateHabitFrequency={onUpdateHabitFrequency}
+                  onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                  {...(onUpdateHabitTargetCount
+                    ? { onUpdateHabitTargetCount }
+                    : {})}
+                  trigger={
+                    <Button
+                      className="rounded-full"
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                    >
+                      <Plus className="size-4" />
+                      Create your first habit
+                    </Button>
+                  }
+                />
+              }
+              headerActions={
+                <TodayHabitManagerDialog
+                  habits={managedHabits}
+                  onArchiveHabit={onArchiveHabit}
+                  onCreateHabit={onCreateHabit}
+                  onRenameHabit={onRenameHabit}
+                  onReorderHabits={onReorderHabits}
+                  onUnarchiveHabit={onUnarchiveHabit}
+                  onUpdateHabitCategory={onUpdateHabitCategory}
+                  onUpdateHabitFrequency={onUpdateHabitFrequency}
+                  onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                  {...(onUpdateHabitTargetCount
+                    ? { onUpdateHabitTargetCount }
+                    : {})}
+                />
+              }
+              habits={dailyHabits}
+              onToggleHabit={onToggleHabit}
+            />
+          </m.section>
+
+          {periodicHabits.length > 0 ? (
+            <m.section variants={staggerItemVariants}>
+              <LongerHabitChecklist
+                dateKey={state.date}
+                habits={periodicHabits}
+                onDecrementHabitProgress={
+                  onDecrementHabitProgress ?? noopHabitProgress
+                }
+                onIncrementHabitProgress={
+                  onIncrementHabitProgress ?? noopHabitProgress
+                }
+              />
+            </m.section>
+          ) : null}
+        </m.div>
+      </>
     </LazyMotion>
   );
 }
