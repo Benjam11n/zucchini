@@ -124,7 +124,7 @@ function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
         />
       </TooltipTrigger>
       <TooltipContent
-        className="max-w-[220px] rounded-xl border border-border/60 bg-card px-3 py-2 text-card-foreground shadow-lg"
+        className="max-w-[220px] rounded-md border border-border/60 bg-card px-3 py-2 text-card-foreground shadow-lg"
         side="top"
         sideOffset={8}
       >
@@ -150,7 +150,7 @@ function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
 function GitHubCalendar({ weeks }: GitHubCalendarProps) {
   if (weeks.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 px-4 py-10 text-center text-sm text-muted-foreground">
+      <div className="rounded-md border border-dashed border-border/60 bg-background/20 px-4 py-10 text-center text-sm text-muted-foreground">
         No history yet. Complete a day to populate the heatmap.
       </div>
     );
@@ -158,7 +158,7 @@ function GitHubCalendar({ weeks }: GitHubCalendarProps) {
 
   return (
     <TooltipProvider>
-      <div className="overflow-x-auto rounded-xl border border-border/60 bg-background/30 p-4 sm:p-5">
+      <div className="overflow-x-auto rounded-md border border-border/60 bg-background/30 p-4 sm:p-5">
         <div className="min-w-max">
           <div className="mb-3 flex gap-1 pl-8 text-[11px] text-muted-foreground">
             {weeks.map((week, index) => {

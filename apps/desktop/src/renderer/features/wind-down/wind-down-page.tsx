@@ -131,7 +131,7 @@ export function WindDownPage({
                     const isEditing = editingActionId === action.id;
 
                     return isEditing ? (
-                      <div key={action.id} className="rounded-lg px-3 py-2.5">
+                      <div key={action.id} className="rounded-md px-3 py-2.5">
                         <Input
                           onBlur={async () => {
                             const trimmedName = editingName.trim();

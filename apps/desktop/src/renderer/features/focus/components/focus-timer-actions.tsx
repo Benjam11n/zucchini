@@ -41,7 +41,7 @@ export function FocusTimerActions({
     <div className="flex flex-wrap justify-center gap-2.5">
       {isIdle || isPaused ? (
         <Button
-          className="h-11 min-w-36 rounded-full px-6 text-base"
+          className="h-11 min-w-36 px-6 text-base"
           onClick={() => {
             // CHECK: Move this out to a function?
             if (isPaused) {
@@ -72,7 +72,7 @@ export function FocusTimerActions({
 
       {isRunning ? (
         <Button
-          className="h-11 min-w-36 rounded-full px-6 text-base"
+          className="h-11 min-w-36 px-6 text-base"
           onClick={onPause}
           variant="secondary"
         >
@@ -83,7 +83,7 @@ export function FocusTimerActions({
 
       {isIdle ? null : (
         <Button
-          className="h-11 min-w-36 rounded-full px-6 text-base"
+          className="h-11 min-w-36 px-6 text-base"
           onClick={isBreak ? onSkipBreak : onReset}
           variant="outline"
         >

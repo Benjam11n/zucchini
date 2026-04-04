@@ -33,27 +33,19 @@ export function FocusTimerHeader({
           <CardTitle>Focused work timer</CardTitle>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            className="rounded-full"
-            onClick={onOpenPomodoroSettings}
-            size="sm"
-            variant="ghost"
-          >
+          <Button onClick={onOpenPomodoroSettings} size="sm" variant="ghost">
             <Settings2 className="size-4" />
             Settings
           </Button>
           <Button
-            className="rounded-full border-white/10 bg-white/3 px-4"
+            className="border-white/10 bg-white/3 px-4"
             onClick={onShowWidget}
             size="sm"
             variant="outline"
           >
             Show widget
           </Button>
-          <Badge
-            className="rounded-full px-3 py-1"
-            variant={phaseBadge.variant}
-          >
+          <Badge className="px-3 py-1" variant={phaseBadge.variant}>
             {phaseBadge.label}
           </Badge>
         </div>

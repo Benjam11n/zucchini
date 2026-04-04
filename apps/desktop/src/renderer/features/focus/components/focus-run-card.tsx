@@ -1,4 +1,4 @@
-import { ChevronDown, Clock3, PauseCircle } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useId, useState } from "react";
 
 import {
@@ -10,6 +10,7 @@ import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
 
+import { FocusRunEntryRow } from "./focus-run-entry-row";
 import { FocusRunTimeline } from "./focus-run-timeline";
 
 function formatSessionRangeLabel(
@@ -67,7 +68,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
   return (
     <div
-      className="space-y-4 rounded-xl border border-border/60 bg-muted/20 px-4 py-4"
+      className="space-y-4 rounded-md border border-border/60 bg-muted/20 px-4 py-4"
       data-session-date={session.date}
       data-testid="focus-session-card"
     >
@@ -110,7 +111,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
       <FocusRunTimeline session={session} />
 
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/60 px-3 py-2">
+      <div className="flex items-center justify-between gap-3 rounded-md border border-border/50 bg-background/60 px-3 py-2">
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">
             {session.entries.length === 1
@@ -133,7 +134,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
         <Button
           aria-controls={detailsId}
           aria-expanded={isExpanded}
-          className="shrink-0 rounded-full"
+          className="shrink-0"
           onClick={() => setIsExpanded((value) => !value)}
           size="sm"
           type="button"
@@ -156,30 +157,15 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
               session.idleGapMinutesBetweenEntries[index - 1] ?? 0;
 
             return (
-              <div
+              <FocusRunEntryRow
                 key={entry.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/70 px-3 py-2"
-              >
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Clock3 className="size-4 text-primary/80" />
-                  <span>
-                    {formatEntryRange(entry.startedAt, entry.completedAt)}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>
-                    {entry.entryKind === "partial" ? "Partial · " : ""}
-                    {formatFocusMinutes(entry.durationSeconds)} min
-                  </span>
-                  {index > 0 && idleGap > 0 ? (
-                    <span className="inline-flex items-center gap-1">
-                      <PauseCircle className="size-3.5" />
-                      {idleGap}m gap
-                    </span>
-                  ) : null}
-                </div>
-              </div>
+                completedAt={entry.completedAt}
+                durationSeconds={entry.durationSeconds}
+                entryKind={entry.entryKind}
+                idleGap={idleGap}
+                index={index}
+                startedAt={entry.startedAt}
+              />
             );
           })}
         </div>

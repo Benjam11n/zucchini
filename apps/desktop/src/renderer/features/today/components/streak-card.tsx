@@ -1,14 +1,11 @@
-import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { CalendarDays, Flame, Snowflake, Timer } from "lucide-react";
+import type { ElementType } from "react";
 import { memo, useMemo } from "react";
 
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import {
-  hoverLift,
-  microTransition,
-  tapPress,
-} from "@/renderer/shared/lib/motion";
+import { StatCard } from "@/renderer/shared/components/ui/stat-card";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { formatDateKey } from "@/shared/utils/date";
@@ -23,60 +20,10 @@ interface StreakCardProps {
 
 interface StatConfig {
   color: string | undefined;
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   suffix?: string;
   value: number | string;
-}
-
-function StreakStatCard({
-  color,
-  icon: Icon,
-  label,
-  suffix,
-  value,
-}: StatConfig) {
-  return (
-    <m.div whileHover={hoverLift} whileTap={tapPress}>
-      <Card size="sm">
-        <CardContent className="flex items-center gap-3">
-          <span
-            className="rounded-full border p-2"
-            {...(color
-              ? {
-                  style: {
-                    backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
-                    borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
-                    color,
-                  },
-                }
-              : {})}
-          >
-            <Icon className="size-4" />
-          </span>
-          <div className="space-y-0.5">
-            <AnimatePresence initial={false} mode="popLayout">
-              <m.p
-                key={`${label}-${value}`}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-base leading-none font-semibold"
-                exit={{ opacity: 0, y: -8 }}
-                initial={{ opacity: 0, y: 8 }}
-                {...(color ? { style: { color } } : {})}
-                transition={microTransition}
-              >
-                {value}
-                {suffix}
-              </m.p>
-            </AnimatePresence>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {label}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </m.div>
-  );
 }
 
 function StreakCardComponent({
@@ -136,9 +83,24 @@ function StreakCardComponent({
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
-            {stats.map((stat) => (
-              <StreakStatCard key={stat.label} {...stat} />
-            ))}
+            {stats.map((stat) => {
+              const statCardProps = stat.color ? { color: stat.color } : {};
+              const suffixProps = stat.suffix ? { suffix: stat.suffix } : {};
+
+              return (
+                <StatCard
+                  key={stat.label}
+                  animatedValue={stat.label !== "Date"}
+                  icon={stat.icon}
+                  label={stat.label}
+                  size="md"
+                  value={stat.value}
+                  valueKey={`${stat.label}-${stat.value}`}
+                  {...statCardProps}
+                  {...suffixProps}
+                />
+              );
+            })}
           </div>
         </CardContent>
       </Card>

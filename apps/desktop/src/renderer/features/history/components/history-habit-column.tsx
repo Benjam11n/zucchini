@@ -1,20 +1,16 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
-import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemGroup,
-} from "@/renderer/shared/components/ui/item";
+import { ItemGroup } from "@/renderer/shared/components/ui/item";
 import {
   getHabitCategoryUi,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
+
+import { HistoryHabitListItem } from "./history-habit-list-item";
 
 interface HistoryHabitColumnProps {
   title: string;
@@ -58,21 +54,11 @@ export function HistoryHabitColumn({
                     initial={{ opacity: 0, x: initialX }}
                     transition={microTransition}
                   >
-                    <Item
-                      className="rounded-xl border-border/50 bg-background/60 px-3 py-2"
-                      variant="outline"
-                    >
-                      <ItemContent>
-                        <span className="text-sm text-foreground">
-                          {habit.name}
-                        </span>
-                      </ItemContent>
-                      <ItemActions>
-                        <Badge style={ui.badgeStyle} variant="outline">
-                          {ui.label}
-                        </Badge>
-                      </ItemActions>
-                    </Item>
+                    <HistoryHabitListItem
+                      badgeLabel={ui.label}
+                      badgeStyle={ui.badgeStyle}
+                      habit={habit}
+                    />
                   </m.div>
                 );
               })

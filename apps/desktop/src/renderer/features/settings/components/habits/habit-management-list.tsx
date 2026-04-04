@@ -7,17 +7,10 @@ import type {
 } from "@/shared/domain/habit";
 
 import type { HabitDragState } from "./habit-management-content.types";
+import { HabitManagementListItem } from "./habit-management-list-item";
 import type { HabitManagementCardProps } from "./habit-management.types";
-import { HabitRowEditor } from "./habit-row-editor";
 
-const HABIT_DRAG_DATA_TYPE = "text/plain";
-
-function getDropPosition(bounds: DOMRect, clientY: number): "after" | "before" {
-  const midpoint = bounds.top + bounds.height / 2;
-  return clientY < midpoint ? "before" : "after";
-}
-
-interface HabitManagementListProps {
+export interface HabitManagementListProps {
   dragState: HabitDragState;
   expandedHabitId: number | null;
   habits: HabitManagementCardProps["habits"];
@@ -76,77 +69,23 @@ export function HabitManagementList({
       <LayoutGroup>
         <AnimatePresence initial={false}>
           {habits.map((habit, index) => (
-            <HabitRowEditor
+            <HabitManagementListItem
               key={habit.id}
               dragState={dragState}
+              expandedHabitId={expandedHabitId}
               habit={habit}
               habits={habits}
               index={index}
-              isExpanded={expandedHabitId === habit.id}
-              onArchiveHabit={(habitId) => onArchiveHabit(habitId, habit.name)}
-              onDragEnd={() => {
-                onDragStateChange(null);
-              }}
-              onDragOver={(event) => {
-                event.preventDefault();
-                if (!dragState) {
-                  return;
-                }
-
-                onDragStateChange({
-                  ...dragState,
-                  overHabitId: habit.id,
-                  position: getDropPosition(
-                    event.currentTarget.getBoundingClientRect(),
-                    event.clientY
-                  ),
-                });
-              }}
-              onDragStart={() => {
-                onDragStateChange({
-                  draggedHabitId: habit.id,
-                  overHabitId: habit.id,
-                  position: "before",
-                });
-              }}
-              onDrop={async (event) => {
-                event.preventDefault();
-                const draggedHabitId = Number.parseInt(
-                  event.dataTransfer.getData(HABIT_DRAG_DATA_TYPE),
-                  10
-                );
-
-                await onDrop(
-                  Number.isNaN(draggedHabitId) ? null : draggedHabitId,
-                  habit.id,
-                  getDropPosition(
-                    event.currentTarget.getBoundingClientRect(),
-                    event.clientY
-                  )
-                );
-              }}
-              onExpandedChange={(open) => {
-                onExpandedHabitChange(open ? habit.id : null);
-              }}
+              onArchiveHabit={onArchiveHabit}
+              onDragStateChange={onDragStateChange}
+              onDrop={onDrop}
+              onExpandedHabitChange={onExpandedHabitChange}
               onRenameHabit={onRenameHabit}
               onReorderHabits={onReorderHabits}
-              onUpdateHabitCategory={(habitId, category) =>
-                onUpdateHabitCategory(habitId, category, habit.name)
-              }
-              onUpdateHabitFrequency={(habitId, frequency) =>
-                onUpdateHabitFrequency(
-                  habitId,
-                  frequency,
-                  habit.targetCount ?? 1,
-                  habit.name
-                )
-              }
-              onUpdateHabitTargetCount={(habitId, targetCount) =>
-                onUpdateHabitTargetCount(habitId, targetCount, habit.name)
-              }
-              onUpdateHabitWeekdays={(habitId, selectedWeekdays) =>
-                onUpdateHabitWeekdays(habitId, selectedWeekdays, habit.name)
-              }
+              onUpdateHabitCategory={onUpdateHabitCategory}
+              onUpdateHabitFrequency={onUpdateHabitFrequency}
+              onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+              onUpdateHabitWeekdays={onUpdateHabitWeekdays}
             />
           ))}
         </AnimatePresence>

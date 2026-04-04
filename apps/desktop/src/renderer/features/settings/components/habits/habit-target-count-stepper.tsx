@@ -29,7 +29,7 @@ export function HabitTargetCountStepper({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2",
+        "flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-muted/20 px-3 py-2",
         className
       )}
     >

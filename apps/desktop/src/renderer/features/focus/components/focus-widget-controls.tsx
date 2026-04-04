@@ -71,7 +71,6 @@ export function FocusWidgetControls({
         {canStart ? (
           <Button
             aria-label={isPaused ? "Resume timer" : "Start timer"}
-            className="rounded-full"
             onClick={onStartOrResume}
             size="icon-xs"
           >
@@ -82,7 +81,6 @@ export function FocusWidgetControls({
         {isRunning ? (
           <Button
             aria-label="Pause timer"
-            className="rounded-full"
             onClick={onPause}
             size="icon-xs"
             variant="secondary"
@@ -94,7 +92,6 @@ export function FocusWidgetControls({
         {canReset ? (
           <Button
             aria-label="Reset timer"
-            className="rounded-full"
             onClick={onReset}
             size="icon-xs"
             variant="ghost"
@@ -106,7 +103,6 @@ export function FocusWidgetControls({
         {canSkipBreak ? (
           <Button
             aria-label={skipBreakLabel}
-            className="rounded-full"
             onClick={onSkipBreak}
             size="icon-xs"
             variant="ghost"
@@ -122,7 +118,6 @@ export function FocusWidgetControls({
 
       <Button
         aria-label="Close widget"
-        className="rounded-full"
         onClick={onClose}
         size="icon-xs"
         style={NO_DRAG_REGION_STYLE}

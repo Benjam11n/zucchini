@@ -29,7 +29,7 @@ export function HabitManagementFeedback({
     <div
       aria-live="polite"
       className={cn(
-        "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs",
+        "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs",
         feedbackClassName
       )}
       role="status"

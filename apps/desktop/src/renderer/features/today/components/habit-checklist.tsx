@@ -91,7 +91,7 @@ function HabitChecklistComponent({
         {totalHabits === 0 ? (
           <m.div
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-dashed border-border py-10 text-center"
+            className="rounded-md border border-dashed border-border py-10 text-center"
             initial={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
           >

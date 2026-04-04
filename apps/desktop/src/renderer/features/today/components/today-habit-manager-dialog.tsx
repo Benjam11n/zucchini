@@ -25,7 +25,7 @@ export function TodayHabitManagerDialog({
 }: TodayHabitManagerDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerElement = trigger ?? (
-    <Button className="rounded-full" size="sm" type="button" variant="outline">
+    <Button size="sm" type="button" variant="outline">
       <Settings2 className="size-4" />
       Manage
     </Button>

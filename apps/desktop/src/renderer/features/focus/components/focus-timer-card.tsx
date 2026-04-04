@@ -159,7 +159,6 @@ export function FocusTimerCard({
                 <div className="mt-1.5 flex items-center justify-between gap-2">
                   <Button
                     aria-label="Decrease cycles before long break"
-                    className="rounded-full"
                     onClick={() => {
                       onCycleChange(
                         Math.max(MIN_CYCLES, focusCyclesBeforeLongBreak - 1)
@@ -175,7 +174,6 @@ export function FocusTimerCard({
                   </p>
                   <Button
                     aria-label="Increase cycles before long break"
-                    className="rounded-full"
                     onClick={() => {
                       onCycleChange(
                         Math.min(MAX_CYCLES, focusCyclesBeforeLongBreak + 1)

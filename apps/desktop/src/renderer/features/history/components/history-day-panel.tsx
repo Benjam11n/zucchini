@@ -7,8 +7,8 @@ import {
   Timer,
   XCircle,
 } from "lucide-react";
-import type { ElementType } from "react";
 
+import { HistoryLongTermGoalChip } from "@/renderer/features/history/components/history-long-term-goal-chip";
 import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import {
   getActivityBadgeLabel,
@@ -18,12 +18,8 @@ import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import { cn } from "@/renderer/shared/lib/class-names";
-import {
-  hoverLift,
-  microTransition,
-  tapPress,
-} from "@/renderer/shared/lib/motion";
+import { StatCard } from "@/renderer/shared/components/ui/stat-card";
+import { microTransition } from "@/renderer/shared/lib/motion";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
@@ -34,58 +30,6 @@ interface HistoryDayPanelProps {
   onNavigateToToday: () => void;
   selectedDay: HistoryDay | null;
   isToday?: boolean;
-}
-
-interface SummaryStatProps {
-  color?: string;
-  icon: ElementType;
-  label: string;
-  suffix?: string;
-  value: number | string;
-}
-
-// CHECK: Instead of duplicating this in two places can we do something about it?
-function SummaryStatCard({
-  color,
-  icon: Icon,
-  label,
-  suffix,
-  value,
-}: SummaryStatProps) {
-  return (
-    <m.div whileHover={hoverLift} whileTap={tapPress}>
-      <Card className="py-2" size="sm">
-        <CardContent className="flex items-center gap-2 px-3">
-          <span
-            className="rounded-full border p-1"
-            {...(color
-              ? {
-                  style: {
-                    backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
-                    borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
-                    color,
-                  },
-                }
-              : {})}
-          >
-            <Icon className="size-3" />
-          </span>
-          <div className="space-y-0.5">
-            <p
-              className="text-xs leading-none font-semibold"
-              {...(color ? { style: { color } } : {})}
-            >
-              {value}
-              {suffix}
-            </p>
-            <p className="text-[0.6rem] uppercase tracking-wide text-muted-foreground">
-              {label}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </m.div>
-  );
 }
 
 export function HistoryDayPanel({
@@ -100,7 +44,7 @@ export function HistoryDayPanel({
           No tracked days yet. Start completing habits to build your history.
         </p>
         <Button
-          className="mt-4 rounded-full"
+          className="mt-4"
           onClick={onNavigateToToday}
           size="sm"
           variant="outline"
@@ -128,7 +72,7 @@ export function HistoryDayPanel({
         <m.div
           key={selectedDay.date}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-3 rounded-xl border border-border/60 bg-card p-4"
+          className="space-y-3 rounded-md border border-border/60 bg-card p-4"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: 10 }}
           transition={microTransition}
@@ -168,16 +112,18 @@ export function HistoryDayPanel({
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2.5">
-                  <SummaryStatCard
+                  <StatCard
                     color={RING_COLORS.fitness.base}
                     icon={Flame}
                     label="Streak"
+                    size="sm"
                     value={selectedDay.summary.streakCountAfterDay}
                   />
-                  <SummaryStatCard
+                  <StatCard
                     color={RING_COLORS.nutrition.base}
                     icon={Timer}
                     label="Focus"
+                    size="sm"
                     suffix="m"
                     value={selectedDay.focusMinutes}
                   />
@@ -221,52 +167,13 @@ export function HistoryDayPanel({
               <h4 className="ui-eyebrow">Long-term goals</h4>
               <div className="flex flex-wrap gap-1.5">
                 {focusQuotaGoals.map((goal) => (
-                  <div
+                  <HistoryLongTermGoalChip
                     key={`${goal.kind}-${goal.id}`}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-                      goal.completed
-                        ? "border-primary/50 bg-primary/10 text-primary"
-                        : "border-border/60 bg-background/50 text-muted-foreground"
-                    )}
-                  >
-                    {goal.completed ? (
-                      <CheckCircle2 className="size-3.5" />
-                    ) : (
-                      <div className="size-3.5 rounded-full border border-current" />
-                    )}
-                    {`Focus quota • ${goal.completedMinutes}/${goal.targetMinutes} min`}
-                    <Badge
-                      className="ml-0.5 h-4 px-1 text-[0.65rem] capitalize"
-                      variant="secondary"
-                    >
-                      {goal.frequency}
-                    </Badge>
-                  </div>
+                    goal={goal}
+                  />
                 ))}
                 {longTermHabits.map((habit) => (
-                  <div
-                    key={habit.id}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-                      habit.completed
-                        ? "border-primary/50 bg-primary/10 text-primary"
-                        : "border-border/60 bg-background/50 text-muted-foreground"
-                    )}
-                  >
-                    {habit.completed ? (
-                      <CheckCircle2 className="size-3.5" />
-                    ) : (
-                      <div className="size-3.5 rounded-full border border-current" />
-                    )}
-                    {habit.name}
-                    <Badge
-                      className="ml-0.5 h-4 px-1 text-[0.65rem] capitalize"
-                      variant="secondary"
-                    >
-                      {habit.frequency}
-                    </Badge>
-                  </div>
+                  <HistoryLongTermGoalChip key={habit.id} habit={habit} />
                 ))}
               </div>
             </div>

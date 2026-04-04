@@ -169,12 +169,7 @@ function TodayPageComponent({
                     ? { onUpdateHabitTargetCount }
                     : {})}
                   trigger={
-                    <Button
-                      className="rounded-full"
-                      size="sm"
-                      type="button"
-                      variant="outline"
-                    >
+                    <Button size="sm" type="button" variant="outline">
                       <Plus className="size-4" />
                       Create your first habit
                     </Button>

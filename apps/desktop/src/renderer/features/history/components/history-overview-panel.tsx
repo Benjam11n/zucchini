@@ -3,6 +3,7 @@ import type { ComponentProps, Dispatch, SetStateAction } from "react";
 
 import { HistoryCalendarCard } from "@/renderer/features/history/components/history-calendar-card";
 import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
+import { HistoryMetricBadge } from "@/renderer/features/history/components/history-metric-badge";
 import { HISTORY_METRIC_BADGE_CLASS_NAMES } from "@/renderer/features/history/history-status-ui";
 import type {
   HistoryCalendarContextValue,
@@ -11,10 +12,8 @@ import type {
 } from "@/renderer/features/history/history.types";
 import type { HistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { GitHubCalendar } from "@/renderer/shared/components/github-calendar";
-import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
 import { parseDateKey } from "@/shared/utils/date";
 
 export function HistoryOverviewPanel({
@@ -74,15 +73,11 @@ export function HistoryOverviewPanel({
                   label: `${stats.missedDays} missed`,
                 },
               ].map((statBadge) => (
-                <m.div
+                <HistoryMetricBadge
                   key={statBadge.label}
-                  whileHover={hoverLift}
-                  whileTap={tapPress}
-                >
-                  <Badge className={statBadge.className} variant="outline">
-                    {statBadge.label}
-                  </Badge>
-                </m.div>
+                  className={statBadge.className}
+                  label={statBadge.label}
+                />
               ))}
             </div>
 
@@ -102,7 +97,7 @@ export function HistoryOverviewPanel({
                 <span>Year</span>
                 <select
                   aria-label="Select history year"
-                  className="rounded-lg border border-border/60 bg-background px-3 py-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+                  className="rounded-md border border-border/60 bg-background px-3 py-2 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
                   onChange={(event) => {
                     const nextYear = Number.parseInt(event.target.value, 10);
                     const fallbackDate =
@@ -131,7 +126,7 @@ export function HistoryOverviewPanel({
             </div>
           </div>
           {historyLoadError && historyScope !== "full" ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+            <div className="rounded-md border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
               {historyLoadError.message}
             </div>
           ) : null}

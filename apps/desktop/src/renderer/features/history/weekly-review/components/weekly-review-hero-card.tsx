@@ -15,6 +15,8 @@ import type {
   WeeklyReviewListItem,
 } from "@/shared/domain/weekly-review";
 
+import { WeeklyReviewHeroStat } from "./weekly-review-hero-stat";
+
 interface WeeklyReviewHeroCardProps {
   availableWeeks: WeeklyReviewListItem[];
   isLoading: boolean;
@@ -82,15 +84,7 @@ export function WeeklyReviewHeroCard({
           <div className="flex flex-col gap-5 rounded-2xl border border-border/40 bg-zinc-500/5 p-5">
             <div className="grid grid-cols-4 gap-4 sm:gap-6">
               {STATS.map((stat) => (
-                <div key={stat.label} className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <stat.icon className="size-3.5" />
-                    <p className="ui-eyebrow text-[0.65rem]">{stat.label}</p>
-                  </div>
-                  <p className="text-2xl font-bold tracking-tight text-foreground">
-                    {stat.value}
-                  </p>
-                </div>
+                <WeeklyReviewHeroStat key={stat.label} {...stat} />
               ))}
             </div>
 
