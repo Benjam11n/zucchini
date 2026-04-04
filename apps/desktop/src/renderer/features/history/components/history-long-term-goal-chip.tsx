@@ -1,5 +1,4 @@
-import { CheckCircle2 } from "lucide-react";
-
+import { StatusIndicator } from "@/renderer/features/history/components/status-indicator";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
@@ -14,14 +13,6 @@ type HistoryLongTermGoalChipProps =
       goal?: never;
       habit: HabitWithStatus;
     };
-
-function StatusIndicator({ completed }: { completed: boolean }) {
-  return completed ? (
-    <CheckCircle2 className="size-3.5" />
-  ) : (
-    <div className="size-3.5 rounded-full border border-current" />
-  );
-}
 
 export function HistoryLongTermGoalChip({
   goal,

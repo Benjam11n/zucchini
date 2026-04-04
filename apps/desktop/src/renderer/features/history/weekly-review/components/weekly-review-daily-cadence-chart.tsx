@@ -2,23 +2,11 @@
 
 import { Suspense, lazy } from "react";
 
-import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import { Spinner } from "@/renderer/shared/components/ui/spinner";
+import { WeeklyReviewChartFallback } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-fallback";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewDailyCadenceChartProps {
   review: WeeklyReview;
-}
-
-function WeeklyReviewChartFallback() {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
-        <Spinner className="size-4 text-primary/70" />
-        Loading chart...
-      </CardContent>
-    </Card>
-  );
 }
 
 const WeeklyReviewDailyCadenceChartImpl = lazy(() =>

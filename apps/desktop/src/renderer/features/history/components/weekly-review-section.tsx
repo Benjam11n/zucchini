@@ -2,6 +2,7 @@
 
 import { Suspense, lazy } from "react";
 
+import { ChartSectionFallback } from "@/renderer/features/history/components/chart-section-fallback";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card";
@@ -37,17 +38,6 @@ const WeeklyReviewTrendChart = lazy(() =>
     })
   )
 );
-
-function ChartSectionFallback() {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
-        <Spinner className="size-4 text-primary/70" />
-        Loading chart...
-      </CardContent>
-    </Card>
-  );
-}
 
 export function WeeklyReviewSection({
   onSelectWeeklyReview,

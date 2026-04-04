@@ -9,6 +9,7 @@ import { lazy, Suspense } from "react";
 import { AppErrorBoundary } from "@/renderer/app/app-error-boundary";
 import { getBootErrorDisplay } from "@/renderer/app/boot/boot-errors";
 import { useAppController } from "@/renderer/app/controller/use-app-controller";
+import { LoadingStateCard } from "@/renderer/app/loading-state-card";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { MASCOTS } from "@/renderer/assets/mascots";
 import { TodayPage } from "@/renderer/features/today/today-page";
@@ -22,7 +23,6 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { Toaster } from "@/renderer/shared/components/ui/sonner";
-import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 
 const FocusWidget = lazy(async () => {
@@ -52,42 +52,6 @@ const WeeklyReviewSpotlightDialog = lazy(async () => {
 
   return { default: module.WeeklyReviewSpotlightDialog };
 });
-
-function LoadingStateCard({
-  description,
-  fullscreen = false,
-  title,
-}: {
-  description: string;
-  fullscreen?: boolean;
-  title: string;
-}) {
-  return (
-    <div
-      aria-busy="true"
-      className={
-        fullscreen
-          ? "flex min-h-screen items-center justify-center bg-background px-6 text-foreground"
-          : "flex min-h-[320px] items-center justify-center px-6 py-10 text-foreground"
-      }
-    >
-      <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col items-center justify-center gap-6 px-6 pt-10 pb-0">
-          <Spinner className="size-8 text-primary/60" />
-          <img
-            alt="Loading Zucchini mascot"
-            className="size-28 object-contain"
-            src={MASCOTS.loading}
-          />
-        </CardContent>
-        <CardHeader className="items-center text-center">
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
-  );
-}
 
 function MainApp() {
   const { actions, state, tab } = useAppController();
