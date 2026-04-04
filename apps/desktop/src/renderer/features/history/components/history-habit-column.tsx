@@ -39,7 +39,7 @@ export function HistoryHabitColumn({
             <Icon className={iconClassName} />
             {title}
           </div>
-          <ItemGroup className="gap-1.5">
+          <ItemGroup className="gap-1">
             {habits.length > 0 ? (
               habits.map((habit) => {
                 const ui = getHabitCategoryUi(
