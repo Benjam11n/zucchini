@@ -1,5 +1,5 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { MoonStar, Pencil, Plus, Trash2 } from "lucide-react";
+import { Archive, MoonStar, Pencil, Plus } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -77,7 +77,7 @@ export function WindDownPage({
     <LazyMotion features={domAnimation}>
       <m.div
         animate="animate"
-        className="grid gap-6"
+        className="grid gap-4"
         initial="initial"
         variants={staggerContainerVariants}
       >
@@ -122,7 +122,7 @@ export function WindDownPage({
               </form>
 
               {windDownChecklistHabits.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 px-5 py-8 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 px-3 py-2.5 text-sm text-muted-foreground">
                   No wind down actions yet.
                 </div>
               ) : (
@@ -196,7 +196,7 @@ export function WindDownPage({
                               type="button"
                               variant="destructive"
                             >
-                              <Trash2 className="size-4" />
+                              <Archive className="size-4" />
                               <span className="sr-only">
                                 Delete {action.name}
                               </span>

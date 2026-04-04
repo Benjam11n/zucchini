@@ -41,7 +41,7 @@ const selectedDay: HistoryDay = {
 };
 
 describe("history day panel", () => {
-  it("shows category icons alongside the history progress breakdown", () => {
+  it("shows category percentages alongside the activity ring", () => {
     render(
       <HistoryDayPanel
         isToday={false}
@@ -53,15 +53,16 @@ describe("history day panel", () => {
 
     for (const category of ["fitness", "nutrition", "productivity"] as const) {
       expect(
-        screen.getByText(categoryPreferences[category].label)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId(`history-category-icon-${category}`)
+        screen.getByText(categoryPreferences[category].label.toUpperCase())
       ).toBeInTheDocument();
     }
+
+    expect(screen.getByText("50")).toBeInTheDocument();
+    expect(screen.getByText("100")).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
-  it("shows focus minutes for the selected day", () => {
+  it("shows focus minutes without the redundant activity summary text", () => {
     render(
       <HistoryDayPanel
         isToday={false}
@@ -70,6 +71,9 @@ describe("history day panel", () => {
       />
     );
 
-    expect(screen.getByText("45")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === "45m")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Incomplete day")).not.toBeInTheDocument();
   });
 });

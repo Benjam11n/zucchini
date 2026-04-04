@@ -2,28 +2,29 @@ import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
+  Flame,
   Snowflake,
   Timer,
   XCircle,
 } from "lucide-react";
+import type { ElementType } from "react";
 
 import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import {
   getActivityBadgeLabel,
   getActivityStatus,
-  getActivitySummary,
 } from "@/renderer/features/history/lib/history-summary";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import { Progress } from "@/renderer/shared/components/ui/progress";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
-import { microTransition } from "@/renderer/shared/lib/motion";
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/lib/motion";
+import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -35,16 +36,66 @@ interface HistoryDayPanelProps {
   isToday?: boolean;
 }
 
+interface SummaryStatProps {
+  color?: string;
+  icon: ElementType;
+  label: string;
+  suffix?: string;
+  value: number | string;
+}
+
+// CHECK: Instead of duplicating this in two places can we do something about it?
+function SummaryStatCard({
+  color,
+  icon: Icon,
+  label,
+  suffix,
+  value,
+}: SummaryStatProps) {
+  return (
+    <m.div whileHover={hoverLift} whileTap={tapPress}>
+      <Card className="py-2" size="sm">
+        <CardContent className="flex items-center gap-2 px-3">
+          <span
+            className="rounded-full border p-1"
+            {...(color
+              ? {
+                  style: {
+                    backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
+                    borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
+                    color,
+                  },
+                }
+              : {})}
+          >
+            <Icon className="size-3" />
+          </span>
+          <div className="space-y-0.5">
+            <p
+              className="text-xs leading-none font-semibold"
+              {...(color ? { style: { color } } : {})}
+            >
+              {value}
+              {suffix}
+            </p>
+            <p className="text-[0.6rem] uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </m.div>
+  );
+}
+
 export function HistoryDayPanel({
   onNavigateToToday,
   selectedDay,
   isToday,
 }: HistoryDayPanelProps) {
-  const categoryPreferences = useHabitCategoryPreferences();
-
   if (!selectedDay) {
     return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-background/20 p-6 text-center">
+      <div className="rounded-md border border-dashed border-border/60 bg-background/20 p-6 text-center">
         <p className="text-sm text-muted-foreground">
           No tracked days yet. Start completing habits to build your history.
         </p>
@@ -77,13 +128,13 @@ export function HistoryDayPanel({
         <m.div
           key={selectedDay.date}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-3 rounded-xl border border-border/60 bg-background/35 p-4"
+          className="space-y-3 rounded-xl border border-border/60 bg-card p-4"
           exit={{ opacity: 0, y: -10 }}
           initial={{ opacity: 0, y: 10 }}
           transition={microTransition}
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
+            <div>
               <h3 className="text-lg font-semibold text-foreground">
                 {formatDateKey(selectedDay.date, {
                   day: "numeric",
@@ -92,9 +143,6 @@ export function HistoryDayPanel({
                   year: "numeric",
                 })}
               </h3>
-              <p className="text-sm text-muted-foreground">
-                {getActivitySummary(selectedDay.summary, isToday)}
-              </p>
             </div>
 
             <Badge
@@ -111,18 +159,33 @@ export function HistoryDayPanel({
 
           <div className="grid gap-3">
             <Card>
-              <CardContent className="flex flex-col items-center gap-2">
-                <HabitActivityRingGlyph
-                  categoryProgress={selectedDay.categoryProgress}
-                  size={118}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Streak after day: {selectedDay.summary.streakCountAfterDay}
-                </p>
+              <CardContent>
+                <div className="flex justify-center">
+                  <HabitActivityCard
+                    className="origin-center scale-[0.76]"
+                    categoryProgress={selectedDay.categoryProgress}
+                  />
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2.5">
+                  <SummaryStatCard
+                    color={RING_COLORS.fitness.base}
+                    icon={Flame}
+                    label="Streak"
+                    value={selectedDay.summary.streakCountAfterDay}
+                  />
+                  <SummaryStatCard
+                    color={RING_COLORS.nutrition.base}
+                    icon={Timer}
+                    label="Focus"
+                    suffix="m"
+                    value={selectedDay.focusMinutes}
+                  />
+                </div>
                 {selectedDay.summary.freezeUsed ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-1.5 rounded-full border border-secondary/60 bg-secondary/12 px-2.5 py-1 text-xs text-secondary-foreground dark:text-secondary"
+                    className="mx-auto flex items-center gap-1.5 rounded-full border border-secondary/60 bg-secondary/12 px-2.5 py-1 text-xs text-secondary-foreground dark:text-secondary"
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >
@@ -132,72 +195,6 @@ export function HistoryDayPanel({
                 ) : null}
               </CardContent>
             </Card>
-
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px]">
-              <Card>
-                <CardContent className="grid gap-3">
-                  {selectedDay.categoryProgress.map((progress) => {
-                    const categoryPresentation = getHabitCategoryPresentation(
-                      progress.category,
-                      categoryPreferences
-                    );
-                    const CategoryIcon = categoryPresentation.icon;
-
-                    return (
-                      <m.div
-                        key={progress.category}
-                        animate={{ opacity: 1, y: 0 }}
-                        initial={{ opacity: 0, y: 8 }}
-                        transition={microTransition}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="flex items-center gap-1.5">
-                            <CategoryIcon
-                              aria-hidden="true"
-                              className="size-3 shrink-0 opacity-60"
-                              data-testid={`history-category-icon-${progress.category}`}
-                              style={{ color: categoryPresentation.color }}
-                            />
-                            <span
-                              className="text-[0.68rem] uppercase tracking-wide"
-                              style={{ color: categoryPresentation.color }}
-                            >
-                              {categoryPresentation.label}
-                            </span>
-                          </span>
-                          <span className="text-[0.68rem] tabular-nums text-muted-foreground/60">
-                            {progress.completed}/{progress.total}
-                          </span>
-                        </div>
-                        <Progress
-                          className="mt-1 h-1.5 bg-muted/60"
-                          indicatorStyle={categoryPresentation.progressStyle}
-                          value={progress.progress}
-                        />
-                      </m.div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="flex h-full flex-col justify-center gap-2">
-                  <div className="space-y-1.5">
-                    <div className="ui-eyebrow flex items-center gap-1.5">
-                      <Timer className="size-3.5" />
-                      Focus
-                    </div>
-                    <p className="text-2xl font-black tracking-tight text-foreground">
-                      {selectedDay.focusMinutes}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      focused minute
-                      {selectedDay.focusMinutes === 1 ? "" : "s"} logged
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
 
           <div className="grid gap-2.5 sm:grid-cols-2">
