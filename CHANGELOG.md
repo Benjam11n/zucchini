@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-alpha.1 - 2026-04-04
+
+Changes since `v0.1.1-beta.17`.
+
+### Features
+- Implement wind-down feature with custom actions, scheduling, and persistence
+- Add pixel-blast background effect to landing page and update global styles and branding assets
+- Improve test coverage and quality across critical areas
+- Add TodayCelebrationOverlay component and reduce celebration duration
+
+### Refactors
+- Migrate FocusQuotaGoalsCard to @tanstack/react-form and add unit tests
+- Enforce one file one component rule for feature and app TSX files
+- Refactor renderer list items and normalize radius
+- Define and use constants for focus cycle limits in focus timer card
+- Move total set duration display and adjust layout spacing in focus timer components
+- Replace category progress bars with activity ring and summary stat cards in HistoryDayPanel
+- Redesign focus quota card layout
+- Simplify save status logic, improve wind-down editing focus, and remove unused props
+- Introduce SettingsCardHeader component and standardize settings card layouts
+- Unexport internal validation and domain helper functions and remove unused focus quota types
+- Migrate focus quota goals from focus page to longer habit checklist and add component tests
+- Update toast styling and notification handling
+- Remove unused packaging scripts and redundant npm commands
+
+### Documentation
+- Update changelog with recent fixes, features, and refactors
+
+### Maintenance
+- Ignore UI components and lower duplication threshold in check-duplication script
+- Standardise Card usage
+- Add oxfmt to knip ignoreDependencies
+- Update format:check scripts to use ultracite and add root command
+- Remove postinstall native rebuild script and update workflow to rebuild dependencies explicitly
+
+### Other
+- Reduce gap between habit items in history column
+- Reduce desktop duplication in updater, dates, and focus UI
+- Add desktop duplication audit script
+- Refine desktop habit and focus settings UI
+- Add habit service logic tests, expand IPC validation coverage, and remove obsolete test files
+- Add focus quota goals to desktop
+- Add weekly and monthly target counts
+- Update background color to solid black and remove radial gradient overlays
+
 ## 0.1.1-beta.17 - 2026-03-31
 
 Changes since `v0.1.1-beta.16`.
@@ -211,3 +256,4 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
+
