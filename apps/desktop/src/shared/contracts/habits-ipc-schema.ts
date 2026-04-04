@@ -165,6 +165,9 @@ export const appSettingsSchema = z
       message: "Timezone must be a valid IANA timezone.",
     }),
     toggleFocusTimerShortcut: globalShortcutSchema,
+    windDownTime: z.string().refine(isValidReminderTime, {
+      message: "Wind down time must use HH:MM 24-hour format.",
+    }),
   })
   .strict()
   .superRefine((settings, context) => {

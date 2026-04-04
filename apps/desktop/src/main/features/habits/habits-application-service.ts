@@ -22,6 +22,7 @@ import {
   buildWeeklyReview,
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
+import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { persistedFocusTimerStateSchema } from "@/shared/contracts/habits-ipc-schema";
@@ -79,6 +80,8 @@ export interface HabitsService {
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
+  getWindDownRuntimeState(): WindDownRuntimeState;
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void;
   createHabit(
     name: string,
     category: HabitCategory,
@@ -107,6 +110,10 @@ export interface HabitsService {
   archiveHabit(habitId: number): TodayState;
   unarchiveHabit(habitId: number): TodayState;
   reorderHabits(habitIds: number[]): TodayState;
+  createWindDownAction(name: string): TodayState;
+  renameWindDownAction(actionId: number, name: string): TodayState;
+  deleteWindDownAction(actionId: number): TodayState;
+  toggleWindDownAction(actionId: number): TodayState;
 }
 
 function isValidIsoTimestamp(value: string): boolean {
@@ -417,6 +424,18 @@ export class HabitsApplicationService implements HabitsService {
     });
   }
 
+  getWindDownRuntimeState(): WindDownRuntimeState {
+    return this.withInitialized(() =>
+      this.repository.getWindDownRuntimeState()
+    );
+  }
+
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void {
+    this.withInitialized(() => {
+      this.repository.saveWindDownRuntimeState(state);
+    });
+  }
+
   createHabit(
     name: string,
     category: HabitCategory,
@@ -632,6 +651,53 @@ export class HabitsApplicationService implements HabitsService {
       }
 
       this.repository.reorderHabits(habitIds);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  createWindDownAction(name: string): TodayState {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return this.getTodayState();
+    }
+
+    return this.inInitializedTransaction("createWindDownAction", () => {
+      this.repository.createWindDownAction(
+        trimmedName,
+        this.clock.now().toISOString()
+      );
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  renameWindDownAction(actionId: number, name: string): TodayState {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return this.getTodayState();
+    }
+
+    return this.withInitialized(() => {
+      this.repository.renameWindDownAction(actionId, trimmedName);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  deleteWindDownAction(actionId: number): TodayState {
+    return this.inInitializedTransaction("deleteWindDownAction", () => {
+      this.repository.deleteWindDownAction(actionId);
+      return buildTodayState(this.repository, this.clock);
+    });
+  }
+
+  toggleWindDownAction(actionId: number): TodayState {
+    return this.inInitializedTransaction("toggleWindDownAction", () => {
+      const today = this.clock.todayKey();
+      this.repository.ensureWindDownStatusRowsForDate(today);
+      this.repository.toggleWindDownAction(
+        today,
+        actionId,
+        this.clock.now().toISOString()
+      );
       return buildTodayState(this.repository, this.clock);
     });
   }

@@ -62,6 +62,7 @@ export function useAppController() {
     bootPhase: coreState.bootPhase,
     loadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
+    openWindDown: actions.handleOpenWindDown,
     refreshForNewDay: actions.refreshForNewDay,
     setSystemTheme: actions.setSystemTheme,
     settingsDraft: coreState.settingsDraft,

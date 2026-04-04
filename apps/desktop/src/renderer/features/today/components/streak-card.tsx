@@ -29,6 +29,56 @@ interface StatConfig {
   value: number | string;
 }
 
+function StreakStatCard({
+  color,
+  icon: Icon,
+  label,
+  suffix,
+  value,
+}: StatConfig) {
+  return (
+    <m.div whileHover={hoverLift} whileTap={tapPress}>
+      <Card size="sm">
+        <CardContent className="flex items-center gap-3">
+          <span
+            className="rounded-full border p-2"
+            {...(color
+              ? {
+                  style: {
+                    backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
+                    borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
+                    color,
+                  },
+                }
+              : {})}
+          >
+            <Icon className="size-4" />
+          </span>
+          <div className="space-y-0.5">
+            <AnimatePresence initial={false} mode="popLayout">
+              <m.p
+                key={`${label}-${value}`}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-base leading-none font-semibold"
+                exit={{ opacity: 0, y: -8 }}
+                initial={{ opacity: 0, y: 8 }}
+                {...(color ? { style: { color } } : {})}
+                transition={microTransition}
+              >
+                {value}
+                {suffix}
+              </m.p>
+            </AnimatePresence>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </m.div>
+  );
+}
+
 function StreakCardComponent({
   availableFreezes,
   categoryProgress,
@@ -85,58 +135,10 @@ function StreakCardComponent({
             <HabitActivityCard categoryProgress={categoryProgress} />
           </div>
 
-          {/* CHECK: Abstract out a stat card component */}
           <div className="flex flex-wrap justify-center gap-3">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              const c = stat.color;
-
-              return (
-                <m.div
-                  key={stat.label}
-                  whileHover={hoverLift}
-                  whileTap={tapPress}
-                >
-                  <Card size="sm">
-                    <CardContent className="flex items-center gap-3">
-                      <span
-                        className="rounded-full border p-2"
-                        {...(c
-                          ? {
-                              style: {
-                                backgroundColor: `color-mix(in srgb, ${c} 12%, transparent)`,
-                                borderColor: `color-mix(in srgb, ${c} 30%, transparent)`,
-                                color: c,
-                              },
-                            }
-                          : {})}
-                      >
-                        <Icon className="size-4" />
-                      </span>
-                      <div className="space-y-0.5">
-                        <AnimatePresence initial={false} mode="popLayout">
-                          <m.p
-                            key={`${stat.label}-${stat.value}`}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-base leading-none font-semibold"
-                            exit={{ opacity: 0, y: -8 }}
-                            initial={{ opacity: 0, y: 8 }}
-                            {...(c ? { style: { color: c } } : {})}
-                            transition={microTransition}
-                          >
-                            {stat.value}
-                            {stat.suffix}
-                          </m.p>
-                        </AnimatePresence>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                          {stat.label}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </m.div>
-              );
-            })}
+            {stats.map((stat) => (
+              <StreakStatCard key={stat.label} {...stat} />
+            ))}
           </div>
         </CardContent>
       </Card>

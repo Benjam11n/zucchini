@@ -60,6 +60,7 @@ export type HabitCategoryPreferences = Record<
 >;
 
 const DEFAULT_REMINDER_TIME = "20:30";
+const DEFAULT_WIND_DOWN_TIME = "21:30";
 export const DEFAULT_REMINDER_SNOOZE_MINUTES = 15;
 export const DEFAULT_FOCUS_DURATION_SECONDS = 45 * 60;
 const DEFAULT_FOCUS_SHORT_BREAK_SECONDS = 10 * 60;
@@ -136,6 +137,7 @@ export interface AppSettings {
   resetFocusTimerShortcut: FocusTimerShortcutSettings["resetFocusTimerShortcut"];
   themeMode: ThemeMode;
   toggleFocusTimerShortcut: FocusTimerShortcutSettings["toggleFocusTimerShortcut"];
+  windDownTime: string;
   timezone: string;
 }
 
@@ -206,6 +208,7 @@ export function createDefaultAppSettings(timezone: string): AppSettings {
     reminderTime: DEFAULT_REMINDER_TIME,
     themeMode: "system",
     timezone,
+    windDownTime: DEFAULT_WIND_DOWN_TIME,
   };
 }
 

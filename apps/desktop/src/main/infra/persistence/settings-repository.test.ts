@@ -19,6 +19,7 @@ interface FakeSettingsRow {
   themeMode: string;
   timezone: string;
   toggleFocusTimerShortcut: string;
+  windDownTime: string;
 }
 
 function createFakeClient(initialRow?: FakeSettingsRow) {
@@ -90,6 +91,7 @@ describe("SqliteSettingsRepository", () => {
         themeMode: defaults.themeMode,
         timezone: defaults.timezone,
         toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+        windDownTime: defaults.windDownTime,
       }) as never
     );
 

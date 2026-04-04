@@ -123,6 +123,7 @@ export class SqliteSettingsRepository {
         )
           ? row.toggleFocusTimerShortcut
           : defaults.toggleFocusTimerShortcut,
+        windDownTime: row.windDownTime,
       };
 
       const validationResult = appSettingsSchema.safeParse(candidateSettings);
@@ -156,6 +157,7 @@ export class SqliteSettingsRepository {
           themeMode: nextSettings.themeMode,
           timezone: nextSettings.timezone,
           toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
+          windDownTime: nextSettings.windDownTime,
         })
         .onConflictDoUpdate({
           set: {
@@ -176,6 +178,7 @@ export class SqliteSettingsRepository {
             themeMode: nextSettings.themeMode,
             timezone: nextSettings.timezone,
             toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
+            windDownTime: nextSettings.windDownTime,
           },
           target: settings.id,
         })
@@ -210,6 +213,7 @@ export class SqliteSettingsRepository {
           themeMode: defaults.themeMode,
           timezone: defaults.timezone,
           toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+          windDownTime: defaults.windDownTime,
         })
         .onConflictDoNothing()
         .run();

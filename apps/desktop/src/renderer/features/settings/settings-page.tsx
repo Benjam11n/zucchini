@@ -13,6 +13,7 @@ import { DataManagementSettingsCard } from "@/renderer/features/settings/compone
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
 import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
+import { WindDownSettingsCard } from "@/renderer/features/settings/components/general/wind-down-settings-card";
 import { CategorySettingsCard } from "@/renderer/features/settings/components/habits/category-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
@@ -135,6 +136,12 @@ export function SettingsPage(props: SettingsPageProps) {
               <ReminderSettingsCard
                 fieldErrors={props.fieldErrors}
                 onChange={props.onChange}
+                settings={props.settings}
+              />
+              <WindDownSettingsCard
+                fieldErrors={props.fieldErrors}
+                onChange={props.onChange}
+                onOpenWindDown={props.onOpenWindDown}
                 settings={props.settings}
               />
               <UpdateSettingsCard />

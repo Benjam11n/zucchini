@@ -134,6 +134,35 @@ export const reminderRuntimeState = sqliteTable("reminder_runtime_state", {
   snoozedUntil: text("snoozed_until"),
 });
 
+export const windDownActions = sqliteTable("wind_down_actions", {
+  createdAt: text("created_at").notNull(),
+  id: integer().primaryKey({ autoIncrement: true }),
+  name: text().notNull(),
+  sortOrder: integer("sort_order").notNull(),
+});
+
+export const windDownActionStatus = sqliteTable(
+  "wind_down_action_status",
+  {
+    actionId: integer("action_id").notNull(),
+    completed: integer({ mode: "boolean" }).notNull().default(false),
+    completedAt: text("completed_at"),
+    date: text().notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.date, table.actionId],
+    }),
+    index("wind_down_action_status_action_id_idx").on(table.actionId),
+    index("wind_down_action_status_date_idx").on(table.date),
+  ]
+);
+
+export const windDownRuntimeState = sqliteTable("wind_down_runtime_state", {
+  id: integer().primaryKey(),
+  lastReminderSentAt: text("last_reminder_sent_at"),
+});
+
 export const settings = sqliteTable("settings", {
   categoryPreferences: text("category_preferences").notNull(),
   focusCyclesBeforeLongBreak: integer(
@@ -154,6 +183,7 @@ export const settings = sqliteTable("settings", {
   themeMode: text("theme_mode").notNull(),
   timezone: text().notNull(),
   toggleFocusTimerShortcut: text("toggle_focus_timer_shortcut").notNull(),
+  windDownTime: text("wind_down_time").notNull(),
 });
 
 export const schema = {
@@ -166,4 +196,7 @@ export const schema = {
   reminderRuntimeState,
   settings,
   streakState,
+  windDownActionStatus,
+  windDownActions,
+  windDownRuntimeState,
 };

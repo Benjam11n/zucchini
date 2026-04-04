@@ -19,7 +19,6 @@ import {
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
-import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -158,17 +157,14 @@ function FocusPageComponent({
             </VisuallyHidden.Root>
           </DialogHeader>
 
-          {/* CHECK: why is this in a Card? */}
-          <Card className="border-0 bg-transparent shadow-none ring-0">
-            <CardContent className="space-y-4 px-6 pb-6">
-              <PomodoroSettingsFields
-                fieldErrors={fieldErrors}
-                idPrefix="focus-page-pomodoro-dialog"
-                onChange={handleSettingsChange}
-                settings={settings}
-              />
-            </CardContent>
-          </Card>
+          <div className="space-y-4 px-6 pb-6">
+            <PomodoroSettingsFields
+              fieldErrors={fieldErrors}
+              idPrefix="focus-page-pomodoro-dialog"
+              onChange={handleSettingsChange}
+              settings={settings}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

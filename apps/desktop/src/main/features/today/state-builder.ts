@@ -13,6 +13,7 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
+import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
 
 export function buildTodayState(
   repository: AppRepository,
@@ -36,6 +37,8 @@ export function buildTodayState(
   );
   const focusMinutes =
     totalSeconds > 0 ? Math.max(1, Math.round(totalSeconds / 60)) : 0;
+  repository.ensureWindDownStatusRowsForDate(today);
+  const windDownActions = repository.getWindDownActionsWithStatus(today);
 
   return {
     date: today,
@@ -49,6 +52,17 @@ export function buildTodayState(
       currentStreak: preview.currentStreak,
       lastEvaluatedDate: settledStreak.lastEvaluatedDate,
     },
+    windDown:
+      windDownActions.length === 0
+        ? buildEmptyWindDownState(today)
+        : {
+            actions: windDownActions,
+            completedCount: windDownActions.filter((action) => action.completed)
+              .length,
+            date: today,
+            isComplete: windDownActions.every((action) => action.completed),
+            totalCount: windDownActions.length,
+          },
   };
 }
 

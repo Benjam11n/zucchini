@@ -11,6 +11,7 @@
 import { unstable_batchedUpdates } from "react-dom";
 
 import { useBootStore } from "@/renderer/app/state/boot-store";
+import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
@@ -159,6 +160,9 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
     useTodayStore.setState({
       managedHabits: [],
       todayState: null,
+    });
+    useUiStore.setState({
+      tab: "today",
     });
     useWeeklyReviewStore.setState({
       isWeeklyReviewSpotlightOpen: false,

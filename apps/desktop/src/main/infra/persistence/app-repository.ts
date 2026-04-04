@@ -9,6 +9,7 @@
  * persistence — service code never imports database clients directly.
  */
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
+import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -28,6 +29,10 @@ import type {
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import type {
+  WindDownAction,
+  WindDownActionWithStatus,
+} from "@/shared/domain/wind-down";
 
 import type { HabitPeriodStatusSnapshot } from "./types";
 
@@ -74,8 +79,21 @@ export interface AppRepository {
   savePersistedStreakState(state: StreakState): void;
   getReminderRuntimeState(): ReminderRuntimeState;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
+  getWindDownRuntimeState(): WindDownRuntimeState;
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void;
   getSettings(defaultTimezone: string): AppSettings;
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
+  getWindDownActions(): WindDownAction[];
+  getWindDownActionsWithStatus(date: string): WindDownActionWithStatus[];
+  ensureWindDownStatusRowsForDate(date: string): void;
+  createWindDownAction(name: string, createdAt: string): number;
+  renameWindDownAction(actionId: number, name: string): void;
+  deleteWindDownAction(actionId: number): void;
+  toggleWindDownAction(
+    date: string,
+    actionId: number,
+    completedAt: string
+  ): void;
   getFirstTrackedDate(): string | null;
   getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;

@@ -9,6 +9,7 @@
  * @see AppRepository for the full interface contract.
  */
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
+import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
@@ -30,6 +31,10 @@ import type {
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import type {
+  WindDownAction,
+  WindDownActionWithStatus,
+} from "@/shared/domain/wind-down";
 
 import type { AppRepository, SettledHistoryOptions } from "./app-repository";
 import { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
@@ -41,6 +46,8 @@ import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-r
 import { SqliteSettingsRepository } from "./settings-repository";
 import { SqliteStreakRepository } from "./streak-repository";
 import type { HabitPeriodStatusSnapshot } from "./types";
+import { SqliteWindDownActionRepository } from "./wind-down-action-repository";
+import { SqliteWindDownRuntimeStateRepository } from "./wind-down-runtime-state-repository";
 
 export interface SqliteAppRepositoryOptions {
   databasePath?: string;
@@ -56,6 +63,8 @@ export class SqliteAppRepository implements AppRepository {
   private readonly settingsRepository: SqliteSettingsRepository;
   private readonly reminderRuntimeStateRepository: SqliteReminderRuntimeStateRepository;
   private readonly streakRepository: SqliteStreakRepository;
+  private readonly windDownActionRepository: SqliteWindDownActionRepository;
+  private readonly windDownRuntimeStateRepository: SqliteWindDownRuntimeStateRepository;
 
   constructor(options: SqliteAppRepositoryOptions = {}) {
     this.client = new SqliteDatabaseClient(
@@ -82,6 +91,11 @@ export class SqliteAppRepository implements AppRepository {
     this.reminderRuntimeStateRepository =
       new SqliteReminderRuntimeStateRepository(this.client);
     this.streakRepository = new SqliteStreakRepository(this.client);
+    this.windDownActionRepository = new SqliteWindDownActionRepository(
+      this.client
+    );
+    this.windDownRuntimeStateRepository =
+      new SqliteWindDownRuntimeStateRepository(this.client);
   }
 
   initializeSchema(): void {
@@ -236,12 +250,52 @@ export class SqliteAppRepository implements AppRepository {
     this.reminderRuntimeStateRepository.saveState(state);
   }
 
+  getWindDownRuntimeState(): WindDownRuntimeState {
+    return this.windDownRuntimeStateRepository.getState();
+  }
+
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void {
+    this.windDownRuntimeStateRepository.saveState(state);
+  }
+
   getSettings(defaultTimezone: string): AppSettings {
     return this.settingsRepository.getSettings(defaultTimezone);
   }
 
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings {
     return this.settingsRepository.saveSettings(settings, defaultTimezone);
+  }
+
+  getWindDownActions(): WindDownAction[] {
+    return this.windDownActionRepository.getActions();
+  }
+
+  getWindDownActionsWithStatus(date: string): WindDownActionWithStatus[] {
+    return this.windDownActionRepository.getActionsWithStatus(date);
+  }
+
+  ensureWindDownStatusRowsForDate(date: string): void {
+    this.windDownActionRepository.ensureStatusRowsForDate(date);
+  }
+
+  createWindDownAction(name: string, createdAt: string): number {
+    return this.windDownActionRepository.createAction(name, createdAt);
+  }
+
+  renameWindDownAction(actionId: number, name: string): void {
+    this.windDownActionRepository.renameAction(actionId, name);
+  }
+
+  deleteWindDownAction(actionId: number): void {
+    this.windDownActionRepository.deleteAction(actionId);
+  }
+
+  toggleWindDownAction(
+    date: string,
+    actionId: number,
+    completedAt: string
+  ): void {
+    this.windDownActionRepository.toggleAction(date, actionId, completedAt);
   }
 
   getFirstTrackedDate(): string | null {

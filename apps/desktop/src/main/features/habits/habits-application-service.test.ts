@@ -1,6 +1,7 @@
 import type { Clock } from "@/main/app/clock";
 import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
+import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type {
   AppRepository,
   SettledHistoryOptions,
@@ -32,6 +33,10 @@ import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import type {
+  WindDownAction,
+  WindDownActionWithStatus,
+} from "@/shared/domain/wind-down";
 import { parseDateKey } from "@/shared/utils/date";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
@@ -120,6 +125,11 @@ class FakeRepository implements AppRepository {
     lastReminderSentAt: null,
     snoozedUntil: null,
   };
+  windDownRuntimeState: WindDownRuntimeState = {
+    lastReminderSentAt: null,
+  };
+  windDownActions: WindDownAction[] = [];
+  windDownCompletedActionIdsByDate = new Map<string, Set<number>>();
   focusSessions: FocusSession[] = [];
   focusQuotaGoals: FocusQuotaGoal[] = [];
   focusTimerState: PersistedFocusTimerState | null = null;
@@ -416,6 +426,14 @@ class FakeRepository implements AppRepository {
     this.reminderRuntimeState = { ...state };
   }
 
+  getWindDownRuntimeState(): WindDownRuntimeState {
+    return { ...this.windDownRuntimeState };
+  }
+
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void {
+    this.windDownRuntimeState = { ...state };
+  }
+
   getSettings(): AppSettings {
     return { ...this.settings };
   }
@@ -423,6 +441,79 @@ class FakeRepository implements AppRepository {
   saveSettings(settings: AppSettings): AppSettings {
     this.settings = { ...settings };
     return { ...this.settings };
+  }
+
+  getWindDownActions(): WindDownAction[] {
+    return this.windDownActions.toSorted((left, right) => {
+      if (left.sortOrder !== right.sortOrder) {
+        return left.sortOrder - right.sortOrder;
+      }
+
+      return left.id - right.id;
+    });
+  }
+
+  getWindDownActionsWithStatus(date: string): WindDownActionWithStatus[] {
+    const completedActionIds =
+      this.windDownCompletedActionIdsByDate.get(date) ?? new Set<number>();
+
+    return this.getWindDownActions().map((action) => ({
+      ...action,
+      completed: completedActionIds.has(action.id),
+      completedAt: completedActionIds.has(action.id)
+        ? `${date}T21:00:00.000Z`
+        : null,
+    }));
+  }
+
+  ensureWindDownStatusRowsForDate(date: string): void {
+    if (!this.windDownCompletedActionIdsByDate.has(date)) {
+      this.windDownCompletedActionIdsByDate.set(date, new Set());
+    }
+  }
+
+  createWindDownAction(name: string, createdAt: string): number {
+    const id = this.windDownActions.length + 1;
+    this.windDownActions.push({
+      createdAt,
+      id,
+      name,
+      sortOrder: this.windDownActions.length,
+    });
+    return id;
+  }
+
+  renameWindDownAction(actionId: number, name: string): void {
+    const action = this.windDownActions.find((item) => item.id === actionId);
+    if (action) {
+      action.name = name;
+    }
+  }
+
+  deleteWindDownAction(actionId: number): void {
+    this.windDownActions = this.windDownActions
+      .filter((action) => action.id !== actionId)
+      .map((action, index) => ({
+        ...action,
+        sortOrder: index,
+      }));
+
+    for (const completedActionIds of this.windDownCompletedActionIdsByDate.values()) {
+      completedActionIds.delete(actionId);
+    }
+  }
+
+  toggleWindDownAction(date: string, actionId: number): void {
+    const completedActionIds =
+      this.windDownCompletedActionIdsByDate.get(date) ?? new Set<number>();
+
+    if (completedActionIds.has(actionId)) {
+      completedActionIds.delete(actionId);
+    } else {
+      completedActionIds.add(actionId);
+    }
+
+    this.windDownCompletedActionIdsByDate.set(date, completedActionIds);
   }
 
   getFirstTrackedDate(): string | null {

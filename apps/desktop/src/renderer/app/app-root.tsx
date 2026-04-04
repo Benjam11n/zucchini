@@ -12,6 +12,7 @@ import { useAppController } from "@/renderer/app/controller/use-app-controller";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { MASCOTS } from "@/renderer/assets/mascots";
 import { TodayPage } from "@/renderer/features/today/today-page";
+import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
@@ -152,6 +153,19 @@ function MainApp() {
     />
   );
 
+  if (tab === "windDown") {
+    renderedPage = (
+      <WindDownPage
+        onBack={actions.handleCloseWindDown}
+        onCreateAction={actions.handleCreateWindDownAction}
+        onDeleteAction={actions.handleDeleteWindDownAction}
+        onRenameAction={actions.handleRenameWindDownAction}
+        onToggleAction={actions.handleToggleWindDownAction}
+        state={state.todayState}
+      />
+    );
+  }
+
   if (tab === "history") {
     renderedPage = (
       <Suspense
@@ -232,6 +246,7 @@ function MainApp() {
           onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
           onChange={actions.handleSettingsDraftChange}
           onCreateHabit={actions.handleCreateHabit}
+          onOpenWindDown={actions.handleOpenWindDown}
           onRenameHabit={actions.handleRenameHabit}
           onReorderHabits={actions.handleReorderHabits}
           onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}

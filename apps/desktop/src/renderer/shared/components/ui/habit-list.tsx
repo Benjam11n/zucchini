@@ -94,6 +94,7 @@ interface HabitListItemProps {
   habit: HabitWithStatus;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
+  trailingActions?: ReactNode;
 }
 
 const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
@@ -106,6 +107,7 @@ function HabitListItemComponent({
   habit,
   onToggle,
   showCategory,
+  trailingActions,
 }: HabitListItemProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   const presentation = getHabitCategoryPresentation(
@@ -161,6 +163,11 @@ function HabitListItemComponent({
           </span>
         )}
       </div>
+      {trailingActions ? (
+        <div className="z-10 flex shrink-0 items-center gap-1">
+          {trailingActions}
+        </div>
+      ) : null}
       <AnimatePresence initial={false}>
         {habit.completed ? (
           <m.span
@@ -191,7 +198,8 @@ function areHabitListItemPropsEqual(
     previous.habit.category === next.habit.category &&
     previous.habit.completed === next.habit.completed &&
     previous.onToggle === next.onToggle &&
-    previous.showCategory === next.showCategory
+    previous.showCategory === next.showCategory &&
+    previous.trailingActions === next.trailingActions
   );
 }
 

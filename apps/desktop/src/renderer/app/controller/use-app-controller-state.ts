@@ -156,6 +156,8 @@ export function createControllerActions({
     handleArchiveFocusQuotaGoal: actions.handleArchiveFocusQuotaGoal,
     handleArchiveHabit: actions.handleArchiveHabit,
     handleCreateHabit: actions.handleCreateHabit,
+    handleCreateWindDownAction: actions.handleCreateWindDownAction,
+    handleDeleteWindDownAction: actions.handleDeleteWindDownAction,
     handleDecrementHabitProgress: actions.handleDecrementHabitProgress,
     handleDismissWeeklyReviewSpotlight: () => {
       const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
@@ -166,7 +168,10 @@ export function createControllerActions({
     },
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadOlderHistory: actions.loadFullHistory,
+    handleOpenWindDown: actions.handleOpenWindDown,
+    handleCloseWindDown: actions.handleCloseWindDown,
     handleRenameHabit: actions.handleRenameHabit,
+    handleRenameWindDownAction: actions.handleRenameWindDownAction,
     handleReorderHabits: actions.handleReorderHabits,
     handleRetryBoot: actions.retryBoot,
     handleRetryFocusLoad: async () => {
@@ -177,6 +182,7 @@ export function createControllerActions({
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
+    handleToggleWindDownAction: actions.handleToggleWindDownAction,
     handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,
     handleUnarchiveHabit: actions.handleUnarchiveHabit,
     handleUpsertFocusQuotaGoal: actions.handleUpsertFocusQuotaGoal,

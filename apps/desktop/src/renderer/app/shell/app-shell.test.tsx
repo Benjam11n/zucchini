@@ -38,6 +38,7 @@ describe("app shell", () => {
     renderAppShell("today");
 
     expect(screen.getAllByRole("tab", { name: "Today" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "Wind Down" })).toHaveLength(2);
     expect(screen.getAllByRole("tab", { name: "Focus" })).toHaveLength(2);
     expect(screen.getAllByRole("tab", { name: "History" })).toHaveLength(2);
     expect(screen.getAllByRole("tab", { name: "Settings" })).toHaveLength(2);

@@ -643,6 +643,7 @@ export function generateTestData(
       themeMode: settings.themeMode,
       timezone: settings.timezone,
       toggleFocusTimerShortcut: settings.toggleFocusTimerShortcut,
+      windDownTime: settings.windDownTime,
     })
     .run();
 

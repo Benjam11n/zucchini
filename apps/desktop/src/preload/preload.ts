@@ -94,8 +94,12 @@ const habitsApi: HabitsApi = {
       selectedWeekdays,
       targetCount
     ),
+  createWindDownAction: (name: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.createWindDownAction, name),
   decrementHabitProgress: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.decrementHabitProgress, habitId),
+  deleteWindDownAction: (actionId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.deleteWindDownAction, actionId),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getDesktopNotificationStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
@@ -200,6 +204,23 @@ const habitsApi: HabitsApi = {
       );
     };
   },
+  onWindDownNavigationRequested: (listener) => {
+    const handleWindDownNavigationRequested = () => {
+      listener();
+    };
+
+    ipcRenderer.on(
+      HABITS_IPC_CHANNELS.windDownNavigationRequested,
+      handleWindDownNavigationRequested
+    );
+
+    return () => {
+      ipcRenderer.removeListener(
+        HABITS_IPC_CHANNELS.windDownNavigationRequested,
+        handleWindDownNavigationRequested
+      );
+    };
+  },
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
@@ -207,6 +228,8 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
   renameHabit: (habitId: number, name: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
+  renameWindDownAction: (actionId: number, name: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.renameWindDownAction, actionId, name),
   reorderHabits: (habitIds: number[]) =>
     invokeHabits(HABITS_IPC_CHANNELS.reorderHabits, habitIds),
   resizeFocusWidget: (width: number, height: number) =>
@@ -224,6 +247,8 @@ const habitsApi: HabitsApi = {
     ),
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
+  toggleWindDownAction: (actionId: number) =>
+    invokeHabits(HABITS_IPC_CHANNELS.toggleWindDownAction, actionId),
   unarchiveFocusQuotaGoal: (goalId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.unarchiveFocusQuotaGoal, goalId),
   unarchiveHabit: (habitId: number) =>

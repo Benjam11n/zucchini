@@ -258,6 +258,12 @@ function broadcastFocusTimerShortcutStatus(
   }
 }
 
+function broadcastWindDownNavigationRequested(): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send(HABITS_IPC_CHANNELS.windDownNavigationRequested);
+  }
+}
+
 function getPreferredFocusTimerWindow(): BrowserWindow | null {
   const focusedWindow = BrowserWindow.getFocusedWindow();
 
@@ -317,6 +323,7 @@ function cleanupRuntime(): void {
   }
 
   runtime.reminders.cancel();
+  runtime.windDownReminders.cancel();
   runtime.tray.destroy();
   runtime.repository.close();
 }
@@ -371,6 +378,25 @@ async function bootstrapApp(): Promise<void> {
     const appRuntime = createAppRuntime({
       onOpenFocusWidget: showFocusWidget,
       onOpenMainWindow: showMainWindow,
+      onOpenWindDown: () => {
+        const window = ensureMainWindow();
+
+        if (window.isMinimized()) {
+          window.restore();
+        }
+
+        window.show();
+        window.focus();
+
+        if (window.webContents.isLoading()) {
+          window.webContents.once("did-finish-load", () => {
+            broadcastWindDownNavigationRequested();
+          });
+          return;
+        }
+
+        broadcastWindDownNavigationRequested();
+      },
       onQuit: () => {
         context.markQuitting();
         app.quit();
@@ -420,6 +446,9 @@ async function bootstrapApp(): Promise<void> {
       },
       onShowFocusWidget: showFocusWidget,
       onShowMainWindow: showMainWindow,
+      onWindDownChanged: (todayState) => {
+        appRuntime.windDownReminders.schedule(todayState.settings);
+      },
       service: appRuntime.service,
     });
 
@@ -447,7 +476,9 @@ async function bootstrapApp(): Promise<void> {
 
     powerMonitor.on("resume", () => {
       const runtime = context.getRuntime();
-      runtime.reminders.schedule(runtime.service.getTodayState().settings);
+      const { settings } = runtime.service.getTodayState();
+      runtime.reminders.schedule(settings);
+      runtime.windDownReminders.schedule(settings);
     });
   } catch (error) {
     reportAppReadyFailure(error);

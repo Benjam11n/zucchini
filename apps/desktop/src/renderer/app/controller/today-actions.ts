@@ -112,14 +112,25 @@ export function createTodayActions({
       );
       updateSettingsDraftFromToday();
     },
+    async handleCreateWindDownAction(name: string) {
+      await applyTodayMutation(window.habits.createWindDownAction(name));
+    },
     async handleDecrementHabitProgress(habitId: number) {
       await refreshToday(window.habits.decrementHabitProgress(habitId));
+    },
+    async handleDeleteWindDownAction(actionId: number) {
+      await applyTodayMutation(window.habits.deleteWindDownAction(actionId));
     },
     async handleIncrementHabitProgress(habitId: number) {
       await refreshToday(window.habits.incrementHabitProgress(habitId));
     },
     async handleRenameHabit(habitId: number, name: string) {
       await applyTodayMutation(window.habits.renameHabit(habitId, name));
+    },
+    async handleRenameWindDownAction(actionId: number, name: string) {
+      await applyTodayMutation(
+        window.habits.renameWindDownAction(actionId, name)
+      );
     },
     async handleReorderHabits(nextHabits: Habit[]) {
       const previousTodayState = useTodayStore.getState().todayState;
@@ -155,6 +166,12 @@ export function createTodayActions({
         });
       }
     },
+    handleOpenWindDown() {
+      useUiStore.getState().setTab("windDown");
+    },
+    handleCloseWindDown() {
+      useUiStore.getState().setTab("today");
+    },
     async handleToggleHabit(habitId: number) {
       const previousTodayState = useTodayStore.getState().todayState;
       const hasHabitToToggle = previousTodayState?.habits.some(
@@ -185,6 +202,9 @@ export function createTodayActions({
 
         throw error;
       }
+    },
+    async handleToggleWindDownAction(actionId: number) {
+      await refreshToday(window.habits.toggleWindDownAction(actionId));
     },
     async handleUnarchiveFocusQuotaGoal(goalId: number) {
       await applyTodayMutation(window.habits.unarchiveFocusQuotaGoal(goalId));

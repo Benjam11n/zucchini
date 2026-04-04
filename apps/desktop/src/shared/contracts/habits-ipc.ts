@@ -35,6 +35,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import type { WindDownState } from "@/shared/domain/wind-down";
 
 export type FocusTimerAction = "reset" | "toggle";
 export type FocusTimerActionSource =
@@ -94,14 +95,19 @@ export const HABITS_IPC_CHANNELS = {
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
   toggleHabit: "habits:toggleHabit",
+  toggleWindDownAction: "habits:toggleWindDownAction",
   unarchiveFocusQuotaGoal: "habits:unarchiveFocusQuotaGoal",
   unarchiveHabit: "habits:unarchiveHabit",
   upsertFocusQuotaGoal: "habits:upsertFocusQuotaGoal",
+  createWindDownAction: "habits:createWindDownAction",
+  deleteWindDownAction: "habits:deleteWindDownAction",
+  renameWindDownAction: "habits:renameWindDownAction",
   updateHabitCategory: "habits:updateHabitCategory",
   updateHabitFrequency: "habits:updateHabitFrequency",
   updateHabitTargetCount: "habits:updateHabitTargetCount",
   updateHabitWeekdays: "habits:updateHabitWeekdays",
   updateSettings: "habits:updateSettings",
+  windDownNavigationRequested: "habits:windDownNavigationRequested",
 } as const;
 
 export type HabitsIpcErrorCode =
@@ -171,6 +177,7 @@ export interface TodayState {
   habits: HabitWithStatus[];
   streak: StreakState;
   settings: AppSettings;
+  windDown?: WindDownState;
 }
 
 export type DesktopNotificationAvailability =
@@ -221,6 +228,7 @@ export interface HabitsApi {
   onFocusTimerShortcutStatusChanged: (
     listener: (status: FocusTimerShortcutStatus) => void
   ) => () => void;
+  onWindDownNavigationRequested: (listener: () => void) => () => void;
   onFocusSessionRecorded: (
     listener: (session: FocusSession) => void
   ) => () => void;
@@ -277,4 +285,8 @@ export interface HabitsApi {
     iconFilename?: string
   ) => Promise<void>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
+  toggleWindDownAction: (actionId: number) => Promise<TodayState>;
+  createWindDownAction: (name: string) => Promise<TodayState>;
+  deleteWindDownAction: (actionId: number) => Promise<TodayState>;
+  renameWindDownAction: (actionId: number, name: string) => Promise<TodayState>;
 }

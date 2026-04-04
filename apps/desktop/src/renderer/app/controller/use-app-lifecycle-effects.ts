@@ -27,6 +27,7 @@ export function useAppLifecycleEffects({
   bootApp,
   bootPhase,
   loadWeeklyReviewOverview,
+  openWindDown,
   openWeeklyReviewSpotlight,
   refreshForNewDay,
   setSystemTheme,
@@ -41,6 +42,7 @@ export function useAppLifecycleEffects({
   loadWeeklyReviewOverview: ReturnType<
     typeof createAppActions
   >["loadWeeklyReviewOverview"];
+  openWindDown: ReturnType<typeof createAppActions>["handleOpenWindDown"];
   openWeeklyReviewSpotlight: ReturnType<
     typeof createAppActions
   >["openWeeklyReviewSpotlight"];
@@ -57,6 +59,23 @@ export function useAppLifecycleEffects({
       // Boot failures are surfaced through controller state.
     });
   }, [bootApp]);
+
+  useEffect(() => {
+    const subscribeWindDownNavigation =
+      "onWindDownNavigationRequested" in window.habits
+        ? window.habits.onWindDownNavigationRequested.bind(window.habits)
+        : null;
+
+    if (!subscribeWindDownNavigation) {
+      return;
+    }
+
+    const unsubscribe = subscribeWindDownNavigation(() => {
+      openWindDown();
+    });
+
+    return unsubscribe;
+  }, [openWindDown]);
 
   useEffect(() => {
     if (bootPhase !== "ready" || weeklyReviewPhase !== "idle") {

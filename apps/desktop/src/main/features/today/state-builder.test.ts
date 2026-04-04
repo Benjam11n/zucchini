@@ -10,15 +10,19 @@ import type { AppRepository } from "@/main/infra/persistence/app-repository";
 function createRepository(
   overrides: {
     ensureStatusRowsForDate?: ReturnType<typeof vi.fn>;
+    ensureWindDownStatusRowsForDate?: ReturnType<typeof vi.fn>;
     getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
     getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
     getSettings?: ReturnType<typeof vi.fn>;
+    getWindDownActionsWithStatus?: ReturnType<typeof vi.fn>;
   } = {}
 ): AppRepository {
   return {
     ensureStatusRowsForDate: overrides.ensureStatusRowsForDate ?? vi.fn(),
+    ensureWindDownStatusRowsForDate:
+      overrides.ensureWindDownStatusRowsForDate ?? vi.fn(),
     getFocusQuotaGoalsWithStatusForDate:
       overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
     getFocusSessionsInRange:
@@ -57,6 +61,8 @@ function createRepository(
         timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: "Command+Shift+T",
       })),
+    getWindDownActionsWithStatus:
+      overrides.getWindDownActionsWithStatus ?? vi.fn(() => []),
   } as never;
 }
 
@@ -79,6 +85,9 @@ describe("state builder", () => {
       buildTodayState(repository, clock);
 
       expect(repository.ensureStatusRowsForDate).toHaveBeenCalledWith(
+        "2026-03-08"
+      );
+      expect(repository.ensureWindDownStatusRowsForDate).toHaveBeenCalledWith(
         "2026-03-08"
       );
     });

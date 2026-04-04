@@ -43,6 +43,7 @@ import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type {
   FocusTimerShortcutStatus,
   HabitsIpcResponse,
+  TodayState,
 } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
@@ -61,6 +62,7 @@ interface RegisterIpcHandlersOptions {
   onShowMainWindow: () => void;
   service: HabitsService;
   onSettingsChanged: (settings: AppSettings) => void;
+  onWindDownChanged?: (todayState: TodayState) => void;
 }
 
 function registerHandler<TArgs extends unknown[], TResult>(
@@ -98,6 +100,7 @@ export function registerIpcHandlers({
   onShowMainWindow,
   service,
   onSettingsChanged,
+  onWindDownChanged,
 }: RegisterIpcHandlersOptions): void {
   registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
@@ -107,6 +110,16 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.toggleWindDownAction,
+    (actionId: unknown) => {
+      const todayState = service.toggleWindDownAction(
+        validateHabitId(actionId)
+      );
+      onWindDownChanged?.(todayState);
+      return todayState;
+    }
   );
   registerHandler(
     HABITS_IPC_CHANNELS.incrementHabitProgress,
@@ -197,6 +210,29 @@ export function registerIpcHandlers({
     onSettingsChanged(nextSettings);
     return nextSettings;
   });
+  registerHandler(HABITS_IPC_CHANNELS.createWindDownAction, (name: unknown) => {
+    const todayState = service.createWindDownAction(validateHabitName(name));
+    onWindDownChanged?.(todayState);
+    return todayState;
+  });
+  registerHandler(
+    HABITS_IPC_CHANNELS.renameWindDownAction,
+    (actionId: unknown, name: unknown) =>
+      service.renameWindDownAction(
+        validateHabitId(actionId),
+        validateHabitName(name)
+      )
+  );
+  registerHandler(
+    HABITS_IPC_CHANNELS.deleteWindDownAction,
+    (actionId: unknown) => {
+      const todayState = service.deleteWindDownAction(
+        validateHabitId(actionId)
+      );
+      onWindDownChanged?.(todayState);
+      return todayState;
+    }
+  );
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,
     (

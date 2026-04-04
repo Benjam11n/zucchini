@@ -34,6 +34,7 @@ export interface SettingsPageProps {
   saveErrorMessage: string | null;
   savePhase: SettingsSavePhase;
   onChange: (settings: AppSettings) => void;
+  onOpenWindDown: () => void;
   onCreateHabit: (
     name: string,
     category: HabitCategory,

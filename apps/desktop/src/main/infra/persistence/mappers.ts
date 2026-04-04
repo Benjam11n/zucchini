@@ -17,6 +17,7 @@ import type { Habit } from "@/shared/domain/habit";
 import { isThemeMode } from "@/shared/domain/settings";
 import type { ThemeMode } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
+import type { WindDownAction } from "@/shared/domain/wind-down";
 
 import type {
   DailySummaryRow,
@@ -25,6 +26,7 @@ import type {
   HabitPeriodStatusSnapshot,
   HabitRow,
   StreakStateRow,
+  WindDownActionRow,
 } from "./types";
 
 export function mapHabit(row: HabitRow): Habit {
@@ -106,4 +108,13 @@ export function normalizeThemeMode(value = ""): ThemeMode {
   }
 
   return "system";
+}
+
+export function mapWindDownAction(row: WindDownActionRow): WindDownAction {
+  return {
+    createdAt: row.createdAt,
+    id: row.id,
+    name: row.name,
+    sortOrder: row.sortOrder,
+  };
 }

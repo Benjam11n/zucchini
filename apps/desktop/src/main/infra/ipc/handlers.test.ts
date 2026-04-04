@@ -79,7 +79,9 @@ function createService() {
     archiveFocusQuotaGoal: vi.fn(),
     archiveHabit: vi.fn(),
     createHabit: vi.fn(),
+    createWindDownAction: vi.fn(),
     decrementHabitProgress: vi.fn(),
+    deleteWindDownAction: vi.fn(),
     getFocusSessions: vi.fn(() => []),
     getHabits: vi.fn(() => []),
     getHistory: vi.fn(() => []),
@@ -88,6 +90,7 @@ function createService() {
     getTodayState: vi.fn(() => {
       throw new Error("boom");
     }),
+    getWindDownRuntimeState: vi.fn(),
     getWeeklyReview: vi.fn(),
     getWeeklyReviewOverview: vi.fn(() => ({
       availableWeeks: [],
@@ -98,10 +101,13 @@ function createService() {
     initialize: vi.fn(),
     recordFocusSession: vi.fn(),
     renameHabit: vi.fn(),
+    renameWindDownAction: vi.fn(),
     reorderHabits: vi.fn(),
     savePersistedFocusTimerState: vi.fn((state) => state),
     saveReminderRuntimeState: vi.fn(),
+    saveWindDownRuntimeState: vi.fn(),
     toggleHabit: vi.fn(),
+    toggleWindDownAction: vi.fn(),
     unarchiveFocusQuotaGoal: vi.fn(),
     unarchiveHabit: vi.fn(),
     upsertFocusQuotaGoal: vi.fn(),

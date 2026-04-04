@@ -74,7 +74,8 @@ function warnMissingNativeAddon(packageName: string): void {
 function showNotification(
   title: string,
   body: string,
-  iconFilename?: string
+  iconFilename?: string,
+  onClick?: () => void
 ): void {
   if (!Notification.isSupported()) {
     return;
@@ -86,11 +87,17 @@ function showNotification(
       : undefined;
     const notificationIcon = icon && !icon.isEmpty() ? icon : null;
 
-    new Notification({
+    const notification = new Notification({
       body,
       ...(notificationIcon ? { icon: notificationIcon } : {}),
       title,
-    }).show();
+    });
+
+    if (onClick) {
+      notification.on("click", onClick);
+    }
+
+    notification.show();
   } catch {
     // Ignore notification failures so reminder flows keep running.
   }
@@ -243,5 +250,14 @@ export function showSnoozedReminder(minutes: number): void {
     "Snooze finished",
     `Your ${minutes}-minute Zucchini snooze has ended. You still have habits closing today.`,
     "mascot-reminder.png"
+  );
+}
+
+export function showWindDownReminder(onClick: () => void): void {
+  showNotification(
+    "Start wind down",
+    "Your wind down routine is ready.",
+    "mascot-sleepy.png",
+    onClick
   );
 }

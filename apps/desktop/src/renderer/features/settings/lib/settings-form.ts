@@ -30,6 +30,7 @@ export function areAppSettingsEqual(
     left.resetFocusTimerShortcut === right.resetFocusTimerShortcut &&
     left.themeMode === right.themeMode &&
     left.toggleFocusTimerShortcut === right.toggleFocusTimerShortcut &&
+    left.windDownTime === right.windDownTime &&
     left.timezone === right.timezone
   );
 }
