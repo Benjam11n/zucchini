@@ -55,6 +55,7 @@ export function DurationInput({
   maxSeconds = 60 * 60,
   minSeconds = 1,
   minuteInputClassName,
+  minuteWrapperClassName,
   minuteAriaLabel,
   minuteInputId,
   onCommit,
@@ -62,6 +63,7 @@ export function DurationInput({
   secondAriaLabel,
   secondInputClassName,
   secondInputId,
+  secondWrapperClassName,
   separatorClassName,
   valueSeconds,
 }: {
@@ -71,6 +73,7 @@ export function DurationInput({
   maxSeconds?: number;
   minSeconds?: number;
   minuteInputClassName?: string;
+  minuteWrapperClassName?: string;
   minuteAriaLabel: string;
   minuteInputId?: string;
   onCommit: (valueSeconds: number) => void;
@@ -81,6 +84,7 @@ export function DurationInput({
   secondAriaLabel: string;
   secondInputClassName?: string;
   secondInputId?: string;
+  secondWrapperClassName?: string;
   separatorClassName?: string;
   valueSeconds: number;
 }) {
@@ -135,63 +139,67 @@ export function DurationInput({
 
   return (
     <div ref={wrapperRef} className={cn("flex items-center gap-2", className)}>
-      <input
-        aria-label={minuteAriaLabel}
-        className={cn(inputClassName, minuteInputClassName)}
-        disabled={disabled}
-        id={minuteInputId}
-        inputMode="numeric"
-        onBlur={handleBlur}
-        onChange={(event) => {
-          const nextMinutesInput = sanitizeDurationPart(
-            event.currentTarget.value
-          );
-          setMinutesInput(nextMinutesInput);
-          onDraftChange?.({
-            minutesInput: nextMinutesInput,
-            secondsInput,
-          });
-        }}
-        onFocus={(event) => {
-          event.currentTarget.select();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            commitValue();
-            event.currentTarget.blur();
-          }
-        }}
-        value={minutesInput}
-      />
+      <div className={minuteWrapperClassName}>
+        <input
+          aria-label={minuteAriaLabel}
+          className={cn(inputClassName, minuteInputClassName)}
+          disabled={disabled}
+          id={minuteInputId}
+          inputMode="numeric"
+          onBlur={handleBlur}
+          onChange={(event) => {
+            const nextMinutesInput = sanitizeDurationPart(
+              event.currentTarget.value
+            );
+            setMinutesInput(nextMinutesInput);
+            onDraftChange?.({
+              minutesInput: nextMinutesInput,
+              secondsInput,
+            });
+          }}
+          onFocus={(event) => {
+            event.currentTarget.select();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              commitValue();
+              event.currentTarget.blur();
+            }
+          }}
+          value={minutesInput}
+        />
+      </div>
       <span className={separatorClassName}>:</span>
-      <input
-        aria-label={secondAriaLabel}
-        className={cn(inputClassName, secondInputClassName)}
-        disabled={disabled}
-        id={secondInputId}
-        inputMode="numeric"
-        onBlur={handleBlur}
-        onChange={(event) => {
-          const nextSecondsInput = sanitizeDurationPart(
-            event.currentTarget.value
-          );
-          setSecondsInput(nextSecondsInput);
-          onDraftChange?.({
-            minutesInput,
-            secondsInput: nextSecondsInput,
-          });
-        }}
-        onFocus={(event) => {
-          event.currentTarget.select();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            commitValue();
-            event.currentTarget.blur();
-          }
-        }}
-        value={secondsInput}
-      />
+      <div className={secondWrapperClassName}>
+        <input
+          aria-label={secondAriaLabel}
+          className={cn(inputClassName, secondInputClassName)}
+          disabled={disabled}
+          id={secondInputId}
+          inputMode="numeric"
+          onBlur={handleBlur}
+          onChange={(event) => {
+            const nextSecondsInput = sanitizeDurationPart(
+              event.currentTarget.value
+            );
+            setSecondsInput(nextSecondsInput);
+            onDraftChange?.({
+              minutesInput,
+              secondsInput: nextSecondsInput,
+            });
+          }}
+          onFocus={(event) => {
+            event.currentTarget.select();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              commitValue();
+              event.currentTarget.blur();
+            }
+          }}
+          value={secondsInput}
+        />
+      </div>
     </div>
   );
 }

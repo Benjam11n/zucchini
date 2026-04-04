@@ -73,10 +73,12 @@ export function FocusDurationEditor({
       minSeconds={1}
       minuteAriaLabel="Focus minutes"
       minuteInputClassName="pr-[0.04em] text-right"
+      minuteWrapperClassName="flex justify-end overflow-visible"
       onCommit={commitDuration}
       onDraftChange={onDurationDraftChange}
       secondAriaLabel="Focus seconds"
       secondInputClassName="pl-[0.04em] text-left"
+      secondWrapperClassName="flex justify-start overflow-visible"
       separatorClassName="text-center text-[clamp(4rem,12vw,7rem)] leading-none font-black tracking-[-0.04em] tabular-nums text-foreground/70"
       valueSeconds={Math.round(timerState.focusDurationMs / MS_PER_SECOND)}
     />

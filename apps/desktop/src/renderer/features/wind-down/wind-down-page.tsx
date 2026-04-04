@@ -1,6 +1,8 @@
+import { useForm } from "@tanstack/react-form";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Archive, MoonStar, Pencil, Plus } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -32,6 +34,10 @@ async function runAction(action: () => Promise<void>): Promise<void> {
   }
 }
 
+const newActionSchema = z.object({
+  name: z.string().trim().min(1, "Action name is required."),
+});
+
 export function WindDownPage({
   onCreateAction,
   onDeleteAction,
@@ -40,10 +46,21 @@ export function WindDownPage({
   state,
 }: WindDownPageProps) {
   const windDown = state.windDown ?? buildEmptyWindDownState(state.date);
-  const [newActionName, setNewActionName] = useState("");
   const [editingActionId, setEditingActionId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
   const activeEditingInput = useRef<HTMLInputElement | null>(null);
+  const newActionForm = useForm({
+    defaultValues: {
+      name: "",
+    },
+    onSubmit: async ({ value }) => {
+      await runAction(() => onCreateAction(value.name.trim()));
+      newActionForm.reset();
+    },
+    validators: {
+      onSubmit: newActionSchema,
+    },
+  });
   const handleEditingInputRef = useCallback((node: HTMLInputElement | null) => {
     if (!node || node === activeEditingInput.current) {
       return;
@@ -99,26 +116,48 @@ export function WindDownPage({
                 className="flex flex-col gap-3 sm:flex-row"
                 onSubmit={async (event) => {
                   event.preventDefault();
-                  const trimmedName = newActionName.trim();
-                  if (!trimmedName) {
-                    return;
-                  }
-
-                  await runAction(() => onCreateAction(trimmedName));
-                  setNewActionName("");
+                  await newActionForm.handleSubmit();
                 }}
               >
-                <Input
-                  onChange={(event) =>
-                    setNewActionName(event.currentTarget.value)
-                  }
-                  placeholder="Read a book..."
-                  value={newActionName}
-                />
-                <Button type="submit">
-                  <Plus className="size-4" />
-                  Add action
-                </Button>
+                <newActionForm.Field name="name">
+                  {(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+
+                    return (
+                      <>
+                        <Input
+                          aria-invalid={isInvalid}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => {
+                            field.handleChange(event.currentTarget.value);
+                          }}
+                          placeholder="Read a book..."
+                          value={field.state.value}
+                        />
+                        <newActionForm.Subscribe
+                          selector={(formState) => ({
+                            isSubmitting: formState.isSubmitting,
+                            name: formState.values.name,
+                          })}
+                        >
+                          {(formState) => (
+                            <Button
+                              disabled={
+                                formState.isSubmitting ||
+                                formState.name.trim().length === 0
+                              }
+                              type="submit"
+                            >
+                              <Plus className="size-4" />
+                              Add action
+                            </Button>
+                          )}
+                        </newActionForm.Subscribe>
+                      </>
+                    );
+                  }}
+                </newActionForm.Field>
               </form>
 
               {windDownChecklistHabits.length === 0 ? (

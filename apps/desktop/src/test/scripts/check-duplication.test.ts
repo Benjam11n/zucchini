@@ -43,7 +43,7 @@ describe("check-duplication args", () => {
       minLines: 8,
       minTokens: 40,
       root: "src",
-      threshold: 3,
+      threshold: 2,
     });
   });
 

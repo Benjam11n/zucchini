@@ -1,6 +1,7 @@
+import { useForm } from "@tanstack/react-form";
 import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -32,148 +33,66 @@ import { HabitWeekdaySelector } from "./habit-weekday-selector";
 
 const CREATION_FEEDBACK_TIMEOUT_MS = 2200;
 
-interface NewHabitFormState {
+interface NewHabitFormValues {
   category: HabitCategory;
-  creationFeedback: string | null;
   frequency: HabitFrequency;
-  isAdvancedOpen: boolean;
   name: string;
   selectedWeekdays: HabitWeekday[] | null;
   targetCount: number;
 }
 
-type NewHabitFormAction =
-  | { type: "clearFeedback" }
-  | { type: "setAdvancedOpen"; value: boolean }
-  | { type: "setCategory"; value: HabitCategory }
-  | { type: "setFrequency"; value: HabitFrequency }
-  | { type: "setName"; value: string }
-  | { type: "setTargetCount"; value: number }
-  | { type: "setWeekdays"; value: HabitWeekday[] | null }
-  | { type: "submitSuccess"; createdHabitName: string };
-
-const initialState: NewHabitFormState = {
+const defaultValues: NewHabitFormValues = {
   category: DEFAULT_HABIT_CATEGORY,
-  creationFeedback: null,
   frequency: DEFAULT_HABIT_FREQUENCY,
-  isAdvancedOpen: false,
   name: "",
   selectedWeekdays: null,
   targetCount: 1,
 };
 
-function reducer(
-  state: NewHabitFormState,
-  action: NewHabitFormAction
-): NewHabitFormState {
-  switch (action.type) {
-    case "clearFeedback": {
-      return {
-        ...state,
-        creationFeedback: null,
-      };
-    }
-    case "setAdvancedOpen": {
-      return {
-        ...state,
-        isAdvancedOpen: action.value,
-      };
-    }
-    case "setCategory": {
-      return {
-        ...state,
-        category: action.value,
-      };
-    }
-    case "setFrequency": {
-      return {
-        ...state,
-        frequency: action.value,
-        selectedWeekdays:
-          action.value === "daily" ? state.selectedWeekdays : null,
-        targetCount: normalizeHabitTargetCount(action.value, state.targetCount),
-      };
-    }
-    case "setName": {
-      return {
-        ...state,
-        name: action.value,
-      };
-    }
-    case "setWeekdays": {
-      return {
-        ...state,
-        selectedWeekdays: action.value,
-      };
-    }
-    case "setTargetCount": {
-      return {
-        ...state,
-        targetCount: normalizeHabitTargetCount(state.frequency, action.value),
-      };
-    }
-    case "submitSuccess": {
-      return {
-        ...state,
-        category: DEFAULT_HABIT_CATEGORY,
-        creationFeedback: `Added "${action.createdHabitName}".`,
-        frequency: DEFAULT_HABIT_FREQUENCY,
-        name: "",
-        selectedWeekdays: null,
-        targetCount: 1,
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-}
-
 export function NewHabitForm({
   onCreateHabit,
 }: Pick<HabitManagementCardProps, "onCreateHabit">) {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const form = useForm({
+    defaultValues,
+    onSubmit: async ({ value }) => {
+      const trimmedName = value.name.trim();
+
+      await onCreateHabit(
+        trimmedName,
+        value.category,
+        value.frequency,
+        value.frequency === "daily"
+          ? normalizeHabitWeekdays(value.selectedWeekdays)
+          : null,
+        value.frequency === "daily" ? 1 : value.targetCount
+      );
+
+      form.reset();
+      setCreationFeedback(`Added "${trimmedName}".`);
+      nameInputRef.current?.focus();
+    },
+  });
 
   useEffect(() => {
     nameInputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    if (!state.creationFeedback) {
+    if (!creationFeedback) {
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
-      dispatch({ type: "clearFeedback" });
+      setCreationFeedback(null);
     }, CREATION_FEEDBACK_TIMEOUT_MS);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [state.creationFeedback]);
-
-  async function handleCreate(): Promise<void> {
-    const trimmedName = state.name.trim();
-    if (!trimmedName) {
-      return;
-    }
-
-    await onCreateHabit(
-      trimmedName,
-      state.category,
-      state.frequency,
-      state.frequency === "daily"
-        ? normalizeHabitWeekdays(state.selectedWeekdays)
-        : null,
-      state.frequency === "daily" ? 1 : state.targetCount
-    );
-    dispatch({
-      createdHabitName: trimmedName,
-      type: "submitSuccess",
-    });
-    nameInputRef.current?.focus();
-  }
+  }, [creationFeedback]);
 
   return (
     <m.div
@@ -181,17 +100,12 @@ export function NewHabitForm({
       layout
       transition={microTransition}
     >
-      <Collapsible
-        open={state.isAdvancedOpen}
-        onOpenChange={(value) => {
-          dispatch({ type: "setAdvancedOpen", value });
-        }}
-      >
+      <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
         <form
           className="grid gap-3"
           onSubmit={async (event) => {
             event.preventDefault();
-            await handleCreate();
+            await form.handleSubmit();
           }}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -202,7 +116,7 @@ export function NewHabitForm({
                 <ChevronDown
                   className={cn(
                     "size-4 transition-transform",
-                    state.isAdvancedOpen && "rotate-180"
+                    isAdvancedOpen && "rotate-180"
                   )}
                 />
               </Button>
@@ -210,127 +124,169 @@ export function NewHabitForm({
           </div>
 
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-            <div className="grid gap-2">
-              <Label
-                className="text-xs font-medium text-muted-foreground"
-                htmlFor="new-habit"
-              >
-                Name
-              </Label>
-              <Input
-                ref={nameInputRef}
-                className="h-10"
-                id="new-habit"
-                onChange={(event) => {
-                  dispatch({
-                    type: "setName",
-                    value: event.target.value,
-                  });
-                }}
-                placeholder="Eat zucchini..."
-                required
-                type="text"
-                value={state.name}
-              />
-            </div>
-            <Button
-              className="h-10 px-4"
-              disabled={!state.name.trim()}
-              type="submit"
-            >
-              <Plus className="size-4" />
-              Add habit
-            </Button>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Category
-              </Label>
-              <HabitCategorySelector
-                className="gap-1.5"
-                compact
-                name="new-habit-category"
-                onChange={(value) => {
-                  dispatch({
-                    type: "setCategory",
-                    value,
-                  });
-                }}
-                selectedCategory={state.category}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Frequency
-              </Label>
-              <HabitFrequencySelector
-                className="gap-1.5"
-                compact
-                name="new-habit-frequency"
-                onChange={(value) => {
-                  dispatch({
-                    type: "setFrequency",
-                    value,
-                  });
-                }}
-                selectedFrequency={state.frequency}
-              />
-            </div>
-          </div>
-
-          {state.creationFeedback ? (
-            <p
-              aria-live="polite"
-              className="text-xs font-medium text-primary"
-              role="status"
-            >
-              {state.creationFeedback}
-            </p>
-          ) : null}
-
-          <CollapsibleContent className="grid gap-3 border-t border-border/60 pt-3">
-            <div className="grid gap-3 md:grid-cols-2">
-              {state.frequency === "daily" ? (
-                <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Applies on
-                  </Label>
-                  <HabitWeekdaySelector
-                    className="gap-1.5"
-                    compact
-                    name="new-habit-weekdays"
-                    onChange={(value) => {
-                      dispatch({
-                        type: "setWeekdays",
-                        value,
-                      });
-                    }}
-                    selectedWeekdays={state.selectedWeekdays}
-                  />
-                </div>
-              ) : (
-                <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Goal
-                  </Label>
-                  <HabitTargetCountStepper
-                    compact
-                    frequency={state.frequency}
-                    onChange={(value) => {
-                      dispatch({
-                        type: "setTargetCount",
-                        value,
-                      });
-                    }}
-                    value={state.targetCount}
-                  />
-                </div>
+            <form.Field name="name">
+              {(field) => (
+                <>
+                  <div className="grid gap-2">
+                    <Label
+                      className="text-xs font-medium text-muted-foreground"
+                      htmlFor="new-habit"
+                    >
+                      Name
+                    </Label>
+                    <Input
+                      ref={nameInputRef}
+                      className="h-10"
+                      id="new-habit"
+                      onBlur={field.handleBlur}
+                      onChange={(event) => {
+                        field.handleChange(event.target.value);
+                      }}
+                      placeholder="Eat zucchini..."
+                      required
+                      type="text"
+                      value={field.state.value}
+                    />
+                  </div>
+                  <form.Subscribe
+                    selector={(state) => ({
+                      isSubmitting: state.isSubmitting,
+                      name: state.values.name,
+                    })}
+                  >
+                    {(state) => (
+                      <Button
+                        className="h-10 px-4"
+                        disabled={
+                          state.isSubmitting || state.name.trim().length === 0
+                        }
+                        type="submit"
+                      >
+                        <Plus className="size-4" />
+                        Add habit
+                      </Button>
+                    )}
+                  </form.Subscribe>
+                </>
               )}
-            </div>
-          </CollapsibleContent>
+            </form.Field>
+          </div>
+
+          <form.Subscribe selector={(state) => state.values}>
+            {(values) => (
+              <>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <form.Field name="category">
+                    {(field) => (
+                      <div className="grid gap-2">
+                        <Label className="text-xs font-medium text-muted-foreground">
+                          Category
+                        </Label>
+                        <HabitCategorySelector
+                          className="gap-1.5"
+                          compact
+                          name="new-habit-category"
+                          onChange={field.handleChange}
+                          selectedCategory={field.state.value}
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="frequency">
+                    {(field) => (
+                      <div className="grid gap-2">
+                        <Label className="text-xs font-medium text-muted-foreground">
+                          Frequency
+                        </Label>
+                        <HabitFrequencySelector
+                          className="gap-1.5"
+                          compact
+                          name="new-habit-frequency"
+                          onChange={(value) => {
+                            field.handleChange(value);
+                            form.setFieldValue(
+                              "selectedWeekdays",
+                              value === "daily" ? values.selectedWeekdays : null
+                            );
+                            form.setFieldValue(
+                              "targetCount",
+                              normalizeHabitTargetCount(
+                                value,
+                                values.targetCount
+                              )
+                            );
+                          }}
+                          selectedFrequency={field.state.value}
+                        />
+                      </div>
+                    )}
+                  </form.Field>
+                </div>
+
+                {creationFeedback ? (
+                  <p
+                    aria-live="polite"
+                    className="text-xs font-medium text-primary"
+                    role="status"
+                  >
+                    {creationFeedback}
+                  </p>
+                ) : null}
+
+                <CollapsibleContent className="grid gap-3 border-t border-border/60 pt-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {values.frequency === "daily" ? (
+                      <form.Field name="selectedWeekdays">
+                        {(field) => (
+                          <div className="grid gap-2">
+                            <Label className="text-xs font-medium text-muted-foreground">
+                              Applies on
+                            </Label>
+                            <HabitWeekdaySelector
+                              className="gap-1.5"
+                              compact
+                              name="new-habit-weekdays"
+                              onChange={field.handleChange}
+                              selectedWeekdays={field.state.value}
+                            />
+                          </div>
+                        )}
+                      </form.Field>
+                    ) : (
+                      <form.Field name="targetCount">
+                        {(field) => (
+                          <div className="grid gap-2">
+                            <Label className="text-xs font-medium text-muted-foreground">
+                              Goal
+                            </Label>
+                            <HabitTargetCountStepper
+                              compact
+                              frequency={
+                                values.frequency as Exclude<
+                                  HabitFrequency,
+                                  "daily"
+                                >
+                              }
+                              onChange={(value) => {
+                                field.handleChange(
+                                  normalizeHabitTargetCount(
+                                    values.frequency,
+                                    value
+                                  )
+                                );
+                              }}
+                              value={field.state.value}
+                            />
+                          </div>
+                        )}
+                      </form.Field>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </>
+            )}
+          </form.Subscribe>
         </form>
       </Collapsible>
     </m.div>

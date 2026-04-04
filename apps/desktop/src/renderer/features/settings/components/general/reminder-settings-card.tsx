@@ -206,7 +206,7 @@ export function ReminderSettingsCard({
 
           {notificationStatusMessage ? (
             <div
-              className={`rounded-xl border px-4 py-3 text-sm ${notificationStatusMessage.className}`}
+              className={`rounded-md border px-4 py-3 text-sm ${notificationStatusMessage.className}`}
             >
               {notificationStatusMessage.text}
             </div>
@@ -248,7 +248,7 @@ export function ReminderSettingsCard({
               </ItemDescription>
             </ItemContent>
             <ItemActions>
-              <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
+              <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
                 <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
                 <select
                   aria-label="Timezone"
@@ -353,7 +353,7 @@ export function ReminderSettingsCard({
                     fieldErrors.reminderSnoozeMinutes ? true : undefined
                   }
                   id="reminder-snooze"
-                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="h-8 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   min={1}
                   onChange={(event) => {
                     const value = Number(event.target.value);
