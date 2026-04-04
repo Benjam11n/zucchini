@@ -63,7 +63,7 @@ export function FocusQuotaGoalsCard({
         <p className="text-sm font-medium text-foreground">Focus quota</p>
       </div>
 
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {GOAL_FREQUENCY_DEFINITIONS.map((definition) => {
           const goal = goalsByFrequency.get(definition.value);
           const inputId = `focus-quota-${definition.value}`;
@@ -83,29 +83,17 @@ export function FocusQuotaGoalsCard({
                 await onSaveGoal(definition.value, Math.round(targetMinutes));
               }}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <Label className="text-sm font-medium" htmlFor={inputId}>
-                    {definition.label}
-                  </Label>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {goal
-                      ? `${goal.completedMinutes}/${goal.targetMinutes} min this ${definition.value === "weekly" ? "week" : "month"}`
-                      : ""}
-                  </p>
-                </div>
+              <div className="flex items-center gap-3">
+                <Label
+                  className="min-w-0 text-sm font-medium"
+                  htmlFor={inputId}
+                >
+                  {definition.label}
+                </Label>
                 {goal ? (
-                  <Button
-                    className="shrink-0"
-                    onClick={async () => {
-                      await onArchiveGoal(goal.id);
-                    }}
-                    size="sm"
-                    type="button"
-                    variant={archiveButtonVariant}
-                  >
-                    <Archive className="size-4" />
-                  </Button>
+                  <p className="ml-auto truncate text-right text-xs text-muted-foreground">
+                    {`${goal.completedMinutes}/${goal.targetMinutes} min this ${definition.value === "weekly" ? "week" : "month"}`}
+                  </p>
                 ) : null}
               </div>
 
@@ -129,6 +117,19 @@ export function FocusQuotaGoalsCard({
                     value={drafts[definition.value]}
                   />
                 </div>
+                {goal ? (
+                  <Button
+                    className="h-9 shrink-0 px-3"
+                    onClick={async () => {
+                      await onArchiveGoal(goal.id);
+                    }}
+                    size="sm"
+                    type="button"
+                    variant={archiveButtonVariant}
+                  >
+                    <Archive className="size-4" />
+                  </Button>
+                ) : null}
                 <Button className="h-9 px-3" type="submit">
                   {goal ? "Save" : "Add"}
                 </Button>
