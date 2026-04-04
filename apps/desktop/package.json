@@ -19,6 +19,7 @@
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "audit": "bun audit",
     "audit:ci": "bun audit --production --audit-level=high",
+    "check:duplication": "bun run scripts/check-duplication.ts",
     "lint": "oxlint -c ../../.oxlintrc.json .",
     "format": "ultracite fix .",
     "format:check": "ultracite check .",
