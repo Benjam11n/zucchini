@@ -7,12 +7,14 @@ All notable changes to this project will be documented in this file.
 Changes since `v0.1.1-beta.17`.
 
 ### Features
+
 - Implement wind-down feature with custom actions, scheduling, and persistence
 - Add pixel-blast background effect to landing page and update global styles and branding assets
 - Improve test coverage and quality across critical areas
 - Add TodayCelebrationOverlay component and reduce celebration duration
 
 ### Refactors
+
 - Migrate FocusQuotaGoalsCard to @tanstack/react-form and add unit tests
 - Enforce one file one component rule for feature and app TSX files
 - Refactor renderer list items and normalize radius
@@ -28,9 +30,11 @@ Changes since `v0.1.1-beta.17`.
 - Remove unused packaging scripts and redundant npm commands
 
 ### Documentation
+
 - Update changelog with recent fixes, features, and refactors
 
 ### Maintenance
+
 - Ignore UI components and lower duplication threshold in check-duplication script
 - Standardise Card usage
 - Add oxfmt to knip ignoreDependencies
@@ -38,6 +42,7 @@ Changes since `v0.1.1-beta.17`.
 - Remove postinstall native rebuild script and update workflow to rebuild dependencies explicitly
 
 ### Other
+
 - Reduce gap between habit items in history column
 - Reduce desktop duplication in updater, dates, and focus UI
 - Add desktop duplication audit script
@@ -256,4 +261,3 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
-

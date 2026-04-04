@@ -337,10 +337,30 @@ function watchWorkflowRun(runId) {
     return;
   }
 
+  const runState = readWorkflowRunState(runId);
+  if (runState.status === "completed" && runState.conclusion === "success") {
+    log(
+      `Workflow run ${runId} completed successfully despite a non-zero \`gh run watch\` exit code.`
+    );
+    return;
+  }
+
   execGh(["run", "view", runId, "--log-failed"], {
     stdio: "inherit",
   });
-  throw new Error(`Release workflow run ${runId} failed.`);
+  throw new Error(
+    `Release workflow run ${runId} failed with status \`${runState.status}\` and conclusion \`${runState.conclusion}\`.`
+  );
+}
+
+function readWorkflowRunState(runId) {
+  const output = runGh(["run", "view", runId, "--json", "status,conclusion"]);
+
+  const run = JSON.parse(output);
+  return {
+    conclusion: run.conclusion ?? "",
+    status: run.status ?? "",
+  };
 }
 
 function publishGitHubRelease({ channel, notesFilePath, tag, title }) {
