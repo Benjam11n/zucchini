@@ -41,18 +41,6 @@ missed days, and imperfect routines. The app keeps the interface lightweight,
 stores progress locally, and focuses on clear feedback instead of noisy
 gamification.
 
-## Workspace Commands
-
-Run these from the repository root:
-
-```bash
-bun run dev:desktop
-bun run dev:web
-bun run build:desktop
-bun run build:web
-bun run check
-```
-
 ## Documentation
 
 Desktop technical and operational documentation now lives in
