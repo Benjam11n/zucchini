@@ -43,6 +43,7 @@ export function FocusTimerActions({
         <Button
           className="h-11 min-w-36 rounded-full px-6 text-base"
           onClick={() => {
+            // CHECK: Move this out to a function?
             if (isPaused) {
               onResume();
               return;

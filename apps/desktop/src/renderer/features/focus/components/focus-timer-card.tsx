@@ -117,9 +117,9 @@ export function FocusTimerCard({
         phaseBadge={phaseBadge}
       />
 
-      <CardContent className="space-y-5 pt-4">
+      <CardContent className="space-y-4 pt-2">
         <div className="flex justify-center">
-          <div className="w-full max-w-3xl rounded-xl border border-border/60 bg-muted/8 px-4 py-5 sm:px-6 sm:py-6">
+          <div className="w-full max-w-2xl">
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               <FocusDurationEditor
                 canEditDuration={canEditDuration}
