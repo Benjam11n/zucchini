@@ -8,11 +8,12 @@ const DEFAULT_EXCLUDE = [
   "**/*.test.ts",
   "**/*.test.tsx",
   "src/test/**",
+  "src/renderer/shared/components/ui/**",
   "drizzle/**",
   "dist-electron/**",
   "node_modules/**",
 ];
-const DEFAULT_THRESHOLD = 3;
+const DEFAULT_THRESHOLD = 2;
 const DEFAULT_MIN_LINES = 8;
 const DEFAULT_MIN_TOKENS = 40;
 const DEFAULT_MAX_FINDINGS = 30;
