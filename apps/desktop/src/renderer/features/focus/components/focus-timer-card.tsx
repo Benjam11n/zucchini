@@ -37,6 +37,9 @@ interface FocusTimerCardProps {
   onStart: (focusDurationMs: number) => void;
 }
 
+const MAX_CYCLES = 12;
+const MIN_CYCLES = 1;
+
 function createDurationDraft(focusDurationMs: number): {
   minutesInput: string;
   secondsInput: string;
@@ -159,7 +162,7 @@ export function FocusTimerCard({
                     className="rounded-full"
                     onClick={() => {
                       onCycleChange(
-                        Math.max(1, focusCyclesBeforeLongBreak - 1)
+                        Math.max(MIN_CYCLES, focusCyclesBeforeLongBreak - 1)
                       );
                     }}
                     size="icon-sm"
@@ -175,7 +178,7 @@ export function FocusTimerCard({
                     className="rounded-full"
                     onClick={() => {
                       onCycleChange(
-                        Math.min(12, focusCyclesBeforeLongBreak + 1)
+                        Math.min(MAX_CYCLES, focusCyclesBeforeLongBreak + 1)
                       );
                     }}
                     size="icon-sm"
