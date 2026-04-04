@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-alpha.2 - 2026-04-04
+
+Changes since `v0.1.2-alpha.1`.
+
+### Fixes
+- Update release agent to handle false-positive workflow failures and update changelog formatting
+
+### Maintenance
+- Bump version to 0.1.2-alpha.1 and remove date-fns dependency
+
 ## 0.1.2-alpha.1 - 2026-04-04
 
 Changes since `v0.1.1-beta.17`.
@@ -261,3 +271,4 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
+
