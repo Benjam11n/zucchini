@@ -22,7 +22,6 @@ import {
   HabitsIpcError,
 } from "@/shared/contracts/habits-ipc";
 import type {
-  FocusTimerActionRequest,
   FocusTimerShortcutStatus,
   HabitsApi,
   HabitsIpcResponse,
@@ -63,6 +62,36 @@ async function invokeUpdater<T>(channel: string): Promise<T> {
   }
 
   throw new AppUpdaterIpcError(response.error);
+}
+
+function subscribeToChannel<T>(
+  channel: string,
+  listener: (payload: T) => void
+): () => void {
+  const handleChannelEvent = (_event: IpcRendererEvent, payload: T) => {
+    listener(payload);
+  };
+
+  ipcRenderer.on(channel, handleChannelEvent);
+
+  return () => {
+    ipcRenderer.removeListener(channel, handleChannelEvent);
+  };
+}
+
+function subscribeToChannelWithoutPayload(
+  channel: string,
+  listener: () => void
+): () => void {
+  const handleChannelEvent = () => {
+    listener();
+  };
+
+  ipcRenderer.on(channel, handleChannelEvent);
+
+  return () => {
+    ipcRenderer.removeListener(channel, handleChannelEvent);
+  };
 }
 
 // oxlint-disable-next-line eslint/sort-keys
@@ -124,103 +153,25 @@ const habitsApi: HabitsApi = {
   importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
   incrementHabitProgress: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.incrementHabitProgress, habitId),
-  onFocusSessionRecorded: (listener) => {
-    const handleFocusSessionRecorded = (
-      _event: IpcRendererEvent,
-      session: Awaited<ReturnType<HabitsApi["recordFocusSession"]>>
-    ) => {
-      listener(session);
-    };
-
-    ipcRenderer.on(
+  onFocusSessionRecorded: (listener) =>
+    subscribeToChannel<Awaited<ReturnType<HabitsApi["recordFocusSession"]>>>(
       HABITS_IPC_CHANNELS.focusSessionRecorded,
-      handleFocusSessionRecorded
-    );
-
-    return () => {
-      ipcRenderer.removeListener(
-        HABITS_IPC_CHANNELS.focusSessionRecorded,
-        handleFocusSessionRecorded
-      );
-    };
-  },
-  onFocusTimerActionRequested: (listener) => {
-    const handleFocusTimerActionRequested = (
-      _event: IpcRendererEvent,
-      request: FocusTimerActionRequest
-    ) => {
-      listener(request);
-    };
-
-    ipcRenderer.on(
-      HABITS_IPC_CHANNELS.focusTimerActionRequested,
-      handleFocusTimerActionRequested
-    );
-
-    return () => {
-      ipcRenderer.removeListener(
-        HABITS_IPC_CHANNELS.focusTimerActionRequested,
-        handleFocusTimerActionRequested
-      );
-    };
-  },
-  onFocusTimerShortcutStatusChanged: (listener) => {
-    const handleFocusTimerShortcutStatusChanged = (
-      _event: IpcRendererEvent,
-      status: FocusTimerShortcutStatus
-    ) => {
-      listener(status);
-    };
-
-    ipcRenderer.on(
+      listener
+    ),
+  onFocusTimerActionRequested: (listener) =>
+    subscribeToChannel(HABITS_IPC_CHANNELS.focusTimerActionRequested, listener),
+  onFocusTimerShortcutStatusChanged: (listener) =>
+    subscribeToChannel(
       HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
-      handleFocusTimerShortcutStatusChanged
-    );
-
-    return () => {
-      ipcRenderer.removeListener(
-        HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
-        handleFocusTimerShortcutStatusChanged
-      );
-    };
-  },
-  onFocusTimerStateChanged: (listener) => {
-    const handleFocusTimerStateChanged = (
-      _event: IpcRendererEvent,
-      state: PersistedFocusTimerState
-    ) => {
-      listener(state);
-    };
-
-    ipcRenderer.on(
-      HABITS_IPC_CHANNELS.focusTimerStateChanged,
-      handleFocusTimerStateChanged
-    );
-
-    return () => {
-      ipcRenderer.removeListener(
-        HABITS_IPC_CHANNELS.focusTimerStateChanged,
-        handleFocusTimerStateChanged
-      );
-    };
-  },
-  onWindDownNavigationRequested: (listener) => {
-    const handleWindDownNavigationRequested = () => {
-      listener();
-    };
-
-    ipcRenderer.on(
+      listener
+    ),
+  onFocusTimerStateChanged: (listener) =>
+    subscribeToChannel(HABITS_IPC_CHANNELS.focusTimerStateChanged, listener),
+  onWindDownNavigationRequested: (listener) =>
+    subscribeToChannelWithoutPayload(
       HABITS_IPC_CHANNELS.windDownNavigationRequested,
-      handleWindDownNavigationRequested
-    );
-
-    return () => {
-      ipcRenderer.removeListener(
-        HABITS_IPC_CHANNELS.windDownNavigationRequested,
-        handleWindDownNavigationRequested
-      );
-    };
-  },
+      listener
+    ),
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
@@ -296,23 +247,8 @@ const updaterApi: AppUpdaterApi = {
   downloadUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.downloadUpdate),
   getState: () => invokeUpdater<AppUpdateState>(APP_UPDATER_CHANNELS.getState),
   installUpdate: () => invokeUpdater(APP_UPDATER_CHANNELS.installUpdate),
-  onStateChange: (listener) => {
-    const handleStateChange = (
-      _event: IpcRendererEvent,
-      state: AppUpdateState
-    ) => {
-      listener(state);
-    };
-
-    ipcRenderer.on(APP_UPDATER_CHANNELS.stateChanged, handleStateChange);
-
-    return () => {
-      ipcRenderer.removeListener(
-        APP_UPDATER_CHANNELS.stateChanged,
-        handleStateChange
-      );
-    };
-  },
+  onStateChange: (listener) =>
+    subscribeToChannel(APP_UPDATER_CHANNELS.stateChanged, listener),
 };
 
 contextBridge.exposeInMainWorld("habits", habitsApi);

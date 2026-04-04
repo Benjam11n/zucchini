@@ -2,16 +2,11 @@
 
 import { Download, Rocket, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
-import {
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useReducer,
-  useState,
-} from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
+import { useAppUpdaterState } from "@/renderer/shared/hooks/use-app-updater-state";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 import {
@@ -99,63 +94,8 @@ function getButtonIcon({
   return <Rocket className="size-4" />;
 }
 
-interface UpdateButtonViewState {
-  actionError: string | null;
-  isPending: boolean;
-  state: AppUpdateState | null;
-}
-
-type UpdateButtonAction =
-  | { actionError: string; type: "actionFailed" }
-  | { state: AppUpdateState; type: "loadSucceeded" }
-  | { type: "startAction" };
-
-const INITIAL_UPDATE_BUTTON_STATE: UpdateButtonViewState = {
-  actionError: null,
-  isPending: true,
-  state: null,
-};
-
-// CHECK: this reducer/load/subscribe/action flow is very similar to
-// `UpdateSettingsCard`. Consider extracting a shared updater view-model hook so
-// the two surfaces do not drift.
-function updateButtonViewReducer(
-  state: UpdateButtonViewState,
-  action: UpdateButtonAction
-): UpdateButtonViewState {
-  switch (action.type) {
-    case "actionFailed": {
-      return {
-        ...state,
-        actionError: action.actionError,
-        isPending: false,
-      };
-    }
-    case "loadSucceeded": {
-      return {
-        actionError: null,
-        isPending: false,
-        state: action.state,
-      };
-    }
-    case "startAction": {
-      return {
-        ...state,
-        actionError: null,
-        isPending: true,
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-}
-
 export function UpdateButton() {
-  const [viewState, dispatch] = useReducer(
-    updateButtonViewReducer,
-    INITIAL_UPDATE_BUTTON_STATE
-  );
+  const { runPrimaryAction, viewState } = useAppUpdaterState();
   const [dismissedVersions, setDismissedVersions] = useState<Set<string>>(
     () => {
       const dismissedVersion = readDismissedUpdateVersion();
@@ -163,42 +103,6 @@ export function UpdateButton() {
       return dismissedVersion ? new Set([dismissedVersion]) : new Set();
     }
   );
-
-  useEffect(() => {
-    let isSubscribed = true;
-
-    const loadState = async (): Promise<void> => {
-      try {
-        const nextState = await window.updater.getState();
-        if (isSubscribed) {
-          dispatch({ state: nextState, type: "loadSucceeded" });
-        }
-      } catch (error) {
-        if (isSubscribed) {
-          dispatch({
-            actionError:
-              error instanceof Error
-                ? error.message
-                : "Zucchini could not load update status.",
-            type: "actionFailed",
-          });
-        }
-      }
-    };
-
-    loadState().catch(() => {
-      // `loadState` handles the user-visible failure state internally.
-    });
-
-    const unsubscribe = window.updater.onStateChange((nextState) => {
-      dispatch({ state: nextState, type: "loadSucceeded" });
-    });
-
-    return () => {
-      isSubscribed = false;
-      unsubscribe();
-    };
-  }, []);
 
   const handleDismiss = (dismissedVersion: string) => {
     writeDismissedUpdateVersion(dismissedVersion);
@@ -208,47 +112,12 @@ export function UpdateButton() {
     toast.dismiss(UPDATE_TOAST_ID);
   };
 
-  async function handleClick(): Promise<void> {
-    if (
-      viewState.state === null ||
-      viewState.state.status === "downloading" ||
-      viewState.state.status === "unavailable"
-    ) {
-      return;
-    }
-
-    dispatch({ type: "startAction" });
-
-    try {
-      if (viewState.state.status === "downloaded") {
-        await window.updater.installUpdate();
-        return;
-      }
-
-      if (
-        viewState.state.status === "available" ||
-        (viewState.state.status === "error" &&
-          viewState.state.availableVersion !== null)
-      ) {
-        await window.updater.downloadUpdate();
-      }
-    } catch (error) {
-      dispatch({
-        actionError:
-          error instanceof Error
-            ? error.message
-            : "Zucchini could not finish the update action.",
-        type: "actionFailed",
-      });
-    }
-  }
-
   const dismissToast = useEffectEvent((dismissalKey: string) => {
     handleDismiss(dismissalKey);
   });
 
   const runToastAction = useEffectEvent(async () => {
-    await handleClick();
+    await runPrimaryAction();
   });
 
   const visibleState = useMemo(() => {

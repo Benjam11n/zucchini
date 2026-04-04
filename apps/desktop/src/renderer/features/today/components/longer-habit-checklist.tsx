@@ -6,7 +6,7 @@ import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-categor
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
-import { parseDateKey } from "@/shared/utils/date";
+import { formatDateKey } from "@/shared/utils/date";
 
 import { LongerHabitSection } from "./longer-habit-section";
 
@@ -30,7 +30,7 @@ const PERIOD_SECTIONS: { title: string; value: HabitFrequency }[] = [
 ];
 
 function formatResetLabel(periodEnd: string): string {
-  return `Resets ${parseDateKey(periodEnd).toLocaleDateString(undefined, {
+  return `Resets ${formatDateKey(periodEnd, {
     day: "numeric",
     month: "short",
     weekday: "short",

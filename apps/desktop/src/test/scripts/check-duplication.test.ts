@@ -36,14 +36,14 @@ describe("check-duplication args", () => {
     expect(parseArgs([], "/repo")).toMatchObject({
       cwd: "/repo",
       failOn: "duplicate-percent",
-      fileSimilarityThreshold: 0.35,
+      fileSimilarityThreshold: 0.3,
       json: false,
       jsonOut: null,
-      maxFindings: 20,
+      maxFindings: 30,
       minLines: 8,
       minTokens: 40,
       root: "src",
-      threshold: 5,
+      threshold: 3,
     });
   });
 

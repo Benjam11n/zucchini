@@ -10,12 +10,10 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { formatIsoTime } from "@/shared/utils/date";
 
 function formatSessionTime(value: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatIsoTime(value);
 }
 
 function getTimelineSegmentClassName(

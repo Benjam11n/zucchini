@@ -96,10 +96,37 @@ export function getPreviousCompletedIsoWeek(todayKey: string): {
 /**
  * Formats a given date key using the Intl API options
  */
+export function formatDate(
+  date: Date,
+  options: Intl.DateTimeFormatOptions,
+  locale?: string
+): string {
+  return new Intl.DateTimeFormat(locale, options).format(date);
+}
+
 export function formatDateKey(
   dateKey: string,
   options: Intl.DateTimeFormatOptions,
   locale?: string
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(parseDateKey(dateKey));
+  return formatDate(parseDateKey(dateKey), options, locale);
+}
+
+export function formatIsoDateTime(
+  value: string,
+  options: Intl.DateTimeFormatOptions,
+  locale?: string
+): string {
+  return formatDate(new Date(value), options, locale);
+}
+
+export function formatIsoTime(value: string, locale?: string): string {
+  return formatIsoDateTime(
+    value,
+    {
+      hour: "numeric",
+      minute: "2-digit",
+    },
+    locale
+  );
 }

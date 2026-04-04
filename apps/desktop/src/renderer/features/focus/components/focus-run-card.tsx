@@ -9,6 +9,7 @@ import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focu
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { formatIsoDateTime, formatIsoTime } from "@/shared/utils/date";
 
 import { FocusRunEntryRow } from "./focus-run-entry-row";
 import { FocusRunTimeline } from "./focus-run-timeline";
@@ -17,19 +18,12 @@ function formatSessionRangeLabel(
   startedAt: string,
   completedAt: string
 ): string {
-  const startDate = new Date(startedAt);
-  const endDate = new Date(completedAt);
-
-  const dateLabel = new Intl.DateTimeFormat(undefined, {
+  const dateLabel = formatIsoDateTime(completedAt, {
     day: "numeric",
     month: "short",
-  }).format(endDate);
-  const timeFormatter = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
   });
 
-  return `${dateLabel}, ${timeFormatter.format(startDate)} - ${timeFormatter.format(endDate)}`;
+  return `${dateLabel}, ${formatIsoTime(startedAt)} - ${formatIsoTime(completedAt)}`;
 }
 
 function formatSessionWindow(sessionSpanMinutes: number): string {
@@ -37,12 +31,7 @@ function formatSessionWindow(sessionSpanMinutes: number): string {
 }
 
 function formatEntryRange(startedAt: string, completedAt: string): string {
-  const formatter = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  return `${formatter.format(new Date(startedAt))} - ${formatter.format(new Date(completedAt))}`;
+  return `${formatIsoTime(startedAt)} - ${formatIsoTime(completedAt)}`;
 }
 
 interface FocusRunCardProps {

@@ -1,5 +1,9 @@
 import {
   endOfIsoWeek,
+  formatDate,
+  formatDateKey,
+  formatIsoDateTime,
+  formatIsoTime,
   getPreviousCompletedIsoWeek,
   isMonday,
   startOfIsoWeek,
@@ -27,5 +31,27 @@ describe("iSO week helpers", () => {
       weekEnd: "2026-03-08",
       weekStart: "2026-03-02",
     });
+  });
+
+  it("formats date keys and ISO timestamps through shared helpers", () => {
+    expect(
+      formatDateKey("2026-03-13", {
+        day: "numeric",
+        month: "short",
+        weekday: "short",
+      })
+    ).toBe(
+      formatDate(new Date(2026, 2, 13), {
+        day: "numeric",
+        month: "short",
+        weekday: "short",
+      })
+    );
+    expect(
+      formatIsoDateTime("2026-03-13T09:30:00.000Z", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    ).toBe(formatIsoTime("2026-03-13T09:30:00.000Z"));
   });
 });

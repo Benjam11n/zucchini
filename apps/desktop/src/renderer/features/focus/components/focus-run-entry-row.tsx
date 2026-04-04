@@ -2,14 +2,10 @@ import { Clock3, PauseCircle } from "lucide-react";
 
 import { formatFocusMinutes } from "@/renderer/features/focus/lib/focus-session-format";
 import type { FocusSessionEntryKind } from "@/shared/domain/focus-session";
+import { formatIsoTime } from "@/shared/utils/date";
 
 function formatEntryRange(startedAt: string, completedAt: string): string {
-  const formatter = new Intl.DateTimeFormat(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  return `${formatter.format(new Date(startedAt))} - ${formatter.format(new Date(completedAt))}`;
+  return `${formatIsoTime(startedAt)} - ${formatIsoTime(completedAt)}`;
 }
 
 interface FocusRunEntryRowProps {

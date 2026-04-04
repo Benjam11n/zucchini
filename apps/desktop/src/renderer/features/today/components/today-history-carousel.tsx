@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useState } from "react";
 
 import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
@@ -14,7 +13,7 @@ import {
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
 import type { HistoryDay } from "@/shared/domain/history";
-import { parseDateKey } from "@/shared/utils/date";
+import { formatDateKey } from "@/shared/utils/date";
 
 interface TodayHistoryCarouselProps {
   history: HistoryDay[];
@@ -48,8 +47,7 @@ export function TodayHistoryCarousel({
         >
           <CarouselContent className="ml-0">
             {days.map((day) => {
-              const date = parseDateKey(day.date);
-              const dayOfWeek = format(date, "EEE");
+              const dayOfWeek = formatDateKey(day.date, { weekday: "short" });
 
               return (
                 <CarouselItem

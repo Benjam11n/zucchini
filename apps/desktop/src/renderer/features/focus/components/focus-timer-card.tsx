@@ -126,7 +126,6 @@ export function FocusTimerCard({
             <div className="grid grid-cols-[2.6ch_auto_2.6ch] items-center justify-center gap-1.5 sm:gap-2.5">
               <FocusDurationEditor
                 canEditDuration={canEditDuration}
-                durationDraft={durationDraft}
                 onDurationChange={onDurationChange}
                 onDurationDraftChange={setDurationDraft}
                 timerDisplayColorClass={timerDisplayColorClass}

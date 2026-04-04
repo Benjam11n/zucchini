@@ -12,12 +12,12 @@ const DEFAULT_EXCLUDE = [
   "dist-electron/**",
   "node_modules/**",
 ];
-const DEFAULT_THRESHOLD = 5;
+const DEFAULT_THRESHOLD = 3;
 const DEFAULT_MIN_LINES = 8;
 const DEFAULT_MIN_TOKENS = 40;
-const DEFAULT_MAX_FINDINGS = 20;
-const DEFAULT_FILE_SIMILARITY_THRESHOLD = 0.35;
-const DEFAULT_SHINGLE_SIZE = 5;
+const DEFAULT_MAX_FINDINGS = 30;
+const DEFAULT_FILE_SIMILARITY_THRESHOLD = 0.3;
+const DEFAULT_SHINGLE_SIZE = 3;
 const VALID_FAIL_ON = "duplicate-percent";
 
 const CANDIDATE_START_TOKENS = new Set([

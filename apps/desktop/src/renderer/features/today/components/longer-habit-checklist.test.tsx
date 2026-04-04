@@ -5,6 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import { formatDateKey } from "@/shared/utils/date";
 
 import { LongerHabitChecklist } from "./longer-habit-checklist";
 
@@ -14,7 +15,7 @@ function formatResetLabel(
 ): string {
   const { end } = getHabitPeriod(frequency, dateKey);
 
-  return `Resets ${new Date(`${end}T00:00:00`).toLocaleDateString(undefined, {
+  return `Resets ${formatDateKey(end, {
     day: "numeric",
     month: "short",
     weekday: "short",
