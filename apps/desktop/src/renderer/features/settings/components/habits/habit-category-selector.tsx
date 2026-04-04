@@ -71,15 +71,23 @@ export function HabitCategorySelector({
             whileHover={hoverLift}
             whileTap={tapPress}
           >
-            <CategoryIcon className="size-3 shrink-0 opacity-80" />
             <span
-              className="size-2 shrink-0 rounded-full"
+              className="flex size-4 shrink-0 items-center justify-center rounded-[0.45rem]"
               style={{
                 backgroundColor: isSelected
-                  ? `color-mix(in srgb, ${presentation.selectedTextColor} 55%, transparent)`
-                  : presentation.color,
+                  ? `color-mix(in srgb, ${presentation.selectedTextColor} 20%, transparent)`
+                  : `color-mix(in srgb, ${presentation.color} 18%, transparent)`,
               }}
-            />
+            >
+              <CategoryIcon
+                className="size-2.5 shrink-0"
+                style={{
+                  color: isSelected
+                    ? presentation.selectedTextColor
+                    : presentation.color,
+                }}
+              />
+            </span>
             {presentation.label}
           </m.button>
         );

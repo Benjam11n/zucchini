@@ -212,7 +212,7 @@ export function NewHabitForm({
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <div className="grid gap-2">
               <Label
-                className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                className="text-xs font-medium text-muted-foreground"
                 htmlFor="new-habit"
               >
                 Name
@@ -243,22 +243,42 @@ export function NewHabitForm({
             </Button>
           </div>
 
-          <div className="grid gap-2">
-            <Label className="text-xs font-medium text-muted-foreground">
-              Category
-            </Label>
-            <HabitCategorySelector
-              className="gap-1.5"
-              compact
-              name="new-habit-category"
-              onChange={(value) => {
-                dispatch({
-                  type: "setCategory",
-                  value,
-                });
-              }}
-              selectedCategory={state.category}
-            />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label className="text-xs font-medium text-muted-foreground">
+                Category
+              </Label>
+              <HabitCategorySelector
+                className="gap-1.5"
+                compact
+                name="new-habit-category"
+                onChange={(value) => {
+                  dispatch({
+                    type: "setCategory",
+                    value,
+                  });
+                }}
+                selectedCategory={state.category}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label className="text-xs font-medium text-muted-foreground">
+                Frequency
+              </Label>
+              <HabitFrequencySelector
+                className="gap-1.5"
+                compact
+                name="new-habit-frequency"
+                onChange={(value) => {
+                  dispatch({
+                    type: "setFrequency",
+                    value,
+                  });
+                }}
+                selectedFrequency={state.frequency}
+              />
+            </div>
           </div>
 
           {state.creationFeedback ? (
@@ -273,24 +293,6 @@ export function NewHabitForm({
 
           <CollapsibleContent className="grid gap-3 border-t border-border/60 pt-3">
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  Frequency
-                </Label>
-                <HabitFrequencySelector
-                  className="gap-1.5"
-                  compact
-                  name="new-habit-frequency"
-                  onChange={(value) => {
-                    dispatch({
-                      type: "setFrequency",
-                      value,
-                    });
-                  }}
-                  selectedFrequency={state.frequency}
-                />
-              </div>
-
               {state.frequency === "daily" ? (
                 <div className="grid gap-2">
                   <Label className="text-xs font-medium text-muted-foreground">

@@ -187,7 +187,7 @@ describe("habit row editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Nutrition" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekly" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
-    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    fireEvent.click(screen.getByRole("button", { name: "Archive Habit 2" }));
 
     expect(onUpdateHabitCategory).toHaveBeenCalledWith(2, "nutrition");
     expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly", 1);

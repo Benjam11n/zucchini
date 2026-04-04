@@ -176,7 +176,7 @@ export function HabitRowEditor({
           className="flex-col items-stretch gap-0 overflow-hidden rounded-xl border-border/70 bg-muted/20 p-0"
           variant="outline"
         >
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-2.5 sm:p-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-2.5 sm:px-3 sm:py-3">
             <CollapsibleTrigger asChild>
               <button
                 aria-label={
@@ -184,14 +184,14 @@ export function HabitRowEditor({
                     ? `Collapse habit details for ${habit.name}`
                     : `Expand habit details for ${habit.name}`
                 }
-                className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1 text-left outline-none transition-colors hover:bg-muted/25 focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-1.5 text-left outline-none transition-colors hover:bg-muted/25 focus-visible:ring-3 focus-visible:ring-ring/50"
                 type="button"
               >
-                <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
                   <p className="truncate text-sm font-medium text-foreground">
                     {habit.name}
                   </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
                     <span
                       className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
                       style={{
@@ -276,40 +276,65 @@ export function HabitRowEditor({
 
           <CollapsibleContent>
             <div className="grid gap-4 border-t border-border/60 px-3 py-3 sm:px-4">
-              <div className="grid gap-2">
-                <Label
-                  className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                  htmlFor={`habit-name-${habit.id}`}
-                >
-                  Habit name
-                </Label>
-                <Input
-                  className="h-9"
-                  id={`habit-name-${habit.id}`}
-                  onBlur={async (event) => {
-                    const nextName = event.target.value;
-                    setDraftName(nextName);
-                    await handleRenameCommit(nextName);
-                  }}
-                  onChange={(event) => setDraftName(event.target.value)}
-                  onKeyDown={async (event) => {
-                    if (event.key !== "Enter") {
-                      return;
-                    }
+              <div
+                className={cn(
+                  "grid gap-3",
+                  habit.frequency === "daily"
+                    ? "grid-cols-1"
+                    : "grid-cols-[minmax(0,1fr)_auto] items-end"
+                )}
+              >
+                <div className="grid gap-2">
+                  <Label
+                    className="text-xs font-medium text-muted-foreground"
+                    htmlFor={`habit-name-${habit.id}`}
+                  >
+                    Name
+                  </Label>
+                  <Input
+                    className="h-9"
+                    id={`habit-name-${habit.id}`}
+                    onBlur={async (event) => {
+                      const nextName = event.target.value;
+                      setDraftName(nextName);
+                      await handleRenameCommit(nextName);
+                    }}
+                    onChange={(event) => setDraftName(event.target.value)}
+                    onKeyDown={async (event) => {
+                      if (event.key !== "Enter") {
+                        return;
+                      }
 
-                    event.preventDefault();
-                    const nextName = event.currentTarget.value;
-                    setDraftName(nextName);
-                    await handleRenameCommit(nextName);
-                    event.currentTarget.blur();
-                  }}
-                  required
-                  type="text"
-                  value={draftName}
-                />
+                      event.preventDefault();
+                      const nextName = event.currentTarget.value;
+                      setDraftName(nextName);
+                      await handleRenameCommit(nextName);
+                      event.currentTarget.blur();
+                    }}
+                    required
+                    type="text"
+                    value={draftName}
+                  />
+                </div>
+
+                {habit.frequency === "daily" ? null : (
+                  <div className="grid gap-2 min-w-[8.5rem]">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Goal
+                    </Label>
+                    <HabitTargetCountStepper
+                      compact
+                      frequency={habit.frequency}
+                      onChange={async (targetCount) => {
+                        await onUpdateHabitTargetCount?.(habit.id, targetCount);
+                      }}
+                      value={habit.targetCount ?? 1}
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.95fr)]">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
                   <Label className="text-xs font-medium text-muted-foreground">
                     Category
@@ -357,39 +382,7 @@ export function HabitRowEditor({
                     selectedWeekdays={habit.selectedWeekdays ?? null}
                   />
                 </div>
-              ) : (
-                <div className="grid max-w-full gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Goal
-                  </Label>
-                  <HabitTargetCountStepper
-                    compact
-                    frequency={habit.frequency}
-                    onChange={async (targetCount) => {
-                      await onUpdateHabitTargetCount?.(habit.id, targetCount);
-                    }}
-                    value={habit.targetCount ?? 1}
-                  />
-                </div>
-              )}
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
-                <p className="text-xs text-muted-foreground">
-                  Drag with the grip or use the arrows, then archive once this
-                  habit is no longer active.
-                </p>
-                <Button
-                  className="h-8 px-3 text-xs"
-                  onClick={async () => {
-                    await onArchiveHabit(habit.id);
-                  }}
-                  type="button"
-                  variant="destructive"
-                >
-                  <Archive className="size-3.5" />
-                  Archive
-                </Button>
-              </div>
+              ) : null}
             </div>
           </CollapsibleContent>
         </Item>

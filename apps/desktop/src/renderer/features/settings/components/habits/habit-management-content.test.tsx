@@ -86,7 +86,7 @@ describe("habit management content", () => {
         name: "Expand habit details for Habit 1",
       })
     );
-    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    fireEvent.click(screen.getByRole("button", { name: "Archive Habit 1" }));
 
     await waitFor(() => {
       expect(onArchiveHabit).toHaveBeenCalledWith(1);

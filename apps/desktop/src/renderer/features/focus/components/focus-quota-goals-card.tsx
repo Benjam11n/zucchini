@@ -83,19 +83,9 @@ export function FocusQuotaGoalsCard({
                 await onSaveGoal(definition.value, Math.round(targetMinutes));
               }}
             >
-              <div className="flex items-center gap-3">
-                <Label
-                  className="min-w-0 text-sm font-medium"
-                  htmlFor={inputId}
-                >
-                  {definition.label}
-                </Label>
-                {goal ? (
-                  <p className="ml-auto truncate text-right text-xs text-muted-foreground">
-                    {`${goal.completedMinutes}/${goal.targetMinutes} min this ${definition.value === "weekly" ? "week" : "month"}`}
-                  </p>
-                ) : null}
-              </div>
+              <Label className="min-w-0 text-sm font-medium" htmlFor={inputId}>
+                {definition.label}
+              </Label>
 
               <div className="flex items-center gap-2">
                 <div className="flex-1">

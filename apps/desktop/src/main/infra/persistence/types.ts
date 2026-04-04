@@ -12,7 +12,6 @@ import type {
   habitPeriodStatus,
   streakState,
   windDownActions,
-  windDownActionStatus,
 } from "@/main/infra/db/schema";
 import type {
   HabitCategory,
@@ -26,7 +25,6 @@ export type DailySummaryRow = typeof dailySummary.$inferSelect;
 export type FocusSessionRow = typeof focusSessions.$inferSelect;
 export type StreakStateRow = typeof streakState.$inferSelect;
 export type WindDownActionRow = typeof windDownActions.$inferSelect;
-export type WindDownActionStatusRow = typeof windDownActionStatus.$inferSelect;
 
 export interface HabitPeriodStatusSnapshot {
   category: HabitCategory;
