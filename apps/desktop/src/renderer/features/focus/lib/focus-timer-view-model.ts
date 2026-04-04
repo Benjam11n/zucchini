@@ -2,14 +2,16 @@ import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.t
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 
+interface FocusTimerPhaseBadge {
+  label: string;
+  variant: "default" | "destructive" | "secondary";
+}
+
 export function getFocusTimerPhaseBadge(
   timerState: PersistedFocusTimerState,
   isBreak: boolean,
   isBreakFinalMinute: boolean
-): {
-  label: string;
-  variant: "default" | "destructive" | "secondary";
-} {
+): FocusTimerPhaseBadge {
   if (isBreakFinalMinute) {
     return {
       label: "1 min left",
