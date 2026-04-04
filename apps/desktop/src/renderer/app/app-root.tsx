@@ -156,7 +156,6 @@ function MainApp() {
   if (tab === "windDown") {
     renderedPage = (
       <WindDownPage
-        onBack={actions.handleCloseWindDown}
         onCreateAction={actions.handleCreateWindDownAction}
         onDeleteAction={actions.handleDeleteWindDownAction}
         onRenameAction={actions.handleRenameWindDownAction}

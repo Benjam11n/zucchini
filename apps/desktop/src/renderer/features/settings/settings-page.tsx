@@ -1,13 +1,12 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
+
 /**
  * Settings tab page.
  *
  * It groups app preferences, reminder controls, appearance options, and habit
  * management into one place while surfacing the current save state.
  */
-import { useEffect, useState } from "react";
-
 import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
 import { DataManagementSettingsCard } from "@/renderer/features/settings/components/general/data-management-settings-card";
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
@@ -59,20 +58,6 @@ function getSaveStatus(savePhase: SettingsPageProps["savePhase"]) {
 
 export function SettingsPage(props: SettingsPageProps) {
   const currentSaveStatus = getSaveStatus(props.savePhase);
-  const [activeStatus, setActiveStatus] = useState(currentSaveStatus);
-
-  useEffect(() => {
-    if (currentSaveStatus) {
-      setActiveStatus(currentSaveStatus);
-    } else {
-      // Buffer the clearance by a few milliseconds so we don't unmount the toast
-      // in the middle of a rapid state transition (e.g. pending -> idle -> saving)
-      const timer = setTimeout(() => {
-        setActiveStatus(null);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [currentSaveStatus]);
 
   return (
     <LazyMotion features={domAnimation}>
@@ -83,18 +68,19 @@ export function SettingsPage(props: SettingsPageProps) {
         variants={staggerContainerVariants}
       >
         <AnimatePresence>
-          {activeStatus && (
+          {currentSaveStatus && (
             <m.div
               animate={{ opacity: 1, scale: 1, y: 0 }}
               className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-border/60 bg-background/80 p-1 shadow-lg backdrop-blur-md"
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               layout
+              key={currentSaveStatus.text}
               transition={{ duration: 0.2 }}
             >
               <m.div layout>
-                <Badge variant={activeStatus.variant}>
-                  {activeStatus.text}
+                <Badge variant={currentSaveStatus.variant}>
+                  {currentSaveStatus.text}
                 </Badge>
               </m.div>
               {props.savePhase === "error" ? (

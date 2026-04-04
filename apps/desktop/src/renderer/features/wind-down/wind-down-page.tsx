@@ -1,6 +1,6 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { MoonStar, Pencil, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -43,6 +43,16 @@ export function WindDownPage({
   const [newActionName, setNewActionName] = useState("");
   const [editingActionId, setEditingActionId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState("");
+  const activeEditingInput = useRef<HTMLInputElement | null>(null);
+  const handleEditingInputRef = useCallback((node: HTMLInputElement | null) => {
+    if (!node || node === activeEditingInput.current) {
+      return;
+    }
+
+    activeEditingInput.current = node;
+    node.focus();
+    node.select();
+  }, []);
   const windDownChecklistHabits = useMemo(
     () =>
       windDown.actions.map(
@@ -123,7 +133,6 @@ export function WindDownPage({
                     return isEditing ? (
                       <div key={action.id} className="rounded-lg px-3 py-2.5">
                         <Input
-                          autoFocus
                           onBlur={async () => {
                             const trimmedName = editingName.trim();
                             if (trimmedName) {
@@ -148,6 +157,7 @@ export function WindDownPage({
                               setEditingActionId(null);
                             }
                           }}
+                          ref={handleEditingInputRef}
                           value={editingName}
                         />
                       </div>
