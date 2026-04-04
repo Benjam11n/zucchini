@@ -84,7 +84,3 @@ export function getFocusTimerDisplay(timerState: PersistedFocusTimerState) {
     timerDisplayColorClass: isLastMinute ? "text-amber-300" : "text-foreground",
   };
 }
-
-export function sanitizeTimerPart(value: string): string {
-  return value.replaceAll(/\D/g, "").slice(0, 2);
-}
