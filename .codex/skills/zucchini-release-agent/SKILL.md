@@ -40,6 +40,7 @@ The automation script should handle the full release flow:
 - compute or validate the target version
 - update `apps/desktop/package.json`
 - regenerate `CHANGELOG.md` with `apps/desktop/scripts/generate-changelog.mjs`
+- run `bun run format` after changelog generation
 - create `chore: release <version>`
 - create tag `v<version>`
 - push the release commit and tag to `origin`

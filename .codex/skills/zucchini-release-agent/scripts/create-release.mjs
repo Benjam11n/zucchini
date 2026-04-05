@@ -46,6 +46,7 @@ try {
 
   writeDesktopVersion(nextVersion);
   runChangelogScript(nextVersion, tag);
+  runFormatScript();
 
   runGit(["add", "apps/desktop/package.json", "CHANGELOG.md"]);
   runGit(["commit", "-m", `chore: release ${nextVersion}`]);
@@ -268,6 +269,13 @@ function runChangelogScript(version, tag, outputPath = null) {
   }
 
   execFileSync("bun", commandArgs, {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
+}
+
+function runFormatScript() {
+  execFileSync("bun", ["run", "format"], {
     cwd: repoRoot,
     stdio: "inherit",
   });
