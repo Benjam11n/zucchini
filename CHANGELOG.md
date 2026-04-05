@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-alpha.3 - 2026-04-05
+
+Changes since `v0.1.2-alpha.2`.
+
+### Features
+- Improve responsive layout for habit rows and app shell using flex-wrap and basis utilities
+- Conditionally disable app relaunch after database import
+- Add preset-based habit name generation with stress test support to test fixtures
+- Improve UI spacing and formatting
+
+### Refactors
+- Update habit and focus quota UI with progress bars and refined styling
+- Update main window dimensions and add icons to app shell tabs with constrained content width
+- Extract FocusTimerPhaseBadge interface for improved type readability
+- Remove unused sanitizeTimerPart utility function from focus-timer-view-model
+
+### Documentation
+- Update changelog with recent fixes and maintenance tasks
+- Remove workspace commands section from README
+
+### Maintenance
+- Add 7-day cooldown to dependabot configuration
+
+### Other
+- Update desktop test data fixtures
+
 ## 0.1.2-alpha.2 - 2026-04-04
 
 Changes since `v0.1.2-alpha.1`.
@@ -273,3 +299,4 @@ Changes since `v0.1.1-beta.8`.
 - Migrate type checking to tsgo, update build scripts, and clean up documentation and gitignore entries.
 - Add VS Code settings for format on save and Oxc formatter for JS/TS/JSON files.
 - Update dev dependencies and remove unused Babel plugins
+
