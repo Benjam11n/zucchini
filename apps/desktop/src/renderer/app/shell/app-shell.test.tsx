@@ -57,6 +57,7 @@ describe("app shell", () => {
       throw new Error("Expected a tabpanel element.");
     }
 
+    expect(container.querySelector("section > div")).toHaveClass("max-w-5xl");
     expect(tabpanel).toHaveClass("min-w-0");
   });
 

@@ -11,6 +11,11 @@ import { BrowserWindow } from "electron";
 
 import { configureWindowSecurity } from "./window-security";
 
+const MAIN_WINDOW_DEFAULT_WIDTH = 920;
+const MAIN_WINDOW_MIN_WIDTH = 780;
+const MAIN_WINDOW_DEFAULT_HEIGHT = 760;
+const MAIN_WINDOW_MIN_HEIGHT = 640;
+
 interface CreateMainWindowOptions {
   backgroundColor: string;
   iconPath?: string;
@@ -47,9 +52,9 @@ export function createMainWindow({
     process.platform === "darwin";
   const windowOptions = {
     backgroundColor,
-    height: 760,
-    minHeight: 640,
-    minWidth: 900,
+    height: MAIN_WINDOW_DEFAULT_HEIGHT,
+    minHeight: MAIN_WINDOW_MIN_HEIGHT,
+    minWidth: MAIN_WINDOW_MIN_WIDTH,
     show: !shouldShowInactive,
     title: "Zucchini",
     webPreferences: {
@@ -60,7 +65,7 @@ export function createMainWindow({
       sandbox: true,
       webSecurity: true,
     },
-    width: 1100,
+    width: MAIN_WINDOW_DEFAULT_WIDTH,
     ...(process.platform !== "darwin" && iconPath ? { icon: iconPath } : {}),
   } satisfies Electron.BrowserWindowConstructorOptions;
   const window = new BrowserWindow(windowOptions);

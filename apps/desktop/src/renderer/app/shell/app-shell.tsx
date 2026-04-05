@@ -36,6 +36,8 @@ import {
 } from "@/renderer/shared/components/ui/tabs";
 import { pageVariants } from "@/renderer/shared/lib/motion";
 
+const APP_SHELL_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
+
 interface AppShellProps {
   children: ReactNode;
   tab: AppTab;
@@ -112,18 +114,23 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                 <div className="flex flex-1 items-center gap-3 lg:hidden">
                   <TabsList className="grid flex-1 grid-cols-5 bg-muted/80 p-1">
                     <TabsTrigger className="px-4" value="today">
+                      <CalendarDays className="size-4" />
                       Today
                     </TabsTrigger>
                     <TabsTrigger className="px-4" value="focus">
+                      <Timer className="size-4" />
                       Focus
                     </TabsTrigger>
                     <TabsTrigger className="px-4" value="windDown">
+                      <MoonStar className="size-4" />
                       Wind Down
                     </TabsTrigger>
                     <TabsTrigger className="px-4" value="history">
+                      <BarChart3 className="size-4" />
                       History
                     </TabsTrigger>
                     <TabsTrigger className="px-4" value="settings">
+                      <Settings2 className="size-4" />
                       Settings
                     </TabsTrigger>
                   </TabsList>
@@ -140,7 +147,9 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
             </aside>
 
             <section className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-              <div className="mx-auto min-w-0 w-full max-w-6xl">
+              <div
+                className={`mx-auto min-w-0 w-full ${APP_SHELL_CONTENT_MAX_WIDTH_CLASS}`}
+              >
                 <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
                   <AnimatePresence initial={false} mode="wait">
                     <m.div
