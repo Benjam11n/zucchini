@@ -86,6 +86,34 @@ describe("createDataManagementActions()", () => {
     expect(appLike.quit).toHaveBeenCalledOnce();
   });
 
+  it("quits without relaunching when import restart is delegated to the dev launcher", async () => {
+    const {
+      appLike,
+      dialogLike,
+      onBeforeQuit,
+      repository,
+      service,
+      shellLike,
+    } = createMocks();
+    const actions = createDataManagementActions({
+      appLike: appLike as never,
+      clock: { todayKey: () => "2026-03-30" },
+      dialogLike: dialogLike as never,
+      repository: repository as never,
+      service,
+      shellLike,
+      shouldRelaunchAfterImport: false,
+    });
+
+    await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
+
+    expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+    expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+    expect(appLike.relaunch).not.toHaveBeenCalled();
+    expect(onBeforeQuit).toHaveBeenCalledOnce();
+    expect(appLike.quit).toHaveBeenCalledOnce();
+  });
+
   it("does not relaunch or replace the database when validation fails", async () => {
     const mocks = createMocks();
     mocks.repository.validateDatabase.mockImplementation(() => {

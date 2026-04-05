@@ -22,6 +22,7 @@ interface CreateDataManagementActionsOptions {
     SqliteAppRepository,
     "exportBackup" | "getDatabasePath" | "replaceDatabase" | "validateDatabase"
   >;
+  shouldRelaunchAfterImport?: boolean;
   service: Pick<HabitsApplicationService, "initialize">;
   shellLike: Pick<Shell, "openPath">;
 }
@@ -31,6 +32,7 @@ export function createDataManagementActions({
   clock,
   dialogLike,
   repository,
+  shouldRelaunchAfterImport = !process.env["VITE_DEV_SERVER_URL"],
   service,
   shellLike,
 }: CreateDataManagementActionsOptions) {
@@ -94,7 +96,11 @@ export function createDataManagementActions({
     // or require an explicit confirmation step before this becomes user-facing?
     repository.validateDatabase(selectedBackupPath);
     repository.replaceDatabase(selectedBackupPath);
-    appLike.relaunch();
+
+    if (shouldRelaunchAfterImport) {
+      appLike.relaunch();
+    }
+
     onBeforeQuit();
     appLike.quit();
     return true;
