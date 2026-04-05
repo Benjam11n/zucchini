@@ -263,7 +263,8 @@ function buildReminderRuntimeState(endDate: string): ReminderRuntimeState {
 function createHabitName(
   category: HabitCategory,
   frequency: HabitFrequency,
-  index: number
+  index: number,
+  preset: TestDataPreset
 ): string {
   const parts = CATEGORY_NAME_PARTS[category];
   const part = parts[index % parts.length];
@@ -275,7 +276,27 @@ function createHabitName(
     suffix = "Monthly";
   }
 
-  return `${part} ${suffix} ${Math.floor(index / parts.length) + 1}`;
+  const baseName = `${part} ${suffix} ${Math.floor(index / parts.length) + 1}`;
+
+  if (preset === "stress") {
+    const longDescriptors = [
+      "before checking messages or opening any communication apps",
+      "with full notes, cleanup, and next-step planning afterwards",
+      "even on busy travel days and low-energy afternoons",
+      "with deliberate pacing and zero multitasking during the session",
+      "while keeping the setup area clean and ready for tomorrow",
+      "including prep, execution, reflection, and quick reset steps",
+    ] as const;
+    const descriptor = longDescriptors[index % longDescriptors.length];
+
+    return `${baseName} ${descriptor}`;
+  }
+
+  if (index % 9 === 0) {
+    return `${baseName} with a quick end-of-day reset`;
+  }
+
+  return baseName;
 }
 
 function createTargetCount(
@@ -375,7 +396,7 @@ function createHabits(
       frequency,
       id: index + 1,
       isArchived,
-      name: createHabitName(category, frequency, index),
+      name: createHabitName(category, frequency, index, preset),
       selectedWeekdays,
       sortOrder: index,
       targetCount,
