@@ -36,7 +36,7 @@ export function TodayHistoryCarousel({
 
   return (
     <>
-      <div className="min-w-0 max-w-full overflow-hidden rounded-md border border-card bg-card/70 px-1 sm:px-2">
+      <div className="relative min-w-0 max-w-full overflow-hidden rounded-md border border-card bg-card/70 px-1 sm:px-2">
         <Carousel
           opts={{
             align: "start",
@@ -72,6 +72,14 @@ export function TodayHistoryCarousel({
             })}
           </CarouselContent>
         </Carousel>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card/95 via-card/55 to-transparent sm:w-10"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card/95 via-card/55 to-transparent sm:w-10"
+        />
       </div>
 
       <Dialog
