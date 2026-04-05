@@ -51,7 +51,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
         <main className="min-h-screen bg-background text-foreground">
           <UpdateButton />
           <Tabs
-            className="grid min-h-screen lg:grid-cols-[96px_minmax(0,1fr)]"
+            className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-[96px_minmax(0,1fr)] lg:grid-rows-1"
             onValueChange={(value) => onTabChange(value as AppTab)}
             value={tab}
           >

@@ -183,4 +183,26 @@ describe("longer habit checklist", () => {
     expect(onIncrementHabitProgress).toHaveBeenCalledWith(1);
     expect(onDecrementHabitProgress).toHaveBeenCalledWith(2);
   });
+
+  it("uses wrapping row layouts so longer-goal content can shrink with the window", () => {
+    const { container } = render(
+      <LongerHabitChecklist
+        dateKey="2026-03-13"
+        focusQuotaGoals={[createFocusQuotaGoal(1)]}
+        habits={[
+          createHabit(1, {
+            completedCount: 1,
+            name: "Very long weekly habit name for responsive layout",
+            targetCount: 3,
+          }),
+        ]}
+        onDecrementHabitProgress={vi.fn()}
+        onIncrementHabitProgress={vi.fn()}
+      />
+    );
+
+    expect(container.querySelectorAll(".flex-wrap").length).toBeGreaterThan(0);
+    expect(container.textContent).toContain("Focus quota");
+    expect(container.querySelector(".basis-56")).not.toBeNull();
+  });
 });
