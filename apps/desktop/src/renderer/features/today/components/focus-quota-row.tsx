@@ -1,40 +1,51 @@
 import { Timer } from "lucide-react";
-import type { ReactNode } from "react";
 
+import { cn } from "@/renderer/shared/lib/class-names";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 
-function formatQuotaLabel(
-  completed: number,
-  target: number,
-  suffix: ReactNode
-): ReactNode {
-  return (
-    <>
-      <span className="font-medium text-foreground">{completed}</span>
-      <span>/</span>
-      <span>{target}</span>
-      <span>{suffix}</span>
-    </>
-  );
-}
-
 export function FocusQuotaRow({ goal }: { goal: FocusQuotaGoalWithStatus }) {
+  const percentage = Math.min(
+    Math.round((goal.completedMinutes / goal.targetMinutes) * 100),
+    100
+  );
+
   return (
-    <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
-      <div className="min-w-0 flex flex-1 items-center gap-2">
-        <Timer className="size-3.5 shrink-0 text-primary/80" />
-        <div className="truncate">Focus quota</div>
-        {goal.completed ? (
-          <span className="shrink-0 text-xs text-primary">Complete</span>
-        ) : (
-          <span className="shrink-0 text-xs text-muted-foreground">
-            In progress
-          </span>
-        )}
+    <div className="group flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-muted/15">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <Timer
+          className={cn(
+            "size-3.5 shrink-0 transition-colors",
+            goal.completed ? "text-primary" : "text-muted-foreground/60"
+          )}
+        />
+        <div
+          className={cn(
+            "truncate font-medium transition-all",
+            goal.completed ? "text-muted-foreground/65" : "text-primary"
+          )}
+        >
+          Focus quota
+        </div>
       </div>
-      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
-        {formatQuotaLabel(goal.completedMinutes, goal.targetMinutes, " min")}
-      </span>
+
+      <div className="flex items-center gap-2 tabular-nums">
+        <div className="relative h-1 w-12 overflow-hidden rounded-full bg-muted/40 group-hover:bg-muted/60 transition-colors hidden sm:block">
+          <div
+            className="absolute inset-y-0 left-0 bg-primary transition-all duration-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-medium transition-colors",
+            goal.completed
+              ? "bg-primary/10 text-primary"
+              : "bg-muted text-muted-foreground"
+          )}
+        >
+          {goal.completedMinutes} / {goal.targetMinutes} m
+        </span>
+      </div>
     </div>
   );
 }

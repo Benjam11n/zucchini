@@ -19,18 +19,13 @@ interface LongerHabitListItemProps {
   presentation: ReturnType<typeof getHabitCategoryPresentation>;
 }
 
-function formatQuotaLabel(
-  completed: number,
-  target: number,
-  suffix: React.ReactNode
-): React.ReactNode {
+function formatQuotaLabel(completed: number, target: number): React.ReactNode {
   return (
-    <>
-      <span className="font-medium text-foreground">{completed}</span>
-      <span>/</span>
-      <span>{target}</span>
-      <span>{suffix}</span>
-    </>
+    <span className="flex items-center gap-1 font-medium transition-colors">
+      <span>{completed}</span>
+      <span className="opacity-40">/</span>
+      <span className="opacity-70">{target}</span>
+    </span>
   );
 }
 
@@ -58,7 +53,7 @@ export function LongerHabitListItem({
       whileTap={tapPress}
       {...(habit.completed ? {} : { whileHover: hoverLift })}
     >
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
         <Button
           aria-label={`Increase progress for ${habit.name}`}
           disabled={completedCount >= targetCount}
@@ -84,6 +79,10 @@ export function LongerHabitListItem({
         </Button>
         <Button
           aria-label={`Decrease progress for ${habit.name}`}
+          className={cn(
+            "opacity-0 transition-all duration-200 group-hover:opacity-60 hover:opacity-100!",
+            completedCount > 0 && "opacity-20"
+          )}
           disabled={completedCount === 0}
           onClick={() => onDecrement(habit.id)}
           size="icon-xs"
@@ -94,33 +93,54 @@ export function LongerHabitListItem({
         </Button>
       </div>
 
-      <div className="min-w-0 flex flex-1 items-center gap-2 overflow-hidden">
-        <div className="min-w-0 flex flex-1 items-center gap-2 overflow-hidden">
+      <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
+          <presentation.icon 
+             className="size-3.5 shrink-0 opacity-70 transition-all group-hover:opacity-100"
+             style={{ color: presentation.color }}
+          />
           <span
             className={cn(
-              "truncate text-sm transition-all duration-150",
-              habit.completed && "line-through decoration-muted-foreground/30"
+              "truncate text-sm font-medium transition-all duration-150",
+              habit.completed
+                ? "text-muted-foreground/60 line-through decoration-muted-foreground/30"
+                : "text-foreground/90 group-hover:text-foreground"
             )}
+            style={habit.completed ? undefined : { color: presentation.color }}
           >
             {habit.name}
           </span>
+        </div>
+
+        <div className="flex items-center gap-2.5 tabular-nums">
+          <div className="relative hidden h-1 w-12 overflow-hidden rounded-full bg-muted/40 transition-colors group-hover:bg-muted/60 sm:block">
+            <div
+              className="absolute inset-y-0 left-0 transition-all duration-500"
+              style={{
+                backgroundColor: presentation.color,
+                width: `${Math.min((completedCount / targetCount) * 100, 100)}%`,
+              }}
+            />
+          </div>
           <span
-            className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
-            style={{ color: presentation.color }}
+            className={cn(
+              "shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-medium transition-all duration-200",
+              habit.completed
+                ? "bg-primary/10 text-primary"
+                : "bg-muted text-muted-foreground"
+            )}
+            style={
+              !habit.completed && completedCount > 0
+                ? {
+                    backgroundColor: `${presentation.color}15`,
+                    color: presentation.color,
+                  }
+                : undefined
+            }
           >
-            {presentation.label}
+            {formatQuotaLabel(completedCount, targetCount)}
           </span>
         </div>
-        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-          {habit.completed ? (
-            <span style={{ color: presentation.color }}>Complete</span>
-          ) : (
-            <span>{targetCount - completedCount} left</span>
-          )}
-        </span>
-        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
-          {formatQuotaLabel(completedCount, targetCount, " done")}
-        </span>
       </div>
     </m.div>
   );
