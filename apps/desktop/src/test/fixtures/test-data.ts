@@ -5,11 +5,17 @@ import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-sta
 import { runMigrations } from "@/main/infra/db/migrations";
 import { schema } from "@/main/infra/db/schema";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { GoalFrequency, FocusQuotaGoal } from "@/shared/domain/goal";
+import {
+  normalizeFocusQuotaTargetMinutes,
+  normalizeGoalFrequency,
+} from "@/shared/domain/goal";
 import type {
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
+import { normalizeHabitTargetCount } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -36,6 +42,7 @@ export interface GenerateTestDataOptions {
 export interface GeneratedDatasetStats {
   databasePath: string;
   dailySummaryCount: number;
+  focusQuotaGoalCount: number;
   focusSessionCount: number;
   habitCount: number;
   habitPeriodStatusCount: number;
@@ -43,13 +50,17 @@ export interface GeneratedDatasetStats {
   seed: number;
   timezone: string;
   trackedDayCount: number;
+  windDownActionCount: number;
+  windDownActionStatusCount: number;
 }
 
 interface PresetConfig {
   archivedHabitCount: number;
   focusSessionCount: number;
+  goalRevisionCount: number;
   habitCount: number;
   trackedDayCount: number;
+  windDownActionCount: number;
 }
 
 interface GeneratedHabit {
@@ -64,10 +75,12 @@ interface GeneratedHabit {
   name: string;
   selectedWeekdays: HabitWeekday[] | null;
   sortOrder: number;
+  targetCount: number;
 }
 
 interface StatusRow {
   completed: boolean;
+  completedCount: number;
   frequency: HabitFrequency;
   habitCategory: HabitCategory;
   habitCreatedAt: string;
@@ -75,8 +88,16 @@ interface StatusRow {
   habitName: string;
   habitSelectedWeekdays: string | null;
   habitSortOrder: number;
+  habitTargetCount: number;
   periodEnd: string;
   periodStart: string;
+}
+
+interface GeneratedWindDownAction {
+  createdAt: string;
+  id: number;
+  name: string;
+  sortOrder: number;
 }
 
 const DEFAULT_SEED = 1337;
@@ -95,14 +116,18 @@ const PRESET_CONFIGS: Record<TestDataPreset, PresetConfig> = {
   medium: {
     archivedHabitCount: 4,
     focusSessionCount: 4000,
+    goalRevisionCount: 2,
     habitCount: 36,
     trackedDayCount: 730,
+    windDownActionCount: 4,
   },
   stress: {
     archivedHabitCount: 12,
     focusSessionCount: 20_000,
+    goalRevisionCount: 4,
     habitCount: 120,
     trackedDayCount: 1825,
+    windDownActionCount: 8,
   },
 };
 const CATEGORY_NAME_PARTS: Record<HabitCategory, readonly string[]> = {
@@ -137,6 +162,16 @@ const CATEGORY_NAME_PARTS: Record<HabitCategory, readonly string[]> = {
     "Shipping",
   ],
 };
+const WIND_DOWN_ACTION_NAMES = [
+  "Clear desk",
+  "Prep tomorrow",
+  "Charge devices",
+  "Stretch",
+  "Brush teeth",
+  "Set water",
+  "Read fiction",
+  "Lights dimmed",
+] as const;
 const WEEKDAY_PATTERNS: readonly HabitWeekday[][] = [
   [1, 2, 3, 4, 5],
   [1, 3, 5],
@@ -243,10 +278,35 @@ function createHabitName(
   return `${part} ${suffix} ${Math.floor(index / parts.length) + 1}`;
 }
 
+function createTargetCount(
+  frequency: HabitFrequency,
+  preset: TestDataPreset,
+  rng: () => number
+): number {
+  if (frequency === "daily") {
+    return 1;
+  }
+
+  if (frequency === "weekly") {
+    const upperBound = preset === "stress" ? 6 : 4;
+    return normalizeHabitTargetCount(
+      frequency,
+      randomInt(rng, 1, upperBound) + (rng() < 0.3 ? 1 : 0)
+    );
+  }
+
+  const upperBound = preset === "stress" ? 18 : 10;
+  return normalizeHabitTargetCount(
+    frequency,
+    randomInt(rng, 1, upperBound) + (rng() < 0.35 ? 2 : 0)
+  );
+}
+
 function createHabits(
   config: PresetConfig,
   startDate: string,
   endDate: string,
+  preset: TestDataPreset,
   rng: () => number
 ): GeneratedHabit[] {
   const weeklyCount = Math.max(6, Math.round(config.habitCount * 0.22));
@@ -288,6 +348,7 @@ function createHabits(
         ? [...(WEEKDAY_PATTERNS[index % WEEKDAY_PATTERNS.length] ?? [])]
         : null;
     const createdAt = toIsoAt(createdDate, 7 + (index % 4), 5);
+    const targetCount = createTargetCount(frequency, preset, rng);
     let resolvedEndDate = habitEndDate;
 
     if (createdDate > habitEndDate) {
@@ -298,9 +359,15 @@ function createHabits(
       resolvedEndDate = startOfMonth(habitEndDate);
     }
 
+    let baseCompletionRate = 0.42 + rng() * 0.28;
+    if (frequency === "daily") {
+      baseCompletionRate = 0.72 + rng() * 0.22;
+    } else if (frequency === "weekly") {
+      baseCompletionRate = 0.48 + rng() * 0.3;
+    }
+
     habits.push({
-      baseCompletionRate:
-        frequency === "daily" ? 0.72 + rng() * 0.22 : 0.55 + rng() * 0.35,
+      baseCompletionRate,
       category,
       createdAt,
       createdDate,
@@ -311,10 +378,35 @@ function createHabits(
       name: createHabitName(category, frequency, index),
       selectedWeekdays,
       sortOrder: index,
+      targetCount,
     });
   }
 
   return habits;
+}
+
+function createPeriodicCompletedCount(
+  habit: GeneratedHabit,
+  rng: () => number
+): number {
+  const target = habit.targetCount;
+  const strongPeriod = rng() < habit.baseCompletionRate;
+
+  if (strongPeriod) {
+    const minCompleted = Math.max(1, target - randomInt(rng, 0, 1));
+    return Math.min(target, minCompleted);
+  }
+
+  const softUpperBound = Math.max(0, target - 1);
+  if (softUpperBound === 0) {
+    return 0;
+  }
+
+  const taper = rng() < 0.5 ? 0.4 : 0.75;
+  return Math.min(
+    softUpperBound,
+    Math.floor(target * taper * rng()) + (rng() < 0.25 ? 1 : 0)
+  );
 }
 
 function createStatusRows(
@@ -373,8 +465,11 @@ function createStatusRows(
     dailyStatusesByDate.set(date, statusMap);
 
     for (const habit of eligibleDailyHabits) {
+      const completed = statusMap.get(habit.id) ?? false;
+
       statusRows.push({
-        completed: statusMap.get(habit.id) ?? false,
+        completed,
+        completedCount: completed ? 1 : 0,
         frequency: habit.frequency,
         habitCategory: habit.category,
         habitCreatedAt: habit.createdAt,
@@ -384,6 +479,7 @@ function createStatusRows(
           ? JSON.stringify(habit.selectedWeekdays)
           : null,
         habitSortOrder: habit.sortOrder,
+        habitTargetCount: habit.targetCount,
         periodEnd: date,
         periodStart: date,
       });
@@ -402,8 +498,11 @@ function createStatusRows(
         cursor = addDays(cursor, 7)
       ) {
         const period = getHabitPeriod("weekly", cursor);
+        const completedCount = createPeriodicCompletedCount(habit, rng);
+
         statusRows.push({
-          completed: rng() < habit.baseCompletionRate,
+          completed: completedCount >= habit.targetCount,
+          completedCount,
           frequency: habit.frequency,
           habitCategory: habit.category,
           habitCreatedAt: habit.createdAt,
@@ -411,6 +510,7 @@ function createStatusRows(
           habitName: habit.name,
           habitSelectedWeekdays: null,
           habitSortOrder: habit.sortOrder,
+          habitTargetCount: habit.targetCount,
           periodEnd: period.end,
           periodStart: period.start,
         });
@@ -424,8 +524,11 @@ function createStatusRows(
       cursor = addMonths(cursor, 1)
     ) {
       const period = getHabitPeriod("monthly", cursor);
+      const completedCount = createPeriodicCompletedCount(habit, rng);
+
       statusRows.push({
-        completed: rng() < habit.baseCompletionRate - 0.05,
+        completed: completedCount >= habit.targetCount,
+        completedCount,
         frequency: habit.frequency,
         habitCategory: habit.category,
         habitCreatedAt: habit.createdAt,
@@ -433,6 +536,7 @@ function createStatusRows(
         habitName: habit.name,
         habitSelectedWeekdays: null,
         habitSortOrder: habit.sortOrder,
+        habitTargetCount: habit.targetCount,
         periodEnd: period.end,
         periodStart: period.start,
       });
@@ -503,7 +607,7 @@ function createFocusSessions(
     const hour = randomInt(rng, 6, 21);
     const minute = randomInt(rng, 0, 3) * 15;
     const durationMinutes =
-      [15, 20, 25, 30, 45, 60][randomInt(rng, 0, 5)] ?? 25;
+      [15, 20, 25, 30, 45, 60, 75][randomInt(rng, 0, 6)] ?? 25;
     const startedAt = toIsoAt(date, hour, minute);
     const completedAt = new Date(
       new Date(startedAt).getTime() + durationMinutes * 60 * 1000
@@ -520,6 +624,111 @@ function createFocusSessions(
   }).toSorted((left, right) =>
     right.completedAt.localeCompare(left.completedAt)
   );
+}
+
+function createFocusQuotaGoals(
+  trackedDates: readonly string[],
+  preset: TestDataPreset,
+  rng: () => number
+): FocusQuotaGoal[] {
+  const revisionCount = PRESET_CONFIGS[preset].goalRevisionCount;
+  const revisionFractions =
+    preset === "stress" ? [0.08, 0.34, 0.62, 0.84] : [0.18, 0.72];
+  const revisionOffsets = revisionFractions
+    .slice(0, revisionCount)
+    .map((fraction, index) =>
+      Math.min(
+        trackedDates.length - 1,
+        Math.max(index, Math.floor((trackedDates.length - 1) * fraction))
+      )
+    );
+  const frequencies: GoalFrequency[] = ["weekly", "monthly"];
+  const goals: FocusQuotaGoal[] = [];
+  let id = 1;
+
+  for (const frequency of frequencies) {
+    for (const [revisionIndex, offset] of revisionOffsets.entries()) {
+      const createdDate = trackedDates[offset] ?? trackedDates.at(-1);
+      if (!createdDate) {
+        continue;
+      }
+
+      const nextOffset = revisionOffsets[revisionIndex + 1];
+      const nextCreatedDate =
+        nextOffset === undefined ? null : (trackedDates[nextOffset] ?? null);
+      const baseTargetMinutes = frequency === "weekly" ? 180 : 480;
+      const stepMinutes =
+        frequency === "weekly"
+          ? randomInt(rng, 45, 120)
+          : randomInt(rng, 120, 360);
+      const normalizedTargetMinutes = normalizeFocusQuotaTargetMinutes(
+        frequency,
+        baseTargetMinutes + revisionIndex * stepMinutes
+      );
+
+      goals.push({
+        archivedAt:
+          nextCreatedDate === null ? null : toIsoAt(nextCreatedDate, 8, 45),
+        createdAt: toIsoAt(createdDate, 8, 30),
+        frequency: normalizeGoalFrequency(frequency),
+        id,
+        isArchived: nextCreatedDate !== null,
+        targetMinutes: normalizedTargetMinutes,
+      });
+      id += 1;
+    }
+  }
+
+  return goals;
+}
+
+function createWindDownActions(
+  count: number,
+  startDate: string
+): GeneratedWindDownAction[] {
+  return Array.from({ length: count }, (_, index) => ({
+    createdAt: toIsoAt(addDays(startDate, index), 20, 0),
+    id: index + 1,
+    name: WIND_DOWN_ACTION_NAMES[index] ?? `Wind Down Action ${index + 1}`,
+    sortOrder: index,
+  }));
+}
+
+function createWindDownStatusRows(
+  actions: readonly GeneratedWindDownAction[],
+  trackedDates: readonly string[],
+  rng: () => number
+) {
+  const rows: {
+    actionId: number;
+    completed: boolean;
+    completedAt: string | null;
+    date: string;
+  }[] = [];
+
+  const recentDates = trackedDates.slice(
+    Math.max(0, trackedDates.length - Math.min(trackedDates.length, 180))
+  );
+
+  for (const date of recentDates) {
+    const dayMode = rng();
+
+    for (const action of actions) {
+      const completed =
+        dayMode < 0.2 ? false : rng() < (dayMode < 0.65 ? 0.82 : 0.55);
+
+      rows.push({
+        actionId: action.id,
+        completed,
+        completedAt: completed
+          ? toIsoAt(date, 21 + (action.sortOrder % 2), 5 + action.sortOrder)
+          : null,
+        date,
+      });
+    }
+  }
+
+  return rows;
 }
 
 function getTrackedDates(startDate: string, dayCount: number): string[] {
@@ -582,7 +791,13 @@ export function generateTestData(
   const endDate = addDays(normalized.today, -1);
   const startDate = addDays(endDate, -(config.trackedDayCount - 1));
   const trackedDates = getTrackedDates(startDate, config.trackedDayCount);
-  const habits = createHabits(config, startDate, endDate, rng);
+  const habits = createHabits(
+    config,
+    startDate,
+    endDate,
+    normalized.preset,
+    rng
+  );
   const { dailyStatusesByDate, statusRows } = createStatusRows(
     habits,
     trackedDates,
@@ -594,6 +809,20 @@ export function generateTestData(
   );
   const focusSessions = createFocusSessions(
     config.focusSessionCount,
+    trackedDates,
+    rng
+  );
+  const focusQuotaGoals = createFocusQuotaGoals(
+    trackedDates,
+    normalized.preset,
+    rng
+  );
+  const windDownActions = createWindDownActions(
+    config.windDownActionCount,
+    startDate
+  );
+  const windDownActionStatusRows = createWindDownStatusRows(
+    windDownActions,
     trackedDates,
     rng
   );
@@ -647,6 +876,13 @@ export function generateTestData(
     })
     .run();
 
+  db.insert(schema.windDownRuntimeState)
+    .values({
+      id: 1,
+      lastReminderSentAt: toIsoAt(endDate, 21, 0),
+    })
+    .run();
+
   chunkValues(
     habits.map((habit) => ({
       category: habit.category,
@@ -659,6 +895,7 @@ export function generateTestData(
         ? JSON.stringify(habit.selectedWeekdays)
         : null,
       sortOrder: habit.sortOrder,
+      targetCount: habit.targetCount,
     })),
     100,
     (chunk) => {
@@ -678,11 +915,24 @@ export function generateTestData(
     db.insert(schema.focusSessions).values(chunk).run();
   });
 
+  chunkValues(focusQuotaGoals, 100, (chunk) => {
+    db.insert(schema.focusQuotaGoals).values(chunk).run();
+  });
+
+  chunkValues(windDownActions, 100, (chunk) => {
+    db.insert(schema.windDownActions).values(chunk).run();
+  });
+
+  chunkValues(windDownActionStatusRows, 400, (chunk) => {
+    db.insert(schema.windDownActionStatus).values(chunk).run();
+  });
+
   client.close();
 
   return {
     dailySummaryCount: dailySummaries.length,
     databasePath: normalized.outputPath,
+    focusQuotaGoalCount: focusQuotaGoals.length,
     focusSessionCount: focusSessions.length,
     habitCount: habits.length,
     habitPeriodStatusCount: statusRows.length,
@@ -690,5 +940,7 @@ export function generateTestData(
     seed: normalized.seed,
     timezone: normalized.timezone,
     trackedDayCount: trackedDates.length,
+    windDownActionCount: windDownActions.length,
+    windDownActionStatusCount: windDownActionStatusRows.length,
   };
 }

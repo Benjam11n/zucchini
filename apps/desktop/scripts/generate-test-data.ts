@@ -61,5 +61,8 @@ console.log(
     `status rows: ${stats.habitPeriodStatusCount}`,
     `daily summaries: ${stats.dailySummaryCount}`,
     `focus sessions: ${stats.focusSessionCount}`,
+    `focus quota goals: ${stats.focusQuotaGoalCount}`,
+    `wind-down actions: ${stats.windDownActionCount}`,
+    `wind-down status rows: ${stats.windDownActionStatusCount}`,
   ].join("\n")
 );
