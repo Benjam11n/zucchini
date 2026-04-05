@@ -106,7 +106,6 @@ export function LongerHabitListItem({
                 ? "text-muted-foreground/60 line-through decoration-muted-foreground/30"
                 : "text-foreground/90 group-hover:text-foreground"
             )}
-            style={habit.completed ? undefined : { color: presentation.color }}
           >
             {habit.name}
           </span>
