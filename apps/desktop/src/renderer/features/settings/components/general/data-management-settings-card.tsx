@@ -177,7 +177,7 @@ export function DataManagementSettingsCard() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 px-6">
+          <div className="grid gap-4 px-6 py-6">
             <div
               className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
               role="alert"

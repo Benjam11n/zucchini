@@ -95,9 +95,9 @@ export function LongerHabitListItem({
 
       <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
-          <presentation.icon 
-             className="size-3.5 shrink-0 opacity-70 transition-all group-hover:opacity-100"
-             style={{ color: presentation.color }}
+          <presentation.icon
+            className="size-3.5 shrink-0 opacity-70 transition-all group-hover:opacity-100"
+            style={{ color: presentation.color }}
           />
           <span
             className={cn(
