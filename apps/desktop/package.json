@@ -54,7 +54,7 @@
     "electron-builder": "^26.8.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.36.0",
-    "jsdom": "^28.1.0",
+    "jsdom": "^29.0.1",
     "knip": "^6.1.1",
     "lucide-react": "^0.577.0",
     "oxfmt": "^0.42.0",
