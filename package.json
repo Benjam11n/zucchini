@@ -18,9 +18,9 @@
     "check": "bun run lint:desktop && bun run lint:web && bun run test:desktop && bun run build:web"
   },
   "devDependencies": {
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.55.0",
-    "ultracite": "^7.3.0"
+    "oxfmt": "^0.43.0",
+    "oxlint": "^1.58.0",
+    "ultracite": "^7.4.0"
   },
   "trustedDependencies": [
     "esbuild"
