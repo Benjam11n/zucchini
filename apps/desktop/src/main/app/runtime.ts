@@ -85,6 +85,7 @@ export function applyRuntimeSettings({
 }: {
   applyThemeMode: (themeMode: ThemeMode) => void;
   appLike: {
+    isPackaged: boolean;
     setLoginItemSettings: (
       settings: ReturnType<typeof buildLoginItemSettings>
     ) => void;
@@ -92,7 +93,9 @@ export function applyRuntimeSettings({
   runtime: Pick<AppRuntime, "reminders" | "tray" | "windDownReminders">;
   settings: AppSettings;
 }): boolean {
-  appLike.setLoginItemSettings(buildLoginItemSettings(settings));
+  if (appLike.isPackaged) {
+    appLike.setLoginItemSettings(buildLoginItemSettings(settings));
+  }
   runtime.reminders.schedule(settings);
   runtime.windDownReminders.schedule(settings);
   applyThemeMode(settings.themeMode);
