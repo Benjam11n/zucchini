@@ -1,7 +1,6 @@
 version: 2
 updates:
-  # Enable version updates for npm
-  - package-ecosystem: "npm"
+  - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -11,15 +10,14 @@ updates:
       default-days: 7
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "npm"
+      prefix: "bun"
       prefix-development: "chore"
       include: "scope"
     labels:
       - "dependencies"
-      - "npm"
+      - "bun"
       - "automated"
     groups:
-      # Batch minor and patch updates together
       minor-patch-updates:
         patterns:
           - "*"
@@ -32,7 +30,6 @@ updates:
           - "minor"
           - "patch"
     ignore:
-      # Prevent breaking updates for critical dependencies
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
       - dependency-name: "next"
