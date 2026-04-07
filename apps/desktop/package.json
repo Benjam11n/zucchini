@@ -56,7 +56,7 @@
     "framer-motion": "^12.36.0",
     "jsdom": "^28.1.0",
     "knip": "^6.1.1",
-    "lucide-react": "^0.577.0",
+    "lucide-react": "^1.7.0",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.55.0",
     "png-to-ico": "^3.0.1",
