@@ -7,7 +7,10 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-import type { HabitDragState } from "./habit-management-content.types";
+import type {
+  HabitDragState,
+  RecentArchivedHabit,
+} from "./habit-management-content.types";
 import { HabitManagementListItem } from "./habit-management-list-item";
 import type { HabitManagementCardProps } from "./habit-management.types";
 
@@ -80,7 +83,12 @@ export interface HabitManagementListProps {
   dragState: HabitDragState;
   expandedHabitId: number | null;
   habits: HabitManagementCardProps["habits"];
-  onArchiveHabit: (habitId: number, habitName: string) => Promise<void>;
+  onArchiveHabit: (
+    habitId: number,
+    habitName: string,
+    frequency: HabitFrequency,
+    index: number
+  ) => Promise<void>;
   onDragStateChange: (dragState: HabitDragState) => void;
   onDrop: (
     draggedHabitId: number | null,
@@ -92,6 +100,7 @@ export interface HabitManagementListProps {
   onReorderHabits: (
     habits: HabitManagementCardProps["habits"]
   ) => Promise<void>;
+  onUndoArchive: () => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory,
@@ -113,6 +122,7 @@ export interface HabitManagementListProps {
     selectedWeekdays: HabitWeekday[] | null,
     habitName: string
   ) => Promise<void>;
+  recentArchivedHabit: RecentArchivedHabit | null;
 }
 
 export function HabitManagementList({
@@ -125,10 +135,12 @@ export function HabitManagementList({
   onExpandedHabitChange,
   onRenameHabit,
   onReorderHabits,
+  onUndoArchive,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
   onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
+  recentArchivedHabit,
 }: HabitManagementListProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLElement | null>(null);
@@ -189,7 +201,11 @@ export function HabitManagementList({
   const habitSections = HABIT_FREQUENCY_SECTIONS.map((section) => ({
     ...section,
     habits: habits.filter((habit) => habit.frequency === section.frequency),
-  })).filter((section) => section.habits.length > 0);
+  })).filter(
+    (section) =>
+      section.habits.length > 0 ||
+      recentArchivedHabit?.frequency === section.frequency
+  );
 
   return (
     <div
@@ -255,13 +271,43 @@ export function HabitManagementList({
                     onExpandedHabitChange={onExpandedHabitChange}
                     onRenameHabit={onRenameHabit}
                     onReorderHabits={onReorderHabits}
+                    onUndoArchive={onUndoArchive}
                     onUpdateHabitCategory={onUpdateHabitCategory}
                     onUpdateHabitFrequency={onUpdateHabitFrequency}
                     onUpdateHabitTargetCount={onUpdateHabitTargetCount}
                     onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                    recentArchivedHabit={
+                      recentArchivedHabit?.frequency === section.frequency &&
+                      recentArchivedHabit.index === index
+                        ? recentArchivedHabit
+                        : null
+                    }
                     sectionHabits={section.habits}
                   />
                 ))}
+                {recentArchivedHabit?.frequency === section.frequency &&
+                recentArchivedHabit.index >= section.habits.length ? (
+                  <HabitManagementListItem
+                    key={`recent-archived-${recentArchivedHabit.habitId}`}
+                    dragState={dragState}
+                    expandedHabitId={expandedHabitId}
+                    habit={section.habits[0] ?? null}
+                    index={recentArchivedHabit.index}
+                    onArchiveHabit={onArchiveHabit}
+                    onDragStateChange={onDragStateChange}
+                    onDrop={onDrop}
+                    onExpandedHabitChange={onExpandedHabitChange}
+                    onRenameHabit={onRenameHabit}
+                    onReorderHabits={onReorderHabits}
+                    onUndoArchive={onUndoArchive}
+                    onUpdateHabitCategory={onUpdateHabitCategory}
+                    onUpdateHabitFrequency={onUpdateHabitFrequency}
+                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                    recentArchivedHabit={recentArchivedHabit}
+                    sectionHabits={section.habits}
+                  />
+                ) : null}
               </AnimatePresence>
             </section>
           ))}

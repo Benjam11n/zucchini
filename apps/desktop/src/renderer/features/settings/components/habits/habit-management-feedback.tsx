@@ -5,13 +5,11 @@ import type { HabitFeedback } from "./habit-management-content.types";
 
 interface HabitManagementFeedbackProps {
   feedback: HabitFeedback;
-  onUndoArchive: () => void;
   onUndoAutoSort: () => void;
 }
 
 export function HabitManagementFeedback({
   feedback,
-  onUndoArchive,
   onUndoAutoSort,
 }: HabitManagementFeedbackProps) {
   if (!feedback) {
@@ -20,7 +18,7 @@ export function HabitManagementFeedback({
 
   let feedbackClassName = "border-border/70 bg-muted/30 text-primary";
 
-  if (feedback.kind === "archived" || feedback.kind === "auto-sorted") {
+  if (feedback.kind === "auto-sorted") {
     feedbackClassName = "border-primary/25 bg-primary/10 text-foreground";
   } else if (feedback.kind === "error") {
     feedbackClassName =
@@ -29,9 +27,7 @@ export function HabitManagementFeedback({
 
   let undoAction: (() => void) | null = null;
 
-  if (feedback.kind === "archived") {
-    undoAction = onUndoArchive;
-  } else if (feedback.kind === "auto-sorted") {
+  if (feedback.kind === "auto-sorted") {
     undoAction = onUndoAutoSort;
   }
 
@@ -44,11 +40,7 @@ export function HabitManagementFeedback({
       )}
       role="status"
     >
-      <span>
-        {feedback.kind === "archived"
-          ? `Archived "${feedback.habitName}".`
-          : feedback.message}
-      </span>
+      <span>{feedback.message}</span>
       {undoAction ? (
         <Button
           className="h-7 px-2.5 text-[0.7rem]"

@@ -1,10 +1,5 @@
 export type HabitFeedback =
   | {
-      kind: "archived";
-      habitId: number;
-      habitName: string;
-    }
-  | {
       kind: "auto-sorted";
       message: string;
     }
@@ -17,6 +12,13 @@ export type HabitFeedback =
       message: string;
     }
   | null;
+
+export interface RecentArchivedHabit {
+  frequency: "daily" | "monthly" | "weekly";
+  habitId: number;
+  habitName: string;
+  index: number;
+}
 
 export type HabitDragState = {
   draggedHabitId: number;

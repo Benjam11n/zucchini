@@ -89,7 +89,7 @@ describe("habit management content", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows undo feedback after archiving and restores on undo", async () => {
+  it("shows inline undo after archiving and restores on undo", async () => {
     const onArchiveHabit = createAsyncMock();
     const onUnarchiveHabit = createAsyncMock();
 
@@ -121,7 +121,7 @@ describe("habit management content", () => {
       expect(onArchiveHabit).toHaveBeenCalledWith(1);
     });
 
-    expect(screen.getByText('Archived "Habit 1".')).toBeInTheDocument();
+    expect(screen.getByText("Archived Habit 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
 
@@ -129,9 +129,7 @@ describe("habit management content", () => {
       expect(onUnarchiveHabit).toHaveBeenCalledWith(1);
     });
 
-    await waitFor(() => {
-      expect(screen.getByText('Restored "Habit 1".')).toBeInTheDocument();
-    });
+    expect(screen.queryByText('Restored "Habit 1".')).not.toBeInTheDocument();
   });
 
   it("expands the newly created top habit after creation completes", async () => {

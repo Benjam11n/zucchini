@@ -19,6 +19,7 @@ import type {
 import type {
   HabitDragState,
   HabitFeedback,
+  RecentArchivedHabit,
 } from "./habit-management-content.types";
 import { HabitManagementFeedback } from "./habit-management-feedback";
 import { HabitManagementList } from "./habit-management-list";
@@ -43,6 +44,8 @@ export function HabitManagementContent({
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<HabitFeedback>(null);
   const [dragState, setDragState] = useState<HabitDragState>(null);
+  const [recentArchivedHabit, setRecentArchivedHabit] =
+    useState<RecentArchivedHabit | null>(null);
   const [pendingCreatedHabitName, setPendingCreatedHabitName] = useState<
     string | null
   >(null);
@@ -50,11 +53,16 @@ export function HabitManagementContent({
     null
   );
   const feedbackTimeoutRef = useRef<number | null>(null);
+  const archivedHabitTimeoutRef = useRef<number | null>(null);
 
   useEffect(
     () => () => {
       if (feedbackTimeoutRef.current !== null) {
         window.clearTimeout(feedbackTimeoutRef.current);
+      }
+
+      if (archivedHabitTimeoutRef.current !== null) {
+        window.clearTimeout(archivedHabitTimeoutRef.current);
       }
     },
     []
@@ -107,21 +115,23 @@ export function HabitManagementContent({
     });
   }
 
-  function showArchivedFeedback(habitId: number, habitName: string) {
-    clearFeedbackTimer();
-    setAutoSortUndoHabits(null);
-    setFeedback({
-      habitId,
-      habitName,
-      kind: "archived",
-    });
-    feedbackTimeoutRef.current = window.setTimeout(() => {
-      setFeedback((current) =>
-        current?.kind === "archived" && current.habitId === habitId
-          ? null
-          : current
+  function clearArchivedHabitTimer() {
+    if (archivedHabitTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(archivedHabitTimeoutRef.current);
+    archivedHabitTimeoutRef.current = null;
+  }
+
+  function showArchivedHabitUndo(nextArchivedHabit: RecentArchivedHabit) {
+    clearArchivedHabitTimer();
+    setRecentArchivedHabit(nextArchivedHabit);
+    archivedHabitTimeoutRef.current = window.setTimeout(() => {
+      setRecentArchivedHabit((current) =>
+        current?.habitId === nextArchivedHabit.habitId ? null : current
       );
-      feedbackTimeoutRef.current = null;
+      archivedHabitTimeoutRef.current = null;
     }, UNDO_TIMEOUT_MS);
   }
 
@@ -225,10 +235,20 @@ export function HabitManagementContent({
     });
   }
 
-  async function handleArchive(habitId: number, habitName: string) {
+  async function handleArchive(
+    habitId: number,
+    habitName: string,
+    frequency: HabitFrequency,
+    index: number
+  ) {
     await runHabitAction({
       onSuccess: () => {
-        showArchivedFeedback(habitId, habitName);
+        showArchivedHabitUndo({
+          frequency,
+          habitId,
+          habitName,
+          index,
+        });
         if (expandedHabitId === habitId) {
           setExpandedHabitId(null);
         }
@@ -238,16 +258,15 @@ export function HabitManagementContent({
   }
 
   async function handleUndoArchive() {
-    if (feedback?.kind !== "archived") {
+    if (!recentArchivedHabit) {
       return;
     }
 
-    const archivedHabit = feedback;
-    clearFeedbackTimer();
+    const archivedHabit = recentArchivedHabit;
+    clearArchivedHabitTimer();
     await runHabitAction({
       onSuccess: () => {
-        setFeedback(null);
-        showSavedFeedback(`Restored "${archivedHabit.habitName}".`);
+        setRecentArchivedHabit(null);
       },
       task: () => onUnarchiveHabit(archivedHabit.habitId),
     });
@@ -354,7 +373,6 @@ export function HabitManagementContent({
         </div>
         <HabitManagementFeedback
           feedback={feedback}
-          onUndoArchive={handleUndoArchive}
           onUndoAutoSort={handleUndoAutoSort}
         />
       </div>
@@ -369,10 +387,12 @@ export function HabitManagementContent({
         onExpandedHabitChange={setExpandedHabitId}
         onRenameHabit={handleRenameHabit}
         onReorderHabits={handleReorderHabits}
+        onUndoArchive={handleUndoArchive}
         onUpdateHabitCategory={handleUpdateHabitCategory}
         onUpdateHabitFrequency={handleUpdateHabitFrequency}
         onUpdateHabitTargetCount={handleUpdateHabitTargetCount}
         onUpdateHabitWeekdays={handleUpdateHabitWeekdays}
+        recentArchivedHabit={recentArchivedHabit}
       />
     </LazyMotion>
   );
