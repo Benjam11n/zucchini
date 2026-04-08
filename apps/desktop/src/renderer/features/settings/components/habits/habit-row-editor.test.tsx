@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
 import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
@@ -143,7 +143,7 @@ describe("habit row editor", () => {
     expect(onExpandedChange).toHaveBeenCalledWith(true);
   });
 
-  it("forwards category, frequency, weekday, and archive actions when expanded", () => {
+  it("forwards category, frequency, weekday, and archive actions when expanded", async () => {
     const onArchiveHabit = vi.fn().mockResolvedValue(42);
     const onRenameHabit = vi.fn().mockResolvedValue(42);
     const onReorderHabits = vi.fn().mockResolvedValue(42);
@@ -188,11 +188,17 @@ describe("habit row editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Weekly" }));
     fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
     fireEvent.click(screen.getByRole("button", { name: "Archive Habit 2" }));
+    expect(onArchiveHabit).not.toHaveBeenCalledWith(2);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm archive Habit 2" })
+    );
 
     expect(onUpdateHabitCategory).toHaveBeenCalledWith(2, "nutrition");
     expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly", 1);
     expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(2, [1, 3, 5]);
-    expect(onArchiveHabit).toHaveBeenCalledWith(2);
+    await waitFor(() => {
+      expect(onArchiveHabit).toHaveBeenCalledWith(2);
+    });
   });
 
   it("reorders habits upward and downward using the computed list", () => {

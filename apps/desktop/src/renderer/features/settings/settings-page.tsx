@@ -172,6 +172,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onReorderHabits={props.onReorderHabits}
                 onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
                 onUnarchiveHabit={props.onUnarchiveHabit}
+                onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}

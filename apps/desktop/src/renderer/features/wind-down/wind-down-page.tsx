@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/renderer/shared/components/ui/button";
+import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
 import {
   HabitListCard,
   HabitListItem,
@@ -223,23 +224,19 @@ export function WindDownPage({
                                 Edit {action.name}
                               </span>
                             </Button>
-                            <Button
-                              onClick={async (event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
+                            <ConfirmIconButton
+                              confirmLabel={`Confirm delete ${action.name}`}
+                              icon={<Archive className="size-4" />}
+                              idleLabel={`Delete ${action.name}`}
+                              onConfirm={async () => {
                                 await runAction(() =>
                                   onDeleteAction(action.id)
                                 );
                               }}
+                              resetKey={action.id}
                               size="icon"
-                              type="button"
                               variant="destructive"
-                            >
-                              <Archive className="size-4" />
-                              <span className="sr-only">
-                                Delete {action.name}
-                              </span>
-                            </Button>
+                            />
                           </>
                         }
                       />

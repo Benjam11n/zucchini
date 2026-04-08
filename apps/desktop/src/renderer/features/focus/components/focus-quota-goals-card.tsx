@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { Archive, Timer } from "lucide-react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
+import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -19,6 +20,7 @@ interface FocusQuotaGoalsCardProps {
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   embedded?: boolean;
   onArchiveGoal: (goalId: number) => Promise<void>;
+  onArchiveGoalStart?: (goal: FocusQuotaGoalWithStatus) => void;
   onSaveGoal: (
     frequency: GoalFrequency,
     targetMinutes: number
@@ -30,6 +32,7 @@ interface FocusQuotaGoalFormProps {
   definition: (typeof GOAL_FREQUENCY_DEFINITIONS)[number];
   goal: FocusQuotaGoalWithStatus | undefined;
   onArchiveGoal: (goalId: number) => Promise<void>;
+  onArchiveGoalStart?: (goal: FocusQuotaGoalWithStatus) => void;
   onSaveGoal: (
     frequency: GoalFrequency,
     targetMinutes: number
@@ -41,6 +44,7 @@ function FocusQuotaGoalForm({
   definition,
   goal,
   onArchiveGoal,
+  onArchiveGoalStart,
   onSaveGoal,
 }: FocusQuotaGoalFormProps) {
   const inputId = `focus-quota-${definition.value}`;
@@ -99,17 +103,18 @@ function FocusQuotaGoalForm({
           )}
         </form.Field>
         {goal ? (
-          <Button
-            className="h-9 shrink-0 px-3"
-            onClick={async () => {
+          <ConfirmIconButton
+            confirmLabel={`Confirm archive ${definition.label} focus quota`}
+            icon={<Archive className="size-4" />}
+            idleLabel={`Archive ${definition.label} focus quota`}
+            onConfirm={async () => {
               await onArchiveGoal(goal.id);
+              onArchiveGoalStart?.(goal);
             }}
+            resetKey={goal.id}
             size="sm"
-            type="button"
             variant={archiveButtonVariant}
-          >
-            <Archive className="size-4" />
-          </Button>
+          />
         ) : null}
         <form.Subscribe
           selector={(formState) => ({
@@ -137,6 +142,7 @@ export function FocusQuotaGoalsCard({
   embedded = false,
   focusQuotaGoals,
   onArchiveGoal,
+  onArchiveGoalStart,
   onSaveGoal,
 }: FocusQuotaGoalsCardProps) {
   const goalsByFrequency = new Map(
@@ -163,6 +169,7 @@ export function FocusQuotaGoalsCard({
               goal={goal}
               key={`${definition.value}-${goal?.id ?? "new"}-${goal?.targetMinutes ?? "empty"}`}
               onArchiveGoal={onArchiveGoal}
+              onArchiveGoalStart={onArchiveGoalStart}
               onSaveGoal={onSaveGoal}
             />
           );

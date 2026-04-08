@@ -45,4 +45,5 @@ export interface HabitManagementCardProps {
     targetMinutes: number
   ) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
+  onUnarchiveFocusQuotaGoal?: (goalId: number) => Promise<void>;
 }

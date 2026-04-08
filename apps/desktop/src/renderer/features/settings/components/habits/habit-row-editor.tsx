@@ -10,6 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/renderer/shared/components/ui/collapsible";
+import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Item } from "@/renderer/shared/components/ui/item";
 import { Label } from "@/renderer/shared/components/ui/label";
@@ -188,7 +189,7 @@ export function HabitRowEditor({
                 type="button"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <p className="truncate text-sm font-medium text-foreground">
+                  <p className="truncate text-sm text-foreground">
                     {habit.name}
                   </p>
                   <div className="flex min-w-0 items-center gap-2">
@@ -260,17 +261,17 @@ export function HabitRowEditor({
               >
                 <ArrowDown className="size-3.5" />
               </Button>
-              <Button
-                aria-label={`Archive ${habit.name}`}
-                onClick={async () => {
+              <ConfirmIconButton
+                confirmLabel={`Confirm archive ${habit.name}`}
+                icon={<Archive className="size-3.5" />}
+                idleLabel={`Archive ${habit.name}`}
+                onConfirm={async () => {
                   await onArchiveHabit(habit.id);
                 }}
+                resetKey={habit.id}
                 size="icon-sm"
-                type="button"
                 variant="destructive"
-              >
-                <Archive className="size-3.5" />
-              </Button>
+              />
             </div>
           </div>
 
@@ -318,7 +319,7 @@ export function HabitRowEditor({
                 </div>
 
                 {habit.frequency === "daily" ? null : (
-                  <div className="grid gap-2 min-w-[8.5rem]">
+                  <div className="grid gap-2 min-w-34">
                     <Label className="text-xs font-medium text-muted-foreground">
                       Goal
                     </Label>

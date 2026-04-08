@@ -58,6 +58,24 @@ function getAutoScrollStep(
   return 0;
 }
 
+const HABIT_FREQUENCY_SECTIONS = [
+  {
+    description: "Scheduled for specific days.",
+    frequency: "daily",
+    title: "Daily",
+  },
+  {
+    description: "Track weekly targets together.",
+    frequency: "weekly",
+    title: "Weekly",
+  },
+  {
+    description: "Longer-cycle habits with monthly targets.",
+    frequency: "monthly",
+    title: "Monthly",
+  },
+] as const;
+
 export interface HabitManagementListProps {
   dragState: HabitDragState;
   expandedHabitId: number | null;
@@ -168,6 +186,11 @@ export function HabitManagementList({
     autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
   }
 
+  const habitSections = HABIT_FREQUENCY_SECTIONS.map((section) => ({
+    ...section,
+    habits: habits.filter((habit) => habit.frequency === section.frequency),
+  })).filter((section) => section.habits.length > 0);
+
   return (
     <div
       ref={listRef}
@@ -198,28 +221,51 @@ export function HabitManagementList({
       onDrop={stopAutoScroll}
     >
       <LayoutGroup>
-        <AnimatePresence initial={false}>
-          {habits.map((habit, index) => (
-            <HabitManagementListItem
-              key={habit.id}
-              dragState={dragState}
-              expandedHabitId={expandedHabitId}
-              habit={habit}
-              habits={habits}
-              index={index}
-              onArchiveHabit={onArchiveHabit}
-              onDragStateChange={onDragStateChange}
-              onDrop={onDrop}
-              onExpandedHabitChange={onExpandedHabitChange}
-              onRenameHabit={onRenameHabit}
-              onReorderHabits={onReorderHabits}
-              onUpdateHabitCategory={onUpdateHabitCategory}
-              onUpdateHabitFrequency={onUpdateHabitFrequency}
-              onUpdateHabitTargetCount={onUpdateHabitTargetCount}
-              onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-            />
+        <div className="grid gap-4">
+          {habitSections.map((section) => (
+            <section
+              className="grid gap-2"
+              key={section.frequency}
+              aria-label={`${section.title} habits`}
+            >
+              <div className="flex items-baseline justify-between gap-3 px-1">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {section.title}
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {section.habits.length}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {section.description}
+                </p>
+              </div>
+              <AnimatePresence initial={false}>
+                {section.habits.map((habit, index) => (
+                  <HabitManagementListItem
+                    key={habit.id}
+                    dragState={dragState}
+                    expandedHabitId={expandedHabitId}
+                    habit={habit}
+                    index={index}
+                    onArchiveHabit={onArchiveHabit}
+                    onDragStateChange={onDragStateChange}
+                    onDrop={onDrop}
+                    onExpandedHabitChange={onExpandedHabitChange}
+                    onRenameHabit={onRenameHabit}
+                    onReorderHabits={onReorderHabits}
+                    onUpdateHabitCategory={onUpdateHabitCategory}
+                    onUpdateHabitFrequency={onUpdateHabitFrequency}
+                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                    sectionHabits={section.habits}
+                  />
+                ))}
+              </AnimatePresence>
+            </section>
           ))}
-        </AnimatePresence>
+        </div>
       </LayoutGroup>
     </div>
   );

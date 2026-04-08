@@ -12,7 +12,7 @@ interface HabitManagementListItemProps {
   dragState: HabitManagementListProps["dragState"];
   expandedHabitId: number | null;
   habit: HabitManagementListProps["habits"][number];
-  habits: HabitManagementListProps["habits"];
+  sectionHabits: HabitManagementListProps["habits"];
   index: number;
   onArchiveHabit: HabitManagementListProps["onArchiveHabit"];
   onDragStateChange: HabitManagementListProps["onDragStateChange"];
@@ -30,7 +30,7 @@ export function HabitManagementListItem({
   dragState,
   expandedHabitId,
   habit,
-  habits,
+  sectionHabits,
   index,
   onArchiveHabit,
   onDragStateChange,
@@ -47,7 +47,7 @@ export function HabitManagementListItem({
     <HabitRowEditor
       dragState={dragState}
       habit={habit}
-      habits={habits}
+      habits={sectionHabits}
       index={index}
       isExpanded={expandedHabitId === habit.id}
       onArchiveHabit={(habitId) => onArchiveHabit(habitId, habit.name)}
@@ -57,6 +57,14 @@ export function HabitManagementListItem({
       onDragOver={(event) => {
         event.preventDefault();
         if (!dragState) {
+          return;
+        }
+
+        const draggedHabit = sectionHabits.find(
+          (candidate) => candidate.id === dragState.draggedHabitId
+        );
+
+        if (!draggedHabit || draggedHabit.frequency !== habit.frequency) {
           return;
         }
 
@@ -82,9 +90,20 @@ export function HabitManagementListItem({
           event.dataTransfer.getData(HABIT_DRAG_DATA_TYPE),
           10
         );
+        const resolvedDraggedHabitId = Number.isNaN(draggedHabitId)
+          ? null
+          : draggedHabitId;
+        const draggedHabit = sectionHabits.find(
+          (candidate) => candidate.id === resolvedDraggedHabitId
+        );
+
+        if (!draggedHabit || draggedHabit.frequency !== habit.frequency) {
+          onDragStateChange(null);
+          return;
+        }
 
         await onDrop(
-          Number.isNaN(draggedHabitId) ? null : draggedHabitId,
+          resolvedDraggedHabitId,
           habit.id,
           getDropPosition(
             event.currentTarget.getBoundingClientRect(),

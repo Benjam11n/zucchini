@@ -214,6 +214,7 @@ function MainApp() {
           onReorderHabits={actions.handleReorderHabits}
           onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
           onUnarchiveHabit={actions.handleUnarchiveHabit}
+          onUnarchiveFocusQuotaGoal={actions.handleUnarchiveFocusQuotaGoal}
           onUpdateHabitCategory={actions.handleUpdateHabitCategory}
           onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
           onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}

@@ -63,6 +63,32 @@ describe("habit management content", () => {
     expect(screen.getByDisplayValue("Habit 2")).toBeInTheDocument();
   });
 
+  it("renders separate frequency sections in the settings habit list", () => {
+    render(
+      <HabitManagementContent
+        habits={[
+          createHabit(1),
+          { ...createHabit(2), frequency: "weekly", targetCount: 3 },
+          { ...createHabit(3), frequency: "monthly", targetCount: 8 },
+        ]}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={createAsyncMock()}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={createAsyncMock()}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Daily" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Weekly" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Monthly" })
+    ).toBeInTheDocument();
+  });
+
   it("shows undo feedback after archiving and restores on undo", async () => {
     const onArchiveHabit = createAsyncMock();
     const onUnarchiveHabit = createAsyncMock();
@@ -87,6 +113,9 @@ describe("habit management content", () => {
       })
     );
     fireEvent.click(screen.getByRole("button", { name: "Archive Habit 1" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm archive Habit 1" })
+    );
 
     await waitFor(() => {
       expect(onArchiveHabit).toHaveBeenCalledWith(1);
@@ -189,9 +218,7 @@ describe("habit management content", () => {
       />
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Auto sort categories" })
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Auto sort" }));
 
     await waitFor(() => {
       expect(

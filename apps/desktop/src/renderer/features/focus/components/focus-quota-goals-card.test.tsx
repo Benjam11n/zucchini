@@ -58,4 +58,41 @@ describe("FocusQuotaGoalsCard", () => {
       expect(onSaveGoal).not.toHaveBeenCalled();
     });
   });
+
+  it("requires a second click to archive an existing goal", async () => {
+    const onArchiveGoal = createAsyncMock();
+
+    render(
+      <FocusQuotaGoalsCard
+        focusQuotaGoals={[
+          {
+            archivedAt: null,
+            createdAt: "2026-04-01T00:00:00.000Z",
+            currentMinutes: 30,
+            frequency: "weekly",
+            id: 7,
+            isArchived: false,
+            targetMinutes: 180,
+          },
+        ]}
+        onArchiveGoal={onArchiveGoal}
+        onSaveGoal={createAsyncMock()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Archive Weekly focus quota" })
+    );
+    expect(onArchiveGoal).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Confirm archive Weekly focus quota",
+      })
+    );
+
+    await waitFor(() => {
+      expect(onArchiveGoal).toHaveBeenCalledWith(7);
+    });
+  });
 });

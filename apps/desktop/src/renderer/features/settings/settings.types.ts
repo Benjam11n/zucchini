@@ -63,6 +63,7 @@ export interface SettingsPageProps {
   onArchiveHabit: (habitId: number) => Promise<void>;
   onArchiveFocusQuotaGoal: (goalId: number) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
+  onUnarchiveFocusQuotaGoal: (goalId: number) => Promise<void>;
   onUpsertFocusQuotaGoal: (
     frequency: GoalFrequency,
     targetMinutes: number
