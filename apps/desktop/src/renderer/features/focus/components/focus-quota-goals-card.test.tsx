@@ -67,11 +67,15 @@ describe("FocusQuotaGoalsCard", () => {
         focusQuotaGoals={[
           {
             archivedAt: null,
+            completed: false,
+            completedMinutes: 30,
             createdAt: "2026-04-01T00:00:00.000Z",
-            currentMinutes: 30,
             frequency: "weekly",
             id: 7,
             isArchived: false,
+            kind: "focus-quota",
+            periodEnd: "2026-04-06",
+            periodStart: "2026-03-31",
             targetMinutes: 180,
           },
         ]}

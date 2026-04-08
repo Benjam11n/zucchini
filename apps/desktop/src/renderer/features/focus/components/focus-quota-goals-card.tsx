@@ -169,8 +169,8 @@ export function FocusQuotaGoalsCard({
               goal={goal}
               key={`${definition.value}-${goal?.id ?? "new"}-${goal?.targetMinutes ?? "empty"}`}
               onArchiveGoal={onArchiveGoal}
-              onArchiveGoalStart={onArchiveGoalStart}
               onSaveGoal={onSaveGoal}
+              {...(onArchiveGoalStart ? { onArchiveGoalStart } : {})}
             />
           );
         })}

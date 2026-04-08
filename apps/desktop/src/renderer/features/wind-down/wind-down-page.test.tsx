@@ -85,6 +85,7 @@ describe("WindDownPage", () => {
             actions: [
               {
                 completed: false,
+                completedAt: null,
                 createdAt: "2026-04-04T00:00:00.000Z",
                 id: 3,
                 name: "Stretch",

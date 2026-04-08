@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { Habit, HabitWithStatus } from "@/shared/domain/habit";
 import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import { HabitManagementContent } from "./habit-management-content";
@@ -195,7 +195,11 @@ describe("habit management content", () => {
   });
 
   it("auto sorts habits by ring category order and restores the previous order on undo", async () => {
-    const onReorderHabits = createAsyncMock();
+    const submittedOrders: number[][] = [];
+    const onReorderHabits = vi.fn((nextHabits: Habit[]) => {
+      submittedOrders.push(nextHabits.map((habit) => habit.id));
+      return Promise.resolve();
+    });
     const habits = [
       createHabit(1),
       { ...createHabit(2), category: "fitness", sortOrder: 1 },
@@ -219,11 +223,7 @@ describe("habit management content", () => {
     fireEvent.click(screen.getByRole("button", { name: "Auto sort" }));
 
     await waitFor(() => {
-      expect(
-        onReorderHabits.mock.calls[0]?.[0].map(
-          (habit: HabitWithStatus) => habit.id
-        )
-      ).toStrictEqual([2, 3, 1]);
+      expect(submittedOrders[0]).toStrictEqual([2, 3, 1]);
     });
 
     expect(
@@ -233,11 +233,7 @@ describe("habit management content", () => {
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
 
     await waitFor(() => {
-      expect(
-        onReorderHabits.mock.calls[1]?.[0].map(
-          (habit: HabitWithStatus) => habit.id
-        )
-      ).toStrictEqual([1, 2, 3]);
+      expect(submittedOrders[1]).toStrictEqual([1, 2, 3]);
     });
 
     expect(
