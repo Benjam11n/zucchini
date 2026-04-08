@@ -2,6 +2,99 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.1 - 2026-04-08
+
+Changes since `v0.1.1-beta.17`.
+
+### Features
+
+- Introduce ConfirmIconButton and integrate it into habit, wind-down, and focus quota deletion flows
+- Implement auto-scroll for habit list drag-and-drop and add category-based auto-sorting functionality with undo support.
+- Add automatic formatting step to release agent and clean up CHANGELOG formatting
+- Improve responsive layout for habit rows and app shell using flex-wrap and basis utilities
+- Conditionally disable app relaunch after database import
+- Add preset-based habit name generation with stress test support to test fixtures
+- Improve UI spacing and formatting
+- Implement wind-down feature with custom actions, scheduling, and persistence
+- Add pixel-blast background effect to landing page and update global styles and branding assets
+- Improve test coverage and quality across critical areas
+- Add TodayCelebrationOverlay component and reduce celebration duration
+
+### Fixes
+
+- Update dev server host to 127.0.0.1 and restrict login item settings to packaged builds
+- Update release agent to handle false-positive workflow failures and update changelog formatting
+
+### Refactors
+
+- Move habit archive undo UI from global feedback to inline list item display
+- Remove inline color styling from habit list item text
+- Update habit and focus quota UI with progress bars and refined styling
+- Update main window dimensions and add icons to app shell tabs with constrained content width
+- Extract FocusTimerPhaseBadge interface for improved type readability
+- Remove unused sanitizeTimerPart utility function from focus-timer-view-model
+- Migrate FocusQuotaGoalsCard to @tanstack/react-form and add unit tests
+- Enforce one file one component rule for feature and app TSX files
+- Refactor renderer list items and normalize radius
+- Define and use constants for focus cycle limits in focus timer card
+- Move total set duration display and adjust layout spacing in focus timer components
+- Replace category progress bars with activity ring and summary stat cards in HistoryDayPanel
+- Redesign focus quota card layout
+- Simplify save status logic, improve wind-down editing focus, and remove unused props
+- Introduce SettingsCardHeader component and standardize settings card layouts
+- Unexport internal validation and domain helper functions and remove unused focus quota types
+- Migrate focus quota goals from focus page to longer habit checklist and add component tests
+- Update toast styling and notification handling
+- Remove unused packaging scripts and redundant npm commands
+
+### Documentation
+
+- Update changelog with recent fixes and maintenance tasks
+- Remove workspace commands section from README
+- Update changelog with recent fixes, features, and refactors
+
+### Maintenance
+
+- Bump jsdom from 28.1.0 to 29.0.1
+- Bump electron from 40.8.0 to 41.1.0
+- Bump knip from 5.88.1 to 6.1.1
+- Bump @typescript/native-preview
+- Fix format issues
+- Update dependencies including electron, oxfmt, drizzle, tsdown, and three
+- Migrate dependabot package-ecosystem from npm to bun
+- Release 0.1.2-alpha.3
+- Add 7-day cooldown to dependabot configuration
+- Release 0.1.2-alpha.2
+- Bump version to 0.1.2-alpha.1 and remove date-fns dependency
+- Release 0.1.2-alpha.1
+- Ignore UI components and lower duplication threshold in check-duplication script
+- Standardise Card usage
+- Add oxfmt to knip ignoreDependencies
+- Update format:check scripts to use ultracite and add root command
+- Remove postinstall native rebuild script and update workflow to rebuild dependencies explicitly
+
+### Other
+
+- Refine archive confirmation and inline undo
+- Merge pull request #41 from Benjam11n/dependabot/bun/lucide-react-1.7.0
+- Merge pull request #42 from Benjam11n/dependabot/bun/jsdom-29.0.1
+- Merge pull request #40 from Benjam11n/dependabot/bun/electron-41.1.0
+- Bump lucide-react from 0.577.0 to 1.7.0
+- Merge pull request #38 from Benjam11n/dependabot/bun/typescript/native-preview-7.0.0-dev.20260331.1
+- Merge pull request #39 from Benjam11n/dependabot/bun/knip-6.1.1
+- Merge pull request #36 from Benjam11n/dependabot/npm_and_yarn/minor-patch-updates-60ba892b1f
+- Bump the minor-patch-updates group across 1 directory with 5 updates
+- Adjust main window dimensions and add gradient fade overlays to today history carousel
+- Update desktop test data fixtures
+- Reduce gap between habit items in history column
+- Reduce desktop duplication in updater, dates, and focus UI
+- Add desktop duplication audit script
+- Refine desktop habit and focus settings UI
+- Add habit service logic tests, expand IPC validation coverage, and remove obsolete test files
+- Add focus quota goals to desktop
+- Add weekly and monthly target counts
+- Update background color to solid black and remove radial gradient overlays
+
 ## 0.1.2-alpha.3 - 2026-04-05
 
 Changes since `v0.1.2-alpha.2`.
