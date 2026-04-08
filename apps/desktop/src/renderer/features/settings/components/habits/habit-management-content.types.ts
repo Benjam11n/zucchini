@@ -5,6 +5,10 @@ export type HabitFeedback =
       habitName: string;
     }
   | {
+      kind: "auto-sorted";
+      message: string;
+    }
+  | {
       kind: "error";
       message: string;
     }

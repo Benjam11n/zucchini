@@ -166,4 +166,57 @@ describe("habit management content", () => {
     expect(renderCount).toBe(1);
     expect(screen.getByDisplayValue("Drink water")).toBeInTheDocument();
   });
+
+  it("auto sorts habits by ring category order and restores the previous order on undo", async () => {
+    const onReorderHabits = createAsyncMock();
+    const habits = [
+      createHabit(1),
+      { ...createHabit(2), category: "fitness", sortOrder: 1 },
+      { ...createHabit(3), category: "nutrition", sortOrder: 2 },
+    ] as const;
+
+    render(
+      <HabitManagementContent
+        habits={[...habits]}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={createAsyncMock()}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={onReorderHabits}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Auto sort categories" })
+    );
+
+    await waitFor(() => {
+      expect(
+        onReorderHabits.mock.calls[0]?.[0].map(
+          (habit: HabitWithStatus) => habit.id
+        )
+      ).toStrictEqual([2, 3, 1]);
+    });
+
+    expect(
+      screen.getByText("Grouped habits by category order.")
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+    await waitFor(() => {
+      expect(
+        onReorderHabits.mock.calls[1]?.[0].map(
+          (habit: HabitWithStatus) => habit.id
+        )
+      ).toStrictEqual([1, 2, 3]);
+    });
+
+    expect(
+      screen.getByText("Restored the previous habit order.")
+    ).toBeInTheDocument();
+  });
 });

@@ -1,10 +1,16 @@
 import { domAnimation, LazyMotion } from "framer-motion";
+import { ArrowDownAZ } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { reorderHabitListByDropPosition } from "@/renderer/features/settings/lib/reorder-habits";
+import {
+  reorderHabitListByDropPosition,
+  sortHabitListByCategory,
+} from "@/renderer/features/settings/lib/reorder-habits";
+import { Button } from "@/renderer/shared/components/ui/button";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type {
+  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
@@ -40,6 +46,9 @@ export function HabitManagementContent({
   const [pendingCreatedHabitName, setPendingCreatedHabitName] = useState<
     string | null
   >(null);
+  const [autoSortUndoHabits, setAutoSortUndoHabits] = useState<Habit[] | null>(
+    null
+  );
   const feedbackTimeoutRef = useRef<number | null>(null);
 
   useEffect(
@@ -78,6 +87,7 @@ export function HabitManagementContent({
 
   function showSavedFeedback(message: string) {
     clearFeedbackTimer();
+    setAutoSortUndoHabits(null);
     setFeedback({
       kind: "saved",
       message,
@@ -90,6 +100,7 @@ export function HabitManagementContent({
 
   function showErrorFeedback(message: string) {
     clearFeedbackTimer();
+    setAutoSortUndoHabits(null);
     setFeedback({
       kind: "error",
       message,
@@ -98,6 +109,7 @@ export function HabitManagementContent({
 
   function showArchivedFeedback(habitId: number, habitName: string) {
     clearFeedbackTimer();
+    setAutoSortUndoHabits(null);
     setFeedback({
       habitId,
       habitName,
@@ -109,6 +121,22 @@ export function HabitManagementContent({
           ? null
           : current
       );
+      feedbackTimeoutRef.current = null;
+    }, UNDO_TIMEOUT_MS);
+  }
+
+  function showAutoSortFeedback(previousHabits: Habit[]) {
+    clearFeedbackTimer();
+    setAutoSortUndoHabits(previousHabits);
+    setFeedback({
+      kind: "auto-sorted",
+      message: "Grouped habits by category order.",
+    });
+    feedbackTimeoutRef.current = window.setTimeout(() => {
+      setFeedback((current) =>
+        current?.kind === "auto-sorted" ? null : current
+      );
+      setAutoSortUndoHabits(null);
       feedbackTimeoutRef.current = null;
     }, UNDO_TIMEOUT_MS);
   }
@@ -225,12 +253,45 @@ export function HabitManagementContent({
     });
   }
 
+  async function handleUndoAutoSort() {
+    if (feedback?.kind !== "auto-sorted" || !autoSortUndoHabits) {
+      return;
+    }
+
+    const previousHabits = autoSortUndoHabits;
+    clearFeedbackTimer();
+    await runHabitAction({
+      onSuccess: () => {
+        setAutoSortUndoHabits(null);
+        setFeedback(null);
+        showSavedFeedback("Restored the previous habit order.");
+      },
+      task: () => onReorderHabits(previousHabits),
+    });
+  }
+
   async function handleReorderHabits(
     nextHabits: HabitManagementCardProps["habits"]
   ) {
     await runHabitAction({
       onSuccess: () => {
         showSavedFeedback("Saved habit order.");
+      },
+      task: () => onReorderHabits(nextHabits),
+    });
+  }
+
+  async function handleAutoSort() {
+    const nextHabits = sortHabitListByCategory(habits);
+
+    if (nextHabits === habits) {
+      showSavedFeedback("Habits are already grouped by category.");
+      return;
+    }
+
+    await runHabitAction({
+      onSuccess: () => {
+        showAutoSortFeedback(habits);
       },
       task: () => onReorderHabits(nextHabits),
     });
@@ -285,9 +346,16 @@ export function HabitManagementContent({
     <LazyMotion features={domAnimation}>
       <div className="sticky top-0 z-10 pb-3">
         <NewHabitForm onCreateHabit={handleCreateHabit} />
+        <div className="mt-3 flex justify-end">
+          <Button onClick={handleAutoSort} type="button" variant="outline">
+            <ArrowDownAZ className="size-4" />
+            Auto sort
+          </Button>
+        </div>
         <HabitManagementFeedback
           feedback={feedback}
           onUndoArchive={handleUndoArchive}
+          onUndoAutoSort={handleUndoAutoSort}
         />
       </div>
 

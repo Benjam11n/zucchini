@@ -1,6 +1,11 @@
+import { ACTIVITY_RING_ORDER } from "@/renderer/shared/components/activity-ring/constants";
 import type { Habit } from "@/shared/domain/habit";
 
 type DropPosition = "after" | "before";
+
+const HABIT_CATEGORY_ORDER = new Map(
+  ACTIVITY_RING_ORDER.map((category, index) => [category, index])
+);
 
 export function reorderHabitListByIndex(
   habits: Habit[],
@@ -63,4 +68,36 @@ export function reorderHabitListByDropPosition(
   }
 
   return reorderHabitListByIndex(habits, sourceIndex, nextIndex);
+}
+
+export function sortHabitListByCategory(habits: Habit[]): Habit[] {
+  const nextHabits = habits
+    .map((habit, index) => ({
+      categoryIndex:
+        HABIT_CATEGORY_ORDER.get(habit.category) ?? Number.MAX_SAFE_INTEGER,
+      habit,
+      index,
+    }))
+    .toSorted((left, right) => {
+      if (left.categoryIndex !== right.categoryIndex) {
+        return left.categoryIndex - right.categoryIndex;
+      }
+
+      if (left.habit.sortOrder !== right.habit.sortOrder) {
+        return left.habit.sortOrder - right.habit.sortOrder;
+      }
+
+      return left.index - right.index;
+    })
+    .map(({ habit }, index) => ({
+      ...habit,
+      sortOrder: index,
+    }));
+
+  const isUnchanged = nextHabits.every(
+    (habit, index) =>
+      habit.id === habits[index]?.id && habit.sortOrder === index
+  );
+
+  return isUnchanged ? habits : nextHabits;
 }

@@ -2,10 +2,14 @@ import {
   reorderHabitList,
   reorderHabitListByDropPosition,
   reorderHabitListByIndex,
+  sortHabitListByCategory,
 } from "@/renderer/features/settings/lib/reorder-habits";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-function createHabit(id: number): HabitWithStatus {
+function createHabit(
+  id: number,
+  overrides: Partial<HabitWithStatus> = {}
+): HabitWithStatus {
   return {
     category: "productivity",
     completed: false,
@@ -15,6 +19,7 @@ function createHabit(id: number): HabitWithStatus {
     isArchived: false,
     name: `Habit ${id}`,
     sortOrder: id - 1,
+    ...overrides,
   };
 }
 
@@ -58,5 +63,32 @@ describe("reorderHabitList()", () => {
         (habit) => habit.sortOrder
       )
     ).toStrictEqual([0, 1, 2]);
+  });
+
+  it("auto sorts habits by ring category order and preserves intra-category order", () => {
+    const habits = [
+      createHabit(1, { category: "productivity", sortOrder: 0 }),
+      createHabit(2, { category: "fitness", sortOrder: 1 }),
+      createHabit(3, { category: "nutrition", sortOrder: 2 }),
+      createHabit(4, { category: "fitness", sortOrder: 3 }),
+      createHabit(5, { category: "nutrition", sortOrder: 4 }),
+    ];
+
+    expect(
+      sortHabitListByCategory(habits).map((habit) => habit.id)
+    ).toStrictEqual([2, 4, 3, 5, 1]);
+    expect(
+      sortHabitListByCategory(habits).map((habit) => habit.sortOrder)
+    ).toStrictEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("returns the original list when auto sort would not change the order", () => {
+    const habits = [
+      createHabit(1, { category: "fitness", sortOrder: 0 }),
+      createHabit(2, { category: "nutrition", sortOrder: 1 }),
+      createHabit(3, { category: "productivity", sortOrder: 2 }),
+    ];
+
+    expect(sortHabitListByCategory(habits)).toBe(habits);
   });
 });
