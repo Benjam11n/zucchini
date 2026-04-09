@@ -365,6 +365,9 @@ export function HabitManagementContent({
     <LazyMotion features={domAnimation}>
       <div className="sticky top-0 z-10 pb-3">
         <NewHabitForm onCreateHabit={handleCreateHabit} />
+      </div>
+
+      <div className="grid gap-3 pb-3">
         <div className="mt-3 flex justify-end">
           <Button onClick={handleAutoSort} type="button" variant="outline">
             <ArrowDownAZ className="size-4" />
