@@ -54,7 +54,7 @@ export function getNextBreakVariant(
 
 export function getCycleChipLabel(focusCyclesBeforeLongBreak: number): string {
   return focusCyclesBeforeLongBreak === 1
-    ? "Long break after 1 session"
+    ? "1 session"
     : `${focusCyclesBeforeLongBreak} sessions`;
 }
 
