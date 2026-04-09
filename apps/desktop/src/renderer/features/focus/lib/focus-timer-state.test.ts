@@ -56,7 +56,7 @@ describe("focus timer state", () => {
     });
   });
 
-  it("keeps the completed cycle count when skipping a long break", () => {
+  it("returns to the base idle state when skipping a long break", () => {
     const runningBreak = createRunningBreakTimerState({
       breakDurationMs: minutesMs(15),
       breakVariant: "long",
@@ -74,10 +74,10 @@ describe("focus timer state", () => {
 
     expect(skippedBreak).toMatchObject({
       breakVariant: null,
-      completedFocusCycles: 4,
+      completedFocusCycles: 0,
       phase: "focus",
-      status: "running",
-      timerSessionId: "timer-session-long",
+      status: "idle",
+      timerSessionId: null,
     });
   });
 

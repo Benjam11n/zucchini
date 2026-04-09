@@ -195,7 +195,7 @@ describe("focus tab", () => {
     });
   });
 
-  it("does not reset the set when skipping a long break", () => {
+  it("returns to the base idle state when skipping a long break", () => {
     installHabitsMock();
     resetFocusStore();
     useFocusStore.getState().setTimerState(
@@ -214,10 +214,10 @@ describe("focus tab", () => {
     fireEvent.click(screen.getByRole("button", { name: "Skip long break" }));
 
     expect(useFocusStore.getState().timerState).toMatchObject({
-      completedFocusCycles: 4,
+      completedFocusCycles: 0,
       phase: "focus",
-      status: "running",
-      timerSessionId: "timer-session-page-long-skip",
+      status: "idle",
+      timerSessionId: null,
     });
   });
 

@@ -217,6 +217,41 @@ describe("focus widget", () => {
     });
   });
 
+  it("returns to the base idle state when skipping an active long break", async () => {
+    const now = new Date();
+    const { getTodayState } = setupWidgetTest({
+      persistedTimerState: createRunningBreakTimerState({
+        breakDurationMs: minutesMs(15),
+        breakVariant: "long",
+        completedFocusCycles: 4,
+        focusDurationMs: minutesMs(25),
+        now,
+        timerSessionId: "timer-session-widget-long-skip",
+      }),
+      renderWidget: false,
+    });
+
+    render(<FocusWidget />);
+
+    await waitFor(() => {
+      expect(getTodayState.mock.calls[0]).toStrictEqual([]);
+      expect(
+        screen.getByRole("button", { name: "Skip long break" })
+      ).toBeInTheDocument();
+    });
+
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Skip long break" }));
+    });
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      completedFocusCycles: 0,
+      phase: "focus",
+      status: "idle",
+      timerSessionId: null,
+    });
+  });
+
   it("supports keyboard shortcuts for start, pause, resume, and reset", async () => {
     const { getFocusTimerState, getTodayState, saveFocusTimerState } =
       setupWidgetTest();
