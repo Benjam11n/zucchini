@@ -44,6 +44,19 @@
   `apps/desktop/src/renderer/globals.css` before introducing bespoke styling or
   arbitrary Tailwind values.
 
+## UI Defaults
+
+- Prefer a clean, minimal, modern UI over decorative or overly expressive
+  layouts.
+- Use as few cards as possible. Do not wrap every section in a card by default.
+- Reduce click count and interaction steps wherever practical.
+- Favor obvious primary actions, inline controls, and simple flows over nested
+  menus, extra confirmations, or multi-step wizards.
+- Keep visual hierarchy sharp: fewer surfaces, more spacing discipline, and
+  clear typography.
+- Remove non-essential UI elements if they do not help the user complete the
+  task faster.
+
 ## App Guides
 
 - See [apps/desktop/AGENTS.md](./apps/desktop/AGENTS.md) for desktop-specific
