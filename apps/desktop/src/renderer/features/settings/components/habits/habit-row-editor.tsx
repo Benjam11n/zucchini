@@ -20,6 +20,7 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
+import { habitNameSchema } from "@/shared/contracts/habits-ipc-schema";
 import { HABIT_WEEKDAY_DEFINITIONS } from "@/shared/domain/habit";
 import type { Habit, HabitWeekday } from "@/shared/domain/habit";
 
@@ -66,6 +67,18 @@ const WEEKDAY_LABELS = Object.fromEntries(
 const WEEKDAYS: HabitWeekday[] = HABIT_WEEKDAY_DEFINITIONS.map(
   ({ value }) => value
 );
+
+function getHabitNameError(name: string): string | null {
+  const result = habitNameSchema.safeParse(name);
+
+  if (result.success) {
+    return null;
+  }
+
+  const [issue] = result.error.issues;
+
+  return issue?.message ?? "Habit names must be valid.";
+}
 
 function getCadenceSummary(habit: Habit): string {
   if (habit.frequency === "weekly") {
@@ -114,6 +127,7 @@ export function HabitRowEditor({
 }: HabitRowEditorProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   const [draftName, setDraftName] = useState(habit.name);
+  const [nameError, setNameError] = useState<string | null>(null);
   const lastCommittedNameRef = useRef(habit.name);
   const categoryPresentation = getHabitCategoryPresentation(
     habit.category,
@@ -127,6 +141,7 @@ export function HabitRowEditor({
 
   useEffect(() => {
     setDraftName(habit.name);
+    setNameError(null);
     lastCommittedNameRef.current = habit.name;
   }, [habit.id, habit.name]);
 
@@ -135,10 +150,18 @@ export function HabitRowEditor({
       return;
     }
 
+    const trimmedName = nextName.trim();
+    const nextNameError = getHabitNameError(trimmedName);
+    if (nextNameError) {
+      setNameError(nextNameError);
+      return;
+    }
+
     const previousName = lastCommittedNameRef.current;
 
     try {
       await onRenameHabit(habit.id, nextName);
+      setNameError(null);
       lastCommittedNameRef.current = nextName;
     } catch {
       setDraftName(previousName);
@@ -293,6 +316,10 @@ export function HabitRowEditor({
                     Name
                   </Label>
                   <Input
+                    aria-describedby={
+                      nameError ? `habit-name-error-${habit.id}` : undefined
+                    }
+                    aria-invalid={nameError ? "true" : undefined}
                     className="h-9"
                     id={`habit-name-${habit.id}`}
                     onBlur={async (event) => {
@@ -300,7 +327,11 @@ export function HabitRowEditor({
                       setDraftName(nextName);
                       await handleRenameCommit(nextName);
                     }}
-                    onChange={(event) => setDraftName(event.target.value)}
+                    onChange={(event) => {
+                      const nextName = event.target.value;
+                      setDraftName(nextName);
+                      setNameError(getHabitNameError(nextName.trim()));
+                    }}
                     onKeyDown={async (event) => {
                       if (event.key !== "Enter") {
                         return;
@@ -316,6 +347,14 @@ export function HabitRowEditor({
                     type="text"
                     value={draftName}
                   />
+                  {nameError ? (
+                    <p
+                      className="text-xs font-medium text-destructive"
+                      id={`habit-name-error-${habit.id}`}
+                    >
+                      {nameError}
+                    </p>
+                  ) : null}
                 </div>
 
                 {habit.frequency === "daily" ? null : (

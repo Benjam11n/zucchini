@@ -46,7 +46,11 @@ const focusTimerPhaseSchema = z.enum(["focus", "break"]);
 const focusTimerStatusSchema = z.enum(["idle", "running", "paused"]);
 const focusBreakVariantSchema = z.enum(["short", "long"]);
 
-export const habitNameSchema = z.string().trim().min(1).max(120);
+export const habitNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Habit names cannot be empty.")
+  .max(120, "Habit names must be 120 characters or fewer.");
 
 export const habitCategorySchema = z.enum([
   "nutrition",

@@ -13,6 +13,7 @@ import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { microTransition } from "@/renderer/shared/lib/motion";
+import { habitNameSchema } from "@/shared/contracts/habits-ipc-schema";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
@@ -49,16 +50,35 @@ const defaultValues: NewHabitFormValues = {
   targetCount: 1,
 };
 
+function getHabitNameError(name: string): string | null {
+  const result = habitNameSchema.safeParse(name);
+
+  if (result.success) {
+    return null;
+  }
+
+  const [issue] = result.error.issues;
+
+  return issue?.message ?? "Habit names must be valid.";
+}
+
 export function NewHabitForm({
   onCreateHabit,
 }: Pick<HabitManagementCardProps, "onCreateHabit">) {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [creationFeedback, setCreationFeedback] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const form = useForm({
     defaultValues,
     onSubmit: async ({ value }) => {
       const trimmedName = value.name.trim();
+      const nextNameError = getHabitNameError(trimmedName);
+
+      if (nextNameError) {
+        setNameError(nextNameError);
+        return;
+      }
 
       await onCreateHabit(
         trimmedName,
@@ -71,6 +91,7 @@ export function NewHabitForm({
       );
 
       form.reset();
+      setNameError(null);
       setCreationFeedback(`Added "${trimmedName}".`);
       nameInputRef.current?.focus();
     },
@@ -135,21 +156,39 @@ export function NewHabitForm({
                       Name
                     </Label>
                     <Input
+                      aria-describedby={
+                        nameError ? "new-habit-name-error" : undefined
+                      }
+                      aria-invalid={nameError ? "true" : undefined}
                       ref={nameInputRef}
                       className="h-10"
                       id="new-habit"
                       onBlur={field.handleBlur}
                       onChange={(event) => {
-                        field.handleChange(event.target.value);
+                        const nextValue = event.target.value;
+                        field.handleChange(nextValue);
+                        setNameError(getHabitNameError(nextValue.trim()));
+                        if (creationFeedback) {
+                          setCreationFeedback(null);
+                        }
                       }}
                       placeholder="Eat zucchini..."
                       required
                       type="text"
                       value={field.state.value}
                     />
+                    {nameError ? (
+                      <p
+                        className="text-xs font-medium text-destructive"
+                        id="new-habit-name-error"
+                      >
+                        {nameError}
+                      </p>
+                    ) : null}
                   </div>
                   <form.Subscribe
                     selector={(state) => ({
+                      isNameValid: !getHabitNameError(state.values.name.trim()),
                       isSubmitting: state.isSubmitting,
                       name: state.values.name,
                     })}
@@ -158,7 +197,9 @@ export function NewHabitForm({
                       <Button
                         className="h-10 px-4"
                         disabled={
-                          state.isSubmitting || state.name.trim().length === 0
+                          state.isSubmitting ||
+                          state.name.trim().length === 0 ||
+                          !state.isNameValid
                         }
                         type="submit"
                       >

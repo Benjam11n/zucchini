@@ -201,6 +201,36 @@ describe("habit row editor", () => {
     });
   });
 
+  it("shows an inline error and skips rename when the habit name is too long", async () => {
+    const onRenameHabit = vi.fn().mockResolvedValue(42);
+
+    renderHabitRowEditor({
+      habit: createHabit(2),
+      isExpanded: true,
+      onRenameHabit,
+    });
+
+    const nameInput = screen.getByLabelText("Name");
+
+    fireEvent.change(nameInput, {
+      target: { value: "a".repeat(121) },
+    });
+
+    expect(
+      screen.getByText("Habit names must be 120 characters or fewer.")
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    fireEvent.keyDown(nameInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(onRenameHabit).not.toHaveBeenCalled();
+    });
+  });
+
   it("reorders habits upward and downward using the computed list", () => {
     const onReorderHabits = vi.fn().mockResolvedValue(42);
     const habits = [createHabit(1), createHabit(2), createHabit(3)];

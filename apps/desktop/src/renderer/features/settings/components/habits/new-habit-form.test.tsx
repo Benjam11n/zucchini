@@ -71,4 +71,24 @@ describe("new habit form", () => {
     expect(focusSpy.mock.calls).toStrictEqual([[]]);
     focusSpy.mockRestore();
   });
+
+  it("shows an inline error and blocks submission when the habit name is too long", () => {
+    const onCreateHabit = createAsyncMock();
+
+    render(<NewHabitForm onCreateHabit={onCreateHabit} />);
+
+    fireEvent.change(screen.getByLabelText("Name"), {
+      target: { value: "a".repeat(121) },
+    });
+
+    expect(
+      screen.getByText("Habit names must be 120 characters or fewer.")
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+    expect(screen.getByRole("button", { name: "Add habit" })).toBeDisabled();
+    expect(onCreateHabit).not.toHaveBeenCalled();
+  });
 });
