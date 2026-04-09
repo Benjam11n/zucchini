@@ -2,9 +2,9 @@
  * Data export/import and backup management.
  *
  * Provides actions for exporting the SQLite database as a timestamped backup,
- * importing (replacing) the database from a backup file, and opening the
- * app's data folder in the system file explorer. Import prompts an app
- * restart to apply the restored data.
+ * importing (replacing) the database from a backup file, clearing local app
+ * data, and opening the app's data folder in the system file explorer.
+ * Destructive actions prompt an app restart to apply the updated data.
  */
 import path from "node:path";
 
@@ -20,9 +20,13 @@ interface CreateDataManagementActionsOptions {
   dialogLike: Pick<Dialog, "showOpenDialog" | "showSaveDialog">;
   repository: Pick<
     SqliteAppRepository,
-    "exportBackup" | "getDatabasePath" | "replaceDatabase" | "validateDatabase"
+    | "exportBackup"
+    | "getDatabasePath"
+    | "replaceDatabase"
+    | "resetDatabase"
+    | "validateDatabase"
   >;
-  shouldRelaunchAfterImport?: boolean;
+  shouldRelaunchAfterDataChange?: boolean;
   service: Pick<HabitsApplicationService, "initialize">;
   shellLike: Pick<Shell, "openPath">;
 }
@@ -32,7 +36,7 @@ export function createDataManagementActions({
   clock,
   dialogLike,
   repository,
-  shouldRelaunchAfterImport = !process.env["VITE_DEV_SERVER_URL"],
+  shouldRelaunchAfterDataChange = !process.env["VITE_DEV_SERVER_URL"],
   service,
   shellLike,
 }: CreateDataManagementActionsOptions) {
@@ -97,7 +101,7 @@ export function createDataManagementActions({
     repository.validateDatabase(selectedBackupPath);
     repository.replaceDatabase(selectedBackupPath);
 
-    if (shouldRelaunchAfterImport) {
+    if (shouldRelaunchAfterDataChange) {
       appLike.relaunch();
     }
 
@@ -106,7 +110,20 @@ export function createDataManagementActions({
     return true;
   }
 
+  function clearData(onBeforeQuit: () => void): Promise<boolean> {
+    repository.resetDatabase();
+
+    if (shouldRelaunchAfterDataChange) {
+      appLike.relaunch();
+    }
+
+    onBeforeQuit();
+    appLike.quit();
+    return Promise.resolve(true);
+  }
+
   return {
+    clearData,
     exportBackup,
     importBackup,
     openDataFolder,

@@ -5,6 +5,7 @@ import {
   createRunningFocusTimerState,
   pauseFocusTimerState,
   resumeFocusTimerState,
+  skipBreakFocusTimerState,
 } from "./focus-timer-state";
 
 describe("focus timer state", () => {
@@ -52,6 +53,56 @@ describe("focus timer state", () => {
       phase: "break",
       remainingMs: minutesMs(15),
       status: "running",
+    });
+  });
+
+  it("keeps the completed cycle count when skipping a long break", () => {
+    const runningBreak = createRunningBreakTimerState({
+      breakDurationMs: minutesMs(15),
+      breakVariant: "long",
+      completedFocusCycles: 4,
+      focusDurationMs: minutesMs(25),
+      now: new Date("2026-03-08T09:00:00.000Z"),
+      timerSessionId: "timer-session-long",
+    });
+
+    const skippedBreak = skipBreakFocusTimerState(
+      runningBreak,
+      minutesMs(25),
+      new Date("2026-03-08T09:15:00.000Z")
+    );
+
+    expect(skippedBreak).toMatchObject({
+      breakVariant: null,
+      completedFocusCycles: 4,
+      phase: "focus",
+      status: "running",
+      timerSessionId: "timer-session-long",
+    });
+  });
+
+  it("preserves the cycle count when skipping a short break", () => {
+    const runningBreak = createRunningBreakTimerState({
+      breakDurationMs: minutesMs(5),
+      breakVariant: "short",
+      completedFocusCycles: 2,
+      focusDurationMs: minutesMs(25),
+      now: new Date("2026-03-08T09:00:00.000Z"),
+      timerSessionId: "timer-session-short",
+    });
+
+    const skippedBreak = skipBreakFocusTimerState(
+      runningBreak,
+      minutesMs(25),
+      new Date("2026-03-08T09:05:00.000Z")
+    );
+
+    expect(skippedBreak).toMatchObject({
+      breakVariant: null,
+      completedFocusCycles: 2,
+      phase: "focus",
+      status: "running",
+      timerSessionId: "timer-session-short",
     });
   });
 });

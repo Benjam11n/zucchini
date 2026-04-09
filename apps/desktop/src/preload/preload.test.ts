@@ -348,6 +348,17 @@ describe("preload habits API", () => {
     expect(invoke).toHaveBeenCalledWith("habits:exportBackup");
   });
 
+  it("invokes clear data through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: true,
+      ok: true,
+    });
+
+    await expect(getHabitsApi().clearData()).resolves.toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("habits:clearData");
+  });
+
   it("invokes desktop notification status through the preload bridge", async () => {
     await loadPreloadModule();
     const status: DesktopNotificationStatus = {

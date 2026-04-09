@@ -5,11 +5,13 @@ function createMocks() {
   const exportBackup = vi.fn(() => Promise.resolve());
   const getDatabasePath = vi.fn(() => "/tmp/zucchini.db");
   const replaceDatabase = vi.fn();
+  const resetDatabase = vi.fn();
   const validateDatabase = vi.fn();
   const repository = {
     exportBackup,
     getDatabasePath,
     replaceDatabase,
+    resetDatabase,
     validateDatabase,
   };
 
@@ -64,6 +66,44 @@ function createMocks() {
 }
 
 describe("createDataManagementActions()", () => {
+  it("clears the live database and restarts the app", async () => {
+    const { actions, appLike, onBeforeQuit, repository } = createMocks();
+
+    await expect(actions.clearData(onBeforeQuit)).resolves.toBeTruthy();
+
+    expect(repository.resetDatabase).toHaveBeenCalledOnce();
+    expect(appLike.relaunch).toHaveBeenCalledOnce();
+    expect(onBeforeQuit).toHaveBeenCalledOnce();
+    expect(appLike.quit).toHaveBeenCalledOnce();
+  });
+
+  it("clears data without relaunching when restart is delegated to the dev launcher", async () => {
+    const {
+      appLike,
+      dialogLike,
+      onBeforeQuit,
+      repository,
+      service,
+      shellLike,
+    } = createMocks();
+    const actions = createDataManagementActions({
+      appLike: appLike as never,
+      clock: { todayKey: () => "2026-03-30" },
+      dialogLike: dialogLike as never,
+      repository: repository as never,
+      service,
+      shellLike,
+      shouldRelaunchAfterDataChange: false,
+    });
+
+    await expect(actions.clearData(onBeforeQuit)).resolves.toBeTruthy();
+
+    expect(repository.resetDatabase).toHaveBeenCalledOnce();
+    expect(appLike.relaunch).not.toHaveBeenCalled();
+    expect(onBeforeQuit).toHaveBeenCalledOnce();
+    expect(appLike.quit).toHaveBeenCalledOnce();
+  });
+
   it("validates a selected backup before replacing the live database", async () => {
     const { actions, appLike, onBeforeQuit, repository } = createMocks();
 
@@ -102,7 +142,7 @@ describe("createDataManagementActions()", () => {
       repository: repository as never,
       service,
       shellLike,
-      shouldRelaunchAfterImport: false,
+      shouldRelaunchAfterDataChange: false,
     });
 
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();

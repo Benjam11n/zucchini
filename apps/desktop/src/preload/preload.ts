@@ -100,6 +100,7 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.archiveFocusQuotaGoal, goalId),
   archiveHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
+  clearData: () => invokeHabits(HABITS_IPC_CHANNELS.clearData),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
   claimFocusTimerLeadership: (instanceId: string, ttlMs: number) =>

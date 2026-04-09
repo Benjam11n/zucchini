@@ -426,6 +426,10 @@ async function bootstrapApp(): Promise<void> {
       focusTimerCoordinator,
       getFocusTimerShortcutStatus: () =>
         focusTimerGlobalShortcutManager.getStatus(),
+      onClearData: () =>
+        dataManagement.clearData(() => {
+          context.markQuitting();
+        }),
       onExportBackup: dataManagement.exportBackup,
       onImportBackup: () =>
         dataManagement.importBackup(() => {

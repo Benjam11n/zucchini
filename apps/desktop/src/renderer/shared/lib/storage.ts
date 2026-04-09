@@ -46,3 +46,9 @@ export function removeStorage(key: string): boolean {
     return false;
   }
 }
+
+export function clearZucchiniStorage(): void {
+  for (const key of Object.values(STORAGE_KEYS)) {
+    removeStorage(key);
+  }
+}

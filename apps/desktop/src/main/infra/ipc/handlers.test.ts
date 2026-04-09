@@ -149,6 +149,7 @@ function createRegisterOptions(
         isRegistered: true,
       },
     })),
+    onClearData: vi.fn(() => Promise.resolve(true)),
     onExportBackup: vi.fn(() => Promise.resolve(null)),
     onImportBackup: vi.fn(() => Promise.resolve(false)),
     onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
@@ -431,6 +432,25 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(onOpenDataFolder.mock.calls).toHaveLength(1);
+  });
+
+  it("routes the clear data action to the provided callback", async () => {
+    resetHandlers();
+    const onClearData = vi.fn(() => Promise.resolve(true));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onClearData,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.clearData)?.({} as IpcMainInvokeEvent)
+    ).resolves.toStrictEqual({
+      data: true,
+      ok: true,
+    });
+    expect(onClearData.mock.calls).toHaveLength(1);
   });
 
   it("routes the export backup action to the provided callback", async () => {

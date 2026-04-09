@@ -13,6 +13,7 @@ function createMockHabitsApi(
   const mock = {
     archiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     archiveHabit: vi.fn().mockResolvedValue(null),
+    clearData: vi.fn().mockResolvedValue(true),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     createHabit: vi.fn().mockResolvedValue(null),

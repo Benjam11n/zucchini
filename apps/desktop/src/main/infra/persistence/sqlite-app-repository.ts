@@ -118,6 +118,10 @@ export class SqliteAppRepository implements AppRepository {
     this.client.replaceDatabase(sourcePath);
   }
 
+  resetDatabase(): void {
+    this.client.resetDatabase();
+  }
+
   close(): void {
     this.client.close();
   }

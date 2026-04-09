@@ -195,6 +195,32 @@ describe("focus tab", () => {
     });
   });
 
+  it("does not reset the set when skipping a long break", () => {
+    installHabitsMock();
+    resetFocusStore();
+    useFocusStore.getState().setTimerState(
+      createRunningBreakTimerState({
+        breakDurationMs: minutesMs(15),
+        breakVariant: "long",
+        completedFocusCycles: 4,
+        focusDurationMs: minutesMs(25),
+        now: new Date("2026-03-08T10:00:00.000Z"),
+        timerSessionId: "timer-session-page-long-skip",
+      })
+    );
+
+    render(<FocusPageHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Skip long break" }));
+
+    expect(useFocusStore.getState().timerState).toMatchObject({
+      completedFocusCycles: 4,
+      phase: "focus",
+      status: "running",
+      timerSessionId: "timer-session-page-long-skip",
+    });
+  });
+
   it("renders the roadmap totals for one full set", () => {
     installHabitsMock();
     resetFocusStore();

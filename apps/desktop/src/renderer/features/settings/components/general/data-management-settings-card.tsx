@@ -3,6 +3,7 @@ import {
   Download,
   FolderOpen,
   HardDriveDownload,
+  Trash2,
   Upload,
 } from "lucide-react";
 import { useState } from "react";
@@ -25,8 +26,9 @@ import {
   ItemDescription,
   ItemGroup,
 } from "@/renderer/shared/components/ui/item";
+import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
 
-type DataAction = "export" | "import" | "open" | null;
+type DataAction = "clear" | "export" | "import" | "open" | null;
 
 function getPathLabel(filePath: string): string {
   return filePath.split(/[/\\]/).at(-1) ?? filePath;
@@ -35,6 +37,7 @@ function getPathLabel(filePath: string): string {
 export function DataManagementSettingsCard() {
   const [activeAction, setActiveAction] = useState<DataAction>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -151,6 +154,29 @@ export function DataManagementSettingsCard() {
                 </Button>
               </ItemActions>
             </Item>
+
+            <Item className="py-2">
+              <ItemContent>
+                <p className="text-sm font-medium">Clear local data</p>
+                <ItemDescription>
+                  Delete this device&apos;s local Zucchini data and restart with
+                  a fresh database.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button
+                  disabled={activeAction !== null}
+                  onClick={() => {
+                    setIsClearDataDialogOpen(true);
+                  }}
+                  size="sm"
+                  variant="destructive"
+                >
+                  <Trash2 className="size-4" />
+                  Clear data
+                </Button>
+              </ItemActions>
+            </Item>
           </ItemGroup>
 
           {errorMessage ? (
@@ -218,6 +244,70 @@ export function DataManagementSettingsCard() {
               }}
             >
               Import and restart
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isClearDataDialogOpen}
+        onOpenChange={setIsClearDataDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear local data</DialogTitle>
+            <DialogDescription>
+              Delete all local Zucchini data on this device and restart with a
+              clean database.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 px-6 py-6">
+            <div
+              className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+              role="alert"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">
+                  This permanently deletes local data.
+                </p>
+                <p className="leading-snug text-destructive/85">
+                  Your habits, history, focus sessions, and settings on this
+                  device will be removed. Export a backup first if you may need
+                  them later.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setIsClearDataDialogOpen(false);
+              }}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={activeAction !== null}
+              onClick={async () => {
+                await runAction("clear", async () => {
+                  clearZucchiniStorage();
+                  setIsClearDataDialogOpen(false);
+                  const didClear = await window.habits.clearData();
+
+                  if (didClear) {
+                    setFeedbackMessage(
+                      "Restarting Zucchini with a fresh local database."
+                    );
+                  }
+                });
+              }}
+              variant="destructive"
+            >
+              Clear data and restart
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -158,6 +158,22 @@ export class SqliteDatabaseClient {
     fs.copyFileSync(sourcePath, databasePath);
   }
 
+  resetDatabase(): void {
+    const databasePath = this.getDatabasePath();
+
+    this.close();
+
+    for (const resetPath of [
+      databasePath,
+      `${databasePath}-shm`,
+      `${databasePath}-wal`,
+    ]) {
+      if (fs.existsSync(resetPath)) {
+        fs.rmSync(resetPath);
+      }
+    }
+  }
+
   close(): void {
     this.drizzleDb = null;
 

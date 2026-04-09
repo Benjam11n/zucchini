@@ -225,13 +225,18 @@ export function skipBreakFocusTimerState(
   focusDurationMs: number,
   now = new Date()
 ): PersistedFocusTimerState {
+  const nextCompletedFocusCycles =
+    timerState.breakVariant === "long"
+      ? timerState.completedFocusCycles
+      : getCompletedFocusCyclesAfterBreak(
+          timerState.breakVariant,
+          timerState.completedFocusCycles
+        );
+
   return createRunningFocusTimerState(
     now,
     focusDurationMs,
-    getCompletedFocusCyclesAfterBreak(
-      timerState.breakVariant,
-      timerState.completedFocusCycles
-    ),
+    nextCompletedFocusCycles,
     timerState.timerSessionId
   );
 }

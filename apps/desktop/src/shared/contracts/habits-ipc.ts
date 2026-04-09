@@ -64,6 +64,7 @@ export interface FocusTimerShortcutStatus {
 export const HABITS_IPC_CHANNELS = {
   archiveFocusQuotaGoal: "habits:archiveFocusQuotaGoal",
   archiveHabit: "habits:archiveHabit",
+  clearData: "habits:clearData",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   createHabit: "habits:createHabit",
@@ -204,6 +205,7 @@ export interface DesktopNotificationStatus {
 }
 
 export interface HabitsApi {
+  clearData: () => Promise<boolean>;
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
     instanceId: string,

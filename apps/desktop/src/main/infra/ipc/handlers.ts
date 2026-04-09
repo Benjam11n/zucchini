@@ -53,6 +53,7 @@ interface RegisterIpcHandlersOptions {
   broadcastFocusSessionRecorded: (session: FocusSession) => void;
   broadcastFocusTimerStateChanged: (state: PersistedFocusTimerState) => void;
   getFocusTimerShortcutStatus: () => FocusTimerShortcutStatus;
+  onClearData: () => Promise<boolean>;
   onExportBackup: () => Promise<string | null>;
   onImportBackup: () => Promise<boolean>;
   onOpenDataFolder: () => Promise<string>;
@@ -92,6 +93,7 @@ export function registerIpcHandlers({
   broadcastFocusTimerStateChanged,
   focusTimerCoordinator,
   getFocusTimerShortcutStatus,
+  onClearData,
   onExportBackup,
   onImportBackup,
   onOpenDataFolder,
@@ -193,6 +195,7 @@ export function registerIpcHandlers({
     onShowFocusWidget()
   );
   registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
+  registerHandler(HABITS_IPC_CHANNELS.clearData, () => onClearData());
   registerHandler(HABITS_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
   registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
   registerHandler(HABITS_IPC_CHANNELS.importBackup, () => onImportBackup());
