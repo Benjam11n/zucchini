@@ -7,6 +7,16 @@
 - `apps/web` contains the public marketing and download site.
 - Keep the two apps separate unless shared code is clearly justified.
 
+## Communication Defaults
+
+- Use the `caveman` skill by default for user-facing responses in this
+  workspace.
+- Default intensity is `ultra`.
+- If the user explicitly asks for normal writing, formal writing, or more
+  explanation, suspend `caveman` until the request is complete.
+- Keep code, commit messages, PR text, and other durable project artifacts in
+  normal style unless the user explicitly asks otherwise.
+
 ## Stable Workflow Rules
 
 - Run commands from the repository root with `bun`.
