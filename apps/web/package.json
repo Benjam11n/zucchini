@@ -27,6 +27,6 @@
     "@typescript/native-preview": "^7.0.0-dev.20260331.1",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.0.4"
   }
 }
