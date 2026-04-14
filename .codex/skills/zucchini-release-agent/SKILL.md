@@ -21,13 +21,13 @@ Use this skill only for the Zucchini repository.
 4. Run the automation script from the repository root:
 
 ```bash
-bun .codex/skills/zucchini-release-agent/scripts/create-release.mjs --channel prerelease
+node .codex/skills/zucchini-release-agent/scripts/create-release.mjs --channel prerelease
 ```
 
 or:
 
 ```bash
-bun .codex/skills/zucchini-release-agent/scripts/create-release.mjs --channel main
+node .codex/skills/zucchini-release-agent/scripts/create-release.mjs --channel main
 ```
 
 5. Use `--version <semver>` when the default inferred version is not the version you want.
@@ -40,7 +40,7 @@ The automation script should handle the full release flow:
 - compute or validate the target version
 - update `apps/desktop/package.json`
 - regenerate `CHANGELOG.md` with `apps/desktop/scripts/generate-changelog.mjs`
-- run `bun run format` after changelog generation
+- run `pnpm run format` after changelog generation
 - create `chore: release <version>`
 - create tag `v<version>`
 - push the release commit and tag to `origin`

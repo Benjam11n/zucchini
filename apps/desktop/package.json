@@ -6,20 +6,20 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "rebuild:native": "node scripts/install-native-deps.mjs",
-    "dev": "concurrently -k \"bun run dev:renderer\" \"bun run dev:bundle\" \"bun run dev:electron\"",
+    "dev": "concurrently -k \"pnpm run dev:renderer\" \"pnpm run dev:bundle\" \"pnpm run dev:electron\"",
     "dev:renderer": "vite",
     "dev:bundle": "tsdown --watch",
-    "dev:electron": "bun run scripts/dev-electron.mjs",
-    "start": "bun run build && bun run scripts/start-electron.mjs",
-    "build": "bun run typecheck && vite build && tsdown",
-    "dist:desktop": "bun run build && electron-builder --config electron-builder.config.ts",
+    "dev:electron": "node scripts/dev-electron.mjs",
+    "start": "pnpm run build && node scripts/start-electron.mjs",
+    "build": "pnpm run typecheck && vite build && tsdown",
+    "dist:desktop": "pnpm run build && electron-builder --config electron-builder.config.ts",
     "dist:release:win": "electron-builder --config electron-builder.config.ts --win nsis --publish always",
     "dist:release:mac": "electron-builder --config electron-builder.config.ts --mac dmg zip --publish always",
     "testdata:generate": "electron -r tsx/cjs scripts/generate-test-data.ts",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
-    "audit": "bun audit",
-    "audit:ci": "bun audit --production --audit-level=high",
-    "check:duplication": "bun run scripts/check-duplication.ts",
+    "audit": "pnpm audit",
+    "audit:ci": "pnpm audit --prod --audit-level high",
+    "check:duplication": "tsx scripts/check-duplication.ts",
     "lint": "oxlint -c ../../.oxlintrc.json .",
     "format": "ultracite fix .",
     "format:check": "ultracite check .",
@@ -83,14 +83,5 @@
   "optionalDependencies": {
     "macos-notification-state": "^3.0.0",
     "windows-notification-state": "^2.0.0"
-  },
-  "overrides": {
-    "undici": "7.24.1"
-  },
-  "trustedDependencies": [
-    "electron",
-    "esbuild",
-    "macos-notification-state",
-    "windows-notification-state"
-  ]
+  }
 }

@@ -1,3 +1,0 @@
-[install]
-# Delay newly published packages to reduce exposure to fast-moving supply-chain compromises.
-minimumReleaseAge = 604800

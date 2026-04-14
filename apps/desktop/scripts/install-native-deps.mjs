@@ -18,13 +18,13 @@ const child =
   process.platform === "win32"
     ? spawn(
         process.env["ComSpec"] ?? "cmd.exe",
-        ["/d", "/s", "/c", "bunx electron-builder install-app-deps"],
+        ["/d", "/s", "/c", "pnpm exec electron-builder install-app-deps"],
         {
           cwd: process.cwd(),
           stdio: "inherit",
         }
       )
-    : spawn("bunx", ["electron-builder", "install-app-deps"], {
+    : spawn("pnpm", ["exec", "electron-builder", "install-app-deps"], {
         cwd: process.cwd(),
         stdio: "inherit",
       });

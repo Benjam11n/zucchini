@@ -11,8 +11,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
 const APP_DISPLAY_NAME = isDevelopment ? "Zucchini (Dev)" : "Zucchini";
@@ -20,7 +19,7 @@ const APP_BUNDLE_ID = "com.zucchini.habittracker";
 const APP_ICON_NAME = "icon.icns";
 const LAUNCHER_VERSION = 2;
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 export const desktopDir = resolve(__dirname, "..");
 
 function setPlistString(plistPath, key, value) {
@@ -28,7 +27,7 @@ function setPlistString(plistPath, key, value) {
     "plutil",
     ["-replace", key, "-string", value, plistPath],
     {
-      encoding: "utf8",
+      encoding: "utf-8",
     }
   );
   if (replaceResult.status === 0) {
@@ -39,7 +38,7 @@ function setPlistString(plistPath, key, value) {
     "plutil",
     ["-insert", key, "-string", value, plistPath],
     {
-      encoding: "utf8",
+      encoding: "utf-8",
     }
   );
   if (insertResult.status === 0) {
@@ -127,7 +126,7 @@ function patchHelperBundleInfoPlists(appBundlePath) {
 
 function readJson(path) {
   try {
-    return JSON.parse(readFileSync(path, "utf8"));
+    return JSON.parse(readFileSync(path, "utf-8"));
   } catch {
     return null;
   }

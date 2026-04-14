@@ -7,7 +7,8 @@ the stack, and SQLite for persistence.
 
 ## Requirements
 
-- Bun
+- Node 22.x
+- pnpm
 - Node-compatible desktop environment for Electron development
 
 ## Install
@@ -15,27 +16,27 @@ the stack, and SQLite for persistence.
 Install dependencies from the repository root:
 
 ```bash
-bun install
+pnpm install
 ```
 
 If the desktop app later reports a native module load failure during local
 development, rebuild the desktop native dependencies explicitly:
 
 ```bash
-bun run --cwd apps/desktop rebuild:native
+pnpm --dir apps/desktop rebuild:native
 ```
 
 ## Common Commands
 
 ```bash
-bun run dev:desktop
-bun run build:desktop
-bun run --cwd apps/desktop typecheck
-bun run lint:desktop
-bun run test:desktop
-bun run --cwd apps/desktop knip
-bun run --cwd apps/desktop react-doctor
-bun run --cwd apps/desktop dist:desktop
+pnpm run dev:desktop
+pnpm run build:desktop
+pnpm --dir apps/desktop typecheck
+pnpm run lint:desktop
+pnpm run test:desktop
+pnpm --dir apps/desktop knip
+pnpm --dir apps/desktop react-doctor
+pnpm --dir apps/desktop dist:desktop
 ```
 
 ## Project Layout
@@ -60,14 +61,14 @@ bun run --cwd apps/desktop dist:desktop
 Before shipping changes, run:
 
 ```bash
-bun run format
-bun run lint:desktop
-bun run test:desktop
-bun run --cwd apps/desktop knip
+pnpm run format
+pnpm run lint:desktop
+pnpm run test:desktop
+pnpm --dir apps/desktop knip
 ```
 
-Use `bun run --cwd apps/desktop typecheck` when you want a quick
-TypeScript-only validation, and `bun run --cwd apps/desktop react-doctor`
+Use `pnpm --dir apps/desktop typecheck` when you want a quick
+TypeScript-only validation, and `pnpm --dir apps/desktop react-doctor`
 after meaningful React changes.
 
 ## Test Data Fixtures
@@ -76,8 +77,8 @@ Generate local SQLite fixtures for manual smoke testing and larger local data
 loads:
 
 ```bash
-bun run --cwd apps/desktop testdata:generate -- --preset medium --overwrite
-bun run --cwd apps/desktop testdata:generate -- --preset stress --overwrite
+pnpm --dir apps/desktop testdata:generate -- --preset medium --overwrite
+pnpm --dir apps/desktop testdata:generate -- --preset stress --overwrite
 ```
 
 Generated databases are written to:

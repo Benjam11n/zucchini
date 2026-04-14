@@ -6,23 +6,26 @@
     "apps/web"
   ],
   "scripts": {
-    "dev:desktop": "bun run --cwd apps/desktop dev",
-    "dev:web": "bun run --cwd apps/web dev",
-    "build:desktop": "bun run --cwd apps/desktop build",
-    "build:web": "bun run --cwd apps/web build",
-    "test:desktop": "bun run --cwd apps/desktop test",
-    "lint:desktop": "bun run --cwd apps/desktop lint",
-    "lint:web": "bun run --cwd apps/web lint",
+    "preinstall": "node scripts/check-node-version.mjs",
+    "dev:desktop": "pnpm --dir apps/desktop dev",
+    "dev:web": "pnpm --dir apps/web dev",
+    "build:desktop": "pnpm --dir apps/desktop build",
+    "build:web": "pnpm --dir apps/web build",
+    "test:desktop": "pnpm --dir apps/desktop test",
+    "lint:desktop": "pnpm --dir apps/desktop lint",
+    "lint:web": "pnpm --dir apps/web lint",
     "format": "ultracite fix .",
     "format:check": "ultracite check .",
-    "check": "bun run lint:desktop && bun run lint:web && bun run test:desktop && bun run build:web"
+    "check": "pnpm run lint:desktop && pnpm run lint:web && pnpm run test:desktop && pnpm run build:web"
   },
   "devDependencies": {
     "oxfmt": "^0.42.0",
     "oxlint": "^1.55.0",
     "ultracite": "^7.3.0"
   },
-  "trustedDependencies": [
-    "esbuild"
-  ]
+  "engines": {
+    "node": "22.x",
+    "pnpm": "10.27.0"
+  },
+  "packageManager": "pnpm@10.27.0"
 }

@@ -11,13 +11,13 @@
 ## Desktop Workflow Rules
 
 - Run desktop commands from the repository root with:
-  `bun run --cwd apps/desktop ...`
+  `pnpm --dir apps/desktop ...`
 - Common validations:
-  `bun run lint:desktop`
-  `bun run test:desktop`
-  `bun run --cwd apps/desktop knip`
-  `bun run build:desktop`
-- Run `bun run format` from the workspace root before finalizing changes.
+  `pnpm run lint:desktop`
+  `pnpm run test:desktop`
+  `pnpm --dir apps/desktop knip`
+  `pnpm run build:desktop`
+- Run `pnpm run format` from the workspace root before finalizing changes.
 
 ## Desktop Best Practices
 

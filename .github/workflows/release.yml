@@ -26,25 +26,31 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.3.8
+          version: 10.27.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Rebuild native desktop dependencies
-        run: bun run --cwd apps/desktop rebuild:native
+        run: pnpm --dir apps/desktop rebuild:native
 
       - name: Audit dependencies
-        run: bun run --cwd apps/desktop audit:ci
+        run: pnpm --dir apps/desktop audit:ci
 
       - name: Run tests
-        run: bun run --cwd apps/desktop test
+        run: pnpm --dir apps/desktop test
 
       - name: Build app bundles
-        run: bun run --cwd apps/desktop build
+        run: pnpm --dir apps/desktop build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -69,13 +75,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.3.8
+          version: 10.27.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Generate release notes
-        run: bun run --cwd apps/desktop scripts/generate-changelog.mjs --tag "${{ github.ref_name }}" --output ../../release-notes.md
+        run: pnpm --dir apps/desktop exec node scripts/generate-changelog.mjs --tag "${{ github.ref_name }}" --output ../../release-notes.md
 
       - name: Create or update draft release
         run: |
@@ -118,16 +130,22 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.3.8
+          version: 10.27.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Rebuild native desktop dependencies
-        run: bun run --cwd apps/desktop rebuild:native
+        run: pnpm --dir apps/desktop rebuild:native
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
@@ -136,4 +154,4 @@ jobs:
           path: apps/desktop
 
       - name: Publish release artifacts
-        run: bun run --cwd apps/desktop ${{ matrix.release_script }}
+        run: pnpm --dir apps/desktop ${{ matrix.release_script }}

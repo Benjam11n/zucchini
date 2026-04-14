@@ -9,12 +9,12 @@
 ## Web Workflow Rules
 
 - Run web commands from the repository root with:
-  `bun run --cwd apps/web ...`
+  `pnpm --dir apps/web ...`
 - Common validations:
-  `bun run lint:web`
-  `bun run build:web`
-  `bun run react-doctor:web`
-- Run `bun run format` from the workspace root before finalizing changes.
+  `pnpm run lint:web`
+  `pnpm run build:web`
+  `pnpm --dir apps/web react-doctor`
+- Run `pnpm run format` from the workspace root before finalizing changes.
 
 ## Web Best Practices
 

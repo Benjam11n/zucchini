@@ -587,7 +587,7 @@ export function readAndParseFile(
   filePath: string,
   cwd = process.cwd()
 ): ParsedFile {
-  const sourceText = fs.readFileSync(filePath, "utf8");
+  const sourceText = fs.readFileSync(filePath, "utf-8");
   const parsed = parseSourceText(filePath, sourceText);
 
   return {

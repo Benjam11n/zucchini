@@ -4,10 +4,15 @@
 
 # Zucchini
 
-Zucchini is now a small Bun workspace monorepo with:
+Zucchini is now a small pnpm workspace monorepo with:
 
 - `apps/desktop`: the Electron habit tracker
 - `apps/web`: the marketing/download site
+
+## Tooling
+
+- Node 22.x
+- pnpm 10.27.0
 
 The desktop app is a local-first habit tracker for people who want momentum,
 not micromanagement.

@@ -1,12 +1,11 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const scriptDir = import.meta.dirname;
 const skillRoot = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(skillRoot, "../../..");
 const desktopRoot = path.join(repoRoot, "apps/desktop");
@@ -40,7 +39,7 @@ try {
     log(`Next version: ${nextVersion}`);
     log(`Tag: ${tag}`);
     console.log("");
-    console.log(readFileSync(notesPath, "utf8").trim());
+    console.log(readFileSync(notesPath, "utf-8").trim());
     process.exit(0);
   }
 
@@ -155,7 +154,7 @@ function ensureRepoPreconditions() {
 function ensureCommandExists(command) {
   try {
     execFileSync("which", [command], {
-      encoding: "utf8",
+      encoding: "utf-8",
       stdio: "ignore",
     });
   } catch {
@@ -164,7 +163,7 @@ function ensureCommandExists(command) {
 }
 
 function readDesktopVersion() {
-  const packageJson = JSON.parse(readFileSync(desktopPackageJsonPath, "utf8"));
+  const packageJson = JSON.parse(readFileSync(desktopPackageJsonPath, "utf-8"));
   const { version } = packageJson;
 
   if (typeof version !== "string") {
@@ -177,7 +176,7 @@ function readDesktopVersion() {
 }
 
 function writeDesktopVersion(version) {
-  const packageJson = JSON.parse(readFileSync(desktopPackageJsonPath, "utf8"));
+  const packageJson = JSON.parse(readFileSync(desktopPackageJsonPath, "utf-8"));
   packageJson.version = version;
   writeFileSync(
     desktopPackageJsonPath,
@@ -252,9 +251,10 @@ function assertSemver(value, message) {
 
 function runChangelogScript(version, tag, outputPath = null) {
   const commandArgs = [
-    "run",
-    "--cwd",
+    "--dir",
     "apps/desktop",
+    "exec",
+    "node",
     "scripts/generate-changelog.mjs",
     "--version",
     version,
@@ -268,14 +268,14 @@ function runChangelogScript(version, tag, outputPath = null) {
     commandArgs.push("--write-changelog");
   }
 
-  execFileSync("bun", commandArgs, {
+  execFileSync("pnpm", commandArgs, {
     cwd: repoRoot,
     stdio: "inherit",
   });
 }
 
 function runFormatScript() {
-  execFileSync("bun", ["run", "format"], {
+  execFileSync("pnpm", ["run", "format"], {
     cwd: repoRoot,
     stdio: "inherit",
   });
@@ -399,7 +399,7 @@ function viewReleaseUrl(tag) {
 function runGit(gitArgs) {
   return execFileSync("git", gitArgs, {
     cwd: repoRoot,
-    encoding: "utf8",
+    encoding: "utf-8",
   }).trim();
 }
 
@@ -410,7 +410,7 @@ function execGit(gitArgs) {
 function runGh(ghArgs) {
   return execFileSync("gh", ghArgs, {
     cwd: repoRoot,
-    encoding: "utf8",
+    encoding: "utf-8",
   }).trim();
 }
 
@@ -422,7 +422,7 @@ function execCommand(command, commandArgs, options = {}) {
   try {
     const stdout = execFileSync(command, commandArgs, {
       cwd: repoRoot,
-      encoding: "utf8",
+      encoding: "utf-8",
       stdio: options.stdio ?? "pipe",
     });
 

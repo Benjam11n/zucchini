@@ -67,7 +67,7 @@ function warnMissingNativeAddon(packageName: string): void {
 
   warnedMissingAddons.add(packageName);
   console.warn(
-    `[reminders] Native addon "${packageName}" is unavailable. Reminder status detection will fall back to "unknown". Run \`bun run rebuild:native\` to rebuild optional native modules.`
+    `[reminders] Native addon "${packageName}" is unavailable. Reminder status detection will fall back to "unknown". Run \`pnpm --dir apps/desktop rebuild:native\` to rebuild optional native modules.`
   );
 }
 

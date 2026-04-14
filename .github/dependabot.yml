@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "bun"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -10,12 +10,12 @@ updates:
       default-days: 7
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "bun"
+      prefix: "pnpm"
       prefix-development: "chore"
       include: "scope"
     labels:
       - "dependencies"
-      - "bun"
+      - "pnpm"
       - "automated"
     groups:
       minor-patch-updates:

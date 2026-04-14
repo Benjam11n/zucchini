@@ -2,7 +2,7 @@
 
 ## Workspace Overview
 
-- Zucchini is a lightweight Bun workspace monorepo.
+- Zucchini is a lightweight pnpm workspace monorepo.
 - `apps/desktop` contains the Electron desktop app.
 - `apps/web` contains the public marketing and download site.
 - Keep the two apps separate unless shared code is clearly justified.
@@ -19,12 +19,13 @@
 
 ## Stable Workflow Rules
 
-- Run commands from the repository root with `bun`.
+- Use Node 22.x for this repository so local behavior matches CI.
+- Run commands from the repository root with `pnpm`.
 - Prefer the root wrapper scripts when they exist:
-  `bun run dev:desktop`, `bun run dev:web`, `bun run build:desktop`,
-  `bun run build:web`, `bun run check`.
+  `pnpm run dev:desktop`, `pnpm run dev:web`, `pnpm run build:desktop`,
+  `pnpm run build:web`, `pnpm run check`.
 - Never start a development server unless the user explicitly asks for it.
-- Before finalizing code changes, run `bun run format`.
+- Before finalizing code changes, run `pnpm run format`.
 - After meaningful changes, run the relevant validation commands for the app
   you touched.
 

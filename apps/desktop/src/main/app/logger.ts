@@ -81,7 +81,7 @@ function writeLogRecord(
     appendFileSync(
       path.join(logDirectoryPath, LOG_FILE_NAME),
       serialized,
-      "utf8"
+      "utf-8"
     );
   } catch (logWriteError) {
     stream.write(

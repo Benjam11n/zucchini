@@ -107,7 +107,7 @@ function Carousel({
 
   const contextValue = React.useMemo(
     () => ({
-      api: api,
+      api,
       canScrollNext,
       canScrollPrev,
       carouselRef,

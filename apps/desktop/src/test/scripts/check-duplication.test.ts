@@ -410,7 +410,7 @@ describe("check-duplication integration", () => {
     const parsedFiles = files.map((filePath) =>
       parseSourceText(
         path.relative(tempDir, filePath),
-        fs.readFileSync(filePath, "utf8")
+        fs.readFileSync(filePath, "utf-8")
       )
     );
     const cloneCandidates = parsedFiles.flatMap((parsedFile) =>

@@ -26,7 +26,7 @@ describe("createDesktopLogger()", () => {
 
     const records = readFileSync(
       path.join(logsDirectoryPath, "main.log"),
-      "utf8"
+      "utf-8"
     )
       .trim()
       .split("\n")
@@ -78,7 +78,7 @@ describe("createDesktopLogger()", () => {
 
     const records = readFileSync(
       path.join(logsDirectoryPath, "main.log"),
-      "utf8"
+      "utf-8"
     )
       .trim()
       .split("\n")

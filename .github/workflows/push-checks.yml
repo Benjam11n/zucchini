@@ -23,31 +23,37 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.3.8
+          version: 10.27.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Audit dependencies
-        run: bun run --cwd apps/desktop audit:ci
+        run: pnpm --dir apps/desktop audit:ci
 
       - name: Check formatting
-        run: bun run format:check
+        run: pnpm run format:check
 
       - name: Lint desktop app
-        run: bun run lint:desktop
+        run: pnpm run lint:desktop
 
       - name: Typecheck desktop app
-        run: bun run --cwd apps/desktop typecheck
+        run: pnpm --dir apps/desktop typecheck
 
       - name: Run desktop tests
-        run: bun run test:desktop
+        run: pnpm run test:desktop
 
       - name: Check desktop unused code
-        run: bun run --cwd apps/desktop knip
+        run: pnpm --dir apps/desktop knip
 
   web-checks:
     name: Web Checks
@@ -58,22 +64,28 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@e3914758a49697077f7bcd190d36582a61667aad
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: 1.3.8
+          version: 10.27.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Audit dependencies
-        run: bun run --cwd apps/web audit:ci
+        run: pnpm --dir apps/web audit:ci
 
       - name: Check formatting
-        run: bun run format:check
+        run: pnpm run format:check
 
       - name: Lint web app
-        run: bun run lint:web
+        run: pnpm run lint:web
 
       - name: Build web app
-        run: bun run build:web
+        run: pnpm run build:web

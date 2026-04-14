@@ -1,18 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const desktopRoot = process.cwd();
-const workspaceRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../.."
-);
+const workspaceRoot = path.resolve(import.meta.dirname, "../../..");
 const packageJsonPath = path.join(desktopRoot, "package.json");
 const changelogPath = path.join(workspaceRoot, "CHANGELOG.md");
 
 const cliArgs = parseArgs(process.argv.slice(2));
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 
 const releaseVersion = cliArgs.version ?? packageJson.version;
 const releaseTag = cliArgs.tag ?? `v${releaseVersion}`;
@@ -108,7 +104,7 @@ function parseArgs(rawArgs) {
 function runGit(gitArgs) {
   return execFileSync("git", gitArgs, {
     cwd: workspaceRoot,
-    encoding: "utf8",
+    encoding: "utf-8",
   }).trim();
 }
 
@@ -258,7 +254,7 @@ function renderChangelog(nextReleaseNotes, currentVersion) {
 
 function safeReadChangelog() {
   try {
-    return readFileSync(changelogPath, "utf8");
+    return readFileSync(changelogPath, "utf-8");
   } catch (error) {
     if (
       error &&
