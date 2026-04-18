@@ -8,6 +8,7 @@
 import type { Clock } from "@/main/app/clock";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
+import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -31,12 +32,9 @@ export function buildTodayState(
   );
 
   const focusSessions = repository.getFocusSessionsInRange(today, today);
-  const totalSeconds = focusSessions.reduce(
-    (total, session) => total + session.durationSeconds,
-    0
+  const focusMinutes = toFocusMinutes(
+    focusSessions.reduce((total, session) => total + session.durationSeconds, 0)
   );
-  const focusMinutes =
-    totalSeconds > 0 ? Math.max(1, Math.round(totalSeconds / 60)) : 0;
   repository.ensureWindDownStatusRowsForDate(today);
   const windDownActions = repository.getWindDownActionsWithStatus(today);
 

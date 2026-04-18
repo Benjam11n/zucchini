@@ -25,3 +25,11 @@ export interface CreateFocusSessionInput {
   startedAt: string;
   timerSessionId: string;
 }
+
+export function toFocusMinutes(totalSeconds: number): number {
+  if (totalSeconds <= 0) {
+    return 0;
+  }
+
+  return Math.max(1, Math.round(totalSeconds / 60));
+}

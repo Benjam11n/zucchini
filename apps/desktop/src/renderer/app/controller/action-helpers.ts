@@ -20,7 +20,6 @@ import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
-import type { AppSettings } from "@/shared/domain/settings";
 import { parseDateKey } from "@/shared/utils/date";
 
 export function getCurrentYearHistoryLimit(todayDate: string): number {
@@ -32,27 +31,6 @@ export function getCurrentYearHistoryLimit(todayDate: string): number {
     366,
     Math.floor((today.getTime() - yearStart.getTime()) / millisecondsPerDay) + 1
   );
-}
-
-export function updateSettingsDraftFromToday(): void {
-  const { todayState } = useTodayStore.getState();
-  const { settingsDraft } = useSettingsStore.getState();
-
-  useSettingsStore.setState({
-    settingsDraft: todayState?.settings ?? settingsDraft,
-  });
-}
-
-export function updateTodaySettings(nextSettings: AppSettings): void {
-  const { todayState } = useTodayStore.getState();
-  useTodayStore.setState({
-    todayState: todayState
-      ? {
-          ...todayState,
-          settings: nextSettings,
-        }
-      : todayState,
-  });
 }
 
 export function reorderVisibleTodayHabits(

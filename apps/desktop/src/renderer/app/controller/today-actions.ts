@@ -12,6 +12,7 @@ import type { AppTab } from "@/renderer/app/app.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
+import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { GoalFrequency } from "@/shared/domain/goal";
@@ -28,7 +29,6 @@ import {
   getCurrentYearHistoryLimit,
   refreshWeeklyReviewIfLoaded,
   reorderVisibleTodayHabits,
-  updateSettingsDraftFromToday,
 } from "./action-helpers";
 
 export type ReloadAllFn = (
@@ -41,6 +41,23 @@ export function createTodayActions({
 }: {
   loadFocusSessions: (force?: boolean) => Promise<void>;
 }) {
+  function syncSettingsDraftFromTodayState() {
+    const { todayState } = useTodayStore.getState();
+    const { settingsDraft } = useSettingsStore.getState();
+
+    useSettingsStore.setState({
+      settingsDraft: todayState?.settings ?? settingsDraft,
+    });
+  }
+
+  async function refreshWeeklyReviewOverview() {
+    if (useWeeklyReviewStore.getState().weeklyReviewPhase === "idle") {
+      return;
+    }
+
+    await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+  }
+
   const reloadAll: ReloadAllFn = async (
     nextTodayState,
     historyScope = useHistoryStore.getState().historyScope
@@ -65,16 +82,12 @@ export function createTodayActions({
   async function refreshToday(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
     await reloadAll(nextTodayState, useHistoryStore.getState().historyScope);
-    if (useWeeklyReviewStore.getState().weeklyReviewPhase !== "idle") {
-      await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
-    }
+    await refreshWeeklyReviewOverview();
   }
 
   async function refreshForNewDay() {
     await reloadAll(undefined, useHistoryStore.getState().historyScope);
-    if (useWeeklyReviewStore.getState().weeklyReviewPhase !== "idle") {
-      await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
-    }
+    await refreshWeeklyReviewOverview();
   }
 
   async function applyTodayMutation(mutator: Promise<TodayState>) {
@@ -110,7 +123,7 @@ export function createTodayActions({
           targetCount
         )
       );
-      updateSettingsDraftFromToday();
+      syncSettingsDraftFromTodayState();
     },
     async handleCreateWindDownAction(name: string) {
       await applyTodayMutation(window.habits.createWindDownAction(name));
@@ -157,7 +170,7 @@ export function createTodayActions({
       useUiStore.getState().setTab(nextTab);
 
       if (nextTab === "settings") {
-        updateSettingsDraftFromToday();
+        syncSettingsDraftFromTodayState();
       }
 
       if (nextTab === "focus") {

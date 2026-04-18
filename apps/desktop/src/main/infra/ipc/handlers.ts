@@ -104,6 +104,11 @@ export function registerIpcHandlers({
   onSettingsChanged,
   onWindDownChanged,
 }: RegisterIpcHandlersOptions): void {
+  function emitWindDownChanged(todayState: TodayState): TodayState {
+    onWindDownChanged?.(todayState);
+    return todayState;
+  }
+
   registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
     service.getTodayState()
   );
@@ -115,13 +120,10 @@ export function registerIpcHandlers({
   );
   registerHandler(
     HABITS_IPC_CHANNELS.toggleWindDownAction,
-    (actionId: unknown) => {
-      const todayState = service.toggleWindDownAction(
-        validateHabitId(actionId)
-      );
-      onWindDownChanged?.(todayState);
-      return todayState;
-    }
+    (actionId: unknown) =>
+      emitWindDownChanged(
+        service.toggleWindDownAction(validateHabitId(actionId))
+      )
   );
   registerHandler(
     HABITS_IPC_CHANNELS.incrementHabitProgress,
@@ -213,11 +215,9 @@ export function registerIpcHandlers({
     onSettingsChanged(nextSettings);
     return nextSettings;
   });
-  registerHandler(HABITS_IPC_CHANNELS.createWindDownAction, (name: unknown) => {
-    const todayState = service.createWindDownAction(validateHabitName(name));
-    onWindDownChanged?.(todayState);
-    return todayState;
-  });
+  registerHandler(HABITS_IPC_CHANNELS.createWindDownAction, (name: unknown) =>
+    emitWindDownChanged(service.createWindDownAction(validateHabitName(name)))
+  );
   registerHandler(
     HABITS_IPC_CHANNELS.renameWindDownAction,
     (actionId: unknown, name: unknown) =>
@@ -228,13 +228,10 @@ export function registerIpcHandlers({
   );
   registerHandler(
     HABITS_IPC_CHANNELS.deleteWindDownAction,
-    (actionId: unknown) => {
-      const todayState = service.deleteWindDownAction(
-        validateHabitId(actionId)
-      );
-      onWindDownChanged?.(todayState);
-      return todayState;
-    }
+    (actionId: unknown) =>
+      emitWindDownChanged(
+        service.deleteWindDownAction(validateHabitId(actionId))
+      )
   );
   registerHandler(
     HABITS_IPC_CHANNELS.createHabit,

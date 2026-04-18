@@ -1,14 +1,13 @@
 /**
  * App runtime factory — creates and wires the long-lived main-process objects.
  *
- * Builds the repository, application service, reminder scheduler, system tray,
- * and focus timer coordinator. Also exposes {@link applyRuntimeSettings} which
+ * Builds the repository, application service, reminder scheduler, and system
+ * tray. Also exposes {@link applyRuntimeSettings} which
  * syncs OS-level settings (login items, reminders, theme, tray) whenever the
  * user changes preferences.
  */
 import { systemClock } from "@/main/app/clock";
 import { createAppTray } from "@/main/app/tray";
-import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
 import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import { HabitsApplicationService as HabitsApplicationServiceImpl } from "@/main/features/habits/habits-application-service";
 import { createReminderScheduler } from "@/main/features/reminders/reminder-scheduler";
@@ -19,7 +18,6 @@ import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 import { buildLoginItemSettings } from "./lifecycle";
 
 export interface AppRuntime {
-  focusTimerCoordinator: ReturnType<typeof createFocusTimerCoordinator>;
   reminders: ReturnType<typeof createReminderScheduler>;
   windDownReminders: ReturnType<typeof createWindDownReminderScheduler>;
   repository: SqliteAppRepository;
@@ -40,7 +38,6 @@ export function createAppRuntime({
   onOpenWindDown,
   onQuit,
 }: CreateAppRuntimeOptions): AppRuntime {
-  const focusTimerCoordinator = createFocusTimerCoordinator();
   const repository = new SqliteAppRepository();
   const service = new HabitsApplicationServiceImpl(repository, systemClock);
   const reminders = createReminderScheduler({
@@ -68,7 +65,6 @@ export function createAppRuntime({
   });
 
   return {
-    focusTimerCoordinator,
     reminders,
     repository,
     service,

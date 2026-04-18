@@ -356,12 +356,6 @@ function warmAppRuntime(nextRuntime: AppRuntime): void {
   }
 }
 
-function scheduleRuntimeWarmup(nextRuntime: AppRuntime): void {
-  queueMicrotask(() => {
-    warmAppRuntime(nextRuntime);
-  });
-}
-
 process.on("uncaughtException", (error) => {
   reportFatalMainProcessError("uncaughtException", error);
 });
@@ -466,7 +460,9 @@ async function bootstrapApp(): Promise<void> {
 
     ensureMainWindow();
     ensureFocusWidgetWindow();
-    scheduleRuntimeWarmup(appRuntime);
+    queueMicrotask(() => {
+      warmAppRuntime(appRuntime);
+    });
     updaterController.start();
 
     app.on("activate", () => {

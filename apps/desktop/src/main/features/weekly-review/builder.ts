@@ -7,6 +7,7 @@
  * trend data, and most-missed habit rankings.
  */
 import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
+import { toFocusMinutes } from "@/shared/domain/focus-session";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {
@@ -47,11 +48,11 @@ function getWeekLabel(weekStart: string, weekEnd: string): string {
     { day: "numeric", month: "short" },
     "en-US"
   );
-  const endOptions: Intl.DateTimeFormatOptions =
-    weekStart.slice(0, 7) === weekEnd.slice(0, 7)
-      ? { day: "numeric", month: "short" }
-      : { day: "numeric", month: "short" };
-  const endLabel = formatDateKey(weekEnd, endOptions, "en-US");
+  const endLabel = formatDateKey(
+    weekEnd,
+    { day: "numeric", month: "short" },
+    "en-US"
+  );
 
   return `${startLabel} - ${endLabel}`;
 }
@@ -211,14 +212,6 @@ function getLongestCleanRun(dailySummaries: DailySummary[]): number {
   }
 
   return longest;
-}
-
-function toFocusMinutes(totalSeconds: number): number {
-  if (totalSeconds <= 0) {
-    return 0;
-  }
-
-  return Math.max(1, Math.round(totalSeconds / 60));
 }
 
 function getFocusMinutes(focusSessions: FocusSession[]): number {
