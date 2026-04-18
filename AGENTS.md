@@ -19,7 +19,7 @@
 
 ## Stable Workflow Rules
 
-- Use Node 22.x for this repository so local behavior matches CI.
+- Use Node 24.x for this repository so local behavior matches CI.
 - Run commands from the repository root with `pnpm`.
 - Prefer the root wrapper scripts when they exist:
   `pnpm run dev:desktop`, `pnpm run dev:web`, `pnpm run build:desktop`,

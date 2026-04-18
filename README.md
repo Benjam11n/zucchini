@@ -11,7 +11,7 @@ Zucchini is now a small pnpm workspace monorepo with:
 
 ## Tooling
 
-- Node 22.x
+- Node 24.x
 - pnpm 10.27.0
 
 The desktop app is a local-first habit tracker for people who want momentum,

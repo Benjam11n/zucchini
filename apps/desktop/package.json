@@ -83,5 +83,8 @@
   "optionalDependencies": {
     "macos-notification-state": "^3.0.0",
     "windows-notification-state": "^2.0.0"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

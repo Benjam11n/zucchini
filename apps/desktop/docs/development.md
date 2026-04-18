@@ -7,7 +7,7 @@ the stack, and SQLite for persistence.
 
 ## Requirements
 
-- Node 22.x
+- Node 24.x
 - pnpm
 - Node-compatible desktop environment for Electron development
 
