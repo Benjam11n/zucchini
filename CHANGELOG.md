@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.2 - 2026-04-18
+
+Changes since `v0.1.2-beta.1`.
+
+### Features
+
+- Add grid container for habit management layout to improve spacing
+- Add validation and inline error messaging for habit names in forms
+- Implement data clearing functionality and fix long break cycle count persistence
+
+### Fixes
+
+- Fix Electron dev launcher bundle copy
+
+### Refactors
+
+- Simplify desktop controller actions and state flow
+- Simplify focus cycle chip label to remove redundant heading text
+- Reset focus cycles to zero when skipping a long break
+
+### Documentation
+
+- Add communication defaults for agent behavior in AGENTS.md
+- Add UI design principles to AGENTS.md
+
+### Maintenance
+
+- Upgrade Node.js version to 24.15.0 in .nvmrc
+- Migrate workspace to node 24
+- Remove .node-version file
+- Migrate workspace from bun to pnpm
+
+### Other
+
+- Adjust streak card layout and reformat electron launcher copy command
+- Add sick day support to desktop streaks
+
 ## 0.1.2-beta.1 - 2026-04-08
 
 Changes since `v0.1.1-beta.17`.
