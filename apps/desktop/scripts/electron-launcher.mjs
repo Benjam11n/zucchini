@@ -1,11 +1,9 @@
 import { spawnSync } from "node:child_process";
 import {
   copyFileSync,
-  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -17,7 +15,7 @@ const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
 const APP_DISPLAY_NAME = isDevelopment ? "Zucchini (Dev)" : "Zucchini";
 const APP_BUNDLE_ID = "com.zucchini.habittracker";
 const APP_ICON_NAME = "icon.icns";
-const LAUNCHER_VERSION = 2;
+const LAUNCHER_VERSION = 5;
 
 const __dirname = import.meta.dirname;
 export const desktopDir = resolve(__dirname, "..");
@@ -78,52 +76,6 @@ function patchMainBundleIcon(appBundlePath) {
   copyFileSync(sourceIconPath, targetIconPath);
 }
 
-function patchHelperBundleInfoPlists(appBundlePath) {
-  const frameworksDir = join(appBundlePath, "Contents", "Frameworks");
-  if (!existsSync(frameworksDir)) {
-    return;
-  }
-
-  for (const entry of readdirSync(frameworksDir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || !entry.name.endsWith(".app")) {
-      continue;
-    }
-    if (!entry.name.startsWith("Electron Helper")) {
-      continue;
-    }
-
-    const helperPlistPath = join(
-      frameworksDir,
-      entry.name,
-      "Contents",
-      "Info.plist"
-    );
-    if (!existsSync(helperPlistPath)) {
-      continue;
-    }
-
-    const suffix = entry.name
-      .replace("Electron Helper", "")
-      .replace(".app", "")
-      .trim();
-    const helperName = suffix
-      ? `${APP_DISPLAY_NAME} Helper ${suffix}`
-      : `${APP_DISPLAY_NAME} Helper`;
-    const helperIdSuffix = suffix
-      .replaceAll(/[()]/g, "")
-      .trim()
-      .toLowerCase()
-      .replaceAll(/\s+/g, "-");
-    const helperBundleId = helperIdSuffix
-      ? `${APP_BUNDLE_ID}.helper.${helperIdSuffix}`
-      : `${APP_BUNDLE_ID}.helper`;
-
-    setPlistString(helperPlistPath, "CFBundleDisplayName", helperName);
-    setPlistString(helperPlistPath, "CFBundleName", helperName);
-    setPlistString(helperPlistPath, "CFBundleIdentifier", helperBundleId);
-  }
-}
-
 function readJson(path) {
   try {
     return JSON.parse(readFileSync(path, "utf-8"));
@@ -165,10 +117,16 @@ function buildMacLauncher(electronBinaryPath) {
   }
 
   rmSync(targetAppBundlePath, { force: true, recursive: true });
-  cpSync(sourceAppBundlePath, targetAppBundlePath, { recursive: true });
+  const copyResult = spawnSync("cp", ["-R", sourceAppBundlePath, targetAppBundlePath], {
+    encoding: "utf-8",
+  });
+  if (copyResult.status !== 0) {
+    throw new Error(
+      `Failed to copy Electron app bundle: ${copyResult.stderr || copyResult.stdout}`.trim()
+    );
+  }
   patchMainBundleInfoPlist(targetAppBundlePath, hasCustomIcon);
   patchMainBundleIcon(targetAppBundlePath);
-  patchHelperBundleInfoPlists(targetAppBundlePath);
   writeFileSync(metadataPath, `${JSON.stringify(expectedMetadata, null, 2)}\n`);
 
   return targetBinaryPath;
