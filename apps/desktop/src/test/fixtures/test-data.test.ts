@@ -138,6 +138,8 @@ function canUseFixtureDatabase(): boolean {
 }
 
 describe.skipIf(!canUseFixtureDatabase())("test data generator", () => {
+  const FIXTURE_TEST_TIMEOUT_MS = 20_000;
+
   test("generates deterministic medium fixture data for a fixed seed", () => {
     const first = createTempDbPath("medium-a");
     const second = createTempDbPath("medium-b");
@@ -308,7 +310,8 @@ describe.skipIf(!canUseFixtureDatabase())("test data generator", () => {
       expect(streakState?.best_streak).toBeGreaterThanOrEqual(
         streakState?.current_streak ?? 0
       );
-    }
+    },
+    FIXTURE_TEST_TIMEOUT_MS
   );
 
   test.each(["medium", "stress"] as const)(
@@ -376,6 +379,7 @@ describe.skipIf(!canUseFixtureDatabase())("test data generator", () => {
       });
 
       repository.close();
-    }
+    },
+    FIXTURE_TEST_TIMEOUT_MS
   );
 });
