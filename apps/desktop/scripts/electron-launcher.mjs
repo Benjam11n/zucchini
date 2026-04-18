@@ -117,9 +117,13 @@ function buildMacLauncher(electronBinaryPath) {
   }
 
   rmSync(targetAppBundlePath, { force: true, recursive: true });
-  const copyResult = spawnSync("cp", ["-R", sourceAppBundlePath, targetAppBundlePath], {
-    encoding: "utf-8",
-  });
+  const copyResult = spawnSync(
+    "cp",
+    ["-R", sourceAppBundlePath, targetAppBundlePath],
+    {
+      encoding: "utf-8",
+    }
+  );
   if (copyResult.status !== 0) {
     throw new Error(
       `Failed to copy Electron app bundle: ${copyResult.stderr || copyResult.stdout}`.trim()

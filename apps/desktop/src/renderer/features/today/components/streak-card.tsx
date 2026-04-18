@@ -95,7 +95,7 @@ function StreakCardComponent({
     <LazyMotion features={domAnimation}>
       <Card>
         <CardContent className="grid gap-6 p-0 lg:p-2">
-          <div className="flex justify-end px-4 pt-4 lg:px-2 lg:pt-2">
+          <div className="flex justify-end px-4 lg:-mt-2 lg:px-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
