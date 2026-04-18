@@ -1,10 +1,23 @@
 import { LazyMotion, domAnimation } from "framer-motion";
-import { CalendarDays, Flame, Snowflake, Timer } from "lucide-react";
+import {
+  CalendarDays,
+  Flame,
+  MoreHorizontal,
+  Snowflake,
+  Timer,
+} from "lucide-react";
 import type { ElementType } from "react";
 import { memo, useMemo } from "react";
 
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
+import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/renderer/shared/components/ui/dropdown-menu";
 import { StatCard } from "@/renderer/shared/components/ui/stat-card";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
@@ -16,6 +29,8 @@ interface StreakCardProps {
   currentStreak: number;
   dateLabel: string;
   focusMinutes: number;
+  isSickDay: boolean;
+  onToggleSickDay: () => void;
 }
 
 interface StatConfig {
@@ -32,6 +47,8 @@ function StreakCardComponent({
   currentStreak,
   dateLabel,
   focusMinutes,
+  isSickDay,
+  onToggleSickDay,
 }: StreakCardProps) {
   const formattedDate = useMemo(
     () =>
@@ -78,6 +95,26 @@ function StreakCardComponent({
     <LazyMotion features={domAnimation}>
       <Card>
         <CardContent className="grid gap-6 p-0 lg:p-2">
+          <div className="flex justify-end px-4 pt-4 lg:px-2 lg:pt-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="Open streak options"
+                  size="icon-xs"
+                  type="button"
+                  variant="ghost"
+                >
+                  <MoreHorizontal className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onToggleSickDay}>
+                  {isSickDay ? "Undo sick day" : "Mark today sick"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="flex justify-center">
             <HabitActivityCard categoryProgress={categoryProgress} />
           </div>
@@ -102,6 +139,12 @@ function StreakCardComponent({
               );
             })}
           </div>
+
+          {isSickDay ? (
+            <p className="-mt-2 text-center text-xs text-muted-foreground">
+              Today marked sick. Streak preserved.
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </LazyMotion>

@@ -60,4 +60,5 @@ export interface HistoryStats {
   completionRate: number;
   freezeDays: number;
   missedDays: number;
+  sickDays: number;
 }

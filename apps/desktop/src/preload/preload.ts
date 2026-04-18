@@ -197,6 +197,7 @@ const habitsApi: HabitsApi = {
       body,
       iconFilename
     ),
+  toggleSickDay: () => invokeHabits(HABITS_IPC_CHANNELS.toggleSickDay),
   toggleHabit: (habitId: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
   toggleWindDownAction: (actionId: number) =>

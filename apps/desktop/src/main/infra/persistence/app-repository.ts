@@ -10,6 +10,7 @@
  */
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
+import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -53,6 +54,7 @@ export interface AppRepository {
   getHabitsWithStatus(date: string): HabitWithStatus[];
   getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
   getHabitProgress(date: string, habitId: number): number;
+  getDayStatus(date: string): DayStatus | null;
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;
   removeStatusRowsForDate(date: string, habitId: number): void;
@@ -97,6 +99,8 @@ export interface AppRepository {
   getFirstTrackedDate(): string | null;
   getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
+  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void;
+  clearDayStatus(date: string): void;
   saveDailySummary(summary: DailySummary): void;
   getMaxSortOrder(): number;
   insertHabit(

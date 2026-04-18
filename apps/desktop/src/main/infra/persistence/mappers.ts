@@ -1,3 +1,4 @@
+import type { DayStatus } from "@/shared/domain/day-status";
 /**
  * Persistence layer data mappers.
  *
@@ -21,6 +22,7 @@ import type { WindDownAction } from "@/shared/domain/wind-down";
 
 import type {
   DailySummaryRow,
+  DayStatusRow,
   FocusSessionRow,
   HabitPeriodStatusRow,
   HabitPeriodStatusSnapshot,
@@ -53,8 +55,17 @@ export function mapDailySummary(row: DailySummaryRow): DailySummary {
     allCompleted: row.allCompleted,
     completedAt: row.completedAt,
     date: row.date,
+    dayStatus: row.dayStatus === "sick" ? "sick" : null,
     freezeUsed: row.freezeUsed,
     streakCountAfterDay: row.streakCountAfterDay,
+  };
+}
+
+export function mapDayStatus(row: DayStatusRow): DayStatus {
+  return {
+    createdAt: row.createdAt,
+    date: row.date,
+    kind: row.kind === "sick" ? "sick" : "sick",
   };
 }
 

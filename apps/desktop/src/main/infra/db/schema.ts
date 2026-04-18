@@ -65,8 +65,15 @@ export const dailySummary = sqliteTable("daily_summary", {
   allCompleted: integer("all_completed", { mode: "boolean" }).notNull(),
   completedAt: text("completed_at"),
   date: text().primaryKey(),
+  dayStatus: text("day_status"),
   freezeUsed: integer("freeze_used", { mode: "boolean" }).notNull(),
   streakCountAfterDay: integer("streak_count_after_day").notNull(),
+});
+
+export const dayStatus = sqliteTable("day_status", {
+  createdAt: text("created_at").notNull(),
+  date: text().primaryKey(),
+  kind: text().notNull(),
 });
 
 export const focusSessions = sqliteTable(
@@ -188,6 +195,7 @@ export const settings = sqliteTable("settings", {
 
 export const schema = {
   dailySummary,
+  dayStatus,
   focusQuotaGoals,
   focusSessions,
   focusTimerState,

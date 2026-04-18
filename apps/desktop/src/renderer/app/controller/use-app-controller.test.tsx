@@ -13,8 +13,11 @@ import type {
 } from "@/shared/domain/weekly-review";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
+  const { dayStatus = null, ...rest } = overrides;
+
   return {
     date: "2026-03-10",
+    dayStatus,
     focusMinutes: 0,
     habits: [
       {
@@ -39,7 +42,7 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
       currentStreak: 2,
       lastEvaluatedDate: "2026-03-09",
     },
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -53,6 +56,7 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
       allCompleted: false,
       completedAt: null,
       date,
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
@@ -75,6 +79,8 @@ function createManagedHabit(overrides: Partial<Habit> = {}): Habit {
 function createWeeklyReview(
   overrides: Partial<WeeklyReview> = {}
 ): WeeklyReview {
+  const { sickDays = 0, ...rest } = overrides;
+
   return {
     completedDays: 5,
     completionRate: 71,
@@ -87,10 +93,11 @@ function createWeeklyReview(
     longestCleanRun: 4,
     missedDays: 1,
     mostMissedHabits: [],
+    sickDays,
     trackedDays: 7,
     weekEnd: "2026-03-08",
     weekStart: "2026-03-02",
-    ...overrides,
+    ...rest,
   };
 }
 

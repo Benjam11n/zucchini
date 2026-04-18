@@ -1,7 +1,7 @@
 import {
   ChevronLeft,
   ChevronRight,
-  Flame,
+  HeartPulse,
   Snowflake,
   Timer,
   TrendingUp,
@@ -50,9 +50,9 @@ export function WeeklyReviewHeroCard({
       value: review.freezeDays,
     },
     {
-      icon: Flame,
-      label: "Streak",
-      value: review.endingStreak,
+      icon: HeartPulse,
+      label: "Sick",
+      value: review.sickDays,
     },
     {
       icon: Timer,

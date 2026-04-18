@@ -140,6 +140,8 @@ function createHistoryDay(
   date: string,
   summary: Partial<HistoryDay["summary"]> = {}
 ): HistoryDay {
+  const { dayStatus = null, ...restSummary } = summary;
+
   return {
     categoryProgress: [],
     date,
@@ -149,9 +151,10 @@ function createHistoryDay(
       allCompleted: false,
       completedAt: null,
       date,
+      dayStatus,
       freezeUsed: false,
       streakCountAfterDay: 0,
-      ...summary,
+      ...restSummary,
     },
   };
 }
@@ -169,6 +172,7 @@ function createWeeklyReview(): WeeklyReview {
     longestCleanRun: 3,
     missedDays: 2,
     mostMissedHabits: [],
+    sickDays: 0,
     trackedDays: 7,
     weekEnd: "2026-03-08",
     weekStart: "2026-03-02",

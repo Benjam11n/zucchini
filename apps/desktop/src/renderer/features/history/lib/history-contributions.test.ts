@@ -19,6 +19,7 @@ function createHistoryDay(
       allCompleted: false,
       completedAt: null,
       date,
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 0,
       ...summary,

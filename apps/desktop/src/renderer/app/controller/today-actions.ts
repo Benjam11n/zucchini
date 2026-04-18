@@ -216,6 +216,9 @@ export function createTodayActions({
         throw error;
       }
     },
+    async handleToggleSickDay() {
+      await refreshToday(window.habits.toggleSickDay());
+    },
     async handleToggleWindDownAction(actionId: number) {
       await refreshToday(window.habits.toggleWindDownAction(actionId));
     },

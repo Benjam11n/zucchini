@@ -32,6 +32,11 @@ export const HISTORY_STATUS_UI: Record<
       "border-border/70 bg-muted/55 text-foreground dark:border-border/80 dark:bg-muted/70 dark:text-foreground",
     squareClassName: "border-border/70 bg-muted/55",
   },
+  sick: {
+    badgeClassName:
+      "border-amber-500/35 bg-amber-500/8 text-amber-700 dark:border-amber-400/45 dark:bg-amber-400/14 dark:text-amber-300",
+    squareClassName: "border-amber-500/85 bg-amber-400/85",
+  },
 };
 
 export const HISTORY_METRIC_BADGE_CLASS_NAMES = {
@@ -39,4 +44,5 @@ export const HISTORY_METRIC_BADGE_CLASS_NAMES = {
   completionRate: HISTORY_STATUS_UI.complete.badgeClassName,
   freezeDays: HISTORY_STATUS_UI.freeze.badgeClassName,
   missedDays: HISTORY_STATUS_UI.missed.badgeClassName,
+  sickDays: HISTORY_STATUS_UI.sick.badgeClassName,
 } as const;

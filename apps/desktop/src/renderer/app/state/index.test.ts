@@ -7,8 +7,11 @@ import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
+  const { dayStatus = null, ...rest } = overrides;
+
   return {
     date: "2026-03-10",
+    dayStatus,
     focusMinutes: 0,
     habits: [],
     settings: {
@@ -22,7 +25,7 @@ function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
       currentStreak: 2,
       lastEvaluatedDate: "2026-03-09",
     },
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -36,6 +39,7 @@ function createHistoryDay(date = "2026-03-10"): HistoryDay {
       allCompleted: false,
       completedAt: null,
       date,
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 2,
     },
@@ -79,6 +83,7 @@ function createWeeklyReview(name: string): WeeklyReview {
     longestCleanRun: 1,
     missedDays: 0,
     mostMissedHabits: [],
+    sickDays: 0,
     trackedDays: 1,
     weekEnd: "2026-03-08",
     weekStart: "2026-03-02",

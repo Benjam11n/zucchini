@@ -8,8 +8,11 @@ describe("settleClosedDay behavior", () => {
         bestStreak: 7,
         currentStreak: 4,
       },
-      true,
-      "2026-03-07T21:30:00.000"
+      {
+        allCompleted: true,
+        completedAt: "2026-03-07T21:30:00.000",
+        dayStatus: null,
+      }
     );
 
     expect(result).toStrictEqual({
@@ -18,6 +21,7 @@ describe("settleClosedDay behavior", () => {
       bestStreak: 7,
       completedAt: "2026-03-07T21:30:00.000",
       currentStreak: 5,
+      dayStatus: null,
       freezeUsed: false,
     });
   });
@@ -29,8 +33,11 @@ describe("settleClosedDay behavior", () => {
         bestStreak: 11,
         currentStreak: 9,
       },
-      false,
-      null
+      {
+        allCompleted: false,
+        completedAt: null,
+        dayStatus: null,
+      }
     );
 
     expect(result).toStrictEqual({
@@ -39,6 +46,7 @@ describe("settleClosedDay behavior", () => {
       bestStreak: 11,
       completedAt: null,
       currentStreak: 9,
+      dayStatus: null,
       freezeUsed: true,
     });
   });
@@ -50,8 +58,11 @@ describe("settleClosedDay behavior", () => {
         bestStreak: 11,
         currentStreak: 9,
       },
-      false,
-      null
+      {
+        allCompleted: false,
+        completedAt: null,
+        dayStatus: null,
+      }
     );
 
     expect(result).toStrictEqual({
@@ -60,6 +71,7 @@ describe("settleClosedDay behavior", () => {
       bestStreak: 11,
       completedAt: null,
       currentStreak: 0,
+      dayStatus: null,
       freezeUsed: false,
     });
   });
@@ -71,8 +83,11 @@ describe("settleClosedDay behavior", () => {
         bestStreak: 14,
         currentStreak: 14,
       },
-      true,
-      "2026-03-15T22:00:00.000"
+      {
+        allCompleted: true,
+        completedAt: "2026-03-15T22:00:00.000",
+        dayStatus: null,
+      }
     );
 
     expect(result).toStrictEqual({
@@ -81,6 +96,7 @@ describe("settleClosedDay behavior", () => {
       bestStreak: 15,
       completedAt: "2026-03-15T22:00:00.000",
       currentStreak: 15,
+      dayStatus: null,
       freezeUsed: false,
     });
   });

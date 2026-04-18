@@ -67,6 +67,7 @@ function createControllerActions({
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
+    handleToggleSickDay: actions.handleToggleSickDay,
     handleToggleHabit: actions.handleToggleHabit,
     handleToggleWindDownAction: actions.handleToggleWindDownAction,
     handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,

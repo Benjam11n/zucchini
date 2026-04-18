@@ -60,6 +60,7 @@ describe("preload habits API", () => {
     await loadPreloadModule();
     const todayState = {
       date: "2026-03-08",
+      dayStatus: null,
       focusMinutes: 0,
       habits: [],
       settings: {

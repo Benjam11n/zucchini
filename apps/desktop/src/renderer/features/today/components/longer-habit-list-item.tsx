@@ -101,7 +101,7 @@ export function LongerHabitListItem({
           />
           <span
             className={cn(
-              "truncate text-sm font-medium transition-all duration-150",
+              "truncate text-sm transition-all duration-150",
               habit.completed
                 ? "text-muted-foreground/60 line-through decoration-muted-foreground/30"
                 : "text-foreground/90 group-hover:text-foreground"

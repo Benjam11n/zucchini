@@ -585,7 +585,11 @@ function createDailySummaries(
       statuses.size > 0 &&
       [...statuses.values()].every(Boolean);
     const completedAt = allCompleted ? toIsoAt(date, 21, 45) : null;
-    const settled = settleClosedDay(rollingState, allCompleted, completedAt);
+    const settled = settleClosedDay(rollingState, {
+      allCompleted,
+      completedAt,
+      dayStatus: null,
+    });
 
     rollingState = {
       availableFreezes: settled.availableFreezes,
@@ -596,6 +600,7 @@ function createDailySummaries(
       allCompleted: settled.allCompleted,
       completedAt: settled.completedAt,
       date,
+      dayStatus: settled.dayStatus,
       freezeUsed: settled.freezeUsed,
       streakCountAfterDay: settled.currentStreak,
     });

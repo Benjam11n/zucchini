@@ -56,6 +56,7 @@ function buildTodayState(
 ): TodayState {
   return {
     date,
+    dayStatus: null,
     focusMinutes: 0,
     habits,
     settings: DEFAULT_SETTINGS,

@@ -27,6 +27,7 @@ describe("WindDownPage", () => {
         onToggleAction={vi.fn()}
         state={{
           date: "2026-04-04",
+          dayStatus: null,
           focusMinutes: 0,
           habits: [],
           settings: createDefaultAppSettings("Asia/Singapore"),
@@ -72,6 +73,7 @@ describe("WindDownPage", () => {
         onToggleAction={vi.fn()}
         state={{
           date: "2026-04-04",
+          dayStatus: null,
           focusMinutes: 0,
           habits: [],
           settings: createDefaultAppSettings("Asia/Singapore"),

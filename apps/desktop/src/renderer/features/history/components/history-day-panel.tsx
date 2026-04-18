@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Flame,
+  HeartPulse,
   Snowflake,
   Timer,
   XCircle,
@@ -137,6 +138,17 @@ export function HistoryDayPanel({
                   >
                     <Snowflake className="size-3.5" />
                     Freeze preserved the streak for this day
+                  </m.div>
+                ) : null}
+                {selectedDay.summary.dayStatus === "sick" ? (
+                  <m.div
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mx-auto flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/8 px-2.5 py-1 text-xs text-amber-700 dark:text-amber-300"
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    transition={microTransition}
+                  >
+                    <HeartPulse className="size-3.5" />
+                    Sick day preserved the streak for this day
                   </m.div>
                 ) : null}
               </CardContent>

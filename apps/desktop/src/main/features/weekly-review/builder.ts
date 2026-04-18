@@ -77,7 +77,9 @@ function getDayPoint(
 
   let status: WeeklyReviewDayPoint["status"] = "empty";
   if (trackedHabitCount > 0) {
-    if (summary?.freezeUsed) {
+    if (summary?.dayStatus === "sick") {
+      status = "sick";
+    } else if (summary?.freezeUsed) {
       status = "freeze";
     } else if (summary?.allCompleted) {
       status = "complete";
@@ -202,7 +204,11 @@ function getLongestCleanRun(dailySummaries: DailySummary[]): number {
   for (const summary of dailySummaries.toSorted((left, right) =>
     left.date.localeCompare(right.date)
   )) {
-    if (summary.allCompleted && !summary.freezeUsed) {
+    if (
+      summary.allCompleted &&
+      !summary.freezeUsed &&
+      summary.dayStatus !== "sick"
+    ) {
       current += 1;
       longest = Math.max(longest, current);
       continue;
@@ -283,7 +289,10 @@ export function buildWeeklyReview({
   const freezeDays = summariesInWeek.filter(
     (summary) => summary.freezeUsed
   ).length;
-  const missedDays = trackedDays - completedDays - freezeDays;
+  const sickDays = summariesInWeek.filter(
+    (summary) => summary.dayStatus === "sick"
+  ).length;
+  const missedDays = trackedDays - completedDays - freezeDays - sickDays;
   const habitMetrics = buildHabitMetrics(statusesInWeek);
 
   return {
@@ -298,6 +307,7 @@ export function buildWeeklyReview({
     longestCleanRun: getLongestCleanRun(summariesInWeek),
     missedDays,
     mostMissedHabits: getMostMissedHabits(habitMetrics),
+    sickDays,
     trackedDays,
     weekEnd,
     weekStart,
@@ -321,6 +331,7 @@ function toTrendPoint(review: WeeklyReview): WeeklyReviewTrendPoint {
     freezeDays: review.freezeDays,
     label: review.label,
     missedDays: review.missedDays,
+    sickDays: review.sickDays,
     weekEnd: review.weekEnd,
     weekStart: review.weekStart,
   };

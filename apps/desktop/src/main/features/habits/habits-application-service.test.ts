@@ -7,6 +7,7 @@ import type {
   SettledHistoryOptions,
 } from "@/main/infra/persistence/app-repository";
 import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
+import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -106,6 +107,7 @@ class FakeRepository implements AppRepository {
     }
   >();
   dailySummaries = new Map<string, DailySummary>();
+  dayStatuses = new Map<string, DayStatus>();
   streak: StreakState = {
     availableFreezes: 1,
     bestStreak: 5,
@@ -224,6 +226,10 @@ class FakeRepository implements AppRepository {
     }
 
     return this.getStatusValues(date, habit.frequency).get(habitId) ?? 0;
+  }
+
+  getDayStatus(date: string): DayStatus | null {
+    return this.dayStatuses.get(date) ?? null;
   }
 
   ensureStatusRowsForDate(date: string): void {
@@ -540,6 +546,18 @@ class FakeRepository implements AppRepository {
     return this.dailySummaries.get(date)?.completedAt ?? null;
   }
 
+  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void {
+    this.dayStatuses.set(date, {
+      createdAt,
+      date,
+      kind,
+    });
+  }
+
+  clearDayStatus(date: string): void {
+    this.dayStatuses.delete(date);
+  }
+
   saveDailySummary(summary: DailySummary): void {
     this.dailySummaries.set(summary.date, summary);
   }
@@ -799,6 +817,7 @@ describe("habitService rollover", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-06",
+      dayStatus: null,
       freezeUsed: true,
       streakCountAfterDay: 3,
     });
@@ -807,6 +826,7 @@ describe("habitService rollover", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-07",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 0,
     });
@@ -1108,6 +1128,7 @@ describe("history retrieval", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-07",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 2,
     });
@@ -1115,6 +1136,7 @@ describe("history retrieval", () => {
       allCompleted: true,
       completedAt: "2026-01-15T21:00:00.000Z",
       date: "2026-01-15",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 6,
     });
@@ -1122,6 +1144,7 @@ describe("history retrieval", () => {
       allCompleted: false,
       completedAt: null,
       date: "2025-04-01",
+      dayStatus: null,
       freezeUsed: true,
       streakCountAfterDay: 3,
     });
@@ -1162,6 +1185,7 @@ describe("history retrieval", () => {
       allCompleted: true,
       completedAt: "2026-03-07T21:00:00.000Z",
       date: "2026-03-07",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 4,
     });
@@ -1169,6 +1193,7 @@ describe("history retrieval", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-06",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 3,
     });
@@ -1192,6 +1217,7 @@ describe("history retrieval", () => {
       allCompleted: true,
       completedAt: "2026-03-07T21:00:00.000Z",
       date: "2026-03-07",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 4,
     });
@@ -1258,6 +1284,7 @@ describe("history retrieval", () => {
         allCompleted,
         completedAt,
         date,
+        dayStatus: null,
         freezeUsed: index % 5 === 0,
         streakCountAfterDay: index + 1,
       });
@@ -1282,6 +1309,7 @@ describe("history retrieval", () => {
       allCompleted: true,
       completedAt: "2026-03-02T21:00:00.000Z",
       date: "2026-03-02",
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 4,
     });
@@ -1289,6 +1317,7 @@ describe("history retrieval", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-03",
+      dayStatus: null,
       freezeUsed: true,
       streakCountAfterDay: 4,
     });

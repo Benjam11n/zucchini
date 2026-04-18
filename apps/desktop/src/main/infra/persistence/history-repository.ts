@@ -9,11 +9,13 @@ import { and, asc, desc, eq, gte, lte, or, sql } from "drizzle-orm";
 
 import {
   dailySummary,
+  dayStatus,
   focusQuotaGoals,
   focusSessions,
   habitPeriodStatus,
 } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import {
   getFocusQuotaGoalPeriod,
   isFocusQuotaGoalComplete,
@@ -35,7 +37,11 @@ import type { DailySummary } from "@/shared/domain/streak";
 import type { SettledHistoryOptions } from "./app-repository";
 import type { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
 import type { SqliteHabitsRepository } from "./habit-repository";
-import { mapDailySummary, mapHabitPeriodStatusSnapshot } from "./mappers";
+import {
+  mapDailySummary,
+  mapDayStatus,
+  mapHabitPeriodStatusSnapshot,
+} from "./mappers";
 import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
@@ -124,6 +130,19 @@ export class SqliteHistoryRepository {
         .get();
 
       return row?.completedCount ?? 0;
+    });
+  }
+
+  getDayStatus(date: string): DayStatus | null {
+    return this.client.run("getDayStatus", () => {
+      const row = this.client
+        .getDrizzle()
+        .select()
+        .from(dayStatus)
+        .where(eq(dayStatus.date, date))
+        .get();
+
+      return row ? mapDayStatus(row) : null;
     });
   }
 
@@ -520,6 +539,37 @@ export class SqliteHistoryRepository {
     });
   }
 
+  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void {
+    this.client.run("setDayStatus", () => {
+      this.client
+        .getDrizzle()
+        .insert(dayStatus)
+        .values({
+          createdAt,
+          date,
+          kind,
+        })
+        .onConflictDoUpdate({
+          set: {
+            createdAt,
+            kind,
+          },
+          target: dayStatus.date,
+        })
+        .run();
+    });
+  }
+
+  clearDayStatus(date: string): void {
+    this.client.run("clearDayStatus", () => {
+      this.client
+        .getDrizzle()
+        .delete(dayStatus)
+        .where(eq(dayStatus.date, date))
+        .run();
+    });
+  }
+
   saveDailySummary(summary: DailySummary): void {
     this.client.run("saveDailySummary", () => {
       this.client
@@ -529,6 +579,7 @@ export class SqliteHistoryRepository {
           allCompleted: summary.allCompleted,
           completedAt: summary.completedAt,
           date: summary.date,
+          dayStatus: summary.dayStatus,
           freezeUsed: summary.freezeUsed,
           streakCountAfterDay: summary.streakCountAfterDay,
         })
@@ -536,6 +587,7 @@ export class SqliteHistoryRepository {
           set: {
             allCompleted: summary.allCompleted,
             completedAt: summary.completedAt,
+            dayStatus: summary.dayStatus,
             freezeUsed: summary.freezeUsed,
             streakCountAfterDay: summary.streakCountAfterDay,
           },

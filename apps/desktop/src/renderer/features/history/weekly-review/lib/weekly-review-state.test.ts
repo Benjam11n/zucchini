@@ -18,6 +18,7 @@ function createReview(weekStart: string): WeeklyReview {
     longestCleanRun: 2,
     missedDays: 1,
     mostMissedHabits: [],
+    sickDays: 0,
     trackedDays: 3,
     weekEnd: weekStart,
     weekStart,

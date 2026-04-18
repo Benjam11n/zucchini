@@ -64,6 +64,7 @@ function createMockHabitsApi(
     showFocusWidget: vi.fn().mockResolvedValue(null),
     showMainWindow: vi.fn().mockResolvedValue(null),
     showNotification: vi.fn().mockResolvedValue(null),
+    toggleSickDay: vi.fn().mockResolvedValue(null),
     toggleHabit: vi.fn().mockResolvedValue(null),
     toggleWindDownAction: vi.fn().mockResolvedValue(null),
     unarchiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),

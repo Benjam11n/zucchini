@@ -24,11 +24,13 @@ export function buildTodayState(
   repository.ensureStatusRowsForDate(today);
 
   const habits = repository.getHabitsWithStatus(today);
+  const currentDayStatus = repository.getDayStatus(today);
   const dailyHabits = habits.filter(isDailyHabit);
   const settledStreak = repository.getPersistedStreakState();
   const preview = previewOpenDay(
     settledStreak,
-    dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed)
+    dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed),
+    currentDayStatus?.kind ?? null
   );
 
   const focusSessions = repository.getFocusSessionsInRange(today, today);
@@ -40,6 +42,7 @@ export function buildTodayState(
 
   return {
     date: today,
+    dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
     habits,
@@ -76,6 +79,7 @@ export function buildTodayPreviewSummary(
     allCompleted,
     completedAt: allCompleted ? nowIso : null,
     date: todayState.date,
+    dayStatus: todayState.dayStatus,
     freezeUsed: false,
     streakCountAfterDay: todayState.streak.currentStreak,
   };

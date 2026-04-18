@@ -7,13 +7,16 @@ function createSummary(
   date: string,
   summary: Partial<DailySummary> = {}
 ): DailySummary {
+  const { dayStatus = null, ...rest } = summary;
+
   return {
     allCompleted: false,
     completedAt: null,
     date,
+    dayStatus,
     freezeUsed: false,
     streakCountAfterDay: 0,
-    ...summary,
+    ...rest,
   };
 }
 

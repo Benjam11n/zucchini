@@ -115,6 +115,9 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.getDesktopNotificationStatus, () =>
     getDesktopNotificationStatus()
   );
+  registerHandler(HABITS_IPC_CHANNELS.toggleSickDay, () =>
+    service.toggleSickDay()
+  );
   registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
     service.toggleHabit(validateHabitId(habitId))
   );

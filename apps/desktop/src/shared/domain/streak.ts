@@ -5,6 +5,8 @@
  * written after each day settles. These types are shared between the main
  * process (persistence layer) and the renderer (display layer).
  */
+import type { DayStatusKind } from "./day-status";
+
 export interface StreakState {
   currentStreak: number;
   bestStreak: number;
@@ -18,4 +20,5 @@ export interface DailySummary {
   streakCountAfterDay: number;
   freezeUsed: boolean;
   completedAt: string | null;
+  dayStatus: DayStatusKind | null;
 }

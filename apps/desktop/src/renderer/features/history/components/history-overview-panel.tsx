@@ -69,6 +69,10 @@ export function HistoryOverviewPanel({
                   label: `${stats.freezeDays} freeze saves`,
                 },
                 {
+                  className: HISTORY_METRIC_BADGE_CLASS_NAMES.sickDays,
+                  label: `${stats.sickDays} sick days`,
+                },
+                {
                   className: HISTORY_METRIC_BADGE_CLASS_NAMES.missedDays,
                   label: `${stats.missedDays} missed`,
                 },

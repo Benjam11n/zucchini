@@ -107,6 +107,7 @@ function MainApp() {
       onIncrementHabitProgress={actions.handleIncrementHabitProgress}
       onRenameHabit={actions.handleRenameHabit}
       onReorderHabits={actions.handleReorderHabits}
+      onToggleSickDay={actions.handleToggleSickDay}
       onUnarchiveHabit={actions.handleUnarchiveHabit}
       state={state.todayState}
       onToggleHabit={actions.handleToggleHabit}

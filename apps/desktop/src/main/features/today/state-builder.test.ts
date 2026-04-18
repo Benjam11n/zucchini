@@ -13,6 +13,7 @@ function createRepository(
     ensureWindDownStatusRowsForDate?: ReturnType<typeof vi.fn>;
     getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
     getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
+    getDayStatus?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
     getSettings?: ReturnType<typeof vi.fn>;
@@ -23,6 +24,7 @@ function createRepository(
     ensureStatusRowsForDate: overrides.ensureStatusRowsForDate ?? vi.fn(),
     ensureWindDownStatusRowsForDate:
       overrides.ensureWindDownStatusRowsForDate ?? vi.fn(),
+    getDayStatus: overrides.getDayStatus ?? vi.fn(() => null),
     getFocusQuotaGoalsWithStatusForDate:
       overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
     getFocusSessionsInRange:
@@ -153,6 +155,7 @@ describe("state builder", () => {
     it("marks the day as complete when all daily habits are done", () => {
       const todayState = {
         date: "2026-03-08",
+        dayStatus: null,
         focusMinutes: 30,
         focusQuotaGoals: [],
         habits: [
@@ -190,6 +193,7 @@ describe("state builder", () => {
     it("marks the day as incomplete when any daily habit is not done", () => {
       const todayState = {
         date: "2026-03-08",
+        dayStatus: null,
         focusMinutes: 0,
         focusQuotaGoals: [],
         habits: [
@@ -239,6 +243,7 @@ describe("state builder", () => {
     it("ignores weekly habits when evaluating daily completion", () => {
       const todayState = {
         date: "2026-03-08",
+        dayStatus: null,
         focusMinutes: 0,
         focusQuotaGoals: [],
         habits: [
@@ -291,6 +296,7 @@ describe("state builder", () => {
         allCompleted: true,
         completedAt: "2026-03-08T09:30:00.000Z",
         date: "2026-03-08",
+        dayStatus: null,
         freezeUsed: false,
         streakCountAfterDay: 3,
       };
@@ -329,6 +335,7 @@ describe("state builder", () => {
         allCompleted: false,
         completedAt: null,
         date: "2026-03-08",
+        dayStatus: null,
         freezeUsed: false,
         streakCountAfterDay: 0,
       };
@@ -359,6 +366,7 @@ describe("state builder", () => {
         allCompleted: false,
         completedAt: null,
         date: "2026-03-08",
+        dayStatus: null,
         freezeUsed: false,
         streakCountAfterDay: 0,
       };
@@ -374,6 +382,7 @@ describe("state builder", () => {
         allCompleted: false,
         completedAt: null,
         date: "2026-03-08",
+        dayStatus: null,
         freezeUsed: false,
         streakCountAfterDay: 0,
       };

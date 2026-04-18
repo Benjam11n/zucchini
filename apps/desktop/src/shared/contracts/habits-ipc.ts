@@ -1,3 +1,4 @@
+import type { DayStatusKind } from "@/shared/domain/day-status";
 /**
  * Shared IPC contract for habit-related renderer ↔ main communication.
  *
@@ -95,6 +96,7 @@ export const HABITS_IPC_CHANNELS = {
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
+  toggleSickDay: "habits:toggleSickDay",
   toggleHabit: "habits:toggleHabit",
   toggleWindDownAction: "habits:toggleWindDownAction",
   unarchiveFocusQuotaGoal: "habits:unarchiveFocusQuotaGoal",
@@ -173,6 +175,7 @@ export function toHabitsIpcError(error: unknown): HabitsIpcError {
 
 export interface TodayState {
   date: string;
+  dayStatus: DayStatusKind | null;
   focusMinutes: number;
   focusQuotaGoals?: FocusQuotaGoalWithStatus[];
   habits: HabitWithStatus[];
@@ -286,6 +289,7 @@ export interface HabitsApi {
     body: string,
     iconFilename?: string
   ) => Promise<void>;
+  toggleSickDay: () => Promise<TodayState>;
   toggleHabit: (habitId: number) => Promise<TodayState>;
   toggleWindDownAction: (actionId: number) => Promise<TodayState>;
   createWindDownAction: (name: string) => Promise<TodayState>;

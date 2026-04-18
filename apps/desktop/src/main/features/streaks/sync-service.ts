@@ -51,12 +51,13 @@ export function syncRollingState(
     const completedAt = allCompleted
       ? (repository.getExistingCompletedAt(cursor) ?? `${cursor}T23:59:59.000`)
       : null;
+    const currentDayStatus = repository.getDayStatus(cursor);
 
-    const next = settleClosedDay(
-      createRollingStreakState(rollingState),
+    const next = settleClosedDay(createRollingStreakState(rollingState), {
       allCompleted,
-      completedAt
-    );
+      completedAt,
+      dayStatus: currentDayStatus?.kind ?? null,
+    });
 
     rollingState = {
       availableFreezes: next.availableFreezes,
@@ -69,6 +70,7 @@ export function syncRollingState(
       allCompleted: next.allCompleted,
       completedAt: next.completedAt,
       date: cursor,
+      dayStatus: next.dayStatus,
       freezeUsed: next.freezeUsed,
       streakCountAfterDay: next.currentStreak,
     });

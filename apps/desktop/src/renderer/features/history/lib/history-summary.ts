@@ -7,6 +7,10 @@ export function getActivityStatus(
   summary: DailySummary,
   isToday?: boolean
 ): HistoryStatus {
+  if (summary.dayStatus === "sick") {
+    return "sick";
+  }
+
   if (summary.freezeUsed) {
     return "freeze";
   }
@@ -22,6 +26,10 @@ export function getActivitySummary(
   summary: DailySummary,
   isToday?: boolean
 ): string {
+  if (summary.dayStatus === "sick") {
+    return "Day excused due to sickness";
+  }
+
   if (summary.freezeUsed) {
     return "Missed day covered by a freeze";
   }
@@ -47,6 +55,10 @@ export function getActivityBadgeLabel(
     return "Freeze";
   }
 
+  if (status === "sick") {
+    return "Sick Day";
+  }
+
   if (status === "in-progress") {
     return "In Progress";
   }
@@ -59,7 +71,10 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
     (day) => day.summary.allCompleted
   ).length;
   const freezeDays = history.filter((day) => day.summary.freezeUsed).length;
-  const missedDays = history.length - completedDays - freezeDays;
+  const sickDays = history.filter(
+    (day) => day.summary.dayStatus === "sick"
+  ).length;
+  const missedDays = history.length - completedDays - freezeDays - sickDays;
   const completionRate =
     history.length === 0
       ? 0
@@ -70,6 +85,7 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
     completionRate,
     freezeDays,
     missedDays,
+    sickDays,
   };
 }
 

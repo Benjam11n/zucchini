@@ -35,6 +35,7 @@ const selectedDay: HistoryDay = {
     allCompleted: false,
     completedAt: null,
     date: "2026-03-10",
+    dayStatus: null,
     freezeUsed: false,
     streakCountAfterDay: 4,
   },

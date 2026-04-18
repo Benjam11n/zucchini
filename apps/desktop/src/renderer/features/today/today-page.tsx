@@ -51,6 +51,7 @@ interface TodayPageProps {
   onUnarchiveHabit: (habitId: number) => Promise<void>;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
+  onToggleSickDay: () => void;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory
@@ -86,6 +87,7 @@ function TodayPageComponent({
   onUnarchiveHabit,
   state,
   onToggleHabit,
+  onToggleSickDay,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
   onUpdateHabitTargetCount,
@@ -146,6 +148,8 @@ function TodayPageComponent({
               currentStreak={state.streak.currentStreak}
               dateLabel={state.date}
               focusMinutes={state.focusMinutes}
+              isSickDay={state.dayStatus === "sick"}
+              onToggleSickDay={onToggleSickDay}
             />
           </m.section>
 

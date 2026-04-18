@@ -57,6 +57,7 @@ const managedHabits: Habit[] = [
 
 const state: TodayState = {
   date: "2026-03-13",
+  dayStatus: null,
   focusMinutes: 0,
   habits: [
     {
@@ -94,6 +95,7 @@ describe("today page", () => {
         onCreateHabit={vi.fn(() => Promise.resolve())}
         onRenameHabit={vi.fn(() => Promise.resolve())}
         onReorderHabits={vi.fn(() => Promise.resolve())}
+        onToggleSickDay={vi.fn()}
         onUnarchiveHabit={vi.fn(() => Promise.resolve())}
         state={state}
         onToggleHabit={vi.fn()}

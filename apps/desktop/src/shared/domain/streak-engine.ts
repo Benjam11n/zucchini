@@ -1,3 +1,4 @@
+import type { DayStatusKind } from "./day-status";
 /**
  * Pure streak rules for settled and in-progress days.
  *
@@ -17,13 +18,33 @@ export type SettledDayResult = RollingStreakState & {
   freezeUsed: boolean;
   allCompleted: boolean;
   completedAt: string | null;
+  dayStatus: DayStatusKind | null;
 };
+
+interface ClosedDayInput {
+  allCompleted: boolean;
+  completedAt: string | null;
+  dayStatus: DayStatusKind | null;
+}
 
 export function settleClosedDay(
   state: RollingStreakState,
-  allCompleted: boolean,
-  completedAt: string | null
+  input: ClosedDayInput
 ): SettledDayResult {
+  if (input.dayStatus === "sick") {
+    return {
+      allCompleted: false,
+      availableFreezes: state.availableFreezes,
+      bestStreak: state.bestStreak,
+      completedAt: null,
+      currentStreak: state.currentStreak,
+      dayStatus: "sick",
+      freezeUsed: false,
+    };
+  }
+
+  const { allCompleted, completedAt } = input;
+
   if (allCompleted) {
     const currentStreak = state.currentStreak + 1;
     const bestStreak = Math.max(state.bestStreak, currentStreak);
@@ -36,6 +57,7 @@ export function settleClosedDay(
       bestStreak,
       completedAt,
       currentStreak,
+      dayStatus: null,
       freezeUsed: false,
     };
   }
@@ -47,6 +69,7 @@ export function settleClosedDay(
       bestStreak: state.bestStreak,
       completedAt: null,
       currentStreak: state.currentStreak,
+      dayStatus: null,
       freezeUsed: true,
     };
   }
@@ -57,14 +80,20 @@ export function settleClosedDay(
     bestStreak: state.bestStreak,
     completedAt: null,
     currentStreak: 0,
+    dayStatus: null,
     freezeUsed: false,
   };
 }
 
 export function previewOpenDay(
   state: RollingStreakState,
-  allCompleted: boolean
+  allCompleted: boolean,
+  dayStatus: DayStatusKind | null = null
 ): RollingStreakState {
+  if (dayStatus === "sick") {
+    return state;
+  }
+
   if (!allCompleted) {
     return state;
   }

@@ -66,6 +66,7 @@ export interface HabitsService {
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
+  toggleSickDay(): TodayState;
   toggleHabit(habitId: number): TodayState;
   incrementHabitProgress(habitId: number): TodayState;
   decrementHabitProgress(habitId: number): TodayState;
@@ -265,6 +266,30 @@ export class HabitsApplicationService implements HabitsService {
   getTodayState(): TodayState {
     return this.withSyncedRead("getTodayState", () =>
       this.buildCurrentTodayState()
+    );
+  }
+
+  toggleSickDay(): TodayState {
+    return this.mutateTodayState(
+      "toggleSickDay",
+      (today) => {
+        const currentDayStatus = this.repository.getDayStatus(today);
+
+        if (currentDayStatus?.kind === "sick") {
+          this.repository.clearDayStatus(today);
+          return;
+        }
+
+        this.repository.setDayStatus(
+          today,
+          "sick",
+          this.clock.now().toISOString()
+        );
+      },
+      {
+        ensureStatusRowsForToday: true,
+        syncRollingState: true,
+      }
     );
   }
 

@@ -22,6 +22,7 @@ function createHistoryDay(
       allCompleted: false,
       completedAt: null,
       date,
+      dayStatus: null,
       freezeUsed: false,
       streakCountAfterDay: 0,
       ...summary,
@@ -42,6 +43,7 @@ describe("history summary", () => {
       completionRate: 33,
       freezeDays: 1,
       missedDays: 1,
+      sickDays: 0,
     });
   });
 
@@ -51,6 +53,7 @@ describe("history summary", () => {
       completionRate: 0,
       freezeDays: 0,
       missedDays: 0,
+      sickDays: 0,
     });
   });
 

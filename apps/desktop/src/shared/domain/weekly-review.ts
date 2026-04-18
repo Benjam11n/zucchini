@@ -6,7 +6,12 @@
  */
 import type { HabitCategory, HabitFrequency } from "./habit";
 
-export type WeeklyReviewDayStatus = "complete" | "empty" | "freeze" | "missed";
+export type WeeklyReviewDayStatus =
+  | "complete"
+  | "empty"
+  | "freeze"
+  | "missed"
+  | "sick";
 
 export interface WeeklyReviewDayPoint {
   completedHabitCount: number;
@@ -37,6 +42,7 @@ export interface WeeklyReviewTrendPoint {
   freezeDays: number;
   label: string;
   missedDays: number;
+  sickDays: number;
   weekEnd: string;
   weekStart: string;
 }
@@ -60,6 +66,7 @@ export interface WeeklyReview {
   longestCleanRun: number;
   missedDays: number;
   mostMissedHabits: WeeklyReviewHabitMetric[];
+  sickDays: number;
   trackedDays: number;
   weekEnd: string;
   weekStart: string;

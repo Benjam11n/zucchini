@@ -12,6 +12,7 @@ import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-sta
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -167,6 +168,10 @@ export class SqliteAppRepository implements AppRepository {
     return this.historyRepository.getHabitProgress(date, habitId);
   }
 
+  getDayStatus(date: string): DayStatus | null {
+    return this.historyRepository.getDayStatus(date);
+  }
+
   ensureStatusRowsForDate(date: string): void {
     this.historyRepository.ensureStatusRowsForDate(date);
   }
@@ -312,6 +317,14 @@ export class SqliteAppRepository implements AppRepository {
 
   getExistingCompletedAt(date: string): string | null {
     return this.historyRepository.getExistingCompletedAt(date);
+  }
+
+  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void {
+    this.historyRepository.setDayStatus(date, kind, createdAt);
+  }
+
+  clearDayStatus(date: string): void {
+    this.historyRepository.clearDayStatus(date);
   }
 
   saveDailySummary(summary: DailySummary): void {
