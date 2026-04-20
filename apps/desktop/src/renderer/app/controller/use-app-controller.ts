@@ -1,10 +1,4 @@
 import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
-/**
- * Main renderer orchestration hook.
- *
- * This hook gathers state from the feature stores, runs shared lifecycle
- * effects, and returns the controller object consumed by the app shell.
- */
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
@@ -12,7 +6,6 @@ import { writeLastSeenWeeklyReviewStart } from "@/renderer/features/history/week
 import type { SettingsFieldErrors } from "@/renderer/features/settings/settings.types";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
-import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 import { appActions } from "./app-actions";
 import {
@@ -26,19 +19,18 @@ import {
 import { useAppLifecycleEffects } from "./use-app-lifecycle-effects";
 import { useSettingsAutosave } from "./use-settings-autosave";
 
-const EMPTY_HISTORY: AppControllerState["history"] = [];
 const EMPTY_FOCUS_SESSIONS: AppControllerState["focusSessions"] = [];
+const EMPTY_HISTORY: AppControllerState["history"] = [];
 const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
-function createControllerActions({
+function buildControllerActions({
   actions,
   latestReview,
 }: {
   actions: typeof appActions;
-  latestReview: WeeklyReview | null | undefined;
+  latestReview: { weekStart: string } | null | undefined;
 }) {
-  // oxlint-disable-next-line eslint/sort-keys
   return {
     handleArchiveFocusQuotaGoal: actions.handleArchiveFocusQuotaGoal,
     handleArchiveHabit: actions.handleArchiveHabit,
@@ -51,6 +43,7 @@ function createControllerActions({
       if (latestReview) {
         writeLastSeenWeeklyReviewStart(latestReview.weekStart);
       }
+
       actions.dismissWeeklyReviewSpotlight();
     },
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
@@ -67,8 +60,8 @@ function createControllerActions({
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
-    handleToggleSickDay: actions.handleToggleSickDay,
     handleToggleHabit: actions.handleToggleHabit,
+    handleToggleSickDay: actions.handleToggleSickDay,
     handleToggleWindDownAction: actions.handleToggleWindDownAction,
     handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,
     handleUnarchiveHabit: actions.handleUnarchiveHabit,
@@ -94,10 +87,78 @@ function createControllerActions({
   };
 }
 
-// Fallback-heavy state mapping is intentional here to keep `useAppController`
-// itself direct while preserving inactive-tab defaults.
-// oxlint-disable-next-line eslint/complexity
-function createControllerState({
+function buildFocusControllerState(
+  focusPageState: ReturnType<typeof useFocusPageState>
+): Pick<
+  AppControllerState,
+  | "focusSaveErrorMessage"
+  | "focusSessions"
+  | "focusSessionsLoadError"
+  | "focusSessionsPhase"
+  | "hasLoadedFocusSessions"
+  | "timerState"
+> {
+  return {
+    focusSaveErrorMessage: focusPageState?.focusSaveErrorMessage ?? null,
+    focusSessions: focusPageState?.focusSessions ?? EMPTY_FOCUS_SESSIONS,
+    focusSessionsLoadError: focusPageState?.focusSessionsLoadError ?? null,
+    focusSessionsPhase: focusPageState?.focusSessionsPhase ?? "idle",
+    hasLoadedFocusSessions: focusPageState?.hasLoadedFocusSessions ?? false,
+    timerState:
+      focusPageState?.timerState ?? useFocusStore.getState().timerState,
+  };
+}
+
+function buildHistoryControllerState({
+  historyPageState,
+  historyState,
+}: {
+  historyPageState: ReturnType<typeof useHistoryPageState>;
+  historyState: ReturnType<typeof useNonSettingsHistoryState>;
+}): Pick<
+  AppControllerState,
+  | "history"
+  | "historyLoadError"
+  | "historyScope"
+  | "isHistoryLoading"
+  | "selectedWeeklyReview"
+  | "weeklyReviewError"
+> {
+  return {
+    history: historyState?.history ?? EMPTY_HISTORY,
+    historyLoadError: historyState?.historyLoadError ?? null,
+    historyScope: historyState?.historyScope ?? "recent",
+    isHistoryLoading: historyState?.isHistoryLoading ?? false,
+    selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
+    weeklyReviewError: historyPageState?.weeklyReviewError ?? null,
+  };
+}
+
+function buildSettingsControllerState({
+  coreState,
+  settingsPageState,
+}: {
+  coreState: ReturnType<typeof useAppControllerCoreState>;
+  settingsPageState: ReturnType<typeof useSettingsPageState>;
+}): Pick<
+  AppControllerState,
+  | "settingsDraft"
+  | "settingsFieldErrors"
+  | "settingsSaveErrorMessage"
+  | "settingsSavePhase"
+> {
+  return {
+    settingsDraft: coreState.settingsDraft,
+    settingsFieldErrors:
+      settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS,
+    settingsSaveErrorMessage:
+      settingsPageState?.settingsSaveErrorMessage ?? null,
+    settingsSavePhase:
+      settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase,
+  };
+}
+
+function buildControllerState({
   coreState,
   focusPageState,
   historyPageState,
@@ -112,56 +173,36 @@ function createControllerState({
   settingsPageState: ReturnType<typeof useSettingsPageState>;
   weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
 }) {
-  const focusState = {
-    focusSaveErrorMessage: focusPageState?.focusSaveErrorMessage ?? null,
-    focusSessions: focusPageState?.focusSessions ?? EMPTY_FOCUS_SESSIONS,
-    focusSessionsLoadError: focusPageState?.focusSessionsLoadError ?? null,
-    focusSessionsPhase: focusPageState?.focusSessionsPhase ?? "idle",
-    timerState:
-      focusPageState?.timerState ?? useFocusStore.getState().timerState,
-  };
-  const historyViewState = {
-    history: historyState?.history ?? EMPTY_HISTORY,
-    historyLoadError: historyState?.historyLoadError ?? null,
-    historyScope: historyState?.historyScope ?? "recent",
-    isHistoryLoading: historyState?.isHistoryLoading ?? false,
-    selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
-    weeklyReviewError: historyPageState?.weeklyReviewError ?? null,
-  };
-  const settingsState = {
-    settingsDraft: coreState.settingsDraft,
-    settingsFieldErrors:
-      settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS,
-    settingsSaveErrorMessage:
-      settingsPageState?.settingsSaveErrorMessage ?? null,
-    settingsSavePhase:
-      settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase,
-  };
-
   return {
     bootError: coreState.bootError,
     bootPhase: coreState.bootPhase,
-    ...focusState,
-    ...historyViewState,
+    ...buildFocusControllerState(focusPageState),
+    ...buildHistoryControllerState({
+      historyPageState,
+      historyState,
+    }),
     isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
     managedHabits: coreState.managedHabits ?? EMPTY_MANAGED_HABITS,
-    ...settingsState,
+    ...buildSettingsControllerState({
+      coreState,
+      settingsPageState,
+    }),
     todayState: coreState.todayState,
     weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
     weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
-  };
+  } satisfies AppControllerState;
 }
 
 export function useAppController() {
-  const tab = useUiStore((state) => state.tab);
-  const systemTheme = useSystemTheme();
   const actions = appActions;
   const coreState = useAppControllerCoreState();
-  const weeklyReviewState = useWeeklyReviewState();
-  const historyState = useNonSettingsHistoryState();
   const focusPageState = useFocusPageState();
   const historyPageState = useHistoryPageState();
+  const historyState = useNonSettingsHistoryState();
   const settingsPageState = useSettingsPageState();
+  const systemTheme = useSystemTheme();
+  const tab = useUiStore((state) => state.tab);
+  const weeklyReviewState = useWeeklyReviewState();
 
   useSettingsAutosave({
     clearSettingsFeedback: actions.clearSettingsFeedback,
@@ -197,14 +238,12 @@ export function useAppController() {
     setFocusSaveErrorMessage: actions.setFocusSaveErrorMessage,
   });
 
-  const latestReview = weeklyReviewState.weeklyReviewOverview?.latestReview;
-
   return {
-    actions: createControllerActions({
+    actions: buildControllerActions({
       actions,
-      latestReview,
+      latestReview: weeklyReviewState.weeklyReviewOverview?.latestReview,
     }),
-    state: createControllerState({
+    state: buildControllerState({
       coreState,
       focusPageState,
       historyPageState,

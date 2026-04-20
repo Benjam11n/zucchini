@@ -44,7 +44,6 @@ export function HistoryPage({
     availableYears,
     filteredHistory,
     historyByDate,
-    historyCalendarContextValue,
     selectedDay,
     setViewState,
     stats,
@@ -94,7 +93,6 @@ export function HistoryPage({
               calendarWeeks={calendarWeeks}
               history={history}
               historyByDate={historyByDate}
-              historyCalendarContextValue={historyCalendarContextValue}
               historyLoadError={historyLoadError}
               historyScope={historyScope}
               isHistoryLoading={isHistoryLoading}

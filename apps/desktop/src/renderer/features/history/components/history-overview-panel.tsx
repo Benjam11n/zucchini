@@ -6,7 +6,6 @@ import { HistoryDayPanel } from "@/renderer/features/history/components/history-
 import { HistoryMetricBadge } from "@/renderer/features/history/components/history-metric-badge";
 import { HISTORY_METRIC_BADGE_CLASS_NAMES } from "@/renderer/features/history/history-status-ui";
 import type {
-  HistoryCalendarContextValue,
   HistoryPageProps,
   HistoryStats,
 } from "@/renderer/features/history/history.types";
@@ -20,7 +19,6 @@ export function HistoryOverviewPanel({
   availableYears,
   calendarWeeks,
   history,
-  historyCalendarContextValue,
   historyLoadError,
   historyScope,
   historyByDate,
@@ -36,10 +34,9 @@ export function HistoryOverviewPanel({
   availableYears: number[];
   calendarWeeks: ComponentProps<typeof GitHubCalendar>["weeks"];
   history: HistoryPageProps["history"];
-  historyCalendarContextValue: HistoryCalendarContextValue;
   historyLoadError: HistoryPageProps["historyLoadError"];
   historyScope: HistoryPageProps["historyScope"];
-  historyByDate: HistoryCalendarContextValue["historyByDate"];
+  historyByDate: Map<string, HistoryPageProps["history"][number]>;
   isHistoryLoading: HistoryPageProps["isHistoryLoading"];
   onLoadOlderHistory: HistoryPageProps["onLoadOlderHistory"];
   onNavigateToToday: HistoryPageProps["onNavigateToToday"];
@@ -141,7 +138,6 @@ export function HistoryOverviewPanel({
       <div className="grid gap-4">
         <HistoryCalendarCard
           historyByDate={historyByDate}
-          historyCalendarContextValue={historyCalendarContextValue}
           onSelectDateKey={(dateKey) => {
             setViewState((current) => ({
               ...current,

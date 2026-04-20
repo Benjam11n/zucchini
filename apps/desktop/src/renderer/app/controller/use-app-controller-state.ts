@@ -83,6 +83,7 @@ export function useFocusPageState() {
     focusSessions: state.focusSessions,
     focusSessionsLoadError: state.focusSessionsLoadError,
     focusSessionsPhase: state.focusSessionsPhase,
+    hasLoadedFocusSessions: state.hasLoadedFocusSessions,
     timerState: state.timerState,
   }));
 }

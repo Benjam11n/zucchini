@@ -29,6 +29,13 @@ import { NewHabitForm } from "./new-habit-form";
 const FEEDBACK_TIMEOUT_MS = 2200;
 const UNDO_TIMEOUT_MS = 5000;
 
+function clearTimeoutRef(timeoutRef: { current: number | null }) {
+  if (timeoutRef.current !== null) {
+    window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  }
+}
+
 export function HabitManagementContent({
   habits,
   onArchiveHabit,
@@ -84,49 +91,53 @@ export function HabitManagementContent({
     setPendingCreatedHabitName(null);
   }, [habits, pendingCreatedHabitName]);
 
-  function clearFeedbackTimer() {
-    if (feedbackTimeoutRef.current === null) {
+  function setFeedbackWithTimeout(
+    nextFeedback: HabitFeedback,
+    timeoutMs?: number
+  ) {
+    clearTimeoutRef(feedbackTimeoutRef);
+    setAutoSortUndoHabits(null);
+    setFeedback(nextFeedback);
+
+    if (!nextFeedback || timeoutMs === undefined) {
       return;
     }
 
-    window.clearTimeout(feedbackTimeoutRef.current);
-    feedbackTimeoutRef.current = null;
+    feedbackTimeoutRef.current = window.setTimeout(() => {
+      setFeedback((current) =>
+        current?.kind === nextFeedback.kind ? null : current
+      );
+      feedbackTimeoutRef.current = null;
+    }, timeoutMs);
   }
 
   function showSavedFeedback(message: string) {
-    clearFeedbackTimer();
-    setAutoSortUndoHabits(null);
-    setFeedback({
-      kind: "saved",
-      message,
-    });
-    feedbackTimeoutRef.current = window.setTimeout(() => {
-      setFeedback((current) => (current?.kind === "saved" ? null : current));
-      feedbackTimeoutRef.current = null;
-    }, FEEDBACK_TIMEOUT_MS);
+    setFeedbackWithTimeout(
+      {
+        kind: "saved",
+        message,
+      },
+      FEEDBACK_TIMEOUT_MS
+    );
   }
 
   function showErrorFeedback(message: string) {
-    clearFeedbackTimer();
-    setAutoSortUndoHabits(null);
-    setFeedback({
+    setFeedbackWithTimeout({
       kind: "error",
       message,
     });
   }
 
-  function clearArchivedHabitTimer() {
-    if (archivedHabitTimeoutRef.current === null) {
+  function setArchivedHabitWithTimeout(
+    nextArchivedHabit: RecentArchivedHabit | null
+  ) {
+    clearTimeoutRef(archivedHabitTimeoutRef);
+    setRecentArchivedHabit(nextArchivedHabit);
+
+    if (!nextArchivedHabit) {
       return;
     }
 
-    window.clearTimeout(archivedHabitTimeoutRef.current);
-    archivedHabitTimeoutRef.current = null;
-  }
-
-  function showArchivedHabitUndo(nextArchivedHabit: RecentArchivedHabit) {
-    clearArchivedHabitTimer();
-    setRecentArchivedHabit(nextArchivedHabit);
     archivedHabitTimeoutRef.current = window.setTimeout(() => {
       setRecentArchivedHabit((current) =>
         current?.habitId === nextArchivedHabit.habitId ? null : current
@@ -136,7 +147,7 @@ export function HabitManagementContent({
   }
 
   function showAutoSortFeedback(previousHabits: Habit[]) {
-    clearFeedbackTimer();
+    clearTimeoutRef(feedbackTimeoutRef);
     setAutoSortUndoHabits(previousHabits);
     setFeedback({
       kind: "auto-sorted",
@@ -181,17 +192,26 @@ export function HabitManagementContent({
     });
   }
 
-  async function handleUpdateHabitCategory(
-    habitId: number,
-    category: HabitCategory,
-    habitName: string
+  async function saveHabitChanges(
+    habitName: string,
+    task: () => Promise<void>
   ) {
     await runHabitAction({
       onSuccess: () => {
         showSavedFeedback(`Saved changes to "${habitName}".`);
       },
-      task: () => onUpdateHabitCategory(habitId, category),
+      task,
     });
+  }
+
+  async function handleUpdateHabitCategory(
+    habitId: number,
+    category: HabitCategory,
+    habitName: string
+  ) {
+    await saveHabitChanges(habitName, () =>
+      onUpdateHabitCategory(habitId, category)
+    );
   }
 
   async function handleUpdateHabitFrequency(
@@ -200,12 +220,9 @@ export function HabitManagementContent({
     targetCount: number | null | undefined,
     habitName: string
   ) {
-    await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Saved changes to "${habitName}".`);
-      },
-      task: () => onUpdateHabitFrequency(habitId, frequency, targetCount),
-    });
+    await saveHabitChanges(habitName, () =>
+      onUpdateHabitFrequency(habitId, frequency, targetCount)
+    );
   }
 
   async function handleUpdateHabitTargetCount(
@@ -213,13 +230,11 @@ export function HabitManagementContent({
     targetCount: number,
     habitName: string
   ) {
-    await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Saved changes to "${habitName}".`);
-      },
-      task: () =>
-        onUpdateHabitTargetCount?.(habitId, targetCount) ?? Promise.resolve(),
-    });
+    await saveHabitChanges(
+      habitName,
+      () =>
+        onUpdateHabitTargetCount?.(habitId, targetCount) ?? Promise.resolve()
+    );
   }
 
   async function handleUpdateHabitWeekdays(
@@ -227,12 +242,9 @@ export function HabitManagementContent({
     selectedWeekdays: HabitWeekday[] | null,
     habitName: string
   ) {
-    await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Saved changes to "${habitName}".`);
-      },
-      task: () => onUpdateHabitWeekdays(habitId, selectedWeekdays),
-    });
+    await saveHabitChanges(habitName, () =>
+      onUpdateHabitWeekdays(habitId, selectedWeekdays)
+    );
   }
 
   async function handleArchive(
@@ -243,7 +255,7 @@ export function HabitManagementContent({
   ) {
     await runHabitAction({
       onSuccess: () => {
-        showArchivedHabitUndo({
+        setArchivedHabitWithTimeout({
           frequency,
           habitId,
           habitName,
@@ -263,10 +275,10 @@ export function HabitManagementContent({
     }
 
     const archivedHabit = recentArchivedHabit;
-    clearArchivedHabitTimer();
+    clearTimeoutRef(archivedHabitTimeoutRef);
     await runHabitAction({
       onSuccess: () => {
-        setRecentArchivedHabit(null);
+        setArchivedHabitWithTimeout(null);
       },
       task: () => onUnarchiveHabit(archivedHabit.habitId),
     });
@@ -278,7 +290,7 @@ export function HabitManagementContent({
     }
 
     const previousHabits = autoSortUndoHabits;
-    clearFeedbackTimer();
+    clearTimeoutRef(feedbackTimeoutRef);
     await runHabitAction({
       onSuccess: () => {
         setAutoSortUndoHabits(null);

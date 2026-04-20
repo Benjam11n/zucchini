@@ -5,12 +5,9 @@
  * (total days, completion rate), builds the day lookup map, and provides
  * callbacks for selecting dates and navigating between years.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import type {
-  HistoryCalendarContextValue,
-  HistoryPageProps,
-} from "@/renderer/features/history/history.types";
+import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import {
   getHistoryDayLookup,
   getHistoryStats,
@@ -117,28 +114,10 @@ export function useHistoryViewState({
     }));
   }, [availableYears, history, todayDate, viewState.selectedYear]);
 
-  const onSelectDate = useCallback((dateKey: string) => {
-    setViewState({
-      selectedDateKey: dateKey,
-      selectedYear: Number.parseInt(dateKey.slice(0, 4), 10),
-      visibleMonth: parseDateKey(dateKey),
-    });
-  }, []);
-
-  const historyCalendarContextValue: HistoryCalendarContextValue = useMemo(
-    () => ({
-      historyByDate,
-      onSelectDate,
-      selectedDateKey: selectedDay?.date ?? null,
-    }),
-    [historyByDate, onSelectDate, selectedDay?.date]
-  );
-
   return {
     availableYears,
     filteredHistory,
     historyByDate,
-    historyCalendarContextValue,
     selectedDay,
     setViewState,
     stats,
