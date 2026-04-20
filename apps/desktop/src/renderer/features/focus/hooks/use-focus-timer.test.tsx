@@ -35,7 +35,7 @@ type FocusSessionRecordedListener = (session: {
   entryKind: "completed" | "partial";
   id: number;
   startedAt: string;
-  timerSessionId: string | null;
+  timerSessionId: string;
 }) => void;
 type FocusTimerActionListener = (request: {
   action: "reset" | "toggle";

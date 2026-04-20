@@ -85,7 +85,7 @@ export const focusSessions = sqliteTable(
     entryKind: text("entry_kind").notNull().default("completed"),
     id: integer().primaryKey({ autoIncrement: true }),
     startedAt: text("started_at").notNull(),
-    timerSessionId: text("timer_session_id"),
+    timerSessionId: text("timer_session_id").notNull(),
   },
   (table) => [
     index("focus_sessions_completed_at_idx").on(table.completedAt),

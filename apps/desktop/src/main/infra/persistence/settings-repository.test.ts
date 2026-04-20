@@ -65,6 +65,9 @@ function createFakeClient(initialRow?: FakeSettingsRow) {
         },
       };
     },
+    peekRow() {
+      return row;
+    },
     run<T>(_label: string, execute: () => T): T {
       return execute();
     },
@@ -100,6 +103,63 @@ describe("SqliteSettingsRepository", () => {
     ).toStrictEqual(defaults.categoryPreferences);
   });
 
+  it("fills in missing category icons from defaults for old typed settings rows", () => {
+    const defaults = createDefaultAppSettings("Asia/Singapore");
+    const repository = new SqliteSettingsRepository(
+      createFakeClient({
+        categoryPreferences: JSON.stringify({
+          fitness: {
+            color: "#CC3355",
+            label: "Movement",
+          },
+          nutrition: {
+            color: "#66CC22",
+            label: "Fuel",
+          },
+          productivity: {
+            color: "#22BBDD",
+            label: "Work",
+          },
+        }),
+        focusCyclesBeforeLongBreak: defaults.focusCyclesBeforeLongBreak,
+        focusDefaultDurationSeconds: defaults.focusDefaultDurationSeconds,
+        focusLongBreakSeconds: defaults.focusLongBreakSeconds,
+        focusShortBreakSeconds: defaults.focusShortBreakSeconds,
+        id: 1,
+        launchAtLogin: defaults.launchAtLogin,
+        minimizeToTray: defaults.minimizeToTray,
+        reminderEnabled: defaults.reminderEnabled,
+        reminderSnoozeMinutes: defaults.reminderSnoozeMinutes,
+        reminderTime: defaults.reminderTime,
+        resetFocusTimerShortcut: defaults.resetFocusTimerShortcut,
+        themeMode: defaults.themeMode,
+        timezone: defaults.timezone,
+        toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+        windDownTime: defaults.windDownTime,
+      }) as never
+    );
+
+    expect(
+      repository.getSettings("Asia/Singapore").categoryPreferences
+    ).toStrictEqual({
+      fitness: {
+        color: "#CC3355",
+        icon: defaults.categoryPreferences.fitness.icon,
+        label: "Movement",
+      },
+      nutrition: {
+        color: "#66CC22",
+        icon: defaults.categoryPreferences.nutrition.icon,
+        label: "Fuel",
+      },
+      productivity: {
+        color: "#22BBDD",
+        icon: defaults.categoryPreferences.productivity.icon,
+        label: "Work",
+      },
+    });
+  });
+
   it("round-trips category preferences through the settings row", () => {
     const client = createFakeClient();
     const repository = new SqliteSettingsRepository(client as never);
@@ -132,6 +192,42 @@ describe("SqliteSettingsRepository", () => {
     expect(savedSettings.categoryPreferences).toStrictEqual(
       customSettings.categoryPreferences
     );
+  });
+
+  it("repairs legacy blank focus timer shortcuts with platform defaults", () => {
+    const defaults = createDefaultAppSettings("Asia/Singapore");
+    const client = createFakeClient({
+      categoryPreferences: JSON.stringify(defaults.categoryPreferences),
+      focusCyclesBeforeLongBreak: defaults.focusCyclesBeforeLongBreak,
+      focusDefaultDurationSeconds: defaults.focusDefaultDurationSeconds,
+      focusLongBreakSeconds: defaults.focusLongBreakSeconds,
+      focusShortBreakSeconds: defaults.focusShortBreakSeconds,
+      id: 1,
+      launchAtLogin: defaults.launchAtLogin,
+      minimizeToTray: defaults.minimizeToTray,
+      reminderEnabled: defaults.reminderEnabled,
+      reminderSnoozeMinutes: defaults.reminderSnoozeMinutes,
+      reminderTime: defaults.reminderTime,
+      resetFocusTimerShortcut: "",
+      themeMode: defaults.themeMode,
+      timezone: defaults.timezone,
+      toggleFocusTimerShortcut: "",
+      windDownTime: defaults.windDownTime,
+    });
+    const repository = new SqliteSettingsRepository(client as never);
+
+    const savedSettings = repository.getSettings("Asia/Singapore");
+
+    expect(savedSettings.resetFocusTimerShortcut).toBe(
+      defaults.resetFocusTimerShortcut
+    );
+    expect(savedSettings.toggleFocusTimerShortcut).toBe(
+      defaults.toggleFocusTimerShortcut
+    );
+    expect(client.peekRow()).toMatchObject({
+      resetFocusTimerShortcut: defaults.resetFocusTimerShortcut,
+      toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
+    });
   });
 
   it("does not overwrite saved pomodoro settings when seeding defaults", () => {

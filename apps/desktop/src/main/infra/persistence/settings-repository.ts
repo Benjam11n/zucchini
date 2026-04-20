@@ -4,12 +4,11 @@ import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
 import {
   createDefaultAppSettings,
   isValidGlobalShortcutAccelerator,
-  normalizeHabitCategoryColor,
-  normalizeHabitCategoryIcon,
-  normalizeHabitCategoryLabel,
+  normalizeHabitCategoryPreferences,
 } from "@/shared/domain/settings";
 import type {
   AppSettings,
+  HabitCategoryMetadata,
   HabitCategoryPreferences,
 } from "@/shared/domain/settings";
 
@@ -23,32 +22,7 @@ function serializeCategoryPreferences(
   return JSON.stringify(categoryPreferences);
 }
 
-function parseCategoryMetadata(
-  value: unknown,
-  defaults: HabitCategoryPreferences[keyof HabitCategoryPreferences]
-): HabitCategoryPreferences[keyof HabitCategoryPreferences] {
-  const candidate =
-    value && typeof value === "object"
-      ? (value as Partial<Record<"color" | "icon" | "label", unknown>>)
-      : null;
-
-  return {
-    color: normalizeHabitCategoryColor(
-      typeof candidate?.color === "string" ? candidate.color : undefined,
-      defaults.color
-    ),
-    icon: normalizeHabitCategoryIcon(
-      typeof candidate?.icon === "string" ? candidate.icon : undefined,
-      defaults.icon
-    ),
-    label: normalizeHabitCategoryLabel(
-      typeof candidate?.label === "string" ? candidate.label : undefined,
-      defaults.label
-    ),
-  };
-}
-
-function parseCategoryPreferences(
+function deserializeCategoryPreferences(
   value: string,
   defaults: HabitCategoryPreferences
 ): HabitCategoryPreferences {
@@ -67,18 +41,13 @@ function parseCategoryPreferences(
     return defaults;
   }
 
-  const candidate = parsed as Partial<
-    Record<keyof HabitCategoryPreferences, unknown>
-  >;
-
-  return {
-    fitness: parseCategoryMetadata(candidate.fitness, defaults.fitness),
-    nutrition: parseCategoryMetadata(candidate.nutrition, defaults.nutrition),
-    productivity: parseCategoryMetadata(
-      candidate.productivity,
-      defaults.productivity
-    ),
-  };
+  // `0008_typed_settings` migrated legacy rows without category icons, so
+  // current reads still need to normalize partial stored metadata.
+  return normalizeHabitCategoryPreferences(
+    parsed as Partial<
+      Record<keyof HabitCategoryPreferences, Partial<HabitCategoryMetadata>>
+    >
+  );
 }
 
 export class SqliteSettingsRepository {
@@ -86,6 +55,56 @@ export class SqliteSettingsRepository {
 
   constructor(client: SqliteDatabaseClient) {
     this.client = client;
+  }
+
+  private persistSettings(settingsToSave: AppSettings): void {
+    this.client
+      .getDrizzle()
+      .insert(settings)
+      .values({
+        categoryPreferences: serializeCategoryPreferences(
+          settingsToSave.categoryPreferences
+        ),
+        focusCyclesBeforeLongBreak: settingsToSave.focusCyclesBeforeLongBreak,
+        focusDefaultDurationSeconds: settingsToSave.focusDefaultDurationSeconds,
+        focusLongBreakSeconds: settingsToSave.focusLongBreakSeconds,
+        focusShortBreakSeconds: settingsToSave.focusShortBreakSeconds,
+        id: SETTINGS_ROW_ID,
+        launchAtLogin: settingsToSave.launchAtLogin,
+        minimizeToTray: settingsToSave.minimizeToTray,
+        reminderEnabled: settingsToSave.reminderEnabled,
+        reminderSnoozeMinutes: settingsToSave.reminderSnoozeMinutes,
+        reminderTime: settingsToSave.reminderTime,
+        resetFocusTimerShortcut: settingsToSave.resetFocusTimerShortcut,
+        themeMode: settingsToSave.themeMode,
+        timezone: settingsToSave.timezone,
+        toggleFocusTimerShortcut: settingsToSave.toggleFocusTimerShortcut,
+        windDownTime: settingsToSave.windDownTime,
+      })
+      .onConflictDoUpdate({
+        set: {
+          categoryPreferences: serializeCategoryPreferences(
+            settingsToSave.categoryPreferences
+          ),
+          focusCyclesBeforeLongBreak: settingsToSave.focusCyclesBeforeLongBreak,
+          focusDefaultDurationSeconds:
+            settingsToSave.focusDefaultDurationSeconds,
+          focusLongBreakSeconds: settingsToSave.focusLongBreakSeconds,
+          focusShortBreakSeconds: settingsToSave.focusShortBreakSeconds,
+          launchAtLogin: settingsToSave.launchAtLogin,
+          minimizeToTray: settingsToSave.minimizeToTray,
+          reminderEnabled: settingsToSave.reminderEnabled,
+          reminderSnoozeMinutes: settingsToSave.reminderSnoozeMinutes,
+          reminderTime: settingsToSave.reminderTime,
+          resetFocusTimerShortcut: settingsToSave.resetFocusTimerShortcut,
+          themeMode: settingsToSave.themeMode,
+          timezone: settingsToSave.timezone,
+          toggleFocusTimerShortcut: settingsToSave.toggleFocusTimerShortcut,
+          windDownTime: settingsToSave.windDownTime,
+        },
+        target: settings.id,
+      })
+      .run();
   }
 
   getSettings(defaultTimezone: string): AppSettings {
@@ -97,8 +116,12 @@ export class SqliteSettingsRepository {
         return defaults;
       }
 
+      const needsLegacyShortcutRepair =
+        !isValidGlobalShortcutAccelerator(row.resetFocusTimerShortcut) ||
+        !isValidGlobalShortcutAccelerator(row.toggleFocusTimerShortcut);
+
       const candidateSettings: AppSettings = {
-        categoryPreferences: parseCategoryPreferences(
+        categoryPreferences: deserializeCategoryPreferences(
           row.categoryPreferences,
           defaults.categoryPreferences
         ),
@@ -111,23 +134,27 @@ export class SqliteSettingsRepository {
         reminderEnabled: row.reminderEnabled,
         reminderSnoozeMinutes: row.reminderSnoozeMinutes,
         reminderTime: row.reminderTime,
-        resetFocusTimerShortcut: isValidGlobalShortcutAccelerator(
-          row.resetFocusTimerShortcut
-        )
-          ? row.resetFocusTimerShortcut
-          : defaults.resetFocusTimerShortcut,
+        resetFocusTimerShortcut: needsLegacyShortcutRepair
+          ? defaults.resetFocusTimerShortcut
+          : row.resetFocusTimerShortcut,
         themeMode: normalizeThemeMode(row.themeMode),
         timezone: row.timezone || defaults.timezone,
-        toggleFocusTimerShortcut: isValidGlobalShortcutAccelerator(
-          row.toggleFocusTimerShortcut
-        )
-          ? row.toggleFocusTimerShortcut
-          : defaults.toggleFocusTimerShortcut,
+        toggleFocusTimerShortcut: needsLegacyShortcutRepair
+          ? defaults.toggleFocusTimerShortcut
+          : row.toggleFocusTimerShortcut,
         windDownTime: row.windDownTime,
       };
 
       const validationResult = appSettingsSchema.safeParse(candidateSettings);
-      return validationResult.success ? validationResult.data : defaults;
+      if (!validationResult.success) {
+        return defaults;
+      }
+
+      if (needsLegacyShortcutRepair) {
+        this.persistSettings(validationResult.data);
+      }
+
+      return validationResult.data;
     });
   }
 
@@ -136,53 +163,7 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
-      this.client
-        .getDrizzle()
-        .insert(settings)
-        .values({
-          categoryPreferences: serializeCategoryPreferences(
-            nextSettings.categoryPreferences
-          ),
-          focusCyclesBeforeLongBreak: nextSettings.focusCyclesBeforeLongBreak,
-          focusDefaultDurationSeconds: nextSettings.focusDefaultDurationSeconds,
-          focusLongBreakSeconds: nextSettings.focusLongBreakSeconds,
-          focusShortBreakSeconds: nextSettings.focusShortBreakSeconds,
-          id: SETTINGS_ROW_ID,
-          launchAtLogin: nextSettings.launchAtLogin,
-          minimizeToTray: nextSettings.minimizeToTray,
-          reminderEnabled: nextSettings.reminderEnabled,
-          reminderSnoozeMinutes: nextSettings.reminderSnoozeMinutes,
-          reminderTime: nextSettings.reminderTime,
-          resetFocusTimerShortcut: nextSettings.resetFocusTimerShortcut,
-          themeMode: nextSettings.themeMode,
-          timezone: nextSettings.timezone,
-          toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
-          windDownTime: nextSettings.windDownTime,
-        })
-        .onConflictDoUpdate({
-          set: {
-            categoryPreferences: serializeCategoryPreferences(
-              nextSettings.categoryPreferences
-            ),
-            focusCyclesBeforeLongBreak: nextSettings.focusCyclesBeforeLongBreak,
-            focusDefaultDurationSeconds:
-              nextSettings.focusDefaultDurationSeconds,
-            focusLongBreakSeconds: nextSettings.focusLongBreakSeconds,
-            focusShortBreakSeconds: nextSettings.focusShortBreakSeconds,
-            launchAtLogin: nextSettings.launchAtLogin,
-            minimizeToTray: nextSettings.minimizeToTray,
-            reminderEnabled: nextSettings.reminderEnabled,
-            reminderSnoozeMinutes: nextSettings.reminderSnoozeMinutes,
-            reminderTime: nextSettings.reminderTime,
-            resetFocusTimerShortcut: nextSettings.resetFocusTimerShortcut,
-            themeMode: nextSettings.themeMode,
-            timezone: nextSettings.timezone,
-            toggleFocusTimerShortcut: nextSettings.toggleFocusTimerShortcut,
-            windDownTime: nextSettings.windDownTime,
-          },
-          target: settings.id,
-        })
-        .run();
+      this.persistSettings(nextSettings);
     });
 
     return this.getSettings(defaultTimezone);

@@ -9,7 +9,7 @@ function createFocusSession(input: {
   entryKind?: FocusSession["entryKind"];
   id: number;
   startedAt: string;
-  timerSessionId?: string | null;
+  timerSessionId?: string;
 }): FocusSession {
   return {
     completedAt: input.completedAt,
@@ -18,10 +18,7 @@ function createFocusSession(input: {
     entryKind: input.entryKind ?? "completed",
     id: input.id,
     startedAt: input.startedAt,
-    timerSessionId:
-      "timerSessionId" in input
-        ? (input.timerSessionId ?? null)
-        : `timer-session-${input.id}`,
+    timerSessionId: input.timerSessionId ?? `timer-session-${input.id}`,
   };
 }
 
@@ -91,29 +88,6 @@ describe("focus session groups", () => {
     expect(sessions.map((session) => session.completedLoopCount)).toStrictEqual(
       [1, 1]
     );
-  });
-
-  it("treats legacy entries without a timer session id as standalone sessions", () => {
-    const sessions = buildFocusHistorySessions([
-      createFocusSession({
-        completedAt: "2026-03-13T09:55:00.000Z",
-        completedDate: "2026-03-13",
-        id: 2,
-        startedAt: "2026-03-13T09:30:00.000Z",
-        timerSessionId: null,
-      }),
-      createFocusSession({
-        completedAt: "2026-03-13T09:25:00.000Z",
-        completedDate: "2026-03-13",
-        id: 1,
-        startedAt: "2026-03-13T09:00:00.000Z",
-        timerSessionId: null,
-      }),
-    ]);
-
-    expect(sessions).toHaveLength(2);
-    expect(sessions[0]?.sessionId).toBe("legacy-2");
-    expect(sessions[1]?.sessionId).toBe("legacy-1");
   });
 
   it("keeps newer history sessions before older ones", () => {

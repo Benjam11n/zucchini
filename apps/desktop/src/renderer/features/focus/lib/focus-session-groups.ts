@@ -14,7 +14,7 @@ export interface FocusSessionEntryView {
   id: number;
   startedAt: string;
   startMinuteOfDay: number;
-  timerSessionId: string | null;
+  timerSessionId: string;
 }
 
 interface FocusHistorySessionTimelineSegmentBase {
@@ -109,10 +109,6 @@ function sortEntriesByStartTime(
   });
 }
 
-function getSessionGroupingKey(entry: FocusSessionEntryView): string {
-  return entry.timerSessionId ?? `legacy-${entry.id}`;
-}
-
 function getTrailingBreakEndMs({
   activeTimerState,
   now,
@@ -183,7 +179,7 @@ function buildHistorySessionView(
     throw new Error("Cannot build a session view from an empty entry list.");
   }
   const sessionStartMs = Date.parse(firstEntry.startedAt);
-  const sessionId = getSessionGroupingKey(firstEntry);
+  const sessionId = firstEntry.timerSessionId;
   const trailingBreakEndMs = getTrailingBreakEndMs({
     now,
     sessionId,
@@ -377,7 +373,7 @@ export function buildFocusHistorySessions(
       continue;
     }
 
-    const groupKey = getSessionGroupingKey(entryView);
+    const groupKey = entryView.timerSessionId;
     const existingEntries = groupedEntries.get(groupKey);
 
     if (existingEntries) {

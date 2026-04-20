@@ -14,7 +14,7 @@ export interface FocusSession {
   entryKind: FocusSessionEntryKind;
   id: number;
   startedAt: string;
-  timerSessionId: string | null;
+  timerSessionId: string;
 }
 
 export interface CreateFocusSessionInput {

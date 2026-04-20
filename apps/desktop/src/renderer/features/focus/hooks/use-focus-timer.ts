@@ -355,6 +355,7 @@ export function useFocusTimer({
             const shouldStartLongBreak =
               completedFocusCycles >=
               pomodoroSettingsRef.current.focusCyclesBeforeLongBreak;
+            const { timerSessionId } = currentState;
 
             useFocusStore.getState().setTimerState(
               createRunningBreakTimerState({
@@ -367,7 +368,7 @@ export function useFocusTimer({
                 completedFocusCycles,
                 focusDurationMs: currentState.focusDurationMs,
                 now: new Date(),
-                timerSessionId: currentState.timerSessionId,
+                timerSessionId,
               })
             );
 
@@ -386,12 +387,15 @@ export function useFocusTimer({
                 notification.title,
                 notification.body
               );
+              if (!timerSessionId) {
+                return;
+              }
               recordFocusSession(
                 createCompletedFocusSessionInput(
                   currentState.startedAt,
                   currentState.endsAt,
                   currentState.focusDurationMs,
-                  currentState.timerSessionId ?? createCycleId()
+                  timerSessionId
                 )
               ).catch(() => {
                 setFocusSaveErrorMessage(
