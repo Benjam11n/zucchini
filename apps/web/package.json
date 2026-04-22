@@ -14,10 +14,10 @@
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {
-    "lucide-react": "1.7.0",
+    "lucide-react": "1.8.0",
     "postprocessing": "^6.36.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "react-dom": "^19.2.5",
     "three": "^0.183.2"
   },
   "devDependencies": {
@@ -27,7 +27,7 @@
     "@typescript/native-preview": "^7.0.0-dev.20260331.1",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.0.8"
   },
   "engines": {
     "node": "24.x"
