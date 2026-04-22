@@ -19,9 +19,9 @@
     "check": "pnpm run lint:desktop && pnpm run lint:web && pnpm run test:desktop && pnpm run build:web"
   },
   "devDependencies": {
-    "oxfmt": "^0.42.0",
+    "oxfmt": "^0.45.0",
     "oxlint": "^1.55.0",
-    "ultracite": "^7.3.0"
+    "ultracite": "^7.5.9"
   },
   "engines": {
     "node": "24.x",
