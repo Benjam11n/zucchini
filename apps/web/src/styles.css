@@ -144,14 +144,6 @@ body {
   letter-spacing: 0.04em;
 }
 
-.hero-badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 16px rgba(163, 249, 0, 0.7);
-}
-
 .hero h1 {
   max-width: 15ch;
   margin-bottom: 20px;

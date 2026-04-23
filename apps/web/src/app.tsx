@@ -67,10 +67,6 @@ export default function App() {
 
       <main>
         <section className="hero">
-          <div className="hero-badge">
-            <span className="hero-badge-dot" />
-            Local-first habit tracker for macOS
-          </div>
           <h1>Track habits with momentum.</h1>
           <p className="lede">
             Stay consistent without the cloud. Zucchini keeps your routines
