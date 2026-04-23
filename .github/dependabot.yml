@@ -3,9 +3,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
+      interval: "cron"
+      cronjob: "0 4 1,16 * *"
+      timezone: "Asia/Singapore"
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
