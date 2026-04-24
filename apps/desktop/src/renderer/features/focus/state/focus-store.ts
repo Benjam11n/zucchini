@@ -14,6 +14,7 @@ import type {
 } from "@/renderer/features/focus/focus.types";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
@@ -66,7 +67,7 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => window.habits.getFocusSessions(), {
+    await runAsyncTask(() => habitsClient.getFocusSessions(), {
       mapError: toHabitsIpcError,
       onError: (focusSessionsLoadError) => {
         set({

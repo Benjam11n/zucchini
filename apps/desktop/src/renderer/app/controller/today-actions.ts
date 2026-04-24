@@ -14,6 +14,7 @@ import { useHistoryStore } from "@/renderer/features/history/state/history-store
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import type { TodayState } from "@/shared/contracts/habits-ipc";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
@@ -62,14 +63,14 @@ export function createTodayActions({
     nextTodayState,
     historyScope = useHistoryStore.getState().historyScope
   ) => {
-    const todayState = nextTodayState ?? (await window.habits.getTodayState());
-    const managedHabits = await window.habits.getHabits();
+    const todayState = nextTodayState ?? (await habitsClient.getTodayState());
+    const managedHabits = await habitsClient.getHabits();
     const history =
       historyScope === "recent"
-        ? await window.habits.getHistory(
+        ? await habitsClient.getHistory(
             getCurrentYearHistoryLimit(todayState.date)
           )
-        : await window.habits.getHistory();
+        : await habitsClient.getHistory();
 
     applyTodayReloadResult({
       history,
@@ -92,7 +93,7 @@ export function createTodayActions({
 
   async function applyTodayMutation(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
-    const managedHabits = await window.habits.getHabits();
+    const managedHabits = await habitsClient.getHabits();
     applyTodayState(nextTodayState, managedHabits);
     refreshWeeklyReviewIfLoaded();
     return nextTodayState;
@@ -102,10 +103,10 @@ export function createTodayActions({
   return {
     applyTodayMutation,
     async handleArchiveFocusQuotaGoal(goalId: number) {
-      await applyTodayMutation(window.habits.archiveFocusQuotaGoal(goalId));
+      await applyTodayMutation(habitsClient.archiveFocusQuotaGoal(goalId));
     },
     async handleArchiveHabit(habitId: number) {
-      await applyTodayMutation(window.habits.archiveHabit(habitId));
+      await applyTodayMutation(habitsClient.archiveHabit(habitId));
     },
     async handleCreateHabit(
       name: string,
@@ -115,7 +116,7 @@ export function createTodayActions({
       targetCount: number | null = null
     ) {
       await applyTodayMutation(
-        window.habits.createHabit(
+        habitsClient.createHabit(
           name,
           category,
           frequency,
@@ -126,23 +127,23 @@ export function createTodayActions({
       syncSettingsDraftFromTodayState();
     },
     async handleCreateWindDownAction(name: string) {
-      await applyTodayMutation(window.habits.createWindDownAction(name));
+      await applyTodayMutation(habitsClient.createWindDownAction(name));
     },
     async handleDecrementHabitProgress(habitId: number) {
-      await refreshToday(window.habits.decrementHabitProgress(habitId));
+      await refreshToday(habitsClient.decrementHabitProgress(habitId));
     },
     async handleDeleteWindDownAction(actionId: number) {
-      await applyTodayMutation(window.habits.deleteWindDownAction(actionId));
+      await applyTodayMutation(habitsClient.deleteWindDownAction(actionId));
     },
     async handleIncrementHabitProgress(habitId: number) {
-      await refreshToday(window.habits.incrementHabitProgress(habitId));
+      await refreshToday(habitsClient.incrementHabitProgress(habitId));
     },
     async handleRenameHabit(habitId: number, name: string) {
-      await applyTodayMutation(window.habits.renameHabit(habitId, name));
+      await applyTodayMutation(habitsClient.renameHabit(habitId, name));
     },
     async handleRenameWindDownAction(actionId: number, name: string) {
       await applyTodayMutation(
-        window.habits.renameWindDownAction(actionId, name)
+        habitsClient.renameWindDownAction(actionId, name)
       );
     },
     async handleReorderHabits(nextHabits: Habit[]) {
@@ -156,7 +157,7 @@ export function createTodayActions({
 
       try {
         await applyTodayMutation(
-          window.habits.reorderHabits(nextHabits.map((habit) => habit.id))
+          habitsClient.reorderHabits(nextHabits.map((habit) => habit.id))
         );
       } catch (error) {
         useTodayStore.setState({
@@ -205,7 +206,7 @@ export function createTodayActions({
       }
 
       try {
-        await refreshToday(window.habits.toggleHabit(habitId));
+        await refreshToday(habitsClient.toggleHabit(habitId));
       } catch (error) {
         if (previousTodayState && hasHabitToToggle) {
           useTodayStore.setState({
@@ -217,28 +218,28 @@ export function createTodayActions({
       }
     },
     async handleToggleSickDay() {
-      await refreshToday(window.habits.toggleSickDay());
+      await refreshToday(habitsClient.toggleSickDay());
     },
     async handleToggleWindDownAction(actionId: number) {
-      await refreshToday(window.habits.toggleWindDownAction(actionId));
+      await refreshToday(habitsClient.toggleWindDownAction(actionId));
     },
     async handleUnarchiveFocusQuotaGoal(goalId: number) {
-      await applyTodayMutation(window.habits.unarchiveFocusQuotaGoal(goalId));
+      await applyTodayMutation(habitsClient.unarchiveFocusQuotaGoal(goalId));
     },
     async handleUnarchiveHabit(habitId: number) {
-      await applyTodayMutation(window.habits.unarchiveHabit(habitId));
+      await applyTodayMutation(habitsClient.unarchiveHabit(habitId));
     },
     async handleUpsertFocusQuotaGoal(
       frequency: GoalFrequency,
       targetMinutes: number
     ) {
       await refreshToday(
-        window.habits.upsertFocusQuotaGoal(frequency, targetMinutes)
+        habitsClient.upsertFocusQuotaGoal(frequency, targetMinutes)
       );
     },
     async handleUpdateHabitCategory(habitId: number, category: HabitCategory) {
       await applyTodayMutation(
-        window.habits.updateHabitCategory(habitId, category)
+        habitsClient.updateHabitCategory(habitId, category)
       );
     },
     async handleUpdateHabitFrequency(
@@ -247,12 +248,12 @@ export function createTodayActions({
       targetCount: number | null = null
     ) {
       await applyTodayMutation(
-        window.habits.updateHabitFrequency(habitId, frequency, targetCount)
+        habitsClient.updateHabitFrequency(habitId, frequency, targetCount)
       );
     },
     async handleUpdateHabitTargetCount(habitId: number, targetCount: number) {
       await applyTodayMutation(
-        window.habits.updateHabitTargetCount(habitId, targetCount)
+        habitsClient.updateHabitTargetCount(habitId, targetCount)
       );
     },
     async handleUpdateHabitWeekdays(
@@ -260,7 +261,7 @@ export function createTodayActions({
       selectedWeekdays: HabitWeekday[] | null
     ) {
       await applyTodayMutation(
-        window.habits.updateHabitWeekdays(habitId, selectedWeekdays)
+        habitsClient.updateHabitWeekdays(habitId, selectedWeekdays)
       );
     },
     refreshForNewDay,

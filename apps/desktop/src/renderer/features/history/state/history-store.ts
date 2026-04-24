@@ -8,6 +8,7 @@
 import { create } from "zustand";
 
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -40,7 +41,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => window.habits.getHistory(), {
+    await runAsyncTask(() => habitsClient.getHistory(), {
       mapError: toHabitsIpcError,
       onError: (historyLoadError) => {
         set({

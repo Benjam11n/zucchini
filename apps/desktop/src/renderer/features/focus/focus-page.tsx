@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";
@@ -70,7 +71,7 @@ function FocusPageComponent({
     await resetFocusTimerSession({
       clearFocusSaveError,
       focusDurationMs: defaultFocusDurationMs,
-      recordFocusSession: window.habits.recordFocusSession,
+      recordFocusSession: habitsClient.recordFocusSession,
       setFocusSaveErrorMessage,
       setTimerState,
       timerState,

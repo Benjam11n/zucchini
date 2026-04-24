@@ -5,6 +5,7 @@ import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
+import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   const { dayStatus = null, ...rest } = overrides;
@@ -158,19 +159,20 @@ describe("app store actions", () => {
       })
     );
 
-    vi.stubGlobal("window", {
-      habits: {
-        getFocusSessions: getFocusSessionsMock,
-        getHabits: getHabitsMock,
-        getHistory: getHistoryMock,
-        getTodayState: getTodayStateMock,
-        getWeeklyReview: getWeeklyReviewMock,
-        getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
-        recordFocusSession: vi.fn().mockResolvedValue(createFocusSession(2)),
-        renameHabit: renameHabitMock,
-        toggleHabit: toggleHabitMock,
-      },
-      matchMedia: vi.fn().mockReturnValue({
+    const habitsApi = installMockHabitsApi({
+      getFocusSessions: getFocusSessionsMock,
+      getHabits: getHabitsMock,
+      getHistory: getHistoryMock,
+      getTodayState: getTodayStateMock,
+      getWeeklyReview: getWeeklyReviewMock,
+      getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
+      recordFocusSession: vi.fn().mockResolvedValue(createFocusSession(2)),
+      renameHabit: renameHabitMock,
+      toggleHabit: toggleHabitMock,
+    });
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockReturnValue({
         addEventListener: vi.fn(),
         matches: false,
         removeEventListener: vi.fn(),
@@ -207,6 +209,7 @@ describe("app store actions", () => {
       getHabitsMock,
       getHistoryMock,
       getWeeklyReviewOverviewMock,
+      habitsApi,
       stores: {
         useBootStore,
         useFocusStore,
@@ -316,7 +319,7 @@ describe("app store actions", () => {
   });
 
   it("optimistically updates the habit order before the reorder request resolves", async () => {
-    const { actions, stores } = await setup();
+    const { actions, habitsApi, stores } = await setup();
     const baseHabit = {
       ...createManagedHabit(1),
       completed: false,
@@ -340,13 +343,7 @@ describe("app store actions", () => {
     });
     const reorderRequest = createDeferred<TodayState>();
 
-    vi.stubGlobal("window", {
-      ...window,
-      habits: {
-        ...window.habits,
-        reorderHabits: vi.fn(() => reorderRequest.promise),
-      },
-    });
+    habitsApi.reorderHabits.mockImplementation(() => reorderRequest.promise);
 
     stores.useTodayStore.setState({
       todayState: reorderedState,
@@ -367,16 +364,10 @@ describe("app store actions", () => {
   });
 
   it("optimistically toggles a habit before the authoritative refresh resolves", async () => {
-    const { actions, stores } = await setup();
+    const { actions, habitsApi, stores } = await setup();
     const pendingTodayState = createDeferred<TodayState>();
 
-    vi.stubGlobal("window", {
-      ...window,
-      habits: {
-        ...window.habits,
-        toggleHabit: vi.fn(() => pendingTodayState.promise),
-      },
-    });
+    habitsApi.toggleHabit.mockImplementation(() => pendingTodayState.promise);
 
     stores.useTodayStore.setState({
       todayState: createTodayState({
@@ -426,16 +417,10 @@ describe("app store actions", () => {
   });
 
   it("restores the previous today state when an optimistic toggle fails", async () => {
-    const { actions, stores } = await setup();
+    const { actions, habitsApi, stores } = await setup();
     const toggleError = new Error("toggle failed");
 
-    vi.stubGlobal("window", {
-      ...window,
-      habits: {
-        ...window.habits,
-        toggleHabit: vi.fn().mockRejectedValue(toggleError),
-      },
-    });
+    habitsApi.toggleHabit.mockRejectedValue(toggleError);
 
     const initialTodayState = createTodayState({
       habits: [

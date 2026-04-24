@@ -8,6 +8,7 @@
  */
 import type { ZodType } from "zod";
 
+import type { HabitCommand, HabitQuery } from "@/shared/contracts/habits-ipc";
 import {
   appSettingsSchema,
   createFocusSessionInputSchema,
@@ -16,6 +17,7 @@ import {
   focusTimerCycleIdSchema,
   focusTimerInstanceIdSchema,
   focusTimerLeaseTtlSchema,
+  habitCommandSchema,
   persistedFocusTimerStateSchema,
   focusWidgetSizeSchema,
   goalFrequencySchema,
@@ -30,6 +32,7 @@ import {
   notificationIconFilenameSchema,
   notificationTitleSchema,
   focusQuotaTargetMinutesSchema,
+  habitQuerySchema,
   reorderHabitIdsSchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
@@ -200,3 +203,13 @@ export const validateCreateFocusSessionInput =
     "focus session",
     createFocusSessionInputSchema
   );
+
+export const validateHabitCommand = createValidator<HabitCommand>(
+  "habit command",
+  habitCommandSchema
+);
+
+export const validateHabitQuery = createValidator<HabitQuery>(
+  "habit query",
+  habitQuerySchema
+);

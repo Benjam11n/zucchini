@@ -22,6 +22,7 @@ import {
   HabitCategoryPreferencesProvider,
   getDefaultHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import {
@@ -135,7 +136,7 @@ export function FocusWidget() {
     await resetFocusTimer({
       clearFocusSaveError,
       pomodoroSettings: resolvedPomodoroSettings,
-      recordFocusSession: window.habits.recordFocusSession,
+      recordFocusSession: habitsClient.recordFocusSession,
       setFocusSaveErrorMessage,
       setTimerState,
       timerState,
@@ -179,7 +180,7 @@ export function FocusWidget() {
   useFocusTimer({
     clearFocusSaveError,
     pomodoroSettings: resolvedPomodoroSettings,
-    recordFocusSession: window.habits.recordFocusSession,
+    recordFocusSession: habitsClient.recordFocusSession,
     setFocusSaveErrorMessage,
   });
 

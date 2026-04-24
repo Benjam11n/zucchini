@@ -11,6 +11,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   const { dayStatus = null, ...rest } = overrides;
@@ -171,7 +172,7 @@ async function setupUseAppController({
     removeEventListener: vi.fn(),
   };
 
-  const habits = {
+  const habits = installMockHabitsApi({
     archiveHabit: vi.fn().mockResolvedValue(todayState),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
@@ -223,11 +224,6 @@ async function setupUseAppController({
     updateSettings: vi
       .fn()
       .mockImplementation((settings) => Promise.resolve(settings)),
-  };
-
-  Object.defineProperty(window, "habits", {
-    configurable: true,
-    value: habits,
   });
   Object.defineProperty(window, "matchMedia", {
     configurable: true,

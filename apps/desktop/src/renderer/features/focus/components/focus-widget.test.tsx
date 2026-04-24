@@ -13,6 +13,7 @@ import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
+import type { HabitCommand, HabitQuery } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import {
@@ -85,6 +86,8 @@ describe("focus widget", () => {
       },
     });
     const getFocusTimerState = vi.fn().mockResolvedValue(persistedTimerState);
+    const recordFocusSession = vi.fn((_input) => Promise.resolve());
+    const saveFocusTimerState = vi.fn((state) => Promise.resolve(state));
     const closeSpy = vi.fn();
     Object.defineProperty(window, "close", {
       configurable: true,
@@ -96,16 +99,38 @@ describe("focus widget", () => {
       value: {
         claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
         claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+        command: vi.fn((command: HabitCommand) => {
+          if (command.type === "focusSession.record") {
+            return recordFocusSession(command.payload);
+          }
+
+          if (command.type === "focusTimer.saveState") {
+            return saveFocusTimerState(command.payload);
+          }
+
+          return Promise.resolve(null);
+        }),
         getDesktopNotificationStatus: vi.fn(),
         getFocusTimerState,
         getTodayState,
         onFocusSessionRecorded: vi.fn(() => vi.fn()),
         onFocusTimerActionRequested: vi.fn(() => vi.fn()),
         onFocusTimerStateChanged: vi.fn(() => vi.fn()),
-        recordFocusSession: vi.fn((_input) => Promise.resolve()),
+        query: vi.fn((query: HabitQuery) => {
+          if (query.type === "focusTimer.getState") {
+            return getFocusTimerState();
+          }
+
+          if (query.type === "today.get") {
+            return getTodayState();
+          }
+
+          return Promise.resolve(null);
+        }),
+        recordFocusSession,
         releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
         resizeFocusWidget: vi.fn((_width, _height) => Promise.resolve()),
-        saveFocusTimerState: vi.fn((state) => Promise.resolve(state)),
+        saveFocusTimerState,
         showFocusWidget: vi.fn(() => Promise.resolve()),
         showNotification: vi.fn((_title, _body) => Promise.resolve()),
       },
@@ -119,7 +144,8 @@ describe("focus widget", () => {
       closeSpy,
       getFocusTimerState,
       getTodayState,
-      saveFocusTimerState: window.habits.saveFocusTimerState,
+      recordFocusSession,
+      saveFocusTimerState,
       settings,
     };
   }
@@ -148,8 +174,13 @@ describe("focus widget", () => {
   });
 
   it("supports start, pause, reset, and close controls", async () => {
-    const { closeSpy, getFocusTimerState, getTodayState, saveFocusTimerState } =
-      setupWidgetTest();
+    const {
+      closeSpy,
+      getFocusTimerState,
+      getTodayState,
+      recordFocusSession,
+      saveFocusTimerState,
+    } = setupWidgetTest();
 
     await waitFor(() => {
       expect(getFocusTimerState).toHaveBeenCalled();
@@ -175,7 +206,7 @@ describe("focus widget", () => {
     await waitFor(() => {
       expect(useFocusStore.getState().timerState.status).toBe("idle");
     });
-    expect(window.habits.recordFocusSession).not.toHaveBeenCalled();
+    expect(recordFocusSession).not.toHaveBeenCalled();
 
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Close widget" }));
@@ -399,7 +430,9 @@ describe("focus widget", () => {
   });
 
   it("records a partial focus entry when resetting after elapsed focus time", async () => {
-    const { getFocusTimerState } = setupWidgetTest({ renderWidget: false });
+    const { getFocusTimerState, recordFocusSession } = setupWidgetTest({
+      renderWidget: false,
+    });
     act(() => {
       useFocusStore.getState().setTimerState({
         ...createRunningFocusTimerState(
@@ -422,7 +455,7 @@ describe("focus widget", () => {
     });
 
     await waitFor(() => {
-      expect(window.habits.recordFocusSession).toHaveBeenCalledWith(
+      expect(recordFocusSession).toHaveBeenCalledWith(
         expect.objectContaining({
           durationSeconds: minutes(10),
           entryKind: "partial",
@@ -433,7 +466,7 @@ describe("focus widget", () => {
   });
 
   it("does not record a partial entry when resetting during a break", async () => {
-    setupWidgetTest({ renderWidget: false });
+    const { recordFocusSession } = setupWidgetTest({ renderWidget: false });
     act(() => {
       useFocusStore.getState().setTimerState(
         createRunningBreakTimerState({
@@ -456,6 +489,6 @@ describe("focus widget", () => {
     await waitFor(() => {
       expect(useFocusStore.getState().timerState.status).toBe("idle");
     });
-    expect(window.habits.recordFocusSession).not.toHaveBeenCalled();
+    expect(recordFocusSession).not.toHaveBeenCalled();
   });
 });

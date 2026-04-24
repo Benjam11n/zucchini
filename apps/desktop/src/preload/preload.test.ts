@@ -81,9 +81,9 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().getTodayState()).resolves.toStrictEqual(
-      todayState
-    );
+    await expect(
+      getHabitsApi().query({ type: "today.get" })
+    ).resolves.toStrictEqual(todayState);
   });
 
   it("throws HabitsIpcError instances for error responses", async () => {
@@ -97,7 +97,9 @@ describe("preload habits API", () => {
       ok: false,
     });
 
-    await expect(getHabitsApi().getTodayState()).rejects.toMatchObject({
+    await expect(
+      getHabitsApi().query({ type: "today.get" })
+    ).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
       details: ["habitId: Invalid input"],
       message: "Invalid payload for habit id.",

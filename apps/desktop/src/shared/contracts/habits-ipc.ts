@@ -63,53 +63,25 @@ export interface FocusTimerShortcutStatus {
 
 // oxlint-disable-next-line eslint/sort-keys
 export const HABITS_IPC_CHANNELS = {
-  archiveFocusQuotaGoal: "habits:archiveFocusQuotaGoal",
-  archiveHabit: "habits:archiveHabit",
+  command: "habits:command",
   clearData: "habits:clearData",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
-  createHabit: "habits:createHabit",
-  decrementHabitProgress: "habits:decrementHabitProgress",
   exportBackup: "habits:exportBackup",
   focusSessionRecorded: "habits:focusSessionRecorded",
   focusTimerActionRequested: "habits:focusTimerActionRequested",
   focusTimerShortcutStatusChanged: "habits:focusTimerShortcutStatusChanged",
   focusTimerStateChanged: "habits:focusTimerStateChanged",
   getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
-  getFocusSessions: "habits:getFocusSessions",
   getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
-  getFocusTimerState: "habits:getFocusTimerState",
-  getHabits: "habits:getHabits",
-  getHistory: "habits:getHistory",
-  getTodayState: "habits:getTodayState",
-  getWeeklyReview: "habits:getWeeklyReview",
-  getWeeklyReviewOverview: "habits:getWeeklyReviewOverview",
   importBackup: "habits:importBackup",
-  incrementHabitProgress: "habits:incrementHabitProgress",
   openDataFolder: "habits:openDataFolder",
-  recordFocusSession: "habits:recordFocusSession",
+  query: "habits:query",
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
-  renameHabit: "habits:renameHabit",
-  reorderHabits: "habits:reorderHabits",
   resizeFocusWidget: "habits:resizeFocusWidget",
-  saveFocusTimerState: "habits:saveFocusTimerState",
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",
   showNotification: "habits:showNotification",
-  toggleSickDay: "habits:toggleSickDay",
-  toggleHabit: "habits:toggleHabit",
-  toggleWindDownAction: "habits:toggleWindDownAction",
-  unarchiveFocusQuotaGoal: "habits:unarchiveFocusQuotaGoal",
-  unarchiveHabit: "habits:unarchiveHabit",
-  upsertFocusQuotaGoal: "habits:upsertFocusQuotaGoal",
-  createWindDownAction: "habits:createWindDownAction",
-  deleteWindDownAction: "habits:deleteWindDownAction",
-  renameWindDownAction: "habits:renameWindDownAction",
-  updateHabitCategory: "habits:updateHabitCategory",
-  updateHabitFrequency: "habits:updateHabitFrequency",
-  updateHabitTargetCount: "habits:updateHabitTargetCount",
-  updateHabitWeekdays: "habits:updateHabitWeekdays",
-  updateSettings: "habits:updateSettings",
   windDownNavigationRequested: "habits:windDownNavigationRequested",
 } as const;
 
@@ -207,7 +179,95 @@ export interface DesktopNotificationStatus {
   reason: DesktopNotificationReason;
 }
 
+export type HabitCommand =
+  | { payload: { goalId: number }; type: "focusQuotaGoal.archive" }
+  | { payload: { goalId: number }; type: "focusQuotaGoal.unarchive" }
+  | {
+      payload: { frequency: GoalFrequency; targetMinutes: number };
+      type: "focusQuotaGoal.upsert";
+    }
+  | { payload: CreateFocusSessionInput; type: "focusSession.record" }
+  | { payload: PersistedFocusTimerState; type: "focusTimer.saveState" }
+  | {
+      payload: {
+        category: HabitCategory;
+        frequency: HabitFrequency;
+        name: string;
+        selectedWeekdays?: HabitWeekday[] | null | undefined;
+        targetCount?: number | null | undefined;
+      };
+      type: "habit.create";
+    }
+  | { payload: { habitId: number }; type: "habit.archive" }
+  | { payload: { habitId: number }; type: "habit.decrementProgress" }
+  | { payload: { habitId: number }; type: "habit.incrementProgress" }
+  | { payload: { habitId: number; name: string }; type: "habit.rename" }
+  | { payload: { habitIds: number[] }; type: "habit.reorder" }
+  | { payload: { habitId: number }; type: "habit.toggle" }
+  | { payload: { habitId: number }; type: "habit.unarchive" }
+  | {
+      payload: { category: HabitCategory; habitId: number };
+      type: "habit.updateCategory";
+    }
+  | {
+      payload: {
+        frequency: HabitFrequency;
+        habitId: number;
+        targetCount?: number | null | undefined;
+      };
+      type: "habit.updateFrequency";
+    }
+  | {
+      payload: { habitId: number; targetCount: number };
+      type: "habit.updateTargetCount";
+    }
+  | {
+      payload: { habitId: number; selectedWeekdays: HabitWeekday[] | null };
+      type: "habit.updateWeekdays";
+    }
+  | { payload: AppSettings; type: "settings.update" }
+  | { type: "today.toggleSickDay" }
+  | { payload: { name: string }; type: "windDown.createAction" }
+  | { payload: { actionId: number }; type: "windDown.deleteAction" }
+  | {
+      payload: { actionId: number; name: string };
+      type: "windDown.renameAction";
+    }
+  | { payload: { actionId: number }; type: "windDown.toggleAction" };
+
+export type HabitCommandResult =
+  | AppSettings
+  | FocusSession
+  | PersistedFocusTimerState
+  | TodayState;
+
+export type HabitQuery =
+  | {
+      payload?: { limit?: number | undefined } | undefined;
+      type: "focusSession.list";
+    }
+  | { type: "focusTimer.getState" }
+  | { type: "habit.list" }
+  | {
+      payload?: { limit?: number | undefined } | undefined;
+      type: "history.get";
+    }
+  | { type: "today.get" }
+  | { payload: { weekStart: string }; type: "weeklyReview.get" }
+  | { type: "weeklyReview.overview" };
+
+export type HabitQueryResult =
+  | FocusSession[]
+  | Habit[]
+  | HistoryDay[]
+  | PersistedFocusTimerState
+  | TodayState
+  | WeeklyReview
+  | WeeklyReviewOverview
+  | null;
+
 export interface HabitsApi {
+  command: (command: HabitCommand) => Promise<HabitCommandResult>;
   clearData: () => Promise<boolean>;
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
@@ -216,17 +276,8 @@ export interface HabitsApi {
   ) => Promise<boolean>;
   exportBackup: () => Promise<string | null>;
   getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
-  getFocusSessions: (limit?: number) => Promise<FocusSession[]>;
-  getFocusTimerState: () => Promise<PersistedFocusTimerState | null>;
   getFocusTimerShortcutStatus: () => Promise<FocusTimerShortcutStatus>;
-  getHabits: () => Promise<Habit[]>;
-  getHistory: (limit?: number) => Promise<HistoryDay[]>;
-  getTodayState: () => Promise<TodayState>;
-  getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
-  getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
   importBackup: () => Promise<boolean>;
-  incrementHabitProgress: (habitId: number) => Promise<TodayState>;
-  decrementHabitProgress: (habitId: number) => Promise<TodayState>;
   onFocusTimerActionRequested: (
     listener: (request: FocusTimerActionRequest) => void
   ) => () => void;
@@ -241,47 +292,9 @@ export interface HabitsApi {
     listener: (state: PersistedFocusTimerState) => void
   ) => () => void;
   openDataFolder: () => Promise<string>;
-  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
+  query: (query: HabitQuery) => Promise<HabitQueryResult>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;
-  saveFocusTimerState: (
-    state: PersistedFocusTimerState
-  ) => Promise<PersistedFocusTimerState>;
-  updateSettings: (settings: AppSettings) => Promise<AppSettings>;
-  createHabit: (
-    name: string,
-    category: HabitCategory,
-    frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null,
-    targetCount?: number | null
-  ) => Promise<TodayState>;
-  renameHabit: (habitId: number, name: string) => Promise<TodayState>;
-  updateHabitCategory: (
-    habitId: number,
-    category: HabitCategory
-  ) => Promise<TodayState>;
-  updateHabitFrequency: (
-    habitId: number,
-    frequency: HabitFrequency,
-    targetCount?: number | null
-  ) => Promise<TodayState>;
-  updateHabitTargetCount: (
-    habitId: number,
-    targetCount: number
-  ) => Promise<TodayState>;
-  updateHabitWeekdays: (
-    habitId: number,
-    selectedWeekdays: HabitWeekday[] | null
-  ) => Promise<TodayState>;
-  archiveHabit: (habitId: number) => Promise<TodayState>;
-  archiveFocusQuotaGoal: (goalId: number) => Promise<TodayState>;
-  unarchiveHabit: (habitId: number) => Promise<TodayState>;
-  unarchiveFocusQuotaGoal: (goalId: number) => Promise<TodayState>;
-  upsertFocusQuotaGoal: (
-    frequency: GoalFrequency,
-    targetMinutes: number
-  ) => Promise<TodayState>;
-  reorderHabits: (habitIds: number[]) => Promise<TodayState>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;
   showNotification: (
@@ -289,10 +302,4 @@ export interface HabitsApi {
     body: string,
     iconFilename?: string
   ) => Promise<void>;
-  toggleSickDay: () => Promise<TodayState>;
-  toggleHabit: (habitId: number) => Promise<TodayState>;
-  toggleWindDownAction: (actionId: number) => Promise<TodayState>;
-  createWindDownAction: (name: string) => Promise<TodayState>;
-  deleteWindDownAction: (actionId: number) => Promise<TodayState>;
-  renameWindDownAction: (actionId: number, name: string) => Promise<TodayState>;
 }

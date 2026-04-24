@@ -13,6 +13,7 @@ import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
+import type { HabitCommand, HabitQuery } from "@/shared/contracts/habits-ipc";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -70,6 +71,13 @@ function setupFocusTimerTest(
     value: {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
+      command: vi.fn((command: HabitCommand) => {
+        if (command.type === "focusTimer.saveState") {
+          return saveFocusTimerState(command.payload);
+        }
+
+        return Promise.resolve(null);
+      }),
       getDesktopNotificationStatus: vi.fn(),
       getFocusTimerState,
       onFocusSessionRecorded: vi.fn(
@@ -96,6 +104,13 @@ function setupFocusTimerTest(
           };
         }
       ),
+      query: vi.fn((query: HabitQuery) => {
+        if (query.type === "focusTimer.getState") {
+          return getFocusTimerState();
+        }
+
+        return Promise.resolve(null);
+      }),
       releaseFocusTimerLeadership: vi.fn((_instanceId) => Promise.resolve()),
       saveFocusTimerState,
       showFocusWidget,

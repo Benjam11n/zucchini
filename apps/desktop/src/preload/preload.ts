@@ -22,19 +22,14 @@ import {
   HabitsIpcError,
 } from "@/shared/contracts/habits-ipc";
 import type {
+  HabitCommand,
+  HabitCommandResult,
   FocusTimerShortcutStatus,
   HabitsApi,
   HabitsIpcResponse,
+  HabitQuery,
+  HabitQueryResult,
 } from "@/shared/contracts/habits-ipc";
-import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
-import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-import type { GoalFrequency } from "@/shared/domain/goal";
-import type {
-  HabitCategory,
-  HabitFrequency,
-  HabitWeekday,
-} from "@/shared/domain/habit";
-import type { AppSettings } from "@/shared/domain/settings";
 
 async function invokeHabits<T>(
   channel: string,
@@ -94,13 +89,7 @@ function subscribeToChannelWithoutPayload(
   };
 }
 
-// oxlint-disable-next-line eslint/sort-keys
 const habitsApi: HabitsApi = {
-  archiveFocusQuotaGoal: (goalId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.archiveFocusQuotaGoal, goalId),
-  archiveHabit: (habitId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.archiveHabit, habitId),
-  clearData: () => invokeHabits(HABITS_IPC_CHANNELS.clearData),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
   claimFocusTimerLeadership: (instanceId: string, ttlMs: number) =>
@@ -109,56 +98,19 @@ const habitsApi: HabitsApi = {
       instanceId,
       ttlMs
     ),
-  createHabit: (
-    name: string,
-    category: HabitCategory,
-    frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null,
-    targetCount?: number | null
-  ) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.createHabit,
-      name,
-      category,
-      frequency,
-      selectedWeekdays,
-      targetCount
-    ),
-  createWindDownAction: (name: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.createWindDownAction, name),
-  decrementHabitProgress: (habitId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.decrementHabitProgress, habitId),
-  deleteWindDownAction: (actionId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.deleteWindDownAction, actionId),
+  clearData: () => invokeHabits(HABITS_IPC_CHANNELS.clearData),
+  command: (command: HabitCommand) =>
+    invokeHabits<HabitCommandResult>(HABITS_IPC_CHANNELS.command, command),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getDesktopNotificationStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
-  getFocusSessions: (limit?: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.getFocusSessions, limit),
   getFocusTimerShortcutStatus: () =>
     invokeHabits<FocusTimerShortcutStatus>(
       HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus
     ),
-  getFocusTimerState: () =>
-    invokeHabits<PersistedFocusTimerState | null>(
-      HABITS_IPC_CHANNELS.getFocusTimerState
-    ),
-  getHabits: () => invokeHabits(HABITS_IPC_CHANNELS.getHabits),
-  getHistory: (limit?: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.getHistory, limit),
-  getTodayState: () => invokeHabits(HABITS_IPC_CHANNELS.getTodayState),
-  getWeeklyReview: (weekStart: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReview, weekStart),
-  getWeeklyReviewOverview: () =>
-    invokeHabits(HABITS_IPC_CHANNELS.getWeeklyReviewOverview),
   importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
-  incrementHabitProgress: (habitId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.incrementHabitProgress, habitId),
   onFocusSessionRecorded: (listener) =>
-    subscribeToChannel<Awaited<ReturnType<HabitsApi["recordFocusSession"]>>>(
-      HABITS_IPC_CHANNELS.focusSessionRecorded,
-      listener
-    ),
+    subscribeToChannel(HABITS_IPC_CHANNELS.focusSessionRecorded, listener),
   onFocusTimerActionRequested: (listener) =>
     subscribeToChannel(HABITS_IPC_CHANNELS.focusTimerActionRequested, listener),
   onFocusTimerShortcutStatusChanged: (listener) =>
@@ -174,20 +126,12 @@ const habitsApi: HabitsApi = {
       listener
     ),
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
-  recordFocusSession: (input: CreateFocusSessionInput) =>
-    invokeHabits(HABITS_IPC_CHANNELS.recordFocusSession, input),
+  query: (query: HabitQuery) =>
+    invokeHabits<HabitQueryResult>(HABITS_IPC_CHANNELS.query, query),
   releaseFocusTimerLeadership: (instanceId: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
-  renameHabit: (habitId: number, name: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.renameHabit, habitId, name),
-  renameWindDownAction: (actionId: number, name: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.renameWindDownAction, actionId, name),
-  reorderHabits: (habitIds: number[]) =>
-    invokeHabits(HABITS_IPC_CHANNELS.reorderHabits, habitIds),
   resizeFocusWidget: (width: number, height: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.resizeFocusWidget, width, height),
-  saveFocusTimerState: (state: PersistedFocusTimerState) =>
-    invokeHabits(HABITS_IPC_CHANNELS.saveFocusTimerState, state),
   showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
   showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>
@@ -197,51 +141,6 @@ const habitsApi: HabitsApi = {
       body,
       iconFilename
     ),
-  toggleSickDay: () => invokeHabits(HABITS_IPC_CHANNELS.toggleSickDay),
-  toggleHabit: (habitId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.toggleHabit, habitId),
-  toggleWindDownAction: (actionId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.toggleWindDownAction, actionId),
-  unarchiveFocusQuotaGoal: (goalId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.unarchiveFocusQuotaGoal, goalId),
-  unarchiveHabit: (habitId: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.unarchiveHabit, habitId),
-  upsertFocusQuotaGoal: (frequency: GoalFrequency, targetMinutes: number) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.upsertFocusQuotaGoal,
-      frequency,
-      targetMinutes
-    ),
-  updateHabitCategory: (habitId: number, category: HabitCategory) =>
-    invokeHabits(HABITS_IPC_CHANNELS.updateHabitCategory, habitId, category),
-  updateHabitFrequency: (
-    habitId: number,
-    frequency: HabitFrequency,
-    targetCount?: number | null
-  ) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.updateHabitFrequency,
-      habitId,
-      frequency,
-      targetCount
-    ),
-  updateHabitTargetCount: (habitId: number, targetCount: number) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.updateHabitTargetCount,
-      habitId,
-      targetCount
-    ),
-  updateHabitWeekdays: (
-    habitId: number,
-    selectedWeekdays: HabitWeekday[] | null
-  ) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.updateHabitWeekdays,
-      habitId,
-      selectedWeekdays
-    ),
-  updateSettings: (settings: AppSettings) =>
-    invokeHabits(HABITS_IPC_CHANNELS.updateSettings, settings),
 };
 
 const updaterApi: AppUpdaterApi = {

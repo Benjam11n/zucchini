@@ -7,7 +7,11 @@
 import { z } from "zod";
 
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
-import { GOAL_FREQUENCY_DEFINITIONS } from "@/shared/domain/goal";
+import {
+  GOAL_FREQUENCY_DEFINITIONS,
+  getFocusQuotaTargetMinutesBounds,
+  isValidFocusQuotaTargetMinutes,
+} from "@/shared/domain/goal";
 import {
   isValidGlobalShortcutAccelerator,
   isValidHabitCategoryColor,
@@ -284,3 +288,239 @@ export const persistedFocusTimerStateSchema = z
       });
     }
   });
+
+const focusQuotaGoalIdPayloadSchema = z
+  .object({
+    goalId: habitIdSchema,
+  })
+  .strict();
+
+const habitIdPayloadSchema = z
+  .object({
+    habitId: habitIdSchema,
+  })
+  .strict();
+
+const windDownActionIdPayloadSchema = z
+  .object({
+    actionId: habitIdSchema,
+  })
+  .strict();
+
+const createHabitPayloadSchema = z
+  .object({
+    category: habitCategorySchema,
+    frequency: habitFrequencySchema,
+    name: habitNameSchema,
+    selectedWeekdays: habitWeekdaysSchema.nullable().optional(),
+    targetCount: habitTargetCountSchema.nullable().optional(),
+  })
+  .strict();
+
+const updateHabitFrequencyPayloadSchema = z
+  .object({
+    frequency: habitFrequencySchema,
+    habitId: habitIdSchema,
+    targetCount: habitTargetCountSchema.nullable().optional(),
+  })
+  .strict();
+
+const focusQuotaGoalUpsertPayloadSchema = z
+  .object({
+    frequency: goalFrequencySchema,
+    targetMinutes: focusQuotaTargetMinutesSchema,
+  })
+  .strict()
+  .superRefine((payload, context) => {
+    if (
+      isValidFocusQuotaTargetMinutes(payload.frequency, payload.targetMinutes)
+    ) {
+      return;
+    }
+
+    const { max, min } = getFocusQuotaTargetMinutesBounds(payload.frequency);
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Focus quota target minutes for ${payload.frequency} goals must be between ${min.toLocaleString()} and ${max.toLocaleString()} minutes.`,
+      path: ["targetMinutes"],
+    });
+  });
+
+const commandSchemas = [
+  z
+    .object({
+      payload: focusQuotaGoalIdPayloadSchema,
+      type: z.literal("focusQuotaGoal.archive"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: focusQuotaGoalIdPayloadSchema,
+      type: z.literal("focusQuotaGoal.unarchive"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: focusQuotaGoalUpsertPayloadSchema,
+      type: z.literal("focusQuotaGoal.upsert"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: createFocusSessionInputSchema,
+      type: z.literal("focusSession.record"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: persistedFocusTimerStateSchema,
+      type: z.literal("focusTimer.saveState"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: createHabitPayloadSchema,
+      type: z.literal("habit.create"),
+    })
+    .strict(),
+  z
+    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.archive") })
+    .strict(),
+  z
+    .object({
+      payload: habitIdPayloadSchema,
+      type: z.literal("habit.decrementProgress"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: habitIdPayloadSchema,
+      type: z.literal("habit.incrementProgress"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({ habitId: habitIdSchema, name: habitNameSchema })
+        .strict(),
+      type: z.literal("habit.rename"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z.object({ habitIds: reorderHabitIdsSchema }).strict(),
+      type: z.literal("habit.reorder"),
+    })
+    .strict(),
+  z
+    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.toggle") })
+    .strict(),
+  z
+    .object({
+      payload: habitIdPayloadSchema,
+      type: z.literal("habit.unarchive"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({ category: habitCategorySchema, habitId: habitIdSchema })
+        .strict(),
+      type: z.literal("habit.updateCategory"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: updateHabitFrequencyPayloadSchema,
+      type: z.literal("habit.updateFrequency"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({ habitId: habitIdSchema, targetCount: habitTargetCountSchema })
+        .strict(),
+      type: z.literal("habit.updateTargetCount"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({
+          habitId: habitIdSchema,
+          selectedWeekdays: habitWeekdaysSchema.nullable(),
+        })
+        .strict(),
+      type: z.literal("habit.updateWeekdays"),
+    })
+    .strict(),
+  z
+    .object({ payload: appSettingsSchema, type: z.literal("settings.update") })
+    .strict(),
+  z.object({ type: z.literal("today.toggleSickDay") }).strict(),
+  z
+    .object({
+      payload: z.object({ name: habitNameSchema }).strict(),
+      type: z.literal("windDown.createAction"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: windDownActionIdPayloadSchema,
+      type: z.literal("windDown.deleteAction"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({ actionId: habitIdSchema, name: habitNameSchema })
+        .strict(),
+      type: z.literal("windDown.renameAction"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: windDownActionIdPayloadSchema,
+      type: z.literal("windDown.toggleAction"),
+    })
+    .strict(),
+] as const;
+
+export const habitCommandSchema = z.discriminatedUnion("type", commandSchemas);
+
+const optionalLimitPayloadSchema = z
+  .object({
+    limit: historyLimitSchema,
+  })
+  .strict()
+  .optional();
+
+export const habitQuerySchema = z.discriminatedUnion("type", [
+  z
+    .object({
+      payload: z
+        .object({
+          limit: focusSessionLimitSchema,
+        })
+        .strict()
+        .optional(),
+      type: z.literal("focusSession.list"),
+    })
+    .strict(),
+  z.object({ type: z.literal("focusTimer.getState") }).strict(),
+  z.object({ type: z.literal("habit.list") }).strict(),
+  z
+    .object({
+      payload: optionalLimitPayloadSchema,
+      type: z.literal("history.get"),
+    })
+    .strict(),
+  z.object({ type: z.literal("today.get") }).strict(),
+  z
+    .object({
+      payload: z.object({ weekStart: dateKeySchema }).strict(),
+      type: z.literal("weeklyReview.get"),
+    })
+    .strict(),
+  z.object({ type: z.literal("weeklyReview.overview") }).strict(),
+]);

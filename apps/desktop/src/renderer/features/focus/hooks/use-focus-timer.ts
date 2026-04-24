@@ -21,6 +21,7 @@ import {
   getPomodoroFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
 import type {
   CreateFocusSessionInput,
@@ -128,7 +129,7 @@ export function useFocusTimer({
   useEffect(() => {
     let cancelled = false;
 
-    window.habits
+    habitsClient
       .getFocusTimerState()
       .then((restored) => {
         if (cancelled) {
@@ -202,7 +203,7 @@ export function useFocusTimer({
     latestSaveRequestIdRef.current = requestId;
     let cancelled = false;
 
-    window.habits
+    habitsClient
       .saveFocusTimerState(timerState)
       .then((savedTimerState) => {
         if (cancelled || latestSaveRequestIdRef.current !== requestId) {

@@ -1,4 +1,3 @@
-import type { HabitsApi } from "@/shared/contracts/habits-ipc";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -9,8 +8,13 @@ export interface WeeklyReviewStateSnapshot {
   selectedWeeklyReview: WeeklyReview | null;
 }
 
+export interface WeeklyReviewLoader {
+  getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
+  getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
+}
+
 export async function loadWeeklyReviewState(
-  habitsApi: Pick<HabitsApi, "getWeeklyReview" | "getWeeklyReviewOverview">,
+  habitsApi: WeeklyReviewLoader,
   previousSelectedWeeklyReview: WeeklyReview | null
 ): Promise<WeeklyReviewStateSnapshot> {
   const overview = await habitsApi.getWeeklyReviewOverview();

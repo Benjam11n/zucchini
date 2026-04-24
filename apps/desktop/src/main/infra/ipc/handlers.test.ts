@@ -82,6 +82,7 @@ function createService() {
     createWindDownAction: vi.fn(),
     decrementHabitProgress: vi.fn(),
     deleteWindDownAction: vi.fn(),
+    execute: vi.fn(),
     getFocusSessions: vi.fn(() => []),
     getHabits: vi.fn(() => []),
     getHistory: vi.fn(() => []),
@@ -100,6 +101,7 @@ function createService() {
     incrementHabitProgress: vi.fn(),
     initialize: vi.fn(),
     recordFocusSession: vi.fn(),
+    read: vi.fn(),
     renameHabit: vi.fn(),
     renameWindDownAction: vi.fn(),
     reorderHabits: vi.fn(),
@@ -172,10 +174,13 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     registerIpcHandlers(createRegisterOptions());
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.toggleHabit);
+    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
 
     await expect(
-      handler?.({} as IpcMainInvokeEvent, "bad-id")
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { habitId: "bad-id" },
+        type: "habit.toggle",
+      })
     ).resolves.toStrictEqual(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -190,15 +195,17 @@ describe("registerIpcHandlers()", () => {
   it("serializes database errors with a safe message", async () => {
     resetHandlers();
     const service = createService();
-    service.getTodayState.mockImplementation(() => {
+    service.read.mockImplementation(() => {
       throw new DatabaseError("getTodayState", new Error("sqlite locked"));
     });
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
+    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
 
-    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, { type: "today.get" })
+    ).resolves.toStrictEqual({
       error: {
         code: "DATABASE_ERROR",
         message: "Zucchini could not access its local data.",
@@ -209,11 +216,18 @@ describe("registerIpcHandlers()", () => {
 
   it("serializes unknown errors as internal errors", async () => {
     resetHandlers();
-    registerIpcHandlers(createRegisterOptions());
+    const service = createService();
+    service.read.mockImplementation(() => {
+      throw new Error("boom");
+    });
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.getTodayState);
+    registerIpcHandlers(createRegisterOptions({ service }));
 
-    await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
+    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, { type: "today.get" })
+    ).resolves.toStrictEqual({
       error: {
         code: "INTERNAL_ERROR",
         message: "Something went wrong while processing your request.",
@@ -228,27 +242,105 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.getHistory);
+    service.read.mockReturnValue([]);
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
 
     await expect(
-      handler?.({} as IpcMainInvokeEvent, 14)
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { limit: 14 },
+        type: "history.get",
+      })
     ).resolves.toStrictEqual({
       data: [],
       ok: true,
     });
-    expect(service.getHistory).toHaveBeenCalledWith(14);
+    expect(service.read).toHaveBeenCalledWith({
+      payload: { limit: 14 },
+      type: "history.get",
+    });
   });
 
-  it("rejects focus quota targets outside the selected cadence bounds", async () => {
+  it("routes validated habit queries through the command/query boundary", async () => {
+    resetHandlers();
+    const service = createService();
+    service.read.mockReturnValue([]);
+
+    registerIpcHandlers(createRegisterOptions({ service }));
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { limit: 14 },
+        type: "history.get",
+      })
+    ).resolves.toStrictEqual({
+      data: [],
+      ok: true,
+    });
+    expect(service.read).toHaveBeenCalledWith({
+      payload: { limit: 14 },
+      type: "history.get",
+    });
+  });
+
+  it("routes habit commands through the command/query boundary and broadcasts side effects", async () => {
+    resetHandlers();
+    const service = createService();
+    const broadcastFocusSessionRecorded = vi.fn();
+    const payload = {
+      completedAt: "2026-03-08T09:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      entryKind: "completed",
+      startedAt: "2026-03-08T09:00:00.000Z",
+      timerSessionId: "timer-session-1",
+    };
+    const focusSession = {
+      ...payload,
+      id: 1,
+    };
+    service.execute.mockReturnValue(focusSession);
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        broadcastFocusSessionRecorded,
+        service,
+      })
+    );
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, {
+        payload,
+        type: "focusSession.record",
+      })
+    ).resolves.toStrictEqual({
+      data: focusSession,
+      ok: true,
+    });
+    expect(service.execute).toHaveBeenCalledWith({
+      payload,
+      type: "focusSession.record",
+    });
+    expect(broadcastFocusSessionRecorded).toHaveBeenCalledWith(focusSession);
+  });
+
+  it("rejects invalid command payloads before they reach the service", async () => {
     resetHandlers();
     const service = createService();
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.upsertFocusQuotaGoal);
+    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
 
     await expect(
-      handler?.({} as IpcMainInvokeEvent, "weekly", 20_000)
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { frequency: "yearly", targetMinutes: 20_000 },
+        type: "focusQuotaGoal.upsert",
+      })
     ).resolves.toStrictEqual(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -257,7 +349,34 @@ describe("registerIpcHandlers()", () => {
         ok: false,
       })
     );
-    expect(service.upsertFocusQuotaGoal).not.toHaveBeenCalled();
+    expect(service.execute).not.toHaveBeenCalled();
+  });
+
+  it("rejects focus quota targets outside the selected cadence bounds", async () => {
+    resetHandlers();
+    const service = createService();
+
+    registerIpcHandlers(createRegisterOptions({ service }));
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { frequency: "weekly", targetMinutes: 20_000 },
+        type: "focusQuotaGoal.upsert",
+      })
+    ).resolves.toStrictEqual(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          code: "VALIDATION_ERROR",
+          details: expect.arrayContaining([
+            "payload.targetMinutes: Focus quota target minutes for weekly goals must be between 30 and 10,080 minutes.",
+          ]),
+        }),
+        ok: false,
+      })
+    );
+    expect(service.execute).not.toHaveBeenCalled();
   });
 
   it("returns desktop notification status through IPC", async () => {
@@ -308,7 +427,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     const service = createService();
     const broadcastFocusSessionRecorded = vi.fn();
-    service.recordFocusSession.mockReturnValue({
+    service.execute.mockReturnValue({
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
       durationSeconds: 1500,
@@ -325,7 +444,7 @@ describe("registerIpcHandlers()", () => {
       })
     );
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.recordFocusSession);
+    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
     const payload = {
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
@@ -336,7 +455,10 @@ describe("registerIpcHandlers()", () => {
     };
 
     await expect(
-      handler?.({} as IpcMainInvokeEvent, payload)
+      handler?.({} as IpcMainInvokeEvent, {
+        payload,
+        type: "focusSession.record",
+      })
     ).resolves.toStrictEqual({
       data: {
         ...payload,
@@ -344,7 +466,10 @@ describe("registerIpcHandlers()", () => {
       },
       ok: true,
     });
-    expect(service.recordFocusSession).toHaveBeenCalledWith(payload);
+    expect(service.execute).toHaveBeenCalledWith({
+      payload,
+      type: "focusSession.record",
+    });
     expect(broadcastFocusSessionRecorded).toHaveBeenCalledWith({
       ...payload,
       id: 1,
@@ -369,7 +494,7 @@ describe("registerIpcHandlers()", () => {
       status: "running",
       timerSessionId: "timer-session-1",
     };
-    service.savePersistedFocusTimerState.mockReturnValue(nextState);
+    service.execute.mockReturnValue(nextState);
 
     registerIpcHandlers(
       createRegisterOptions({
@@ -379,18 +504,19 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.saveFocusTimerState)?.(
-        {} as IpcMainInvokeEvent,
-        nextState
-      )
+      handlers.get(HABITS_IPC_CHANNELS.command)?.({} as IpcMainInvokeEvent, {
+        payload: nextState,
+        type: "focusTimer.saveState",
+      })
     ).resolves.toStrictEqual({
       data: nextState,
       ok: true,
     });
 
-    expect(service.savePersistedFocusTimerState).toHaveBeenCalledWith(
-      nextState
-    );
+    expect(service.execute).toHaveBeenCalledWith({
+      payload: nextState,
+      type: "focusTimer.saveState",
+    });
     expect(broadcastFocusTimerStateChanged).toHaveBeenCalledWith(nextState);
   });
 

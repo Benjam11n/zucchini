@@ -11,6 +11,7 @@ import { create } from "zustand";
 import type { WeeklyReviewPhase } from "@/renderer/features/history/history.types";
 import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
 import type {
@@ -56,7 +57,7 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
       }),
     loadWeeklyReviewOverview: async () => {
       await runAsyncTask(
-        () => loadWeeklyReviewState(window.habits, get().selectedWeeklyReview),
+        () => loadWeeklyReviewState(habitsClient, get().selectedWeeklyReview),
         {
           mapError: toHabitsIpcError,
           onError: (weeklyReviewError) => {
@@ -94,7 +95,7 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAsyncTask(() => window.habits.getWeeklyReview(weekStart), {
+      await runAsyncTask(() => habitsClient.getWeeklyReview(weekStart), {
         mapError: toHabitsIpcError,
         onError: (weeklyReviewError) => {
           set({

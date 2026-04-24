@@ -16,33 +16,23 @@ import {
 } from "@/main/features/reminders/notifications";
 import { serializeIpcError } from "@/main/infra/ipc/errors";
 import {
-  validateAppSettings,
   validateFocusTimerCycleId,
   validateFocusTimerInstanceId,
   validateFocusTimerLeaseTtl,
-  validatePersistedFocusTimerState,
   validateFocusWidgetSize,
-  validateGoalFrequency,
-  validateCreateFocusSessionInput,
-  validateDateKey,
-  validateFocusQuotaTargetMinutesForFrequency,
-  validateFocusSessionLimit,
-  validateHabitCategory,
-  validateHabitFrequency,
-  validateHabitId,
-  validateHabitTargetCount,
-  validateHabitWeekdays,
-  validateHistoryLimit,
-  validateHabitName,
+  validateHabitCommand,
+  validateHabitQuery,
   validateNotificationBody,
   validateNotificationIconFilename,
   validateNotificationTitle,
-  validateReorderHabitIds,
 } from "@/main/infra/ipc/validation";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type {
+  HabitCommand,
+  HabitCommandResult,
   FocusTimerShortcutStatus,
   HabitsIpcResponse,
+  HabitQueryResult,
   TodayState,
 } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
@@ -109,63 +99,43 @@ export function registerIpcHandlers({
     return todayState;
   }
 
-  registerHandler(HABITS_IPC_CHANNELS.getTodayState, () =>
-    service.getTodayState()
+  function runCommand(command: HabitCommand): HabitCommandResult {
+    const result = service.execute(command);
+
+    if (command.type === "focusSession.record") {
+      broadcastFocusSessionRecorded(result as FocusSession);
+    }
+
+    if (command.type === "focusTimer.saveState") {
+      broadcastFocusTimerStateChanged(result as PersistedFocusTimerState);
+    }
+
+    if (command.type === "settings.update") {
+      onSettingsChanged(result as AppSettings);
+    }
+
+    if (command.type.startsWith("windDown.")) {
+      emitWindDownChanged(result as TodayState);
+    }
+
+    return result;
+  }
+
+  registerHandler(HABITS_IPC_CHANNELS.command, (command: unknown) =>
+    runCommand(validateHabitCommand(command))
   );
+  registerHandler(
+    HABITS_IPC_CHANNELS.query,
+    (query: unknown): HabitQueryResult =>
+      service.read(validateHabitQuery(query))
+  );
+
   registerHandler(HABITS_IPC_CHANNELS.getDesktopNotificationStatus, () =>
     getDesktopNotificationStatus()
-  );
-  registerHandler(HABITS_IPC_CHANNELS.toggleSickDay, () =>
-    service.toggleSickDay()
-  );
-  registerHandler(HABITS_IPC_CHANNELS.toggleHabit, (habitId: unknown) =>
-    service.toggleHabit(validateHabitId(habitId))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.toggleWindDownAction,
-    (actionId: unknown) =>
-      emitWindDownChanged(
-        service.toggleWindDownAction(validateHabitId(actionId))
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.incrementHabitProgress,
-    (habitId: unknown) =>
-      service.incrementHabitProgress(validateHabitId(habitId))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.decrementHabitProgress,
-    (habitId: unknown) =>
-      service.decrementHabitProgress(validateHabitId(habitId))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.getFocusSessions, (limit?: unknown) =>
-    service.getFocusSessions(validateFocusSessionLimit(limit))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.getFocusTimerState, () =>
-    service.getPersistedFocusTimerState()
   );
   registerHandler(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus, () =>
     getFocusTimerShortcutStatus()
   );
-  registerHandler(HABITS_IPC_CHANNELS.getHabits, () => service.getHabits());
-  registerHandler(HABITS_IPC_CHANNELS.recordFocusSession, (input: unknown) => {
-    const focusSession = service.recordFocusSession(
-      validateCreateFocusSessionInput(input)
-    );
-
-    broadcastFocusSessionRecorded(focusSession);
-
-    return focusSession;
-  });
-  registerHandler(HABITS_IPC_CHANNELS.saveFocusTimerState, (state: unknown) => {
-    const nextState = service.savePersistedFocusTimerState(
-      validatePersistedFocusTimerState(state)
-    );
-
-    broadcastFocusTimerStateChanged(nextState);
-
-    return nextState;
-  });
   registerHandler(
     HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion,
     (cycleId: unknown) =>
@@ -204,132 +174,6 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
   registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
   registerHandler(HABITS_IPC_CHANNELS.importBackup, () => onImportBackup());
-  registerHandler(HABITS_IPC_CHANNELS.getHistory, (limit?: unknown) =>
-    service.getHistory(validateHistoryLimit(limit))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.getWeeklyReviewOverview, () =>
-    service.getWeeklyReviewOverview()
-  );
-  registerHandler(HABITS_IPC_CHANNELS.getWeeklyReview, (weekStart: unknown) =>
-    service.getWeeklyReview(validateDateKey("review week", weekStart))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.updateSettings, (settings: unknown) => {
-    const nextSettings = service.updateSettings(validateAppSettings(settings));
-    onSettingsChanged(nextSettings);
-    return nextSettings;
-  });
-  registerHandler(HABITS_IPC_CHANNELS.createWindDownAction, (name: unknown) =>
-    emitWindDownChanged(service.createWindDownAction(validateHabitName(name)))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.renameWindDownAction,
-    (actionId: unknown, name: unknown) =>
-      service.renameWindDownAction(
-        validateHabitId(actionId),
-        validateHabitName(name)
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.deleteWindDownAction,
-    (actionId: unknown) =>
-      emitWindDownChanged(
-        service.deleteWindDownAction(validateHabitId(actionId))
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.createHabit,
-    (
-      name: unknown,
-      category: unknown,
-      frequency: unknown,
-      weekdays?: unknown,
-      targetCount?: unknown
-    ) =>
-      service.createHabit(
-        validateHabitName(name),
-        validateHabitCategory(category),
-        validateHabitFrequency(frequency),
-        weekdays === undefined || weekdays === null
-          ? null
-          : validateHabitWeekdays(weekdays),
-        targetCount === undefined || targetCount === null
-          ? null
-          : validateHabitTargetCount(targetCount)
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.renameHabit,
-    (habitId: unknown, name: unknown) =>
-      service.renameHabit(validateHabitId(habitId), validateHabitName(name))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.updateHabitCategory,
-    (habitId: unknown, category: unknown) =>
-      service.updateHabitCategory(
-        validateHabitId(habitId),
-        validateHabitCategory(category)
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.updateHabitFrequency,
-    (habitId: unknown, frequency: unknown, targetCount?: unknown) =>
-      service.updateHabitFrequency(
-        validateHabitId(habitId),
-        validateHabitFrequency(frequency),
-        targetCount === undefined || targetCount === null
-          ? null
-          : validateHabitTargetCount(targetCount)
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.updateHabitTargetCount,
-    (habitId: unknown, targetCount: unknown) =>
-      service.updateHabitTargetCount(
-        validateHabitId(habitId),
-        validateHabitTargetCount(targetCount)
-      )
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.updateHabitWeekdays,
-    (habitId: unknown, weekdays: unknown) =>
-      service.updateHabitWeekdays(
-        validateHabitId(habitId),
-        weekdays === null || weekdays === undefined
-          ? null
-          : validateHabitWeekdays(weekdays)
-      )
-  );
-  registerHandler(HABITS_IPC_CHANNELS.archiveHabit, (habitId: unknown) =>
-    service.archiveHabit(validateHabitId(habitId))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.unarchiveHabit, (habitId: unknown) =>
-    service.unarchiveHabit(validateHabitId(habitId))
-  );
-  registerHandler(HABITS_IPC_CHANNELS.reorderHabits, (habitIds: unknown) =>
-    service.reorderHabits(validateReorderHabitIds(habitIds))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.upsertFocusQuotaGoal,
-    (frequency: unknown, targetMinutes: unknown) => {
-      const normalizedFrequency = validateGoalFrequency(frequency);
-      return service.upsertFocusQuotaGoal(
-        normalizedFrequency,
-        validateFocusQuotaTargetMinutesForFrequency(
-          normalizedFrequency,
-          targetMinutes
-        )
-      );
-    }
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.archiveFocusQuotaGoal,
-    (goalId: unknown) => service.archiveFocusQuotaGoal(validateHabitId(goalId))
-  );
-  registerHandler(
-    HABITS_IPC_CHANNELS.unarchiveFocusQuotaGoal,
-    (goalId: unknown) =>
-      service.unarchiveFocusQuotaGoal(validateHabitId(goalId))
-  );
   registerHandler(
     HABITS_IPC_CHANNELS.showNotification,
     (title: unknown, body: unknown, iconFilename?: unknown) =>

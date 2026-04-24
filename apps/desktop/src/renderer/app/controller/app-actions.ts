@@ -7,6 +7,7 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -48,7 +49,7 @@ export function createAppActions() {
       useSettingsStore.getState().handleSettingsDraftChange(settingsDraft);
     },
     async handleUpdateSettings(settings: AppSettings) {
-      const nextSettings = await window.habits.updateSettings(settings);
+      const nextSettings = await habitsClient.updateSettings(settings);
 
       useSettingsStore.setState({
         settingsDraft: nextSettings,
@@ -80,7 +81,7 @@ export function createAppActions() {
       useWeeklyReviewStore.getState().openWeeklyReviewSpotlight();
     },
     async recordFocusSession(input: CreateFocusSessionInput) {
-      const focusSession = await window.habits.recordFocusSession(input);
+      const focusSession = await habitsClient.recordFocusSession(input);
       useFocusStore.getState().setFocusSaveErrorMessage(null);
       return focusSession;
     },
