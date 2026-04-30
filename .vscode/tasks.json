@@ -13,7 +13,7 @@
     {
       "label": "Test (Desktop)",
       "type": "shell",
-      "command": "bun run test:desktop",
+      "command": "pnpm run test:desktop",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -26,7 +26,7 @@
     {
       "label": "Test (Desktop Watch)",
       "type": "shell",
-      "command": "bun run --cwd apps/desktop test:watch",
+      "command": "pnpm --dir apps/desktop run test:watch",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -49,7 +49,7 @@
     {
       "label": "Typecheck (Desktop)",
       "type": "shell",
-      "command": "bun run --cwd apps/desktop typecheck",
+      "command": "pnpm --dir apps/desktop run typecheck",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -63,7 +63,7 @@
     {
       "label": "Typecheck (Web)",
       "type": "shell",
-      "command": "bun run --cwd apps/web typecheck",
+      "command": "pnpm --dir apps/web run typecheck",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -87,7 +87,7 @@
     {
       "label": "Lint (Desktop)",
       "type": "shell",
-      "command": "bun run lint:desktop",
+      "command": "pnpm run lint:desktop",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -100,7 +100,7 @@
     {
       "label": "Lint (Web)",
       "type": "shell",
-      "command": "bun run lint:web",
+      "command": "pnpm run lint:web",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -113,7 +113,7 @@
     {
       "label": "Format",
       "type": "shell",
-      "command": "bun run format",
+      "command": "pnpm run format",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -126,7 +126,7 @@
     {
       "label": "Knip",
       "type": "shell",
-      "command": "bun run --cwd apps/desktop knip",
+      "command": "pnpm --dir apps/desktop run knip",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -139,7 +139,7 @@
     {
       "label": "React Doctor (Desktop)",
       "type": "shell",
-      "command": "bun run --cwd apps/desktop react-doctor",
+      "command": "pnpm --dir apps/desktop run react-doctor",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -152,7 +152,7 @@
     {
       "label": "React Doctor (Web)",
       "type": "shell",
-      "command": "bun run react-doctor:web",
+      "command": "pnpm run react-doctor:web",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -179,7 +179,7 @@
     {
       "label": "Build (Desktop)",
       "type": "shell",
-      "command": "bun run build:desktop",
+      "command": "pnpm run build:desktop",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -192,7 +192,7 @@
     {
       "label": "Build (Web)",
       "type": "shell",
-      "command": "bun run build:web",
+      "command": "pnpm run build:web",
       "options": {
         "cwd": "${workspaceFolder}"
       },
