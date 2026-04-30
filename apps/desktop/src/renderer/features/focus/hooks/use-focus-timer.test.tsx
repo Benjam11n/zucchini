@@ -13,7 +13,8 @@ import {
   resetFocusStore,
   useFocusStore,
 } from "@/renderer/features/focus/state/focus-store";
-import type { HabitCommand, HabitQuery } from "@/shared/contracts/habits-ipc";
+import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
+import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -28,6 +29,7 @@ import {
 } from "@/test/fixtures/focus-test-utils";
 
 import { useFocusTimer } from "./use-focus-timer";
+import { resolveFocusTimerTick } from "./use-focus-timer-loop";
 
 type FocusSessionRecordedListener = (session: {
   completedAt: string;
@@ -187,6 +189,75 @@ function renderFocusTimerHook({
 }
 
 describe("use focus timer", () => {
+  it("resolves focus completion as a pure timer transition", () => {
+    const transition = resolveFocusTimerTick(
+      {
+        breakVariant: null,
+        completedFocusCycles: 0,
+        cycleId: "cycle-pure",
+        endsAt: "2026-03-08T09:00:00.000Z",
+        focusDurationMs: minutesMs(25),
+        lastCompletedBreak: null,
+        lastUpdatedAt: "2026-03-08T08:59:59.000Z",
+        phase: "focus",
+        remainingMs: 1000,
+        startedAt: "2026-03-08T08:35:00.000Z",
+        status: "running",
+        timerSessionId: "timer-session-pure",
+      },
+      DEFAULT_TIMER_SETTINGS,
+      new Date("2026-03-08T09:00:00.000Z")
+    );
+
+    expect(transition).toMatchObject({
+      cycleCompletionId: "cycle-pure",
+      focusSessionInput: {
+        entryKind: "completed",
+        timerSessionId: "timer-session-pure",
+      },
+      kind: "focusCompleted",
+      nextState: {
+        breakVariant: "short",
+        phase: "break",
+        status: "running",
+      },
+    });
+  });
+
+  it("resolves long break completion as a pure timer transition", () => {
+    const transition = resolveFocusTimerTick(
+      {
+        breakVariant: "long",
+        completedFocusCycles: 4,
+        cycleId: null,
+        endsAt: "2026-03-08T09:00:00.000Z",
+        focusDurationMs: minutesMs(25),
+        lastCompletedBreak: null,
+        lastUpdatedAt: "2026-03-08T08:59:59.000Z",
+        phase: "break",
+        remainingMs: 1000,
+        startedAt: null,
+        status: "running",
+        timerSessionId: "timer-session-long-pure",
+      },
+      DEFAULT_TIMER_SETTINGS,
+      new Date("2026-03-08T09:00:00.000Z")
+    );
+
+    expect(transition).toMatchObject({
+      kind: "breakCompleted",
+      nextState: {
+        completedFocusCycles: 0,
+        lastCompletedBreak: {
+          timerSessionId: "timer-session-long-pure",
+          variant: "long",
+        },
+        phase: "focus",
+        status: "idle",
+      },
+    });
+  });
+
   it("initializes a fresh idle timer from the saved default focus duration", async () => {
     setupFocusTimerTest();
 
