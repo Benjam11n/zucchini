@@ -7,7 +7,7 @@
  */
 import { DatabaseError } from "@/main/infra/db/sqlite-client";
 import { IpcValidationError } from "@/main/infra/ipc/validation";
-import type { SerializedHabitsIpcError } from "@/shared/contracts/habits-ipc";
+import type { SerializedHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 
 export function serializeIpcError(error: unknown): SerializedHabitsIpcError {
   if (error instanceof IpcValidationError) {

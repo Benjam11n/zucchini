@@ -15,8 +15,8 @@ import type {
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
+import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 export interface FocusStoreState {

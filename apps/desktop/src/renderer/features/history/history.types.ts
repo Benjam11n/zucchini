@@ -5,7 +5,7 @@
  */
 import type { HistoryStatus } from "@/renderer/features/history/history-status";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {

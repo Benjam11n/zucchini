@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type { DesktopNotificationStatus } from "@/shared/contracts/habits-ipc";
+import type { DesktopNotificationStatus } from "@/shared/contracts/habits-api";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 import { createDefaultAppSettings } from "@/shared/domain/settings";

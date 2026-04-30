@@ -2,10 +2,12 @@ import type { HabitsService } from "@/main/features/habits/habits-application-se
 import type {
   HabitCommand,
   HabitCommandResult,
+} from "@/shared/contracts/habits-ipc-commands";
+import type {
   HabitQuery,
   HabitQueryResult,
-  TodayState,
-} from "@/shared/contracts/habits-ipc";
+} from "@/shared/contracts/habits-ipc-queries";
+import type { TodayState } from "@/shared/contracts/today-state";
 
 function assertNever(value: never): never {
   throw new Error(`Unsupported command or query: ${JSON.stringify(value)}`);

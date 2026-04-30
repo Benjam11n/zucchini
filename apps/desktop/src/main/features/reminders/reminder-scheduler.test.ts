@@ -1,6 +1,6 @@
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";

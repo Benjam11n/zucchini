@@ -8,7 +8,7 @@ import {
 } from "@/renderer/features/settings/lib/reorder-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
+import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type {
   Habit,
   HabitCategory,

@@ -17,7 +17,7 @@ import {
 import { Label } from "@/renderer/shared/components/ui/label";
 import { Switch } from "@/renderer/shared/components/ui/switch";
 import { TimeInput } from "@/renderer/shared/components/ui/time-input";
-import type { DesktopNotificationStatus } from "@/shared/contracts/habits-ipc";
+import type { DesktopNotificationStatus } from "@/shared/contracts/habits-api";
 import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 
 interface NotificationStatusMessage {

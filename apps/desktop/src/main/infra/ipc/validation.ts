@@ -8,7 +8,8 @@
  */
 import type { ZodType } from "zod";
 
-import type { HabitCommand, HabitQuery } from "@/shared/contracts/habits-ipc";
+import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
+import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 import {
   appSettingsSchema,
   createFocusSessionInputSchema,

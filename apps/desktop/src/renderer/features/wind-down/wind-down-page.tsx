@@ -15,7 +15,7 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
 

@@ -46,11 +46,11 @@ import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordin
 import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
 import type {
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/habits-ipc";
+} from "@/shared/contracts/habits-api";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 

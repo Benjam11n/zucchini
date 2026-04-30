@@ -15,7 +15,8 @@ import type {
   SettingsFieldErrors,
   SettingsSavePhase,
 } from "@/renderer/features/settings/settings.types";
-import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";

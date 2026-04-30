@@ -22,7 +22,7 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type {
   Habit,

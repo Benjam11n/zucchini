@@ -1,4 +1,4 @@
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 
 export function getBootErrorDisplay(error: HabitsIpcError | null): {
   description: string;

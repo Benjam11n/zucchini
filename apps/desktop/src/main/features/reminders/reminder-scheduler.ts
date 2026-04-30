@@ -10,7 +10,7 @@ import type { Clock } from "@/main/app/clock";
 import { systemClock } from "@/main/app/clock";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/main/features/reminders/runtime-state";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import {

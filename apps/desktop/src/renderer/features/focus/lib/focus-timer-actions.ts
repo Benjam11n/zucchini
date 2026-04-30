@@ -6,7 +6,7 @@ import {
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import type { FocusTimerAction } from "@/shared/contracts/habits-ipc";
+import type { FocusTimerAction } from "@/shared/contracts/habits-api";
 import type {
   CreateFocusSessionInput,
   FocusSession,

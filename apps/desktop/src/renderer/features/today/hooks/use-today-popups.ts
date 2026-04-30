@@ -17,7 +17,7 @@ import {
   readLastUiState,
   writeLastUiState,
 } from "@/renderer/features/today/lib/today-ui-storage";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import { isDailyHabit } from "@/shared/domain/habit";
 
 const POPUP_TIMEOUT_MS = 5000;

@@ -11,7 +11,7 @@ import type { TodayCelebration } from "@/renderer/features/today/lib/today-celeb
 import { resolveTodayCelebration } from "@/renderer/features/today/lib/today-celebration";
 import { createTodayUiSnapshot } from "@/renderer/features/today/lib/today-ui-snapshot";
 import { readLastUiState } from "@/renderer/features/today/lib/today-ui-storage";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 
 const CELEBRATION_DURATION_MS = 2200;
 

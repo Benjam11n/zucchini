@@ -9,7 +9,7 @@
 import { nativeImage, Notification } from "electron";
 
 import { resolveMascotAssetPath } from "@/main/app/assets";
-import type { DesktopNotificationStatus } from "@/shared/contracts/habits-ipc";
+import type { DesktopNotificationStatus } from "@/shared/contracts/habits-api";
 
 import { hasNativeAddonBinary } from "./native-addon";
 

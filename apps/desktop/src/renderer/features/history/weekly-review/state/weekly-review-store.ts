@@ -12,8 +12,8 @@ import type { WeeklyReviewPhase } from "@/renderer/features/history/history.type
 import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc";
+import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,

@@ -3,7 +3,7 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { act } from "react";
 
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";

@@ -17,7 +17,8 @@ import { useHistoryStore } from "@/renderer/features/history/state/history-store
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import type { HabitsIpcError, TodayState } from "@/shared/contracts/habits-ipc";
+import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { parseDateKey } from "@/shared/utils/date";

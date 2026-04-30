@@ -17,19 +17,21 @@ import type {
   AppUpdaterApi,
   AppUpdaterIpcResponse,
 } from "@/shared/contracts/app-updater";
-import {
-  HABITS_IPC_CHANNELS,
-  HabitsIpcError,
-} from "@/shared/contracts/habits-ipc";
 import type {
-  HabitCommand,
-  HabitCommandResult,
   FocusTimerShortcutStatus,
   HabitsApi,
-  HabitsIpcResponse,
+} from "@/shared/contracts/habits-api";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+import type {
+  HabitCommand,
+  ResultForCommand,
+} from "@/shared/contracts/habits-ipc-commands";
+import { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
+import type {
   HabitQuery,
-  HabitQueryResult,
-} from "@/shared/contracts/habits-ipc";
+  ResultForQuery,
+} from "@/shared/contracts/habits-ipc-queries";
 
 async function invokeHabits<T>(
   channel: string,
@@ -99,8 +101,8 @@ const habitsApi: HabitsApi = {
       ttlMs
     ),
   clearData: () => invokeHabits(HABITS_IPC_CHANNELS.clearData),
-  command: (command: HabitCommand) =>
-    invokeHabits<HabitCommandResult>(HABITS_IPC_CHANNELS.command, command),
+  command: <C extends HabitCommand>(command: C) =>
+    invokeHabits<ResultForCommand<C>>(HABITS_IPC_CHANNELS.command, command),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
   getDesktopNotificationStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
@@ -126,8 +128,8 @@ const habitsApi: HabitsApi = {
       listener
     ),
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
-  query: (query: HabitQuery) =>
-    invokeHabits<HabitQueryResult>(HABITS_IPC_CHANNELS.query, query),
+  query: <Q extends HabitQuery>(query: Q) =>
+    invokeHabits<ResultForQuery<Q>>(HABITS_IPC_CHANNELS.query, query),
   releaseFocusTimerLeadership: (instanceId: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
   resizeFocusWidget: (width: number, height: number) =>

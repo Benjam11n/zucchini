@@ -7,7 +7,7 @@
  */
 import type { Clock } from "@/main/app/clock";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";

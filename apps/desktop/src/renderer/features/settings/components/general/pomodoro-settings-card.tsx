@@ -5,7 +5,7 @@ import { PomodoroSettingsFields } from "@/renderer/features/settings/components/
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-ipc";
+import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-api";
 
 export function PomodoroSettingsCard({
   fieldErrors,

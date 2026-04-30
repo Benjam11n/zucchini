@@ -3,7 +3,7 @@ import { systemClock } from "@/main/app/clock";
 import { showWindDownReminder } from "@/main/features/reminders/notifications";
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/main/features/wind-down/runtime-state";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import {

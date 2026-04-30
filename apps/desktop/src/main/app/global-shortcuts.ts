@@ -9,7 +9,7 @@ import type {
   FocusTimerAction,
   FocusTimerShortcutRegistration,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/habits-ipc";
+} from "@/shared/contracts/habits-api";
 import type { AppSettings } from "@/shared/domain/settings";
 
 const SHORTCUT_REGISTRATION_ERROR =

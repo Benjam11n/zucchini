@@ -7,9 +7,9 @@ import type {
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
   HabitsApi,
-  TodayState,
-} from "@/shared/contracts/habits-ipc";
+} from "@/shared/contracts/habits-api";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { createDefaultAppSettings } from "@/shared/domain/settings";

@@ -1,43 +1,39 @@
 import type {
   HabitCommand,
-  HabitQuery,
-  TodayState,
-} from "@/shared/contracts/habits-ipc";
+  ResultForCommand,
+} from "@/shared/contracts/habits-ipc-commands";
 import type {
-  CreateFocusSessionInput,
-  FocusSession,
-} from "@/shared/domain/focus-session";
+  HabitQuery,
+  ResultForQuery,
+} from "@/shared/contracts/habits-ipc-queries";
+import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
-  Habit,
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
-import type {
-  WeeklyReview,
-  WeeklyReviewOverview,
-} from "@/shared/domain/weekly-review";
 
-async function command<T>(request: HabitCommand): Promise<T> {
-  return (await window.habits.command(request)) as T;
+function command<C extends HabitCommand>(
+  request: C
+): Promise<ResultForCommand<C>> {
+  return window.habits.command(request);
 }
 
-async function query<T>(request: HabitQuery): Promise<T> {
-  return (await window.habits.query(request)) as T;
+function query<Q extends HabitQuery>(request: Q): Promise<ResultForQuery<Q>> {
+  return window.habits.query(request);
 }
 
 export const habitsClient = {
   archiveFocusQuotaGoal: (goalId: number) =>
-    command<TodayState>({
+    command({
       payload: { goalId },
       type: "focusQuotaGoal.archive",
     }),
   archiveHabit: (habitId: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId },
       type: "habit.archive",
     }),
@@ -48,27 +44,27 @@ export const habitsClient = {
     selectedWeekdays?: HabitWeekday[] | null,
     targetCount?: number | null
   ) =>
-    command<TodayState>({
+    command({
       payload: { category, frequency, name, selectedWeekdays, targetCount },
       type: "habit.create",
     }),
   createWindDownAction: (name: string) =>
-    command<TodayState>({
+    command({
       payload: { name },
       type: "windDown.createAction",
     }),
   decrementHabitProgress: (habitId: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId },
       type: "habit.decrementProgress",
     }),
   deleteWindDownAction: (actionId: number) =>
-    command<TodayState>({
+    command({
       payload: { actionId },
       type: "windDown.deleteAction",
     }),
   getFocusSessions: (limit?: number) =>
-    query<FocusSession[]>(
+    query(
       limit === undefined
         ? { type: "focusSession.list" }
         : {
@@ -77,15 +73,15 @@ export const habitsClient = {
           }
     ),
   getFocusTimerState: () =>
-    query<PersistedFocusTimerState | null>({
+    query({
       type: "focusTimer.getState",
     }),
   getHabits: () =>
-    query<Habit[]>({
+    query({
       type: "habit.list",
     }),
   getHistory: (limit?: number) =>
-    query<HistoryDay[]>(
+    query(
       limit === undefined
         ? { type: "history.get" }
         : {
@@ -94,74 +90,74 @@ export const habitsClient = {
           }
     ),
   getTodayState: () =>
-    query<TodayState>({
+    query({
       type: "today.get",
     }),
   getWeeklyReview: (weekStart: string) =>
-    query<WeeklyReview>({
+    query({
       payload: { weekStart },
       type: "weeklyReview.get",
     }),
   getWeeklyReviewOverview: () =>
-    query<WeeklyReviewOverview>({
+    query({
       type: "weeklyReview.overview",
     }),
   incrementHabitProgress: (habitId: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId },
       type: "habit.incrementProgress",
     }),
   recordFocusSession: (input: CreateFocusSessionInput) =>
-    command<FocusSession>({
+    command({
       payload: input,
       type: "focusSession.record",
     }),
   renameHabit: (habitId: number, name: string) =>
-    command<TodayState>({
+    command({
       payload: { habitId, name },
       type: "habit.rename",
     }),
   renameWindDownAction: (actionId: number, name: string) =>
-    command<TodayState>({
+    command({
       payload: { actionId, name },
       type: "windDown.renameAction",
     }),
   reorderHabits: (habitIds: number[]) =>
-    command<TodayState>({
+    command({
       payload: { habitIds },
       type: "habit.reorder",
     }),
   saveFocusTimerState: (state: PersistedFocusTimerState) =>
-    command<PersistedFocusTimerState>({
+    command({
       payload: state,
       type: "focusTimer.saveState",
     }),
   toggleHabit: (habitId: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId },
       type: "habit.toggle",
     }),
   toggleSickDay: () =>
-    command<TodayState>({
+    command({
       type: "today.toggleSickDay",
     }),
   toggleWindDownAction: (actionId: number) =>
-    command<TodayState>({
+    command({
       payload: { actionId },
       type: "windDown.toggleAction",
     }),
   unarchiveFocusQuotaGoal: (goalId: number) =>
-    command<TodayState>({
+    command({
       payload: { goalId },
       type: "focusQuotaGoal.unarchive",
     }),
   unarchiveHabit: (habitId: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId },
       type: "habit.unarchive",
     }),
   updateHabitCategory: (habitId: number, category: HabitCategory) =>
-    command<TodayState>({
+    command({
       payload: { category, habitId },
       type: "habit.updateCategory",
     }),
@@ -170,12 +166,12 @@ export const habitsClient = {
     frequency: HabitFrequency,
     targetCount?: number | null
   ) =>
-    command<TodayState>({
+    command({
       payload: { frequency, habitId, targetCount },
       type: "habit.updateFrequency",
     }),
   updateHabitTargetCount: (habitId: number, targetCount: number) =>
-    command<TodayState>({
+    command({
       payload: { habitId, targetCount },
       type: "habit.updateTargetCount",
     }),
@@ -183,17 +179,17 @@ export const habitsClient = {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ) =>
-    command<TodayState>({
+    command({
       payload: { habitId, selectedWeekdays },
       type: "habit.updateWeekdays",
     }),
   updateSettings: (settings: AppSettings) =>
-    command<AppSettings>({
+    command({
       payload: settings,
       type: "settings.update",
     }),
   upsertFocusQuotaGoal: (frequency: GoalFrequency, targetMinutes: number) =>
-    command<TodayState>({
+    command({
       payload: { frequency, targetMinutes },
       type: "focusQuotaGoal.upsert",
     }),

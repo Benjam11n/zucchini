@@ -31,11 +31,16 @@ import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type {
   HabitCommand,
   HabitCommandResult,
+} from "@/shared/contracts/habits-ipc-commands";
+import type {
   HabitQuery,
   HabitQueryResult,
-  TodayState,
-} from "@/shared/contracts/habits-ipc";
-import { persistedFocusTimerStateSchema } from "@/shared/contracts/habits-ipc-schema";
+} from "@/shared/contracts/habits-ipc-queries";
+import {
+  createFocusSessionInputSchema,
+  persistedFocusTimerStateSchema,
+} from "@/shared/contracts/habits-ipc-schema";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -130,42 +135,12 @@ export interface HabitsService {
   toggleWindDownAction(actionId: number): TodayState;
 }
 
-function isValidIsoTimestamp(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(Date.parse(value));
-}
-
-function isValidFocusSessionEntryKind(
-  value: string
-): value is CreateFocusSessionInput["entryKind"] {
-  return value === "completed" || value === "partial";
-}
-
 function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
-  if (
-    !isValidIsoTimestamp(input.startedAt) ||
-    !isValidIsoTimestamp(input.completedAt)
-  ) {
-    throw new Error("Focus session timestamps must use ISO 8601 format.");
-  }
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.completedDate)) {
-    throw new Error("Focus session dates must use YYYY-MM-DD format.");
-  }
-
-  if (
-    !Number.isInteger(input.durationSeconds) ||
-    input.durationSeconds <= 0 ||
-    input.durationSeconds > 60 * 60 * 8
-  ) {
-    throw new Error("Focus session durations must be positive integers.");
-  }
-
-  if (!isValidFocusSessionEntryKind(input.entryKind)) {
-    throw new Error("Focus session entries must be completed or partial.");
-  }
-
-  if (input.timerSessionId.trim().length === 0) {
-    throw new Error("Focus session entries must include a timer session id.");
+  const result = createFocusSessionInputSchema.safeParse(input);
+  if (!result.success) {
+    throw new Error(
+      result.error.issues[0]?.message ?? "Focus session input is invalid."
+    );
   }
 }
 

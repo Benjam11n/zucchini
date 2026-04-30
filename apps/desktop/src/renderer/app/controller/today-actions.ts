@@ -15,7 +15,7 @@ import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import type { TodayState } from "@/shared/contracts/habits-ipc";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   Habit,

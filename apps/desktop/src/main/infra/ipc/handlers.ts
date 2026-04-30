@@ -26,15 +26,15 @@ import {
   validateNotificationIconFilename,
   validateNotificationTitle,
 } from "@/main/infra/ipc/validation";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc";
+import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-api";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
 import type {
   HabitCommand,
   HabitCommandResult,
-  FocusTimerShortcutStatus,
-  HabitsIpcResponse,
-  HabitQueryResult,
-  TodayState,
-} from "@/shared/contracts/habits-ipc";
+} from "@/shared/contracts/habits-ipc-commands";
+import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitQueryResult } from "@/shared/contracts/habits-ipc-queries";
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { AppSettings } from "@/shared/domain/settings";

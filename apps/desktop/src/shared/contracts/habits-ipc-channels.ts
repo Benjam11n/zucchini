@@ -1,0 +1,23 @@
+// oxlint-disable-next-line eslint/sort-keys
+export const HABITS_IPC_CHANNELS = {
+  command: "habits:command",
+  clearData: "habits:clearData",
+  claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
+  claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
+  exportBackup: "habits:exportBackup",
+  focusSessionRecorded: "habits:focusSessionRecorded",
+  focusTimerActionRequested: "habits:focusTimerActionRequested",
+  focusTimerShortcutStatusChanged: "habits:focusTimerShortcutStatusChanged",
+  focusTimerStateChanged: "habits:focusTimerStateChanged",
+  getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
+  getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
+  importBackup: "habits:importBackup",
+  openDataFolder: "habits:openDataFolder",
+  query: "habits:query",
+  releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
+  resizeFocusWidget: "habits:resizeFocusWidget",
+  showFocusWidget: "habits:showFocusWidget",
+  showMainWindow: "habits:showMainWindow",
+  showNotification: "habits:showNotification",
+  windDownNavigationRequested: "habits:windDownNavigationRequested",
+} as const;
