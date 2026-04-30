@@ -137,7 +137,10 @@ function canUseFixtureDatabase(): boolean {
   }
 }
 
-describe.skipIf(!canUseFixtureDatabase())("test data generator", () => {
+const describeWithFixtureDatabase =
+  canUseFixtureDatabase() || process.env["CI"] ? describe : describe.skip;
+
+describeWithFixtureDatabase("test data generator", () => {
   const FIXTURE_TEST_TIMEOUT_MS = 20_000;
 
   test("generates deterministic medium fixture data for a fixed seed", () => {

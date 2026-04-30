@@ -24,7 +24,10 @@ function canUseSqlite(): boolean {
   }
 }
 
-describe.skipIf(!canUseSqlite())("runMigrations", () => {
+const describeWithSqlite =
+  canUseSqlite() || process.env["CI"] ? describe : describe.skip;
+
+describeWithSqlite("runMigrations", () => {
   it("initializes the database schema for a fresh install", () => {
     const databasePath = createTempDbPath("fresh-install");
     const client = new SqliteDatabaseClient({ databasePath });

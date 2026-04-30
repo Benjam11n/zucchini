@@ -1,4 +1,4 @@
-import type { DayStatus } from "@/shared/domain/day-status";
+import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 /**
  * Persistence layer data mappers.
  *
@@ -31,6 +31,27 @@ import type {
   WindDownActionRow,
 } from "./types";
 
+function normalizeDayStatusKind(value: string | null): DayStatusKind | null {
+  if (value === "sick") {
+    return value;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  throw new Error(`Invalid day status kind "${value}".`);
+}
+
+function parseDayStatusKind(value: string): DayStatusKind {
+  const kind = normalizeDayStatusKind(value);
+  if (kind) {
+    return kind;
+  }
+
+  throw new Error("Day status kind cannot be null.");
+}
+
 export function mapHabit(row: HabitRow): Habit {
   return {
     category: normalizeHabitCategory(row.category),
@@ -55,7 +76,7 @@ export function mapDailySummary(row: DailySummaryRow): DailySummary {
     allCompleted: row.allCompleted,
     completedAt: row.completedAt,
     date: row.date,
-    dayStatus: row.dayStatus === "sick" ? "sick" : null,
+    dayStatus: normalizeDayStatusKind(row.dayStatus),
     freezeUsed: row.freezeUsed,
     streakCountAfterDay: row.streakCountAfterDay,
   };
@@ -65,7 +86,7 @@ export function mapDayStatus(row: DayStatusRow): DayStatus {
   return {
     createdAt: row.createdAt,
     date: row.date,
-    kind: row.kind === "sick" ? "sick" : "sick",
+    kind: parseDayStatusKind(row.kind),
   };
 }
 
