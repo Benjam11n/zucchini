@@ -11,6 +11,10 @@
  * @see buildTodayState for how the read-model is assembled.
  */
 import type { Clock } from "@/main/app/clock";
+import {
+  executeHabitServiceCommand,
+  readHabitServiceQuery,
+} from "@/main/features/habits/habits-service-routing";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
@@ -173,10 +177,6 @@ function assertValidPersistedFocusTimerState(
   }
 }
 
-function assertNever(value: never): never {
-  throw new Error(`Unsupported command or query: ${JSON.stringify(value)}`);
-}
-
 export class HabitsApplicationService implements HabitsService {
   private readonly repository: AppRepository;
   private readonly clock: Clock;
@@ -245,182 +245,11 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   execute(command: HabitCommand): HabitCommandResult {
-    if (command.type.startsWith("habit.")) {
-      return this.executeHabitCommand(
-        command as Extract<HabitCommand, { type: `habit.${string}` }>
-      );
-    }
-
-    if (command.type.startsWith("focusQuotaGoal.")) {
-      return this.executeFocusQuotaGoalCommand(
-        command as Extract<HabitCommand, { type: `focusQuotaGoal.${string}` }>
-      );
-    }
-
-    if (command.type.startsWith("windDown.")) {
-      return this.executeWindDownCommand(
-        command as Extract<HabitCommand, { type: `windDown.${string}` }>
-      );
-    }
-
-    switch (command.type) {
-      case "focusSession.record": {
-        return this.recordFocusSession(command.payload);
-      }
-      case "focusTimer.saveState": {
-        return this.savePersistedFocusTimerState(command.payload);
-      }
-      case "settings.update": {
-        return this.updateSettings(command.payload);
-      }
-      case "today.toggleSickDay": {
-        return this.toggleSickDay();
-      }
-      default: {
-        throw new Error(`Unsupported habit command: ${command.type}`);
-      }
-    }
-  }
-
-  private executeFocusQuotaGoalCommand(
-    command: Extract<HabitCommand, { type: `focusQuotaGoal.${string}` }>
-  ): TodayState {
-    switch (command.type) {
-      case "focusQuotaGoal.archive": {
-        return this.archiveFocusQuotaGoal(command.payload.goalId);
-      }
-      case "focusQuotaGoal.unarchive": {
-        return this.unarchiveFocusQuotaGoal(command.payload.goalId);
-      }
-      case "focusQuotaGoal.upsert": {
-        return this.upsertFocusQuotaGoal(
-          command.payload.frequency,
-          command.payload.targetMinutes
-        );
-      }
-      default: {
-        return assertNever(command);
-      }
-    }
-  }
-
-  private executeHabitCommand(
-    command: Extract<HabitCommand, { type: `habit.${string}` }>
-  ): TodayState {
-    switch (command.type) {
-      case "habit.archive": {
-        return this.archiveHabit(command.payload.habitId);
-      }
-      case "habit.create": {
-        return this.createHabit(
-          command.payload.name,
-          command.payload.category,
-          command.payload.frequency,
-          command.payload.selectedWeekdays,
-          command.payload.targetCount
-        );
-      }
-      case "habit.decrementProgress": {
-        return this.decrementHabitProgress(command.payload.habitId);
-      }
-      case "habit.incrementProgress": {
-        return this.incrementHabitProgress(command.payload.habitId);
-      }
-      case "habit.rename": {
-        return this.renameHabit(command.payload.habitId, command.payload.name);
-      }
-      case "habit.reorder": {
-        return this.reorderHabits(command.payload.habitIds);
-      }
-      case "habit.toggle": {
-        return this.toggleHabit(command.payload.habitId);
-      }
-      case "habit.unarchive": {
-        return this.unarchiveHabit(command.payload.habitId);
-      }
-      case "habit.updateCategory": {
-        return this.updateHabitCategory(
-          command.payload.habitId,
-          command.payload.category
-        );
-      }
-      case "habit.updateFrequency": {
-        return this.updateHabitFrequency(
-          command.payload.habitId,
-          command.payload.frequency,
-          command.payload.targetCount
-        );
-      }
-      case "habit.updateTargetCount": {
-        return this.updateHabitTargetCount(
-          command.payload.habitId,
-          command.payload.targetCount
-        );
-      }
-      case "habit.updateWeekdays": {
-        return this.updateHabitWeekdays(
-          command.payload.habitId,
-          command.payload.selectedWeekdays
-        );
-      }
-      default: {
-        return assertNever(command);
-      }
-    }
-  }
-
-  private executeWindDownCommand(
-    command: Extract<HabitCommand, { type: `windDown.${string}` }>
-  ): TodayState {
-    switch (command.type) {
-      case "windDown.createAction": {
-        return this.createWindDownAction(command.payload.name);
-      }
-      case "windDown.deleteAction": {
-        return this.deleteWindDownAction(command.payload.actionId);
-      }
-      case "windDown.renameAction": {
-        return this.renameWindDownAction(
-          command.payload.actionId,
-          command.payload.name
-        );
-      }
-      case "windDown.toggleAction": {
-        return this.toggleWindDownAction(command.payload.actionId);
-      }
-      default: {
-        return assertNever(command);
-      }
-    }
+    return executeHabitServiceCommand(this, command);
   }
 
   read(query: HabitQuery): HabitQueryResult {
-    switch (query.type) {
-      case "focusSession.list": {
-        return this.getFocusSessions(query.payload?.limit);
-      }
-      case "focusTimer.getState": {
-        return this.getPersistedFocusTimerState();
-      }
-      case "habit.list": {
-        return this.getHabits();
-      }
-      case "history.get": {
-        return this.getHistory(query.payload?.limit);
-      }
-      case "today.get": {
-        return this.getTodayState();
-      }
-      case "weeklyReview.get": {
-        return this.getWeeklyReview(query.payload.weekStart);
-      }
-      case "weeklyReview.overview": {
-        return this.getWeeklyReviewOverview();
-      }
-      default: {
-        return assertNever(query);
-      }
-    }
+    return readHabitServiceQuery(this, query);
   }
 
   private mutateTodayState(

@@ -41,67 +41,14 @@ export interface SettledHistoryOptions {
   uncapped?: boolean;
 }
 
-export interface AppRepository {
+export interface RepositoryLifecyclePort {
   initializeSchema(): void;
   runInTransaction<A>(label: string, execute: () => A): A;
   seedDefaults(nowIso: string, timezone: string): void;
+}
+
+export interface HabitRepositoryPort {
   getHabits(): Habit[];
-  getFocusQuotaGoals(includeArchived?: boolean): FocusQuotaGoal[];
-  getFocusQuotaGoalsWithStatusForDate(date: string): FocusQuotaGoalWithStatus[];
-  getHistoricalFocusQuotaGoalsWithStatus(
-    date: string
-  ): FocusQuotaGoalWithStatus[];
-  getHabitsWithStatus(date: string): HabitWithStatus[];
-  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
-  getHabitProgress(date: string, habitId: number): number;
-  getDayStatus(date: string): DayStatus | null;
-  ensureStatusRowsForDate(date: string): void;
-  ensureStatusRow(date: string, habitId: number): void;
-  removeStatusRowsForDate(date: string, habitId: number): void;
-  setHabitProgress(date: string, habitId: number, completedCount: number): void;
-  toggleHabit(date: string, habitId: number): void;
-  adjustHabitProgress(date: string, habitId: number, delta: number): void;
-  getFocusSessions(limit?: number): FocusSession[];
-  getFocusSessionsInRange(start: string, end: string): FocusSession[];
-  saveFocusSession(input: CreateFocusSessionInput): FocusSession;
-  getPersistedFocusTimerState(): PersistedFocusTimerState | null;
-  savePersistedFocusTimerState(
-    state: PersistedFocusTimerState
-  ): PersistedFocusTimerState;
-  getSettledHistory(
-    limit?: number,
-    options?: SettledHistoryOptions
-  ): DailySummary[];
-  getDailySummariesInRange(start: string, end: string): DailySummary[];
-  getHabitPeriodStatusesEndingInRange(
-    start: string,
-    end: string
-  ): HabitPeriodStatusSnapshot[];
-  getPersistedStreakState(): StreakState;
-  savePersistedStreakState(state: StreakState): void;
-  getReminderRuntimeState(): ReminderRuntimeState;
-  saveReminderRuntimeState(state: ReminderRuntimeState): void;
-  getWindDownRuntimeState(): WindDownRuntimeState;
-  saveWindDownRuntimeState(state: WindDownRuntimeState): void;
-  getSettings(defaultTimezone: string): AppSettings;
-  saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
-  getWindDownActions(): WindDownAction[];
-  getWindDownActionsWithStatus(date: string): WindDownActionWithStatus[];
-  ensureWindDownStatusRowsForDate(date: string): void;
-  createWindDownAction(name: string, createdAt: string): number;
-  renameWindDownAction(actionId: number, name: string): void;
-  deleteWindDownAction(actionId: number): void;
-  toggleWindDownAction(
-    date: string,
-    actionId: number,
-    completedAt: string
-  ): void;
-  getFirstTrackedDate(): string | null;
-  getLatestTrackedDate(): string | null;
-  getExistingCompletedAt(date: string): string | null;
-  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void;
-  clearDayStatus(date: string): void;
-  saveDailySummary(summary: DailySummary): void;
   getMaxSortOrder(): number;
   insertHabit(
     name: string,
@@ -124,6 +71,30 @@ export interface AppRepository {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): void;
+  archiveHabit(habitId: number): void;
+  unarchiveHabit(habitId: number): void;
+  normalizeHabitOrder(): void;
+  reorderHabits(habitIds: number[]): void;
+}
+
+export interface HabitStatusRepositoryPort {
+  getHabitsWithStatus(date: string): HabitWithStatus[];
+  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
+  getHabitProgress(date: string, habitId: number): number;
+  ensureStatusRowsForDate(date: string): void;
+  ensureStatusRow(date: string, habitId: number): void;
+  removeStatusRowsForDate(date: string, habitId: number): void;
+  setHabitProgress(date: string, habitId: number, completedCount: number): void;
+  toggleHabit(date: string, habitId: number): void;
+  adjustHabitProgress(date: string, habitId: number, delta: number): void;
+}
+
+export interface FocusQuotaGoalRepositoryPort {
+  getFocusQuotaGoals(includeArchived?: boolean): FocusQuotaGoal[];
+  getFocusQuotaGoalsWithStatusForDate(date: string): FocusQuotaGoalWithStatus[];
+  getHistoricalFocusQuotaGoalsWithStatus(
+    date: string
+  ): FocusQuotaGoalWithStatus[];
   upsertFocusQuotaGoal(
     frequency: GoalFrequency,
     targetMinutes: number,
@@ -131,8 +102,81 @@ export interface AppRepository {
   ): void;
   archiveFocusQuotaGoal(goalId: number, archivedAt: string): void;
   unarchiveFocusQuotaGoal(goalId: number, restoredAt: string): void;
-  archiveHabit(habitId: number): void;
-  unarchiveHabit(habitId: number): void;
-  normalizeHabitOrder(): void;
-  reorderHabits(habitIds: number[]): void;
 }
+
+export interface FocusSessionRepositoryPort {
+  getFocusSessions(limit?: number): FocusSession[];
+  getFocusSessionsInRange(start: string, end: string): FocusSession[];
+  saveFocusSession(input: CreateFocusSessionInput): FocusSession;
+}
+
+export interface FocusTimerStateRepositoryPort {
+  getPersistedFocusTimerState(): PersistedFocusTimerState | null;
+  savePersistedFocusTimerState(
+    state: PersistedFocusTimerState
+  ): PersistedFocusTimerState;
+}
+
+export interface HistoryRepositoryPort {
+  getDayStatus(date: string): DayStatus | null;
+  getSettledHistory(
+    limit?: number,
+    options?: SettledHistoryOptions
+  ): DailySummary[];
+  getDailySummariesInRange(start: string, end: string): DailySummary[];
+  getHabitPeriodStatusesEndingInRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[];
+  getFirstTrackedDate(): string | null;
+  getLatestTrackedDate(): string | null;
+  getExistingCompletedAt(date: string): string | null;
+  setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void;
+  clearDayStatus(date: string): void;
+  saveDailySummary(summary: DailySummary): void;
+}
+
+export interface StreakRepositoryPort {
+  getPersistedStreakState(): StreakState;
+  savePersistedStreakState(state: StreakState): void;
+}
+
+export interface SettingsRepositoryPort {
+  getSettings(defaultTimezone: string): AppSettings;
+  saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
+}
+
+export interface ReminderRuntimeStateRepositoryPort {
+  getReminderRuntimeState(): ReminderRuntimeState;
+  saveReminderRuntimeState(state: ReminderRuntimeState): void;
+}
+
+export interface WindDownRepositoryPort {
+  getWindDownRuntimeState(): WindDownRuntimeState;
+  saveWindDownRuntimeState(state: WindDownRuntimeState): void;
+  getWindDownActions(): WindDownAction[];
+  getWindDownActionsWithStatus(date: string): WindDownActionWithStatus[];
+  ensureWindDownStatusRowsForDate(date: string): void;
+  createWindDownAction(name: string, createdAt: string): number;
+  renameWindDownAction(actionId: number, name: string): void;
+  deleteWindDownAction(actionId: number): void;
+  toggleWindDownAction(
+    date: string,
+    actionId: number,
+    completedAt: string
+  ): void;
+}
+
+export interface AppRepository
+  extends
+    RepositoryLifecyclePort,
+    HabitRepositoryPort,
+    HabitStatusRepositoryPort,
+    FocusQuotaGoalRepositoryPort,
+    FocusSessionRepositoryPort,
+    FocusTimerStateRepositoryPort,
+    HistoryRepositoryPort,
+    StreakRepositoryPort,
+    SettingsRepositoryPort,
+    ReminderRuntimeStateRepositoryPort,
+    WindDownRepositoryPort {}

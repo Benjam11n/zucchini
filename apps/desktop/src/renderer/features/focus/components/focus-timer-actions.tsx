@@ -37,33 +37,34 @@ export function FocusTimerActions({
   onSkipBreak,
   onStart,
 }: FocusTimerActionsProps) {
+  function handlePrimaryAction() {
+    if (isPaused) {
+      onResume();
+      return;
+    }
+
+    const nextDurationSeconds = normalizeDurationInputValue(
+      durationDraft.minutesInput,
+      durationDraft.secondsInput,
+      1,
+      60 * 60
+    );
+
+    onStart(
+      commitDuration(
+        nextDurationSeconds === null
+          ? Math.round(focusDurationMs / MS_PER_SECOND)
+          : nextDurationSeconds
+      )
+    );
+  }
+
   return (
     <div className="flex flex-wrap justify-center gap-2.5">
       {isIdle || isPaused ? (
         <Button
           className="h-11 min-w-36 px-6 text-base"
-          onClick={() => {
-            // CHECK: Move this out to a function?
-            if (isPaused) {
-              onResume();
-              return;
-            }
-
-            const nextDurationSeconds = normalizeDurationInputValue(
-              durationDraft.minutesInput,
-              durationDraft.secondsInput,
-              1,
-              60 * 60
-            );
-
-            onStart(
-              commitDuration(
-                nextDurationSeconds === null
-                  ? Math.round(focusDurationMs / MS_PER_SECOND)
-                  : nextDurationSeconds
-              )
-            );
-          }}
+          onClick={handlePrimaryAction}
         >
           <Play className="size-4" />
           {primaryActionLabel}

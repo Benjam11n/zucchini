@@ -22,9 +22,7 @@ export function readJsonStorage(key: string): JsonValue | null {
 
     return JSON.parse(rawValue) as JsonValue;
   } catch {
-    // CHECK: this collapses "missing", "malformed JSON", and storage access
-    // failures into the same null path. Is that ambiguity acceptable for all
-    // current callers?
+    // Renderer cache reads are best effort; canonical state lives in SQLite.
     return null;
   }
 }

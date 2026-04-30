@@ -29,9 +29,6 @@ export function useFocusWidgetSnapshot() {
     loadSnapshot().catch(() => {
       // `loadSnapshot` already applies the fallback state.
     });
-    // CHECK: this hook polls the full today payload every 30s because the
-    // widget has no narrower subscription source. If the widget grows, consider
-    // a dedicated IPC snapshot/update channel instead of polling.
     const timer = window.setInterval(() => {
       loadSnapshot().catch(() => {
         // `loadSnapshot` already applies the fallback state.

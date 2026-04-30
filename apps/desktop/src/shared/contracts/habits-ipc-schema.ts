@@ -27,14 +27,14 @@ import {
 } from "@/shared/domain/settings";
 
 export const habitIdSchema = z.number().int().positive();
-export const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
   message: "Date keys must use YYYY-MM-DD format.",
 });
 const isoTimestampSchema = z.string().datetime({
   message: "Timestamps must use ISO 8601 format.",
   offset: true,
 });
-export const historyLimitSchema = z.number().int().min(1).max(366).optional();
+const historyLimitSchema = z.number().int().min(1).max(366).optional();
 export const focusSessionLimitSchema = z
   .number()
   .int()
@@ -85,13 +85,13 @@ const habitCategoryPreferencesSchema = z
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
 export const habitTargetCountSchema = z.number().int().min(1).max(31);
-export const goalFrequencySchema = z.enum(
+const goalFrequencySchema = z.enum(
   GOAL_FREQUENCY_DEFINITIONS.map((definition) => definition.value) as [
     (typeof GOAL_FREQUENCY_DEFINITIONS)[number]["value"],
     ...(typeof GOAL_FREQUENCY_DEFINITIONS)[number]["value"][],
   ]
 );
-export const focusQuotaTargetMinutesSchema = z
+const focusQuotaTargetMinutesSchema = z
   .number()
   .int()
   .min(30, "Focus quota target minutes must be at least 30 minutes.")

@@ -16,7 +16,7 @@ import type { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-re
 
 interface CreateDataManagementActionsOptions {
   appLike: Pick<App, "quit" | "relaunch">;
-  clock: Pick<Clock, "todayKey">;
+  clock: Pick<Clock, "now" | "todayKey">;
   dialogLike: Pick<Dialog, "showOpenDialog" | "showSaveDialog">;
   repository: Pick<
     SqliteAppRepository,
@@ -40,6 +40,14 @@ export function createDataManagementActions({
   service,
   shellLike,
 }: CreateDataManagementActionsOptions) {
+  function buildPreImportBackupPath(): string {
+    const timestamp = clock.now().toISOString().replaceAll(/\D/g, "");
+    return path.join(
+      path.dirname(repository.getDatabasePath()),
+      `zucchini-before-import-${timestamp}.db`
+    );
+  }
+
   async function openDataFolder(): Promise<string> {
     service.initialize();
 
@@ -95,10 +103,8 @@ export function createDataManagementActions({
       return false;
     }
 
-    // CHECK: import currently replaces the live database in place and relies on
-    // relaunch to recover. Should we create an automatic rollback backup first
-    // or require an explicit confirmation step before this becomes user-facing?
     repository.validateDatabase(selectedBackupPath);
+    await repository.exportBackup(buildPreImportBackupPath());
     repository.replaceDatabase(selectedBackupPath);
 
     if (shouldRelaunchAfterDataChange) {

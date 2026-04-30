@@ -4,8 +4,6 @@
  * This file wires together the app runtime, native windows, IPC handlers, and
  * top-level Electron lifecycle hooks.
  */
-import path from "node:path";
-
 import {
   app,
   BrowserWindow,
@@ -44,7 +42,6 @@ import {
 import { clampFocusWidgetBounds } from "@/main/app/windows/focus-widget-bounds";
 import { createFocusWidgetWindow } from "@/main/app/windows/focus-widget-window";
 import { createMainWindow } from "@/main/app/windows/main-window";
-import { configureWindowSecurity } from "@/main/app/windows/window-security";
 import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
 import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
@@ -56,18 +53,6 @@ import type {
 } from "@/shared/contracts/habits-ipc";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-
-function loadAppWindow(window: BrowserWindow, search = ""): void {
-  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
-  if (devServerUrl) {
-    window.loadURL(`${devServerUrl}${search}`);
-    return;
-  }
-
-  window.loadFile(path.join(__dirname, "../dist/index.html"), {
-    search,
-  });
-}
 
 function createMainProcessContext() {
   let isQuitting = false;
@@ -155,8 +140,6 @@ function ensureMainWindow(): BrowserWindow {
       }),
   });
 
-  configureWindowSecurity(window);
-  loadAppWindow(window);
   context.setMainWindow(window);
   return window;
 }
@@ -174,7 +157,6 @@ function ensureFocusWidgetWindow(): BrowserWindow {
     onClosed: () => context.clearFocusWidgetWindow(window),
   });
 
-  configureWindowSecurity(window);
   context.setFocusWidgetWindow(window);
   return window;
 }

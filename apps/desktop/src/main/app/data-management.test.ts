@@ -41,8 +41,9 @@ function createMocks() {
   const openPath = vi.fn(() => Promise.resolve(""));
   const shellLike = { openPath };
 
+  const now = vi.fn(() => new Date("2026-03-30T14:15:16.789Z"));
   const todayKey = vi.fn(() => "2026-03-30");
-  const clock = { todayKey };
+  const clock = { now, todayKey };
 
   const actions = createDataManagementActions({
     appLike: appLike as never,
@@ -80,6 +81,7 @@ describe("createDataManagementActions()", () => {
   it("clears data without relaunching when restart is delegated to the dev launcher", async () => {
     const {
       appLike,
+      clock,
       dialogLike,
       onBeforeQuit,
       repository,
@@ -88,7 +90,7 @@ describe("createDataManagementActions()", () => {
     } = createMocks();
     const actions = createDataManagementActions({
       appLike: appLike as never,
-      clock: { todayKey: () => "2026-03-30" },
+      clock,
       dialogLike: dialogLike as never,
       repository: repository as never,
       service,
@@ -110,17 +112,26 @@ describe("createDataManagementActions()", () => {
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
     expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+    expect(repository.exportBackup).toHaveBeenCalledWith(
+      "/tmp/zucchini-before-import-20260330141516789.db"
+    );
     expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
     const [validateCallOrder] =
       repository.validateDatabase.mock.invocationCallOrder;
+    const [exportCallOrder] = repository.exportBackup.mock.invocationCallOrder;
     const [replaceCallOrder] =
       repository.replaceDatabase.mock.invocationCallOrder;
 
-    if (validateCallOrder === undefined || replaceCallOrder === undefined) {
-      throw new Error("Expected validate/replace calls to be recorded.");
+    if (
+      validateCallOrder === undefined ||
+      exportCallOrder === undefined ||
+      replaceCallOrder === undefined
+    ) {
+      throw new Error("Expected validate/export/replace calls to be recorded.");
     }
 
-    expect(validateCallOrder).toBeLessThan(replaceCallOrder);
+    expect(validateCallOrder).toBeLessThan(exportCallOrder);
+    expect(exportCallOrder).toBeLessThan(replaceCallOrder);
     expect(appLike.relaunch).toHaveBeenCalledOnce();
     expect(onBeforeQuit).toHaveBeenCalledOnce();
     expect(appLike.quit).toHaveBeenCalledOnce();
@@ -129,6 +140,7 @@ describe("createDataManagementActions()", () => {
   it("quits without relaunching when import restart is delegated to the dev launcher", async () => {
     const {
       appLike,
+      clock,
       dialogLike,
       onBeforeQuit,
       repository,
@@ -137,7 +149,7 @@ describe("createDataManagementActions()", () => {
     } = createMocks();
     const actions = createDataManagementActions({
       appLike: appLike as never,
-      clock: { todayKey: () => "2026-03-30" },
+      clock,
       dialogLike: dialogLike as never,
       repository: repository as never,
       service,
@@ -148,6 +160,9 @@ describe("createDataManagementActions()", () => {
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
     expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+    expect(repository.exportBackup).toHaveBeenCalledWith(
+      "/tmp/zucchini-before-import-20260330141516789.db"
+    );
     expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
     expect(appLike.relaunch).not.toHaveBeenCalled();
     expect(onBeforeQuit).toHaveBeenCalledOnce();
@@ -165,6 +180,7 @@ describe("createDataManagementActions()", () => {
     ).rejects.toThrow("invalid backup");
 
     expect(mocks.repository.replaceDatabase).not.toHaveBeenCalled();
+    expect(mocks.repository.exportBackup).not.toHaveBeenCalled();
     expect(mocks.appLike.relaunch).not.toHaveBeenCalled();
     expect(mocks.onBeforeQuit).not.toHaveBeenCalled();
     expect(mocks.appLike.quit).not.toHaveBeenCalled();
