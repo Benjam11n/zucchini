@@ -40,18 +40,28 @@ const APP_SHELL_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
 
 interface AppShellProps {
   children: ReactNode;
+  rightSidebar?: ReactNode;
   tab: AppTab;
   onTabChange: (tab: AppTab) => void;
 }
 
-export function AppShell({ children, tab, onTabChange }: AppShellProps) {
+export function AppShell({
+  children,
+  rightSidebar,
+  tab,
+  onTabChange,
+}: AppShellProps) {
+  const contentGridClassName = rightSidebar
+    ? "lg:grid-cols-[96px_minmax(0,1fr)_300px]"
+    : "lg:grid-cols-[96px_minmax(0,1fr)]";
+
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation}>
         <main className="min-h-screen bg-background text-foreground">
           <UpdateButton />
           <Tabs
-            className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-[96px_minmax(0,1fr)] lg:grid-rows-1"
+            className={`grid min-h-screen grid-rows-[auto_1fr] lg:grid-rows-1 ${contentGridClassName}`}
             onValueChange={(value) => onTabChange(value as AppTab)}
             value={tab}
           >
@@ -146,7 +156,7 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
               </div>
             </aside>
 
-            <section className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <section className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-6 lg:py-8 xl:px-8">
               <div
                 className={`mx-auto min-w-0 w-full ${APP_SHELL_CONTENT_MAX_WIDTH_CLASS}`}
               >
@@ -166,6 +176,11 @@ export function AppShell({ children, tab, onTabChange }: AppShellProps) {
                 </TabsContent>
               </div>
             </section>
+            {rightSidebar ? (
+              <aside className="hidden min-w-0 overflow-hidden border-l border-border/70 bg-card/40 px-5 py-8 lg:block">
+                {rightSidebar}
+              </aside>
+            ) : null}
           </Tabs>
         </main>
       </LazyMotion>

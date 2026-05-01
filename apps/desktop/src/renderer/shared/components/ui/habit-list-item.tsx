@@ -3,6 +3,7 @@ import { CheckCircle2 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { memo } from "react";
 
+import type { HabitStreak } from "@/renderer/features/today/today-habit-streaks";
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
@@ -20,6 +21,7 @@ interface HabitListItemProps {
   habit: HabitWithStatus;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
+  streak?: HabitStreak;
   trailingActions?: React.ReactNode;
 }
 
@@ -33,6 +35,7 @@ function HabitListItemComponent({
   habit,
   onToggle,
   showCategory,
+  streak,
   trailingActions,
 }: HabitListItemProps) {
   const categoryPreferences = useHabitCategoryPreferences();
@@ -69,10 +72,10 @@ function HabitListItemComponent({
           } as CSSProperties
         }
       />
-      <div className="flex flex-1 items-center gap-2 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
         <span
           className={cn(
-            "truncate text-sm transition-all duration-150",
+            "min-w-0 break-words text-sm leading-snug transition-all duration-150",
             habit.completed
               ? "line-through decoration-muted-foreground/30"
               : "group-hover:brightness-125 dark:group-hover:brightness-150"
@@ -89,6 +92,15 @@ function HabitListItemComponent({
           </span>
         )}
       </div>
+      {streak && streak.currentStreak > 0 ? (
+        <span
+          aria-label={`Current streak ${streak.currentStreak} days`}
+          className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
+          title={`Current streak: ${streak.currentStreak} days. Best: ${streak.bestStreak} days.`}
+        >
+          {streak.currentStreak}d
+        </span>
+      ) : null}
       {trailingActions ? (
         <div className="z-10 flex shrink-0 items-center gap-1">
           {trailingActions}
@@ -125,6 +137,8 @@ function areHabitListItemPropsEqual(
     previous.habit.completed === next.habit.completed &&
     previous.onToggle === next.onToggle &&
     previous.showCategory === next.showCategory &&
+    previous.streak?.bestStreak === next.streak?.bestStreak &&
+    previous.streak?.currentStreak === next.streak?.currentStreak &&
     previous.trailingActions === next.trailingActions
   );
 }

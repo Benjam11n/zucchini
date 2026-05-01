@@ -95,7 +95,6 @@ describe("today page", () => {
         onCreateHabit={vi.fn(() => Promise.resolve())}
         onRenameHabit={vi.fn(() => Promise.resolve())}
         onReorderHabits={vi.fn(() => Promise.resolve())}
-        onToggleSickDay={vi.fn()}
         onUnarchiveHabit={vi.fn(() => Promise.resolve())}
         state={state}
         onToggleHabit={vi.fn()}

@@ -12,6 +12,7 @@ import { useAppController } from "@/renderer/app/controller/use-app-controller";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { MASCOTS } from "@/renderer/assets/mascots";
+import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -107,7 +108,6 @@ function MainApp() {
       onIncrementHabitProgress={actions.handleIncrementHabitProgress}
       onRenameHabit={actions.handleRenameHabit}
       onReorderHabits={actions.handleReorderHabits}
-      onToggleSickDay={actions.handleToggleSickDay}
       onUnarchiveHabit={actions.handleUnarchiveHabit}
       state={state.todayState}
       onToggleHabit={actions.handleToggleHabit}
@@ -225,6 +225,16 @@ function MainApp() {
     );
   }
 
+  const rightSidebar =
+    tab === "today" ? (
+      <TodaySidebar
+        history={state.history}
+        isSickDay={state.todayState.dayStatus === "sick"}
+        state={state.todayState}
+        onToggleSickDay={actions.handleToggleSickDay}
+      />
+    ) : undefined;
+
   return (
     <HabitCategoryPreferencesProvider
       preferences={
@@ -232,7 +242,11 @@ function MainApp() {
       }
     >
       <>
-        <AppShell tab={tab} onTabChange={actions.handleTabChange}>
+        <AppShell
+          rightSidebar={rightSidebar}
+          tab={tab}
+          onTabChange={actions.handleTabChange}
+        >
           {renderedPage}
         </AppShell>
         {state.isWeeklyReviewSpotlightOpen &&

@@ -11,19 +11,19 @@ import { memo, useMemo } from "react";
 
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
 import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
-import { StreakCard } from "@/renderer/features/today/components/streak-card";
 import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
+import { calculateHabitStreaks } from "@/renderer/features/today/today-habit-streaks";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
 import type { TodayState } from "@/shared/contracts/today-state";
-import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
+import { isDailyHabit } from "@/shared/domain/habit";
 import type {
   Habit,
   HabitCategory,
@@ -51,7 +51,6 @@ interface TodayPageProps {
   onUnarchiveHabit: (habitId: number) => Promise<void>;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
-  onToggleSickDay: () => void;
   onUpdateHabitCategory: (
     habitId: number,
     category: HabitCategory
@@ -87,37 +86,38 @@ function TodayPageComponent({
   onUnarchiveHabit,
   state,
   onToggleHabit,
-  onToggleSickDay,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
   onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: TodayPageProps) {
-  const { categoryProgress, completedCount, dailyHabits, periodicHabits } =
-    useMemo(() => {
-      const nextDailyHabits: HabitWithStatus[] = [];
-      const nextPeriodicHabits: HabitWithStatus[] = [];
-      let nextCompletedCount = 0;
+  const { completedCount, dailyHabits, periodicHabits } = useMemo(() => {
+    const nextDailyHabits: HabitWithStatus[] = [];
+    const nextPeriodicHabits: HabitWithStatus[] = [];
+    let nextCompletedCount = 0;
 
-      for (const habit of state.habits) {
-        if (isDailyHabit(habit)) {
-          nextDailyHabits.push(habit);
-          if (habit.completed) {
-            nextCompletedCount += 1;
-          }
-          continue;
+    for (const habit of state.habits) {
+      if (isDailyHabit(habit)) {
+        nextDailyHabits.push(habit);
+        if (habit.completed) {
+          nextCompletedCount += 1;
         }
-
-        nextPeriodicHabits.push(habit);
+        continue;
       }
 
-      return {
-        categoryProgress: getHabitCategoryProgress(nextDailyHabits),
-        completedCount: nextCompletedCount,
-        dailyHabits: nextDailyHabits,
-        periodicHabits: nextPeriodicHabits,
-      };
-    }, [state.habits]);
+      nextPeriodicHabits.push(habit);
+    }
+
+    return {
+      completedCount: nextCompletedCount,
+      dailyHabits: nextDailyHabits,
+      periodicHabits: nextPeriodicHabits,
+    };
+  }, [state.habits]);
+  const habitStreaks = useMemo(
+    () => calculateHabitStreaks(history, state),
+    [history, state]
+  );
   useTodayPopups({ state });
 
   const celebration = useTodayCelebration({
@@ -139,18 +139,6 @@ function TodayPageComponent({
         >
           <m.section className="min-w-0" variants={staggerItemVariants}>
             <TodayHistoryCarousel history={history} todayDate={state.date} />
-          </m.section>
-
-          <m.section variants={staggerItemVariants}>
-            <StreakCard
-              availableFreezes={state.streak.availableFreezes}
-              categoryProgress={categoryProgress}
-              currentStreak={state.streak.currentStreak}
-              dateLabel={state.date}
-              focusMinutes={state.focusMinutes}
-              isSickDay={state.dayStatus === "sick"}
-              onToggleSickDay={onToggleSickDay}
-            />
           </m.section>
 
           <m.section variants={staggerItemVariants}>
@@ -196,6 +184,7 @@ function TodayPageComponent({
                     : {})}
                 />
               }
+              habitStreaks={habitStreaks}
               habits={dailyHabits}
               onToggleHabit={onToggleHabit}
             />

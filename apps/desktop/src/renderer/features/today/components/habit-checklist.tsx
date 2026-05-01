@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
+import type { HabitStreak } from "@/renderer/features/today/today-habit-streaks";
 import {
   HabitListCard,
   HabitListItem,
@@ -22,6 +23,7 @@ interface HabitChecklistProps {
   emptyMessage?: string;
   emptyAction?: ReactNode;
   headerActions?: ReactNode;
+  habitStreaks?: ReadonlyMap<number, HabitStreak>;
   title?: string;
   icon?: React.ElementType;
 }
@@ -38,6 +40,7 @@ function HabitChecklistComponent({
   emptyMessage = "Add habits in Settings to get started.",
   emptyAction: _emptyAction,
   headerActions,
+  habitStreaks,
   title = "Today",
   icon: Icon,
 }: HabitChecklistProps) {
@@ -73,11 +76,22 @@ function HabitChecklistComponent({
       }
     }
 
-    return HABIT_CATEGORY_SLOTS.map((category) => ({
-      ...category,
-      completedCount: groupedHabits[category.value].completedCount,
-      habits: groupedHabits[category.value].habits,
-    })).filter((category) => category.habits.length > 0);
+    const populatedCategories: CategoryGroup[] = [];
+
+    for (const category of HABIT_CATEGORY_SLOTS) {
+      const group = groupedHabits[category.value];
+      if (group.habits.length === 0) {
+        continue;
+      }
+
+      populatedCategories.push({
+        ...category,
+        completedCount: group.completedCount,
+        habits: group.habits,
+      });
+    }
+
+    return populatedCategories;
   }, [habits]);
 
   return (
@@ -133,13 +147,19 @@ function HabitChecklistComponent({
 
               {/* Habit items */}
               <div className="grid gap-px">
-                {category.habits.map((habit) => (
-                  <HabitListItem
-                    key={habit.id}
-                    habit={habit}
-                    onToggle={onToggleHabit}
-                  />
-                ))}
+                {category.habits.map((habit) => {
+                  const streak = habitStreaks?.get(habit.id);
+                  const streakProps = streak ? { streak } : {};
+
+                  return (
+                    <HabitListItem
+                      key={habit.id}
+                      habit={habit}
+                      onToggle={onToggleHabit}
+                      {...streakProps}
+                    />
+                  );
+                })}
               </div>
             </m.div>
           );

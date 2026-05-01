@@ -67,4 +67,19 @@ describe("app shell", () => {
 
     expect(screen.getByTestId("content")).toHaveTextContent("page content");
   });
+
+  it("renders an optional right sidebar", () => {
+    setupUpdaterMock();
+    render(
+      <AppShell
+        rightSidebar={<div data-testid="right-sidebar">summary</div>}
+        onTabChange={vi.fn()}
+        tab="today"
+      >
+        <div data-testid="content">page content</div>
+      </AppShell>
+    );
+
+    expect(screen.getByTestId("right-sidebar")).toHaveTextContent("summary");
+  });
 });
