@@ -84,7 +84,7 @@ export function HabitCategorySelector({
                 style={{
                   color: isSelected
                     ? presentation.selectedTextColor
-                    : presentation.color,
+                    : presentation.accentTextColor,
                 }}
               />
             </span>

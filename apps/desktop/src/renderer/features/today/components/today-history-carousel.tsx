@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
@@ -7,6 +7,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/renderer/shared/components/ui/carousel";
+import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,36 @@ export function TodayHistoryCarousel({
   history,
   todayDate,
 }: TodayHistoryCarouselProps) {
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
   const [selectedDay, setSelectedDay] = useState<HistoryDay | null>(null);
+
+  const updateScrollState = useCallback((api: CarouselApi) => {
+    if (!api) {
+      return;
+    }
+
+    setCanScrollPrev(api.canScrollPrev());
+    setCanScrollNext(api.canScrollNext());
+  }, []);
+
+  useEffect(() => {
+    if (!carouselApi) {
+      return;
+    }
+
+    updateScrollState(carouselApi);
+    carouselApi.on("reInit", updateScrollState);
+    carouselApi.on("select", updateScrollState);
+    carouselApi.on("settle", updateScrollState);
+
+    return () => {
+      carouselApi.off("reInit", updateScrollState);
+      carouselApi.off("select", updateScrollState);
+      carouselApi.off("settle", updateScrollState);
+    };
+  }, [carouselApi, updateScrollState]);
 
   if (!history || history.length === 0) {
     return null;
@@ -36,8 +66,9 @@ export function TodayHistoryCarousel({
 
   return (
     <>
-      <div className="relative min-w-0 max-w-full overflow-hidden rounded-md border border-card bg-card/70 px-1 sm:px-2">
+      <div className="relative min-w-0 max-w-full overflow-hidden rounded-md bg-card px-1 text-card-foreground ring-1 ring-foreground/10 sm:px-2">
         <Carousel
+          setApi={setCarouselApi}
           opts={{
             align: "start",
             dragFree: true,
@@ -72,14 +103,18 @@ export function TodayHistoryCarousel({
             })}
           </CarouselContent>
         </Carousel>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card/95 via-card/55 to-transparent sm:w-10"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card/95 via-card/55 to-transparent sm:w-10"
-        />
+        {canScrollPrev ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card/95 via-card/55 to-transparent sm:w-10"
+          />
+        ) : null}
+        {canScrollNext ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card/95 via-card/55 to-transparent sm:w-10"
+          />
+        ) : null}
       </div>
 
       <Dialog

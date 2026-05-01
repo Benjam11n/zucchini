@@ -21,6 +21,7 @@ describe("buildHabitActivityData()", () => {
       buildHabitActivityData(categoryProgress, categoryPreferences)
     ).toStrictEqual([
       {
+        accentTextColor: categoryPreferences.fitness.color,
         color: categoryPreferences.fitness.color,
         current: 0,
         label: categoryPreferences.fitness.label.toUpperCase(),
@@ -30,6 +31,7 @@ describe("buildHabitActivityData()", () => {
         value: 0,
       },
       {
+        accentTextColor: "#365900",
         color: categoryPreferences.nutrition.color,
         current: 2,
         label: categoryPreferences.nutrition.label.toUpperCase(),
@@ -39,6 +41,7 @@ describe("buildHabitActivityData()", () => {
         value: 50,
       },
       {
+        accentTextColor: categoryPreferences.productivity.color,
         color: categoryPreferences.productivity.color,
         current: 0,
         label: categoryPreferences.productivity.label.toUpperCase(),

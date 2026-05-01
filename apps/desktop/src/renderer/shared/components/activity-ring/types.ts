@@ -5,6 +5,7 @@ export interface ActivityData {
   label: string;
   value: number;
   color: string;
+  accentTextColor: string;
   /** Diameter of this ring's SVG in px */
   size: number;
   current: number;

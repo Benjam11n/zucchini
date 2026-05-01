@@ -113,7 +113,7 @@ const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 const DEFAULT_HABIT_CATEGORY_COLORS: Record<HabitCategory, string> = {
   fitness: "#FF2D55",
-  nutrition: "#A3F900",
+  nutrition: "#78C500",
   productivity: "#04C7DD",
 };
 

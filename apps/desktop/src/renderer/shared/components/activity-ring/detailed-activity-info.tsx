@@ -26,7 +26,7 @@ export function DetailedActivityInfo({
             </span>
             <span
               className="text-2xl font-semibold tabular-nums"
-              style={{ color: activity.color }}
+              style={{ color: activity.accentTextColor }}
             >
               {activity.value}
               <span className="ml-0.5 text-base font-normal text-zinc-500 dark:text-zinc-400">

@@ -97,7 +97,7 @@ export function LongerHabitListItem({
         <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
           <presentation.icon
             className="size-3.5 shrink-0 opacity-70 transition-all group-hover:opacity-100"
-            style={{ color: presentation.color }}
+            style={{ color: presentation.accentTextColor }}
           />
           <span
             className={cn(
@@ -132,7 +132,7 @@ export function LongerHabitListItem({
               !habit.completed && completedCount > 0
                 ? {
                     backgroundColor: `${presentation.color}15`,
-                    color: presentation.color,
+                    color: presentation.accentTextColor,
                   }
                 : undefined
             }

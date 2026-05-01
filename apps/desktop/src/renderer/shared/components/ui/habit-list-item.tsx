@@ -85,7 +85,7 @@ function HabitListItemComponent({
         {showCategory && (
           <span
             className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
-            style={{ color: presentation.color }}
+            style={{ color: presentation.accentTextColor }}
           >
             {presentation.label}
           </span>

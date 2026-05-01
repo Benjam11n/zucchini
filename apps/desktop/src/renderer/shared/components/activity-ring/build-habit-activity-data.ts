@@ -1,6 +1,7 @@
 import {
   getHabitCategoryColor,
   getHabitCategoryLabel,
+  getHabitCategoryPresentation,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitCategoryPreferences } from "@/shared/domain/settings";
@@ -26,6 +27,10 @@ export function buildHabitActivityData(
     const progress = progressByCategory.get(category);
 
     return {
+      accentTextColor: getHabitCategoryPresentation(
+        category,
+        categoryPreferences
+      ).accentTextColor,
       color: getHabitCategoryColor(category, categoryPreferences),
       current: progress?.completed ?? 0,
       label: getHabitCategoryLabel(category, categoryPreferences).toUpperCase(),

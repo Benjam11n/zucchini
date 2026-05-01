@@ -132,11 +132,11 @@ function HabitChecklistComponent({
               <div className="flex items-center gap-2 px-0.5 pb-1">
                 <CategoryIcon
                   className="size-3 shrink-0 opacity-60"
-                  style={{ color: presentation.color }}
+                  style={{ color: presentation.accentTextColor }}
                 />
                 <span
                   className="text-[0.68rem] uppercase tracking-wide"
-                  style={{ color: presentation.color }}
+                  style={{ color: presentation.accentTextColor }}
                 >
                   {presentation.label}
                 </span>

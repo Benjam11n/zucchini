@@ -41,6 +41,26 @@ function getTextColorOnColor(backgroundColor: string): string {
   return luminance >= 160 ? "#102000" : "#FFFFFF";
 }
 
+function darkenChannel(channel: number): string {
+  return Math.max(0, Math.round(channel * 0.45))
+    .toString(16)
+    .padStart(2, "0");
+}
+
+function getReadableAccentColor(color: string): string {
+  const hex = color.replace("#", "");
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  if (luminance < 145) {
+    return color;
+  }
+
+  return `#${darkenChannel(red)}${darkenChannel(green)}${darkenChannel(blue)}`.toUpperCase();
+}
+
 export function getHabitCategoryLabel(
   category: HabitCategory,
   preferences = DEFAULT_CATEGORY_PREFERENCES
@@ -71,6 +91,7 @@ export function getHabitCategoryPresentation(
     borderColor: string;
     color: string;
   };
+  accentTextColor: string;
   color: string;
   icon: LucideIcon;
   label: string;
@@ -83,18 +104,17 @@ export function getHabitCategoryPresentation(
   };
   ringTrackColor: string;
   selectedTextColor: string;
-  textStyle: {
-    color: string;
-  };
 } {
   const color = getHabitCategoryColor(category, preferences);
+  const accentTextColor = getReadableAccentColor(color);
   const selectedTextColor = getTextColorOnColor(color);
 
   return {
+    accentTextColor,
     badgeStyle: {
       backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
       borderColor: `color-mix(in srgb, ${color} 28%, transparent)`,
-      color,
+      color: accentTextColor,
     },
     color,
     icon: getHabitCategoryIcon(category, preferences),
@@ -108,9 +128,6 @@ export function getHabitCategoryPresentation(
     },
     ringTrackColor: `color-mix(in srgb, ${color} 15%, transparent)`,
     selectedTextColor,
-    textStyle: {
-      color,
-    },
   };
 }
 

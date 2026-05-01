@@ -40,7 +40,7 @@ SELECT
 			'label', COALESCE((SELECT value FROM `settings` WHERE key = 'categoryLabelFitness'), 'Fitness')
 		),
 		'nutrition', json_object(
-			'color', COALESCE((SELECT value FROM `settings` WHERE key = 'categoryColorNutrition'), '#A3F900'),
+			'color', COALESCE((SELECT value FROM `settings` WHERE key = 'categoryColorNutrition'), '#78C500'),
 			'label', COALESCE((SELECT value FROM `settings` WHERE key = 'categoryLabelNutrition'), 'Nutrition')
 		),
 		'productivity', json_object(

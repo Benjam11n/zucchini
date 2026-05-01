@@ -14,7 +14,7 @@ const PRESET_CATEGORY_COLORS = [
   "#FF3B30",
   "#FF9500",
   "#FFCC00",
-  "#A3F900",
+  "#78C500",
   "#34C759",
   "#04C7DD",
   "#007AFF",
@@ -71,7 +71,7 @@ export function CategorySettingsItem({
           style={{
             backgroundColor: `${categoryPresentation.color}20`,
             borderColor: categoryPresentation.color,
-            color: categoryPresentation.color,
+            color: categoryPresentation.accentTextColor,
           }}
           title={`Change ${categoryPresentation.label} color`}
           type="button"
@@ -135,7 +135,7 @@ export function CategorySettingsItem({
             >
               <Icon
                 className="size-4"
-                style={{ color: settings.categoryPreferences[value].color }}
+                style={{ color: categoryPresentation.accentTextColor }}
               />
               <span>
                 {HABIT_CATEGORY_ICON_OPTIONS.find(
@@ -236,7 +236,7 @@ export function CategorySettingsItem({
                       ? {
                           backgroundColor: `${categoryPresentation.color}18`,
                           borderColor: categoryPresentation.color,
-                          color: categoryPresentation.color,
+                          color: categoryPresentation.accentTextColor,
                         }
                       : undefined
                   }

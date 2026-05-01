@@ -66,7 +66,7 @@ describe("focus timer shortcut settings", () => {
         label: "Fitness",
       },
       nutrition: {
-        color: "#A3F900",
+        color: "#78C500",
         icon: "utensils",
         label: "Nutrition",
       },
