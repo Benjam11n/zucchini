@@ -40,6 +40,10 @@ function getBarClassName(percent: number): string {
   return "bg-muted";
 }
 
+function formatDays(value: number): string {
+  return value === 1 ? "1 day" : `${value} days`;
+}
+
 export function TodaySidebar({
   history,
   isSickDay,
@@ -123,10 +127,12 @@ export function TodaySidebar({
           <span className="text-5xl font-semibold tracking-tight text-foreground">
             {state.streak.currentStreak}
           </span>
-          <span className="text-base text-muted-foreground">days</span>
+          <span className="text-base text-muted-foreground">
+            {state.streak.currentStreak === 1 ? "day" : "days"}
+          </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Best: {state.streak.bestStreak} days
+          Best: {formatDays(state.streak.bestStreak)}
         </p>
       </section>
 

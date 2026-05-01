@@ -16,7 +16,6 @@ import { TodayHabitManagerDialog } from "@/renderer/features/today/components/to
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
-import { calculateHabitStreaks } from "@/renderer/features/today/today-habit-streaks";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   staggerContainerVariants,
@@ -114,10 +113,6 @@ function TodayPageComponent({
       periodicHabits: nextPeriodicHabits,
     };
   }, [state.habits]);
-  const habitStreaks = useMemo(
-    () => calculateHabitStreaks(history, state),
-    [history, state]
-  );
   useTodayPopups({ state });
 
   const celebration = useTodayCelebration({
@@ -184,9 +179,11 @@ function TodayPageComponent({
                     : {})}
                 />
               }
-              habitStreaks={habitStreaks}
               habits={dailyHabits}
               onToggleHabit={onToggleHabit}
+              {...(state.habitStreaks
+                ? { habitStreaks: state.habitStreaks }
+                : {})}
             />
           </m.section>
 

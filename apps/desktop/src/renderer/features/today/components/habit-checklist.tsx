@@ -3,7 +3,6 @@ import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
-import type { HabitStreak } from "@/renderer/features/today/today-habit-streaks";
 import {
   HabitListCard,
   HabitListItem,
@@ -15,6 +14,7 @@ import {
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type { HabitStreak } from "@/shared/domain/habit-streak";
 
 interface HabitChecklistProps {
   habits: HabitWithStatus[];
@@ -23,7 +23,7 @@ interface HabitChecklistProps {
   emptyMessage?: string;
   emptyAction?: ReactNode;
   headerActions?: ReactNode;
-  habitStreaks?: ReadonlyMap<number, HabitStreak>;
+  habitStreaks?: Readonly<Record<number, HabitStreak>>;
   title?: string;
   icon?: React.ElementType;
 }
@@ -148,7 +148,7 @@ function HabitChecklistComponent({
               {/* Habit items */}
               <div className="grid gap-px">
                 {category.habits.map((habit) => {
-                  const streak = habitStreaks?.get(habit.id);
+                  const streak = habitStreaks?.[habit.id];
                   const streakProps = streak ? { streak } : {};
 
                   return (

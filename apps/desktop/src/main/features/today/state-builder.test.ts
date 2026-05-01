@@ -14,8 +14,10 @@ function createRepository(
     getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
     getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
     getDayStatus?: ReturnType<typeof vi.fn>;
+    getHistoricalHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
+    getSettledHistory?: ReturnType<typeof vi.fn>;
     getSettings?: ReturnType<typeof vi.fn>;
     getWindDownActionsWithStatus?: ReturnType<typeof vi.fn>;
   } = {}
@@ -30,6 +32,8 @@ function createRepository(
     getFocusSessionsInRange:
       overrides.getFocusSessionsInRange ?? vi.fn(() => []),
     getHabitsWithStatus: overrides.getHabitsWithStatus ?? vi.fn(() => []),
+    getHistoricalHabitsWithStatus:
+      overrides.getHistoricalHabitsWithStatus ?? vi.fn(() => []),
     getPersistedStreakState:
       overrides.getPersistedStreakState ??
       vi.fn(() => ({
@@ -63,6 +67,7 @@ function createRepository(
         timezone: "Asia/Singapore",
         toggleFocusTimerShortcut: "Command+Shift+T",
       })),
+    getSettledHistory: overrides.getSettledHistory ?? vi.fn(() => []),
     getWindDownActionsWithStatus:
       overrides.getWindDownActionsWithStatus ?? vi.fn(() => []),
   } as never;
@@ -147,6 +152,45 @@ describe("state builder", () => {
         bestStreak: 14,
         currentStreak: 5,
         lastEvaluatedDate: "2026-03-07",
+      });
+    });
+
+    it("builds per-habit streaks from uncapped settled history", () => {
+      const runHabit = {
+        category: "fitness" as const,
+        completed: true,
+        createdAt: "2025-12-30T00:00:00.000Z",
+        frequency: "daily" as const,
+        id: 1,
+        isArchived: false,
+        name: "Run",
+        sortOrder: 0,
+        targetCount: 1,
+      };
+      const repository = createRepository({
+        getHabitsWithStatus: vi.fn(() => [runHabit]),
+        getHistoricalHabitsWithStatus: vi.fn(() => [runHabit]),
+        getSettledHistory: vi.fn(() => [
+          {
+            allCompleted: true,
+            completedAt: "2025-12-31T10:00:00.000Z",
+            date: "2025-12-31",
+            dayStatus: null,
+            freezeUsed: false,
+            streakCountAfterDay: 1,
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(repository.getSettledHistory).toHaveBeenCalledWith(undefined, {
+        uncapped: true,
+      });
+      expect(todayState.habitStreaks?.[1]).toStrictEqual({
+        bestStreak: 2,
+        currentStreak: 2,
       });
     });
   });

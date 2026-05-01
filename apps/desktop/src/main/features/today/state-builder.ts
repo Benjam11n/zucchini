@@ -11,6 +11,8 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
+import { calculateHabitStreaks } from "@/shared/domain/habit-streak";
+import type { HabitStreakDay } from "@/shared/domain/habit-streak";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
@@ -39,12 +41,32 @@ export function buildTodayState(
   );
   repository.ensureWindDownStatusRowsForDate(today);
   const windDownActions = repository.getWindDownActionsWithStatus(today);
+  const settledSummaries = repository.getSettledHistory(undefined, {
+    uncapped: true,
+  });
+  const habitStreakDays: HabitStreakDay[] = [
+    ...settledSummaries.map((summary) => ({
+      date: summary.date,
+      dayStatus: summary.dayStatus,
+      freezeUsed: summary.freezeUsed,
+      habits: repository.getHistoricalHabitsWithStatus(summary.date),
+      isOpenToday: false,
+    })),
+    {
+      date: today,
+      dayStatus: currentDayStatus?.kind ?? null,
+      freezeUsed: false,
+      habits,
+      isOpenToday: true,
+    },
+  ];
 
   return {
     date: today,
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
+    habitStreaks: calculateHabitStreaks(habits, habitStreakDays),
     habits,
     settings: repository.getSettings(clock.timezone()),
     streak: {

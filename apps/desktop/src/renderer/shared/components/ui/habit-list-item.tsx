@@ -1,9 +1,7 @@
-import { AnimatePresence, m } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
+import { m } from "framer-motion";
 import type { CSSProperties } from "react";
 import { memo } from "react";
 
-import type { HabitStreak } from "@/renderer/features/today/today-habit-streaks";
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
@@ -17,20 +15,21 @@ import {
 } from "@/renderer/shared/lib/motion";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
+interface HabitListItemStreak {
+  bestStreak: number;
+  currentStreak: number;
+}
+
 interface HabitListItemProps {
   habit: HabitWithStatus;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
-  streak?: HabitStreak;
+  streak?: HabitListItemStreak;
   trailingActions?: React.ReactNode;
 }
 
 const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
 const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };
-const HABIT_ITEM_COMPLETION_ANIMATE = { opacity: 1, scale: 1, x: 0 };
-const HABIT_ITEM_COMPLETION_EXIT = { opacity: 0, scale: 0.7, x: 6 };
-const HABIT_ITEM_COMPLETION_INITIAL = { opacity: 0, scale: 0.7, x: -6 };
-
 function HabitListItemComponent({
   habit,
   onToggle,
@@ -98,7 +97,7 @@ function HabitListItemComponent({
           className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
           title={`Current streak: ${streak.currentStreak} days. Best: ${streak.bestStreak} days.`}
         >
-          {streak.currentStreak}d
+          {streak.currentStreak} {streak.currentStreak === 1 ? "day" : "days"}
         </span>
       ) : null}
       {trailingActions ? (
@@ -106,22 +105,6 @@ function HabitListItemComponent({
           {trailingActions}
         </div>
       ) : null}
-      <AnimatePresence initial={false}>
-        {habit.completed ? (
-          <m.span
-            animate={HABIT_ITEM_COMPLETION_ANIMATE}
-            className="flex shrink-0"
-            exit={HABIT_ITEM_COMPLETION_EXIT}
-            initial={HABIT_ITEM_COMPLETION_INITIAL}
-            transition={microTransition}
-          >
-            <CheckCircle2
-              className="size-3.5 opacity-60"
-              style={{ color: presentation.color }}
-            />
-          </m.span>
-        ) : null}
-      </AnimatePresence>
     </m.label>
   );
 }
