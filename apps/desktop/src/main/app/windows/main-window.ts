@@ -11,8 +11,8 @@ import { BrowserWindow } from "electron";
 
 import { configureWindowSecurity } from "./window-security";
 
-const MAIN_WINDOW_DEFAULT_WIDTH = 1120;
-const MAIN_WINDOW_MIN_WIDTH = 820;
+const MAIN_WINDOW_DEFAULT_WIDTH = 1040;
+const MAIN_WINDOW_MIN_WIDTH = 720;
 const MAIN_WINDOW_DEFAULT_HEIGHT = 820;
 const MAIN_WINDOW_MIN_HEIGHT = 640;
 

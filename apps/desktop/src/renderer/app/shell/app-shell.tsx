@@ -33,7 +33,7 @@ export function AppShell({
   onTabChange,
 }: AppShellProps) {
   const contentGridClassName = rightSidebar
-    ? "lg:grid-cols-[72px_minmax(0,1fr)_240px] xl:grid-cols-[96px_minmax(0,1fr)_300px]"
+    ? "lg:grid-cols-[72px_minmax(0,1fr)_280px] xl:grid-cols-[96px_minmax(0,1fr)_340px]"
     : "lg:grid-cols-[72px_minmax(0,1fr)] xl:grid-cols-[96px_minmax(0,1fr)]";
 
   return (
