@@ -91,7 +91,7 @@ export function CategorySettingsItem({
           value={settings.categoryPreferences[value].color}
         />
 
-        <div className="flex w-full min-w-0 flex-1 flex-col gap-1.5">
+        <div className="grid w-full min-w-0 flex-1 gap-1.5">
           <Input
             id={`category-label-${value}`}
             maxLength={24}
@@ -102,10 +102,10 @@ export function CategorySettingsItem({
             type="text"
             value={settings.categoryPreferences[value].label}
           />
-          <div className="flex flex-wrap gap-3">
+          <div className="grid min-w-0 grid-cols-[8.75rem_minmax(10rem,1fr)] gap-2">
             <button
               aria-expanded={isColorPanelOpen}
-              className="flex h-9 items-center gap-2 rounded-md border border-input bg-background/70 px-3 text-sm shadow-sm transition-colors hover:bg-muted"
+              className="flex h-9 min-w-0 items-center gap-2 rounded-md border border-input bg-background/70 px-3 text-sm shadow-sm transition-colors hover:bg-muted"
               onClick={() => {
                 onTogglePanel("color", value);
               }}
@@ -117,17 +117,19 @@ export function CategorySettingsItem({
                   backgroundColor: settings.categoryPreferences[value].color,
                 }}
               />
-              <span>{settings.categoryPreferences[value].color}</span>
+              <span className="whitespace-nowrap">
+                {settings.categoryPreferences[value].color}
+              </span>
               <ChevronDown
                 className={cn(
-                  "size-4 transition-transform",
+                  "size-4 shrink-0 transition-transform",
                   isColorPanelOpen ? "rotate-180" : ""
                 )}
               />
             </button>
             <button
               aria-expanded={isIconPanelOpen}
-              className="flex h-9 items-center gap-2 rounded-md border border-input bg-background/70 px-3 text-sm shadow-sm transition-colors hover:bg-muted"
+              className="flex h-9 min-w-0 items-center gap-2 rounded-md border border-input bg-background/70 px-3 text-sm shadow-sm transition-colors hover:bg-muted"
               onClick={() => {
                 onTogglePanel("icon", value);
               }}
@@ -137,7 +139,7 @@ export function CategorySettingsItem({
                 className="size-4"
                 style={{ color: categoryPresentation.accentTextColor }}
               />
-              <span>
+              <span className="whitespace-nowrap">
                 {HABIT_CATEGORY_ICON_OPTIONS.find(
                   (option) =>
                     option.value === settings.categoryPreferences[value].icon
@@ -145,7 +147,7 @@ export function CategorySettingsItem({
               </span>
               <ChevronDown
                 className={cn(
-                  "size-4 transition-transform",
+                  "size-4 shrink-0 transition-transform",
                   isIconPanelOpen ? "rotate-180" : ""
                 )}
               />

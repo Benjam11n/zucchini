@@ -64,9 +64,9 @@ export function CategorySettingsCard({
         title="Categories"
       />
       <CardContent>
-        <div className="flex flex-col items-center gap-10 md:flex-row md:items-center">
+        <div className="flex flex-col items-center gap-6 md:flex-row md:items-center">
           {/* INTERACTIVE 3-RING DISPLAY */}
-          <div className="relative flex size-56 shrink-0 items-center justify-center">
+          <div className="relative flex size-40 shrink-0 items-center justify-center md:size-44">
             <svg
               className="absolute inset-0 size-full -rotate-90 drop-shadow-sm"
               fill="transparent"

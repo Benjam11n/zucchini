@@ -211,13 +211,13 @@ export function HabitRowEditor({
                 className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-1.5 text-left outline-none transition-colors hover:bg-muted/25 focus-visible:ring-3 focus-visible:ring-ring/50"
                 type="button"
               >
-                <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <p className="truncate text-sm text-foreground">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
+                  <p className="min-w-0 flex-1 truncate text-sm text-foreground">
                     {habit.name}
                   </p>
-                  <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex min-w-0 shrink items-center gap-2 overflow-hidden">
                     <span
-                      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
+                      className="inline-flex max-w-32 shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
                       style={{
                         backgroundColor: categoryPresentation.color,
                         borderColor: categoryPresentation.color,
@@ -230,9 +230,11 @@ export function HabitRowEditor({
                           backgroundColor: `color-mix(in srgb, ${categoryPresentation.selectedTextColor} 50%, transparent)`,
                         }}
                       />
-                      {categoryPresentation.label}
+                      <span className="min-w-0 truncate">
+                        {categoryPresentation.label}
+                      </span>
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="min-w-0 truncate text-xs text-muted-foreground">
                       {getCadenceSummary(habit)}
                     </span>
                   </div>
