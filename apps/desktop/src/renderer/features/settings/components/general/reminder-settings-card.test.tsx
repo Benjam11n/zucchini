@@ -134,6 +134,34 @@ describe("reminder settings card", () => {
     });
   });
 
+  it("shows a short timezone list with the saved timezone first", async () => {
+    const habits = setHabitsApi();
+
+    render(
+      <ReminderSettingsCard
+        fieldErrors={{}}
+        onChange={vi.fn()}
+        settings={{
+          ...defaultSettings,
+          timezone: "Pacific/Honolulu",
+        }}
+      />
+    );
+
+    const timezoneSelect = screen.getByRole("combobox", {
+      name: /timezone/i,
+    });
+    const options = [...timezoneSelect.querySelectorAll("option")];
+
+    expect(options.length).toBeLessThan(40);
+    expect(options[0]).toHaveValue("Pacific/Honolulu");
+    expect(options.map((option) => option.value)).toContain("Asia/Singapore");
+
+    await waitFor(() => {
+      expect(habits.getDesktopNotificationStatus).toHaveBeenCalled();
+    });
+  });
+
   it("refreshes desktop notification status when the window regains focus", async () => {
     const habits = setHabitsApi();
 

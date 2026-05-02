@@ -70,8 +70,8 @@ export function AppShell({
                 </div>
               </section>
               {rightSidebar ? (
-                <aside className="hidden min-w-0 overflow-hidden border-l border-border/70 bg-card px-4 py-8 lg:block xl:px-5">
-                  {rightSidebar}
+                <aside className="hidden min-w-0 border-l border-border/70 bg-card px-4 py-8 lg:block xl:px-5">
+                  <div className="sticky top-8">{rightSidebar}</div>
                 </aside>
               ) : null}
             </Tabs>

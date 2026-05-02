@@ -25,6 +25,63 @@ interface NotificationStatusMessage {
   text: string;
 }
 
+const PREFERRED_TIMEZONES = [
+  "UTC",
+  "America/Los_Angeles",
+  "America/Denver",
+  "America/Chicago",
+  "America/New_York",
+  "America/Toronto",
+  "America/Mexico_City",
+  "America/Sao_Paulo",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Madrid",
+  "Europe/Rome",
+  "Europe/Amsterdam",
+  "Europe/Zurich",
+  "Europe/Stockholm",
+  "Europe/Warsaw",
+  "Europe/Istanbul",
+  "Africa/Cairo",
+  "Africa/Johannesburg",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Bangkok",
+  "Asia/Singapore",
+  "Asia/Hong_Kong",
+  "Asia/Shanghai",
+  "Asia/Taipei",
+  "Asia/Tokyo",
+  "Asia/Seoul",
+  "Australia/Perth",
+  "Australia/Sydney",
+  "Pacific/Auckland",
+];
+
+function getTimezoneOffsetLabel(timezone: string): string | null {
+  try {
+    const formatted = new Intl.DateTimeFormat("en", {
+      timeZone: timezone,
+      timeZoneName: "shortOffset",
+    }).formatToParts(new Date());
+
+    return (
+      formatted.find((part) => part.type === "timeZoneName")?.value ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function formatTimezoneLabel(timezone: string): string {
+  const city = timezone.split("/").at(-1)?.replaceAll("_", " ") ?? timezone;
+  const offset = getTimezoneOffsetLabel(timezone);
+
+  return offset ? `${city} (${offset})` : city;
+}
+
 function getNotificationStatusMessage(
   status: DesktopNotificationStatus
 ): NotificationStatusMessage | null {
@@ -105,25 +162,10 @@ export function ReminderSettingsCard({
 }: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   const [notificationStatus, setNotificationStatus] =
     useState<DesktopNotificationStatus | null>(null);
-  const timezoneOptions = useMemo(() => {
-    const supportedTimezones =
-      typeof Intl.supportedValuesOf === "function"
-        ? Intl.supportedValuesOf("timeZone")
-        : [
-            "UTC",
-            "Asia/Singapore",
-            "Asia/Tokyo",
-            "Australia/Sydney",
-            "Europe/London",
-            "Europe/Paris",
-            "America/New_York",
-            "America/Chicago",
-            "America/Denver",
-            "America/Los_Angeles",
-          ];
-
-    return [...new Set([settings.timezone, ...supportedTimezones])];
-  }, [settings.timezone]);
+  const timezoneOptions = useMemo(
+    () => [...new Set([settings.timezone, ...PREFERRED_TIMEZONES])],
+    [settings.timezone]
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -259,7 +301,7 @@ export function ReminderSettingsCard({
                 >
                   {timezoneOptions.map((timezone) => (
                     <option key={timezone} value={timezone}>
-                      {timezone.replaceAll("_", " ")}
+                      {formatTimezoneLabel(timezone)}
                     </option>
                   ))}
                 </select>
