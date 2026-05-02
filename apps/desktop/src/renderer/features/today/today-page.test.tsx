@@ -89,7 +89,8 @@ describe("today page", () => {
   it("opens in-flow habit management from the daily checklist", () => {
     render(
       <TodayPage
-        history={history}
+        hasLoadedHistorySummary
+        historySummary={history}
         managedHabits={managedHabits}
         onArchiveHabit={vi.fn(() => Promise.resolve())}
         onCreateHabit={vi.fn(() => Promise.resolve())}

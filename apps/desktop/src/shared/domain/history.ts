@@ -9,6 +9,13 @@ import type { FocusQuotaGoalWithStatus } from "./goal";
 import type { HabitCategoryProgress, HabitWithStatus } from "./habit";
 import type { DailySummary } from "./streak";
 
+export interface HistorySummaryDay {
+  categoryProgress: HabitCategoryProgress[];
+  date: string;
+  focusMinutes: number;
+  summary: DailySummary;
+}
+
 export interface HistoryDay {
   categoryProgress: HabitCategoryProgress[];
   date: string;

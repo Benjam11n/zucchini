@@ -12,10 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
-import {
-  TabsList,
-  TabsTrigger,
-} from "@/renderer/shared/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/renderer/shared/components/ui/tabs";
 
 export function AppNav() {
   return (

@@ -12,8 +12,8 @@ import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { calculateHabitStreaks } from "@/shared/domain/habit-streak";
-import type { HabitStreakDay } from "@/shared/domain/habit-streak";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HabitStreak, HabitStreakDay } from "@/shared/domain/habit-streak";
+import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
@@ -139,6 +139,42 @@ export function buildTodayState(
   );
   repository.ensureWindDownStatusRowsForDate(today);
   const windDownActions = repository.getWindDownActionsWithStatus(today);
+  return {
+    date: today,
+    dayStatus: currentDayStatus?.kind ?? null,
+    focusMinutes,
+    focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
+    habits,
+    settings: repository.getSettings(clock.timezone()),
+    streak: {
+      availableFreezes: preview.availableFreezes,
+      bestStreak: preview.bestStreak,
+      currentStreak: preview.currentStreak,
+      lastEvaluatedDate: settledStreak.lastEvaluatedDate,
+    },
+    windDown:
+      windDownActions.length === 0
+        ? buildEmptyWindDownState(today)
+        : {
+            actions: windDownActions,
+            completedCount: windDownActions.filter((action) => action.completed)
+              .length,
+            date: today,
+            isComplete: windDownActions.every((action) => action.completed),
+            totalCount: windDownActions.length,
+          },
+  };
+}
+
+export function buildTodayHabitStreaks(
+  repository: AppRepository,
+  clock: Clock
+): Record<number, HabitStreak> {
+  const today = clock.todayKey();
+  repository.ensureStatusRowsForDate(today);
+
+  const habits = repository.getHabitsWithStatus(today);
+  const currentDayStatus = repository.getDayStatus(today);
   const settledSummaries = repository.getSettledHistory(undefined, {
     uncapped: true,
   });
@@ -165,32 +201,7 @@ export function buildTodayState(
     },
   ];
 
-  return {
-    date: today,
-    dayStatus: currentDayStatus?.kind ?? null,
-    focusMinutes,
-    focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
-    habitStreaks: calculateHabitStreaks(habits, habitStreakDays),
-    habits,
-    settings: repository.getSettings(clock.timezone()),
-    streak: {
-      availableFreezes: preview.availableFreezes,
-      bestStreak: preview.bestStreak,
-      currentStreak: preview.currentStreak,
-      lastEvaluatedDate: settledStreak.lastEvaluatedDate,
-    },
-    windDown:
-      windDownActions.length === 0
-        ? buildEmptyWindDownState(today)
-        : {
-            actions: windDownActions,
-            completedCount: windDownActions.filter((action) => action.completed)
-              .length,
-            date: today,
-            isComplete: windDownActions.every((action) => action.completed),
-            totalCount: windDownActions.length,
-          },
-  };
+  return calculateHabitStreaks(habits, habitStreakDays);
 }
 
 export function buildTodayPreviewSummary(
@@ -224,6 +235,20 @@ export function buildHistoryDay(
     habits,
     summary,
     ...(focusQuotaGoals ? { focusQuotaGoals } : {}),
+  };
+}
+
+export function buildHistorySummaryDay(
+  historyDay: Pick<
+    HistoryDay,
+    "categoryProgress" | "date" | "focusMinutes" | "summary"
+  >
+): HistorySummaryDay {
+  return {
+    categoryProgress: historyDay.categoryProgress,
+    date: historyDay.date,
+    focusMinutes: historyDay.focusMinutes,
+    summary: historyDay.summary,
   };
 }
 

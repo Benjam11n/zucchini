@@ -13,17 +13,45 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
-import type { HistoryDay } from "@/shared/domain/history";
+import { habitsClient } from "@/renderer/shared/lib/habits-client";
+import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
 interface TodayHistoryCarouselProps {
-  history: HistoryDay[];
+  hasLoadedHistorySummary: boolean;
+  history: HistorySummaryDay[];
   todayDate: string;
 }
 
 const MAX_HISTORY_DAYS = 14;
+const HISTORY_SKELETON_ITEMS = Array.from(
+  { length: MAX_HISTORY_DAYS },
+  (_, index) => index
+);
+
+function TodayHistoryCarouselSkeleton() {
+  return (
+    <div
+      aria-label="Loading recent history"
+      className="relative flex h-[5.75rem] min-w-0 max-w-full justify-end overflow-hidden rounded-md bg-card px-1 ring-1 ring-foreground/10 sm:px-2"
+    >
+      <div className="flex min-w-full justify-end gap-2 sm:gap-4">
+        {HISTORY_SKELETON_ITEMS.map((index) => (
+          <div
+            className="flex shrink-0 flex-col items-center gap-2 rounded-md p-2"
+            key={index}
+          >
+            <div className="size-12 animate-pulse rounded-full bg-muted" />
+            <div className="h-2 w-8 animate-pulse rounded-full bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function TodayHistoryCarousel({
+  hasLoadedHistorySummary,
   history,
   todayDate,
 }: TodayHistoryCarouselProps) {
@@ -31,6 +59,7 @@ export function TodayHistoryCarousel({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [selectedDay, setSelectedDay] = useState<HistoryDay | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const updateScrollState = useCallback((api: CarouselApi) => {
     if (!api) {
@@ -58,11 +87,21 @@ export function TodayHistoryCarousel({
     };
   }, [carouselApi, updateScrollState]);
 
-  if (!history || history.length === 0) {
+  if (!hasLoadedHistorySummary && history.length === 0) {
+    return <TodayHistoryCarouselSkeleton />;
+  }
+
+  if (history.length === 0) {
     return null;
   }
 
   const days = [...history].slice(0, MAX_HISTORY_DAYS).toReversed();
+
+  async function handleSelectDay(date: string) {
+    setSelectedDate(date);
+    setSelectedDay(null);
+    setSelectedDay(await habitsClient.getHistoryDay(date));
+  }
 
   return (
     <>
@@ -88,7 +127,9 @@ export function TodayHistoryCarousel({
                   <button
                     type="button"
                     className="flex cursor-pointer flex-col items-center gap-2 rounded-md p-2 transition-opacity hover:bg-background/45 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={() => setSelectedDay(day)}
+                    onClick={() => {
+                      void handleSelectDay(day.date);
+                    }}
                   >
                     <HabitActivityRingGlyph
                       categoryProgress={day.categoryProgress}
@@ -118,21 +159,25 @@ export function TodayHistoryCarousel({
       </div>
 
       <Dialog
-        open={!!selectedDay}
+        open={!!selectedDate}
         onOpenChange={(open) => {
           if (!open) {
+            setSelectedDate(null);
             setSelectedDay(null);
           }
         }}
       >
         <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogTitle className="sr-only">
-            History for {selectedDay?.date}
+            History for {selectedDate}
           </DialogTitle>
           <HistoryDayPanel
-            onNavigateToToday={() => setSelectedDay(null)}
+            onNavigateToToday={() => {
+              setSelectedDate(null);
+              setSelectedDay(null);
+            }}
             selectedDay={selectedDay}
-            isToday={selectedDay?.date === todayDate}
+            isToday={selectedDate === todayDate}
           />
         </DialogContent>
       </Dialog>

@@ -151,6 +151,13 @@ describe("app store actions", () => {
           : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
       )
     );
+    const getHistorySummaryMock = vi.fn((limit?: number) =>
+      Promise.resolve(
+        limit === 14
+          ? [createHistoryDay("2026-03-10")]
+          : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
+      )
+    );
     const getFocusSessionsMock = vi
       .fn()
       .mockResolvedValue([createFocusSession(1)]);
@@ -179,6 +186,7 @@ describe("app store actions", () => {
       getFocusSessions: getFocusSessionsMock,
       getHabits: getHabitsMock,
       getHistory: getHistoryMock,
+      getHistorySummary: getHistorySummaryMock,
       getTodayState: getTodayStateMock,
       getWeeklyReview: getWeeklyReviewMock,
       getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
@@ -227,6 +235,7 @@ describe("app store actions", () => {
       getFocusSessionsMock,
       getHabitsMock,
       getHistoryMock,
+      getHistorySummaryMock,
       getWeeklyReviewOverviewMock,
       habitsApi,
       stores: {
@@ -289,28 +298,25 @@ describe("app store actions", () => {
     });
   });
 
-  it("loads recent history and today state during boot", async () => {
+  it("loads today state during boot without blocking on history", async () => {
     const { actions, getHistoryMock, stores } = await setup();
 
     await actions.bootApp();
 
-    expect(getHistoryMock).toHaveBeenCalledWith(69);
+    expect(getHistoryMock).not.toHaveBeenCalled();
     expect(stores.useTodayStore.getState().todayState?.date).toBe("2026-03-10");
   });
 
-  it("keeps current-year history after switching to the history tab", async () => {
-    const { actions, getHistoryMock, stores } = await setup();
+  it("loads lightweight history summary after boot", async () => {
+    const { actions, getHistorySummaryMock, stores } = await setup();
     await actions.bootApp();
 
-    actions.handleTabChange("history");
-    await Promise.resolve();
-    await Promise.resolve();
+    await actions.loadHistorySummary();
 
-    expect(getHistoryMock.mock.calls).toHaveLength(1);
-    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 69);
+    expect(getHistorySummaryMock).toHaveBeenCalledWith(14);
     expect(stores.useHistoryStore.getState().historyScope).toBe("recent");
     expect(
-      stores.useHistoryStore.getState().history.map((day) => day.date)
+      stores.useHistoryStore.getState().historySummary.map((day) => day.date)
     ).toStrictEqual(["2026-03-10"]);
   });
 
@@ -320,8 +326,7 @@ describe("app store actions", () => {
 
     await actions.loadFullHistory();
 
-    expect(getHistoryMock).toHaveBeenNthCalledWith(1, 69);
-    expect(getHistoryMock).toHaveBeenNthCalledWith(2);
+    expect(getHistoryMock).toHaveBeenCalledWith();
     expect(stores.useHistoryStore.getState().historyScope).toBe("full");
     expect(
       stores.useHistoryStore.getState().history.map((day) => day.date)
@@ -336,7 +341,7 @@ describe("app store actions", () => {
 
     await actions.handleRenameHabit(1, "Make buried chapters");
 
-    expect(getHistoryMock).toHaveBeenCalledTimes(2);
+    expect(getHistoryMock).toHaveBeenCalledTimes(1);
   });
 
   it("optimistically updates the habit order before the reorder request resolves", async () => {

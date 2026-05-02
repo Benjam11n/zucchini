@@ -229,6 +229,21 @@ async function setupUseAppController({
     configurable: true,
     value: vi.fn().mockReturnValue(mediaQuery),
   });
+  /* oxlint-disable promise/prefer-await-to-callbacks */
+  Object.defineProperty(window, "requestIdleCallback", {
+    configurable: true,
+    value: vi.fn((callback: IdleRequestCallback) => {
+      callback({ didTimeout: false, timeRemaining: () => 50 });
+      return 1;
+    }),
+    writable: true,
+  });
+  Object.defineProperty(window, "cancelIdleCallback", {
+    configurable: true,
+    value: vi.fn(),
+    writable: true,
+  });
+  /* oxlint-enable promise/prefer-await-to-callbacks */
 
   const { useAppController } = await import("./use-app-controller");
   const hook = renderHook(() => useAppController());
@@ -410,6 +425,7 @@ describe("use app controller", () => {
     (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
     document.documentElement.className = "";
     vi.restoreAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
 
     const latestReview = createWeeklyReview();
     const { habits, hook } = await setupUseAppController({
@@ -418,6 +434,10 @@ describe("use app controller", () => {
       }),
       weeklyReview: latestReview,
       weeklyReviewOverview: createWeeklyReviewOverview(latestReview),
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3500);
     });
 
     await waitFor(() => {
@@ -446,6 +466,8 @@ describe("use app controller", () => {
         lastSeenWeeklyReviewStart: "2026-03-02",
       })
     );
+
+    vi.useRealTimers();
   });
 
   it("refreshes app state when the local day rolls over", async () => {

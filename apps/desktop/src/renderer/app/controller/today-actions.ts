@@ -33,8 +33,8 @@ import type {
 import {
   applyTodayReloadResult,
   applyHabitStatusPatch,
+  applyOptimisticHabitStreakPatch,
   applyTodayState,
-  getCurrentYearHistoryLimit,
   refreshWeeklyReviewIfLoaded,
   reorderVisibleTodayHabits,
 } from "./action-helpers";
@@ -154,20 +154,14 @@ export function createTodayActions({
 
   const reloadAll: ReloadAllFn = async (
     nextTodayState,
-    historyScope = useHistoryStore.getState().historyScope
+    _historyScope = useHistoryStore.getState().historyScope
   ) => {
     const todayState = nextTodayState ?? (await habitsClient.getTodayState());
     const managedHabits = await habitsClient.getHabits();
-    const history =
-      historyScope === "recent"
-        ? await habitsClient.getHistory(
-            getCurrentYearHistoryLimit(todayState.date)
-          )
-        : await habitsClient.getHistory();
 
     applyTodayReloadResult({
-      history,
-      historyScope,
+      history: useHistoryStore.getState().history,
+      historyScope: useHistoryStore.getState().historyScope,
       managedHabits,
       todayState,
     });
@@ -182,6 +176,22 @@ export function createTodayActions({
   async function refreshForNewDay() {
     await reloadAll(undefined, useHistoryStore.getState().historyScope);
     await refreshWeeklyReviewOverview();
+  }
+
+  async function loadTodayHabitStreaks() {
+    const habitStreaks = await habitsClient.getTodayHabitStreaks();
+    const { todayState } = useTodayStore.getState();
+
+    if (!todayState) {
+      return;
+    }
+
+    useTodayStore.setState({
+      todayState: {
+        ...todayState,
+        habitStreaks,
+      },
+    });
   }
 
   async function applyTodayMutation(mutator: Promise<TodayState>) {
@@ -210,6 +220,13 @@ export function createTodayActions({
 
     if (optimisticPatch) {
       applyHabitStatusPatch(optimisticPatch);
+      if (previousHabit?.frequency === "daily") {
+        applyOptimisticHabitStreakPatch({
+          habitId,
+          nextCompleted: optimisticPatch.habit.completed,
+          previousCompleted: previousHabit.completed,
+        });
+      }
     }
 
     try {
@@ -226,6 +243,13 @@ export function createTodayActions({
           habit: previousHabit,
           habitStreaksStale: true,
         });
+        if (previousHabit.frequency === "daily") {
+          applyOptimisticHabitStreakPatch({
+            habitId,
+            nextCompleted: previousHabit.completed,
+            previousCompleted: !previousHabit.completed,
+          });
+        }
       }
       throw error;
     }
@@ -389,6 +413,7 @@ export function createTodayActions({
       );
     },
     refreshForNewDay,
+    loadTodayHabitStreaks,
     reloadAll,
     setSystemTheme(systemTheme: "dark" | "light") {
       useUiStore.getState().setSystemTheme(systemTheme);

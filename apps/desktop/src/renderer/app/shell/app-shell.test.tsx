@@ -68,7 +68,7 @@ describe("app shell", () => {
 
     expect(container.querySelector("section > div")).toHaveClass(
       "w-full",
-      "max-w-full"
+      "max-w-2xl"
     );
     expect(tabpanel).toHaveClass("min-w-0");
   });
@@ -93,8 +93,6 @@ describe("app shell", () => {
     );
 
     expect(screen.getByTestId("right-sidebar")).toHaveTextContent("summary");
-    expect(container.querySelector("section + aside")).toHaveClass(
-      "min-[900px]:block"
-    );
+    expect(container.querySelector("section + aside")).toHaveClass("lg:block");
   });
 });

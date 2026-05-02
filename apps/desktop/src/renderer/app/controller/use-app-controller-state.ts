@@ -61,9 +61,11 @@ export function useNonSettingsHistoryState() {
       tab === "settings"
         ? null
         : {
+            hasLoadedHistorySummary: state.hasLoadedHistorySummary,
             history: state.history,
             historyLoadError: state.historyLoadError,
             historyScope: state.historyScope,
+            historySummary: state.historySummary,
             isHistoryLoading: state.isHistoryLoading,
           }
     )

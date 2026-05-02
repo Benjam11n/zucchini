@@ -23,9 +23,16 @@ function getMillisecondsUntilNextLocalDay(now = new Date()): number {
   return Math.max(nextMidnight.getTime() - now.getTime(), 1);
 }
 
+function scheduleDeferredTask(task: () => void, timeout: number): () => void {
+  const timeoutId = globalThis.setTimeout(task, timeout);
+  return () => globalThis.clearTimeout(timeoutId);
+}
+
 export function useAppLifecycleEffects({
   bootApp,
   bootPhase,
+  loadHistorySummary,
+  loadTodayHabitStreaks,
   loadWeeklyReviewOverview,
   openWindDown,
   openWeeklyReviewSpotlight,
@@ -39,6 +46,10 @@ export function useAppLifecycleEffects({
 }: {
   bootApp: ReturnType<typeof createAppActions>["bootApp"];
   bootPhase: AppControllerState["bootPhase"];
+  loadHistorySummary: ReturnType<typeof createAppActions>["loadHistorySummary"];
+  loadTodayHabitStreaks: ReturnType<
+    typeof createAppActions
+  >["loadTodayHabitStreaks"];
   loadWeeklyReviewOverview: ReturnType<
     typeof createAppActions
   >["loadWeeklyReviewOverview"];
@@ -82,10 +93,36 @@ export function useAppLifecycleEffects({
       return;
     }
 
-    loadWeeklyReviewOverview().catch(() => {
-      // Weekly review failures are surfaced through controller state.
-    });
-  }, [bootPhase, loadWeeklyReviewOverview, weeklyReviewPhase]);
+    const cancelHistorySummary = scheduleDeferredTask(() => {
+      loadHistorySummary().catch(() => {
+        // History summary failures are surfaced through controller state.
+      });
+    }, 1800);
+
+    const cancelHabitStreaks = scheduleDeferredTask(() => {
+      loadTodayHabitStreaks().catch(() => {
+        // Habit streak failures are surfaced through controller state.
+      });
+    }, 2400);
+
+    const cancelWeeklyReview = scheduleDeferredTask(() => {
+      loadWeeklyReviewOverview().catch(() => {
+        // Weekly review failures are surfaced through controller state.
+      });
+    }, 3500);
+
+    return () => {
+      cancelHistorySummary();
+      cancelHabitStreaks();
+      cancelWeeklyReview();
+    };
+  }, [
+    bootPhase,
+    loadHistorySummary,
+    loadTodayHabitStreaks,
+    loadWeeklyReviewOverview,
+    weeklyReviewPhase,
+  ]);
 
   useEffect(() => {
     const latestReview = weeklyReviewOverview?.latestReview ?? null;

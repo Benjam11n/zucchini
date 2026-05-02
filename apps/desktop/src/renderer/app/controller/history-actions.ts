@@ -9,6 +9,9 @@ export function createHistoryActions() {
     async loadFullHistory() {
       await useHistoryStore.getState().loadFullHistory();
     },
+    async loadHistorySummary(limit?: number) {
+      await useHistoryStore.getState().loadHistorySummary(limit);
+    },
     async loadWeeklyReviewOverview() {
       await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
     },

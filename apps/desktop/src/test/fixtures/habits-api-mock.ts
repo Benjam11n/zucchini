@@ -28,6 +28,9 @@ const EMPTY_HABIT_STATUS_PATCH: HabitStatusPatch = {
 export type MockHabitsApi = Record<keyof HabitsApi, MockFn> &
   Record<
     | "getHistory"
+    | "getHistoryDay"
+    | "getHistorySummary"
+    | "getTodayHabitStreaks"
     | "getTodayState"
     | "getWeeklyReview"
     | "getWeeklyReviewOverview"
@@ -169,7 +172,17 @@ function createQueryHandlers(mock: MockHabitsApiInternals) {
       query.payload
         ? getMock(mock, "getHistory")(query.payload.limit)
         : getMock(mock, "getHistory")(),
+    "history.getDay": (
+      query: Extract<HabitQuery, { type: "history.getDay" }>
+    ) => getMock(mock, "getHistoryDay")(query.payload.date),
+    "history.summary": (
+      query: Extract<HabitQuery, { type: "history.summary" }>
+    ) =>
+      query.payload
+        ? getMock(mock, "getHistorySummary")(query.payload.limit)
+        : getMock(mock, "getHistorySummary")(),
     "today.get": () => getMock(mock, "getTodayState")(),
+    "today.habitStreaks": () => getMock(mock, "getTodayHabitStreaks")(),
     "weeklyReview.get": (
       query: Extract<HabitQuery, { type: "weeklyReview.get" }>
     ) => getMock(mock, "getWeeklyReview")(query.payload.weekStart),
@@ -215,6 +228,9 @@ function createMockHabitsApi(
     getFocusTimerState: vi.fn().mockResolvedValue(null),
     getHabits: vi.fn().mockResolvedValue([]),
     getHistory: vi.fn().mockResolvedValue([]),
+    getHistoryDay: vi.fn().mockResolvedValue(null),
+    getHistorySummary: vi.fn().mockResolvedValue([]),
+    getTodayHabitStreaks: vi.fn().mockResolvedValue({}),
     getTodayState: vi.fn().mockResolvedValue(null),
     getWeeklyReview: vi.fn().mockResolvedValue(null),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(null),

@@ -1,5 +1,6 @@
 import type { Clock } from "@/main/app/clock";
 import {
+  buildTodayHabitStreaks,
   buildHistoryDay,
   buildTodayPreviewSummary,
   buildTodayState,
@@ -202,12 +203,12 @@ describe("state builder", () => {
       });
       const clock = createClock("2026-01-01");
 
-      const todayState = buildTodayState(repository, clock);
+      const habitStreaks = buildTodayHabitStreaks(repository, clock);
 
       expect(repository.getSettledHistory).toHaveBeenCalledWith(undefined, {
         uncapped: true,
       });
-      expect(todayState.habitStreaks?.[1]).toStrictEqual({
+      expect(habitStreaks[1]).toStrictEqual({
         bestStreak: 2,
         currentStreak: 2,
       });

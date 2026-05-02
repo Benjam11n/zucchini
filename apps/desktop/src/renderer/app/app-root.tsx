@@ -100,7 +100,8 @@ function MainApp() {
 
   let renderedPage = (
     <TodayPage
-      history={state.history}
+      hasLoadedHistorySummary={state.hasLoadedHistorySummary}
+      historySummary={state.historySummary}
       managedHabits={state.managedHabits}
       onArchiveHabit={actions.handleArchiveHabit}
       onCreateHabit={actions.handleCreateHabit}

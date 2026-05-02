@@ -119,6 +119,46 @@ export function applyHabitStatusPatch(patch: HabitStatusPatch): void {
   patchTodayHabitCollection(patch.habit);
 }
 
+export function applyOptimisticHabitStreakPatch({
+  nextCompleted,
+  previousCompleted,
+  habitId,
+}: {
+  habitId: number;
+  nextCompleted: boolean;
+  previousCompleted: boolean;
+}): void {
+  if (nextCompleted === previousCompleted) {
+    return;
+  }
+
+  const { todayState } = useTodayStore.getState();
+  if (!todayState) {
+    return;
+  }
+
+  const currentStreak = todayState.habitStreaks?.[habitId] ?? {
+    bestStreak: 0,
+    currentStreak: 0,
+  };
+  const nextCurrentStreak = nextCompleted
+    ? currentStreak.currentStreak + 1
+    : Math.max(0, currentStreak.currentStreak - 1);
+
+  useTodayStore.setState({
+    todayState: {
+      ...todayState,
+      habitStreaks: {
+        ...todayState.habitStreaks,
+        [habitId]: {
+          bestStreak: Math.max(currentStreak.bestStreak, nextCurrentStreak),
+          currentStreak: nextCurrentStreak,
+        },
+      },
+    },
+  });
+}
+
 export function refreshWeeklyReviewIfLoaded(): void {
   if (useWeeklyReviewStore.getState().weeklyReviewPhase === "idle") {
     return;

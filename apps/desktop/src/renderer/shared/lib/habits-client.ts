@@ -89,6 +89,24 @@ export const habitsClient = {
             type: "history.get",
           }
     ),
+  getHistoryDay: (date: string) =>
+    query({
+      payload: { date },
+      type: "history.getDay",
+    }),
+  getHistorySummary: (limit?: number) =>
+    query(
+      limit === undefined
+        ? { type: "history.summary" }
+        : {
+            payload: { limit },
+            type: "history.summary",
+          }
+    ),
+  getTodayHabitStreaks: () =>
+    query({
+      type: "today.habitStreaks",
+    }),
   getTodayState: () =>
     query({
       type: "today.get",

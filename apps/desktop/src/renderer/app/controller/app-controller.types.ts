@@ -19,7 +19,7 @@ import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -37,6 +37,8 @@ export interface AppControllerState {
   history: HistoryDay[];
   historyLoadError: HabitsIpcError | null;
   historyScope: "full" | "recent";
+  historySummary: HistorySummaryDay[];
+  hasLoadedHistorySummary: boolean;
   isHistoryLoading: boolean;
   isWeeklyReviewSpotlightOpen: boolean;
   managedHabits: Habit[];

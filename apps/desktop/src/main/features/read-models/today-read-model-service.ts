@@ -1,8 +1,12 @@
 import type { Clock } from "@/main/app/clock";
-import { buildTodayState } from "@/main/features/today/state-builder";
+import {
+  buildTodayHabitStreaks,
+  buildTodayState,
+} from "@/main/features/today/state-builder";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { HabitStreak } from "@/shared/domain/habit-streak";
 
 const DEBUG_READ_MODELS =
   typeof process !== "undefined" &&
@@ -44,6 +48,12 @@ export class TodayReadModelService {
       buildTodayState(this.repository, this.clock)
     );
     return this.cachedTodayState;
+  }
+
+  getHabitStreaks(): Record<number, HabitStreak> {
+    return traceReadModel("today.habitStreaks", () =>
+      buildTodayHabitStreaks(this.repository, this.clock)
+    );
   }
 
   invalidate(): void {

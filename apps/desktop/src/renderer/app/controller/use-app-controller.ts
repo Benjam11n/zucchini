@@ -21,6 +21,7 @@ import { useSettingsAutosave } from "./use-settings-autosave";
 
 const EMPTY_FOCUS_SESSIONS: AppControllerState["focusSessions"] = [];
 const EMPTY_HISTORY: AppControllerState["history"] = [];
+const EMPTY_HISTORY_SUMMARY: AppControllerState["historySummary"] = [];
 const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
@@ -118,16 +119,20 @@ function buildHistoryControllerState({
 }): Pick<
   AppControllerState,
   | "history"
+  | "hasLoadedHistorySummary"
   | "historyLoadError"
   | "historyScope"
+  | "historySummary"
   | "isHistoryLoading"
   | "selectedWeeklyReview"
   | "weeklyReviewError"
 > {
   return {
+    hasLoadedHistorySummary: historyState?.hasLoadedHistorySummary ?? false,
     history: historyState?.history ?? EMPTY_HISTORY,
     historyLoadError: historyState?.historyLoadError ?? null,
     historyScope: historyState?.historyScope ?? "recent",
+    historySummary: historyState?.historySummary ?? EMPTY_HISTORY_SUMMARY,
     isHistoryLoading: historyState?.isHistoryLoading ?? false,
     selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
     weeklyReviewError: historyPageState?.weeklyReviewError ?? null,
@@ -217,6 +222,8 @@ export function useAppController() {
   useAppLifecycleEffects({
     bootApp: actions.bootApp,
     bootPhase: coreState.bootPhase,
+    loadHistorySummary: actions.loadHistorySummary,
+    loadTodayHabitStreaks: actions.loadTodayHabitStreaks,
     loadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
     openWindDown: actions.handleOpenWindDown,

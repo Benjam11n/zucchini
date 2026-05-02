@@ -21,6 +21,7 @@ import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
   buildHistoricalHabitsByDate,
   buildHistoryDay,
+  buildHistorySummaryDay,
   buildTodayPreviewSummary,
 } from "@/main/features/today/state-builder";
 import {
@@ -56,6 +57,8 @@ import {
 } from "@/shared/domain/goal";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import {
+  getHabitCategoryProgress,
+  isDailyHabit,
   normalizeHabitCategory,
   normalizeHabitFrequency,
   normalizeHabitTargetCount,
@@ -67,7 +70,8 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HabitStreak } from "@/shared/domain/habit-streak";
+import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -85,6 +89,7 @@ export interface HabitsService {
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
+  getTodayHabitStreaks(): Record<number, HabitStreak>;
   toggleSickDay(): TodayState;
   toggleHabit(habitId: number): HabitStatusPatch;
   incrementHabitProgress(habitId: number): HabitStatusPatch;
@@ -96,6 +101,8 @@ export interface HabitsService {
     state: PersistedFocusTimerState
   ): PersistedFocusTimerState;
   getHistory(limit?: number): HistoryDay[];
+  getHistoryDay(date: string): HistoryDay;
+  getHistorySummary(limit?: number): HistorySummaryDay[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
   getReminderRuntimeState(): ReminderRuntimeState;
@@ -289,6 +296,12 @@ export class HabitsApplicationService implements HabitsService {
     );
   }
 
+  getTodayHabitStreaks(): Record<number, HabitStreak> {
+    return this.withSyncedRead("getTodayHabitStreaks", () =>
+      this.todayReadModel.getHabitStreaks()
+    );
+  }
+
   toggleSickDay(): TodayState {
     return this.mutateTodayState(
       "toggleSickDay",
@@ -410,6 +423,105 @@ export class HabitsApplicationService implements HabitsService {
             focusMinutesByDate.get(summary.date) ?? 0,
             this.repository.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
           )
+        ),
+      ];
+    });
+  }
+
+  getHistoryDay(date: string): HistoryDay {
+    return this.withSyncedRead("getHistoryDay", () => {
+      const todayState = this.buildCurrentTodayState();
+
+      if (date === todayState.date) {
+        return buildHistoryDay(
+          buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
+          this.repository.getHabitsWithStatus(this.clock.todayKey()),
+          todayState.focusMinutes,
+          this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
+        );
+      }
+
+      const summary = this.repository
+        .getSettledHistory(undefined, { uncapped: true })
+        .find((candidate) => candidate.date === date);
+
+      if (!summary) {
+        throw new Error(`History day ${date} was not found.`);
+      }
+
+      const focusMinutes =
+        HabitsApplicationService.buildFocusMinutesByDate(
+          this.repository.getFocusSessionsInRange(date, date)
+        ).get(date) ?? 0;
+      const habitsByDate = buildHistoricalHabitsByDate(
+        [summary],
+        this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+          date,
+          date
+        )
+      );
+
+      return buildHistoryDay(
+        summary,
+        habitsByDate.get(date) ?? [],
+        focusMinutes,
+        this.repository.getHistoricalFocusQuotaGoalsWithStatus(date)
+      );
+    });
+  }
+
+  getHistorySummary(limit?: number): HistorySummaryDay[] {
+    return this.withSyncedRead("getHistorySummary", () => {
+      const todayState = this.buildCurrentTodayState();
+      const settledHistoryLimit =
+        limit === undefined ? undefined : Math.max(limit - 1, 0);
+      const settledHistoryOptions =
+        limit === undefined ? { uncapped: true } : undefined;
+      const settledSummaries = this.repository.getSettledHistory(
+        settledHistoryLimit,
+        settledHistoryOptions
+      );
+      const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
+      const focusMinutesByDate =
+        HabitsApplicationService.buildFocusMinutesByDate(
+          this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
+        );
+      const historicalHabitsByDate =
+        settledSummaries.length > 0
+          ? buildHistoricalHabitsByDate(
+              settledSummaries,
+              this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+                oldestDate,
+                settledSummaries[0]?.date ?? oldestDate
+              )
+            )
+          : new Map();
+
+      return [
+        buildHistorySummaryDay({
+          categoryProgress: getHabitCategoryProgress(
+            this.repository
+              .getHabitsWithStatus(this.clock.todayKey())
+              .filter(isDailyHabit)
+          ),
+          date: todayState.date,
+          focusMinutes: focusMinutesByDate.get(todayState.date) ?? 0,
+          summary: buildTodayPreviewSummary(
+            todayState,
+            this.clock.now().toISOString()
+          ),
+        }),
+        ...settledSummaries.map((summary) =>
+          buildHistorySummaryDay({
+            categoryProgress: getHabitCategoryProgress(
+              (historicalHabitsByDate.get(summary.date) ?? []).filter(
+                isDailyHabit
+              )
+            ),
+            date: summary.date,
+            focusMinutes: focusMinutesByDate.get(summary.date) ?? 0,
+            summary,
+          })
         ),
       ];
     });

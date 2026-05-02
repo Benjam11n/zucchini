@@ -1,4 +1,3 @@
-import { LazyMotion, domAnimation, m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
@@ -11,7 +10,6 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
@@ -95,77 +93,65 @@ function HabitChecklistComponent({
   }, [habits]);
 
   return (
-    <LazyMotion features={domAnimation}>
-      <HabitListCard
-        title={title}
-        icon={Icon as LucideIcon}
-        headerActions={headerActions}
-        {...progressProps}
-      >
-        {totalHabits === 0 ? (
-          <m.div
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-md border border-dashed border-border py-10 text-center"
-            initial={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-            {_emptyAction ? <div className="mt-4">{_emptyAction}</div> : null}
-          </m.div>
-        ) : null}
+    <HabitListCard
+      title={title}
+      icon={Icon as LucideIcon}
+      headerActions={headerActions}
+      {...progressProps}
+    >
+      {totalHabits === 0 ? (
+        <div className="rounded-md border border-dashed border-border py-10 text-center">
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          {_emptyAction ? <div className="mt-4">{_emptyAction}</div> : null}
+        </div>
+      ) : null}
 
-        {habitsByCategory.map((category) => {
-          const presentation = getHabitCategoryPresentation(
-            category.value,
-            categoryPreferences
-          );
-          const CategoryIcon = presentation.icon;
+      {habitsByCategory.map((category) => {
+        const presentation = getHabitCategoryPresentation(
+          category.value,
+          categoryPreferences
+        );
+        const CategoryIcon = presentation.icon;
 
-          return (
-            <m.div
-              key={category.value}
-              className="grid gap-1"
-              layout
-              variants={staggerItemVariants}
-            >
-              {/* Category header */}
-              <div className="flex items-center gap-2 px-0.5 pb-1">
-                <CategoryIcon
-                  className="size-3 shrink-0 opacity-60"
-                  style={{ color: presentation.accentTextColor }}
-                />
-                <span
-                  className="text-[0.68rem] uppercase tracking-wide"
-                  style={{ color: presentation.accentTextColor }}
-                >
-                  {presentation.label}
-                </span>
-                <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
-                  {category.completedCount}/{category.habits.length}
-                </span>
-              </div>
+        return (
+          <div key={category.value} className="grid gap-1">
+            {/* Category header */}
+            <div className="flex items-center gap-2 px-0.5 pb-1">
+              <CategoryIcon
+                className="size-3 shrink-0 opacity-60"
+                style={{ color: presentation.accentTextColor }}
+              />
+              <span
+                className="text-[0.68rem] uppercase tracking-wide"
+                style={{ color: presentation.accentTextColor }}
+              >
+                {presentation.label}
+              </span>
+              <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
+                {category.completedCount}/{category.habits.length}
+              </span>
+            </div>
 
-              {/* Habit items */}
-              <div className="grid gap-px">
-                {category.habits.map((habit) => {
-                  const streak = habitStreaks?.[habit.id];
-                  const streakProps = streak ? { streak } : {};
+            {/* Habit items */}
+            <div className="grid gap-px">
+              {category.habits.map((habit) => {
+                const streak = habitStreaks?.[habit.id];
+                const streakProps = streak ? { streak } : {};
 
-                  return (
-                    <HabitListItem
-                      key={habit.id}
-                      habit={habit}
-                      onToggle={onToggleHabit}
-                      {...streakProps}
-                    />
-                  );
-                })}
-              </div>
-            </m.div>
-          );
-        })}
-      </HabitListCard>
-    </LazyMotion>
+                return (
+                  <HabitListItem
+                    key={habit.id}
+                    habit={habit}
+                    onToggle={onToggleHabit}
+                    {...streakProps}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </HabitListCard>
   );
 }
 

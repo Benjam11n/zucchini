@@ -190,8 +190,17 @@ export function readHabitServiceQuery(
     case "history.get": {
       return service.getHistory(query.payload?.limit);
     }
+    case "history.getDay": {
+      return service.getHistoryDay(query.payload.date);
+    }
+    case "history.summary": {
+      return service.getHistorySummary(query.payload?.limit);
+    }
     case "today.get": {
       return service.getTodayState();
+    }
+    case "today.habitStreaks": {
+      return service.getTodayHabitStreaks();
     }
     case "weeklyReview.get": {
       return service.getWeeklyReview(query.payload.weekStart);
