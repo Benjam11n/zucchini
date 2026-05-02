@@ -32,7 +32,7 @@ pnpm --dir apps/desktop rebuild:native
 pnpm run dev:desktop
 pnpm run build:desktop
 pnpm --dir apps/desktop typecheck
-pnpm run lint:desktop
+pnpm run lint
 pnpm run test:desktop
 pnpm --dir apps/desktop knip
 pnpm --dir apps/desktop react-doctor
@@ -62,7 +62,7 @@ Before shipping changes, run:
 
 ```bash
 pnpm run format
-pnpm run lint:desktop
+pnpm run lint
 pnpm run test:desktop
 pnpm --dir apps/desktop knip
 ```

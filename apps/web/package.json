@@ -7,10 +7,7 @@
     "build": "pnpm run typecheck && vite build",
     "audit": "pnpm audit",
     "audit:ci": "pnpm audit --prod --audit-level high",
-    "lint": "oxlint -c ../../.oxlintrc.json .",
     "typecheck": "tsgo -p tsconfig.json --noEmit",
-    "format": "ultracite fix .",
-    "format:check": "ultracite check .",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {

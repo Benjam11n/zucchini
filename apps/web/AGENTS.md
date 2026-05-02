@@ -11,7 +11,7 @@
 - Run web commands from the repository root with:
   `pnpm --dir apps/web ...`
 - Common validations:
-  `pnpm run lint:web`
+  `pnpm run lint`
   `pnpm run build:web`
   `pnpm --dir apps/web react-doctor`
 - Run `pnpm run format` from the workspace root before finalizing changes.

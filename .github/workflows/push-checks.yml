@@ -40,11 +40,8 @@ jobs:
       - name: Audit dependencies
         run: pnpm --dir apps/desktop audit:ci
 
-      - name: Check formatting
-        run: pnpm run format:check
-
-      - name: Lint desktop app
-        run: pnpm run lint:desktop
+      - name: Lint repository
+        run: pnpm run lint
 
       - name: Typecheck desktop app
         run: pnpm --dir apps/desktop typecheck
@@ -80,12 +77,6 @@ jobs:
 
       - name: Audit dependencies
         run: pnpm --dir apps/web audit:ci
-
-      - name: Check formatting
-        run: pnpm run format:check
-
-      - name: Lint web app
-        run: pnpm run lint:web
 
       - name: Build web app
         run: pnpm run build:web

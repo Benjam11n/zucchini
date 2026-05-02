@@ -13,7 +13,7 @@
 - Run desktop commands from the repository root with:
   `pnpm --dir apps/desktop ...`
 - Common validations:
-  `pnpm run lint:desktop`
+  `pnpm run lint`
   `pnpm run test:desktop`
   `pnpm --dir apps/desktop knip`
   `pnpm run build:desktop`

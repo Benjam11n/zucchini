@@ -20,9 +20,6 @@
     "audit": "pnpm audit",
     "audit:ci": "pnpm audit --prod --audit-level high",
     "check:duplication": "tsx scripts/check-duplication.ts",
-    "lint": "oxlint -c ../../.oxlintrc.json .",
-    "format": "ultracite fix .",
-    "format:check": "ultracite check .",
     "knip": "knip",
     "test": "vitest run",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
