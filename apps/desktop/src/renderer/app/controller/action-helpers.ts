@@ -16,7 +16,12 @@ import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
+import {
+  patchTodayHabitCollection,
+  syncTodayCollections,
+} from "@/renderer/features/today/state/today-collections";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
@@ -89,6 +94,7 @@ export function applyTodayReloadResult({
       managedHabits,
       todayState,
     });
+    syncTodayCollections(todayState);
   });
 }
 
@@ -105,7 +111,12 @@ export function applyTodayState(
         nextManagedHabits ?? useTodayStore.getState().managedHabits,
       todayState: nextTodayState,
     });
+    syncTodayCollections(nextTodayState);
   });
+}
+
+export function applyHabitStatusPatch(patch: HabitStatusPatch): void {
+  patchTodayHabitCollection(patch.habit);
 }
 
 export function refreshWeeklyReviewIfLoaded(): void {
@@ -140,6 +151,7 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
       managedHabits: [],
       todayState: null,
     });
+    syncTodayCollections(null);
     useUiStore.setState({
       tab: "today",
     });

@@ -32,6 +32,7 @@ export interface HabitPeriodStatusSnapshot {
   category: HabitCategory;
   completed: boolean;
   completedCount?: number;
+  createdAt?: string;
   frequency: HabitFrequency;
   habitId: number;
   name: string;

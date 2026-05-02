@@ -11,20 +11,22 @@ import type { TodayCelebration } from "@/renderer/features/today/lib/today-celeb
 import { resolveTodayCelebration } from "@/renderer/features/today/lib/today-celebration";
 import { createTodayUiSnapshot } from "@/renderer/features/today/lib/today-ui-snapshot";
 import { readLastUiState } from "@/renderer/features/today/lib/today-ui-storage";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { StreakState } from "@/shared/domain/streak";
 
 const CELEBRATION_DURATION_MS = 2200;
 
 interface UseTodayCelebrationOptions {
   completedCount: number;
   dailyHabitCount: number;
-  state: TodayState;
+  date: string;
+  streak: StreakState;
 }
 
 export function useTodayCelebration({
   completedCount,
   dailyHabitCount,
-  state,
+  date,
+  streak,
 }: UseTodayCelebrationOptions): TodayCelebration | null {
   const [celebration, setCelebration] = useState<TodayCelebration | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -34,12 +36,15 @@ export function useTodayCelebration({
     const nextCelebration = resolveTodayCelebration({
       completedCount,
       dailyHabitCount,
-      date: state.date,
+      date,
       lastUiState: previousStateRef.current,
-      streak: state.streak,
+      streak,
     });
 
-    previousStateRef.current = createTodayUiSnapshot(state, completedCount);
+    previousStateRef.current = createTodayUiSnapshot(
+      { date, streak },
+      completedCount
+    );
 
     if (!nextCelebration) {
       return;
@@ -57,7 +62,7 @@ export function useTodayCelebration({
       );
       timeoutRef.current = null;
     }, CELEBRATION_DURATION_MS);
-  }, [completedCount, dailyHabitCount, state]);
+  }, [completedCount, dailyHabitCount, date, streak]);
 
   useEffect(
     () => () => {

@@ -23,13 +23,7 @@ import {
   normalizeGoalFrequency,
 } from "@/shared/domain/goal";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
-import {
-  isHabitScheduledForDate,
-  normalizeHabitCategory,
-  normalizeHabitFrequency,
-  normalizeHabitTargetCount,
-  normalizeHabitWeekdays,
-} from "@/shared/domain/habit";
+import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -106,6 +100,38 @@ export class SqliteHistoryRepository {
     });
   }
 
+  getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
+    return this.client.run("getHabitWithStatus", () => {
+      const habit = this.habitsRepository.getHabitById(habitId);
+      if (!habit || !isHabitScheduledForDate(habit, date)) {
+        return null;
+      }
+
+      const period = getHabitPeriod(habit.frequency, date);
+      const row = this.client
+        .getDrizzle()
+        .select({
+          completed: habitPeriodStatus.completed,
+          completedCount: habitPeriodStatus.completedCount,
+        })
+        .from(habitPeriodStatus)
+        .where(
+          and(
+            eq(habitPeriodStatus.frequency, habit.frequency),
+            eq(habitPeriodStatus.periodStart, period.start),
+            eq(habitPeriodStatus.habitId, habitId)
+          )
+        )
+        .get();
+
+      return {
+        ...habit,
+        completed: row?.completed ?? false,
+        completedCount: row?.completedCount ?? 0,
+      };
+    });
+  }
+
   getHabitProgress(date: string, habitId: number): number {
     return this.client.run("getHabitProgress", () => {
       const habit = this.habitsRepository.getHabitById(habitId);
@@ -146,52 +172,30 @@ export class SqliteHistoryRepository {
     });
   }
 
-  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.client.run("getHistoricalHabitsWithStatus", () =>
-      this.client
-        .getDrizzle()
-        .select({
-          category: habitPeriodStatus.habitCategory,
-          completed: habitPeriodStatus.completed,
-          completedCount: habitPeriodStatus.completedCount,
-          createdAt: habitPeriodStatus.habitCreatedAt,
-          frequency: habitPeriodStatus.frequency,
-          id: habitPeriodStatus.habitId,
-          name: habitPeriodStatus.habitName,
-          selectedWeekdays: habitPeriodStatus.habitSelectedWeekdays,
-          sortOrder: habitPeriodStatus.habitSortOrder,
-          targetCount: habitPeriodStatus.habitTargetCount,
-        })
-        .from(habitPeriodStatus)
-        .where(
-          and(
-            lte(habitPeriodStatus.periodStart, date),
-            gte(habitPeriodStatus.periodEnd, date)
+  getHistoricalHabitPeriodStatusesOverlappingRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
+    return this.client.run(
+      "getHistoricalHabitPeriodStatusesOverlappingRange",
+      () =>
+        this.client
+          .getDrizzle()
+          .select()
+          .from(habitPeriodStatus)
+          .where(
+            and(
+              lte(habitPeriodStatus.periodStart, end),
+              gte(habitPeriodStatus.periodEnd, start)
+            )
           )
-        )
-        .orderBy(
-          asc(habitPeriodStatus.habitSortOrder),
-          asc(habitPeriodStatus.habitId)
-        )
-        .all()
-        .map((row) => ({
-          category: normalizeHabitCategory(row.category),
-          completed: row.completed,
-          completedCount: row.completedCount,
-          createdAt: row.createdAt,
-          frequency: normalizeHabitFrequency(row.frequency),
-          id: row.id,
-          isArchived: false,
-          name: row.name,
-          selectedWeekdays: normalizeHabitWeekdays(
-            row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
-          ),
-          sortOrder: row.sortOrder,
-          targetCount: normalizeHabitTargetCount(
-            normalizeHabitFrequency(row.frequency),
-            row.targetCount
-          ),
-        }))
+          .orderBy(
+            asc(habitPeriodStatus.periodStart),
+            asc(habitPeriodStatus.habitSortOrder),
+            asc(habitPeriodStatus.habitId)
+          )
+          .all()
+          .map((row) => mapHabitPeriodStatusSnapshot(row))
     );
   }
 

@@ -185,38 +185,43 @@ class FakeRepository implements AppRepository {
       }));
   }
 
-  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.habits
-      .filter((habit) =>
-        [...this.statusByPeriod.values()].some(
-          (entry) =>
-            entry.end === date &&
-            entry.frequency === habit.frequency &&
-            entry.values.has(habit.id)
-        )
-      )
-      .toSorted((left, right) => left.sortOrder - right.sortOrder)
-      .map((habit) => ({
-        ...habit,
-        completed:
-          ([...this.statusByPeriod.values()]
-            .find(
-              (entry) =>
-                entry.end === date &&
-                entry.frequency === habit.frequency &&
-                entry.values.has(habit.id)
-            )
-            ?.values.get(habit.id) ?? 0) >= (habit.targetCount ?? 1),
-        completedCount:
-          [...this.statusByPeriod.values()]
-            .find(
-              (entry) =>
-                entry.end === date &&
-                entry.frequency === habit.frequency &&
-                entry.values.has(habit.id)
-            )
-            ?.values.get(habit.id) ?? 0,
-      }));
+  getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
+    return (
+      this.getHabitsWithStatus(date).find((habit) => habit.id === habitId) ??
+      null
+    );
+  }
+
+  getHistoricalHabitPeriodStatusesOverlappingRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
+    return [...this.statusByPeriod.values()]
+      .filter((entry) => entry.start <= end && entry.end >= start)
+      .flatMap((entry) =>
+        [...entry.values.entries()].map(([habitId, completedCount]) => {
+          const habit = this.habits.find((item) => item.id === habitId);
+
+          if (!habit) {
+            throw new Error(`Unknown habit ${habitId}`);
+          }
+
+          return {
+            category: habit.category,
+            completed: completedCount >= (habit.targetCount ?? 1),
+            completedCount,
+            createdAt: habit.createdAt,
+            frequency: entry.frequency,
+            habitId,
+            name: habit.name,
+            periodEnd: entry.end,
+            periodStart: entry.start,
+            selectedWeekdays: habit.selectedWeekdays ?? null,
+            sortOrder: habit.sortOrder,
+            targetCount: habit.targetCount ?? 1,
+          };
+        })
+      );
   }
 
   getHabitProgress(date: string, habitId: number): number {

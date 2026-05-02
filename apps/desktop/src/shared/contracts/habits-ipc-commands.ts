@@ -11,6 +11,7 @@ import type {
 } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
+import type { HabitStatusPatch } from "./habit-status-patch";
 import type { TodayState } from "./today-state";
 
 export type HabitCommand =
@@ -72,6 +73,7 @@ export type HabitCommand =
 export type HabitCommandResult =
   | AppSettings
   | FocusSession
+  | HabitStatusPatch
   | PersistedFocusTimerState
   | TodayState;
 
@@ -83,11 +85,11 @@ interface HabitCommandResultByType {
   "focusTimer.saveState": PersistedFocusTimerState;
   "habit.archive": TodayState;
   "habit.create": TodayState;
-  "habit.decrementProgress": TodayState;
-  "habit.incrementProgress": TodayState;
+  "habit.decrementProgress": HabitStatusPatch;
+  "habit.incrementProgress": HabitStatusPatch;
   "habit.rename": TodayState;
   "habit.reorder": TodayState;
-  "habit.toggle": TodayState;
+  "habit.toggle": HabitStatusPatch;
   "habit.unarchive": TodayState;
   "habit.updateCategory": TodayState;
   "habit.updateFrequency": TodayState;

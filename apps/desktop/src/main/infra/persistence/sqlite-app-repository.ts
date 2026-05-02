@@ -160,8 +160,18 @@ export class SqliteAppRepository implements AppRepository {
     return this.historyRepository.getHabitsWithStatus(date);
   }
 
-  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.historyRepository.getHistoricalHabitsWithStatus(date);
+  getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
+    return this.historyRepository.getHabitWithStatus(date, habitId);
+  }
+
+  getHistoricalHabitPeriodStatusesOverlappingRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[] {
+    return this.historyRepository.getHistoricalHabitPeriodStatusesOverlappingRange(
+      start,
+      end
+    );
   }
 
   getHabitProgress(date: string, habitId: number): number {

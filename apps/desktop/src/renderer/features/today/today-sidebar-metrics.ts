@@ -2,6 +2,8 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import type { HistoryDay } from "@/shared/domain/history";
 import { addDays, startOfWeek } from "@/shared/utils/date";
 
+type TodayMetricsState = Pick<TodayState, "date" | "habits">;
+
 export interface TodaySidebarCompletion {
   completed: number;
   percent: number;
@@ -61,7 +63,7 @@ export function getHistoryCompletion(
 function getCompletionForDate(
   date: string,
   historyByDate: ReadonlyMap<string, HistoryDay>,
-  state: TodayState
+  state: TodayMetricsState
 ): TodaySidebarCompletion | null {
   if (date === state.date) {
     return getTodayCompletion(state.habits);
@@ -77,7 +79,7 @@ function getCompletionForDate(
 
 export function getWeekCompletionSeries(
   history: readonly HistoryDay[],
-  state: TodayState
+  state: TodayMetricsState
 ): TodaySidebarWeekDay[] {
   const historyByDate = new Map(history.map((day) => [day.date, day]));
   const weekStart = startOfWeek(state.date);
@@ -100,7 +102,7 @@ export function getWeekCompletionSeries(
 
 export function getRecentConsistency(
   history: readonly HistoryDay[],
-  state: TodayState,
+  state: TodayMetricsState,
   days = 7
 ): number {
   const historyByDate = new Map(history.map((day) => [day.date, day]));
@@ -128,7 +130,7 @@ export function getRecentConsistency(
 
 export function getRecentConsistencySummary(
   history: readonly HistoryDay[],
-  state: TodayState,
+  state: TodayMetricsState,
   days = 30
 ): TodaySidebarConsistencySummary {
   const historyByDate = new Map(history.map((day) => [day.date, day]));

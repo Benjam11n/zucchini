@@ -1,6 +1,8 @@
+import { useLiveQuery } from "@tanstack/react-db";
 import { MoreHorizontal } from "lucide-react";
 import { useMemo } from "react";
 
+import { todayHabitCollection } from "@/renderer/features/today/state/today-collections";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -50,20 +52,33 @@ export function TodaySidebar({
   state,
   onToggleSickDay,
 }: TodaySidebarProps) {
+  const { data: liveHabits } = useLiveQuery((query) =>
+    query
+      .from({ habit: todayHabitCollection })
+      .orderBy(({ habit }) => habit.sortOrder, "asc")
+  );
+  const habits = liveHabits.length > 0 ? liveHabits : state.habits;
+  const todayMetricsState = useMemo(
+    () => ({
+      date: state.date,
+      habits,
+    }),
+    [habits, state.date]
+  );
   const { consistency, todayCompletion, weekSeries } = useMemo(
     () => ({
-      consistency: getRecentConsistencySummary(history, state),
-      todayCompletion: getTodayCompletion(state.habits),
-      weekSeries: getWeekCompletionSeries(history, state),
+      consistency: getRecentConsistencySummary(history, todayMetricsState),
+      todayCompletion: getTodayCompletion(habits),
+      weekSeries: getWeekCompletionSeries(history, todayMetricsState),
     }),
-    [history, state]
+    [habits, history, todayMetricsState]
   );
   const categoryProgress = useMemo(
     () =>
       getHabitCategoryProgress(
-        state.habits.filter((habit) => habit.frequency === "daily")
+        habits.filter((habit) => habit.frequency === "daily")
       ),
-    [state.habits]
+    [habits]
   );
 
   return (

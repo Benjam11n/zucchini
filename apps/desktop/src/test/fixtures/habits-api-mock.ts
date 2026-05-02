@@ -1,11 +1,29 @@
 import { vi } from "vitest";
 
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { HabitsApi } from "@/shared/contracts/habits-api";
 import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
 import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 
 type MockFn = ReturnType<typeof vi.fn>;
 type CallableMockFn = MockFn & ((...args: unknown[]) => unknown);
+
+const EMPTY_HABIT_STATUS_PATCH: HabitStatusPatch = {
+  habit: {
+    category: "productivity",
+    completed: false,
+    completedCount: 0,
+    createdAt: "2026-03-08T00:00:00.000Z",
+    frequency: "daily",
+    id: 0,
+    isArchived: false,
+    name: "Mock habit",
+    selectedWeekdays: null,
+    sortOrder: 0,
+    targetCount: 1,
+  },
+  habitStreaksStale: true,
+};
 
 export type MockHabitsApi = Record<keyof HabitsApi, MockFn> &
   Record<
@@ -172,7 +190,7 @@ function createMockHabitsApi(
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
     createHabit: vi.fn().mockResolvedValue(null),
     createWindDownAction: vi.fn().mockResolvedValue(null),
-    decrementHabitProgress: vi.fn().mockResolvedValue(null),
+    decrementHabitProgress: vi.fn().mockResolvedValue(EMPTY_HABIT_STATUS_PATCH),
     deleteWindDownAction: vi.fn().mockResolvedValue(null),
     exportBackup: vi.fn().mockResolvedValue(null),
     getDesktopNotificationStatus: vi.fn().mockResolvedValue({
@@ -201,7 +219,7 @@ function createMockHabitsApi(
     getWeeklyReview: vi.fn().mockResolvedValue(null),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(null),
     importBackup: vi.fn().mockResolvedValue(false),
-    incrementHabitProgress: vi.fn().mockResolvedValue(null),
+    incrementHabitProgress: vi.fn().mockResolvedValue(EMPTY_HABIT_STATUS_PATCH),
     onFocusSessionRecorded: vi.fn(() => vi.fn()),
     onFocusTimerActionRequested: vi.fn(() => vi.fn()),
     onFocusTimerShortcutStatusChanged: vi.fn(() => vi.fn()),
@@ -220,7 +238,7 @@ function createMockHabitsApi(
     showMainWindow: vi.fn().mockResolvedValue(null),
     showNotification: vi.fn().mockResolvedValue(null),
     toggleSickDay: vi.fn().mockResolvedValue(null),
-    toggleHabit: vi.fn().mockResolvedValue(null),
+    toggleHabit: vi.fn().mockResolvedValue(EMPTY_HABIT_STATUS_PATCH),
     toggleWindDownAction: vi.fn().mockResolvedValue(null),
     unarchiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     unarchiveHabit: vi.fn().mockResolvedValue(null),

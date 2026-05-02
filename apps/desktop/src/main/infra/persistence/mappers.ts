@@ -109,6 +109,7 @@ export function mapHabitPeriodStatusSnapshot(
     category: normalizeHabitCategory(row.habitCategory),
     completed: row.completed,
     completedCount: row.completedCount,
+    createdAt: row.habitCreatedAt,
     frequency: normalizeHabitFrequency(row.frequency),
     habitId: row.habitId,
     name: row.habitName,

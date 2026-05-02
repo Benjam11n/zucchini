@@ -1,7 +1,8 @@
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
-import type { Habit } from "@/shared/domain/habit";
+import type { Habit, HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
@@ -56,6 +57,22 @@ function createManagedHabit(id = 1): Habit {
     isArchived: false,
     name: `Habit ${id}`,
     sortOrder: id - 1,
+  };
+}
+
+function createTodayHabit(
+  overrides: Partial<HabitWithStatus> = {}
+): HabitWithStatus {
+  return {
+    category: "productivity",
+    completed: false,
+    createdAt: "2026-03-01T00:00:00.000Z",
+    frequency: "daily",
+    id: 1,
+    isArchived: false,
+    name: "Plan top 3 tasks",
+    sortOrder: 0,
+    ...overrides,
   };
 }
 
@@ -142,22 +159,21 @@ describe("app store actions", () => {
     const getWeeklyReviewMock = vi.fn();
     const getWeeklyReviewOverviewMock = vi.fn();
     const renameHabitMock = vi.fn().mockResolvedValue(createTodayState());
-    const toggleHabitMock = vi.fn().mockResolvedValue(
-      createTodayState({
-        habits: [
-          {
-            category: "productivity",
-            completed: true,
-            createdAt: "2026-03-01T00:00:00.000Z",
-            frequency: "daily",
-            id: 1,
-            isArchived: false,
-            name: "Plan top 3 tasks",
-            sortOrder: 0,
-          },
-        ],
-      })
-    );
+    const toggleHabitMock = vi.fn().mockResolvedValue({
+      habit: {
+        category: "productivity",
+        completed: true,
+        completedCount: 1,
+        createdAt: "2026-03-01T00:00:00.000Z",
+        frequency: "daily",
+        id: 1,
+        isArchived: false,
+        name: "Plan top 3 tasks",
+        sortOrder: 0,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    } satisfies HabitStatusPatch);
 
     const habitsApi = installMockHabitsApi({
       getFocusSessions: getFocusSessionsMock,
@@ -194,12 +210,15 @@ describe("app store actions", () => {
       await import("@/renderer/features/settings/state/settings-store");
     const { resetTodayStore, useTodayStore } =
       await import("@/renderer/features/today/state/today-store");
+    const { syncTodayCollections, todayHabitCollection } =
+      await import("@/renderer/features/today/state/today-collections");
 
     resetBootStore();
     resetFocusStore();
     resetHistoryStore();
     resetSettingsStore();
     resetTodayStore();
+    syncTodayCollections(null);
     resetUiStore();
     resetWeeklyReviewStore();
 
@@ -211,6 +230,8 @@ describe("app store actions", () => {
       getWeeklyReviewOverviewMock,
       habitsApi,
       stores: {
+        syncTodayCollections,
+        todayHabitCollection,
         useBootStore,
         useFocusStore,
         useHistoryStore,
@@ -348,6 +369,7 @@ describe("app store actions", () => {
     stores.useTodayStore.setState({
       todayState: reorderedState,
     });
+    stores.syncTodayCollections(reorderedState);
 
     const nextHabits = [...reorderedState.habits].toReversed();
     const reorderPromise = actions.handleReorderHabits(nextHabits);
@@ -355,6 +377,9 @@ describe("app store actions", () => {
     expect(stores.useTodayStore.getState().todayState?.habits).toStrictEqual(
       nextHabits
     );
+    expect(
+      [...stores.todayHabitCollection.state.values()].map((habit) => habit.id)
+    ).toStrictEqual(nextHabits.map((habit) => habit.id));
 
     reorderRequest.resolve({
       ...reorderedState,
@@ -365,55 +390,137 @@ describe("app store actions", () => {
 
   it("optimistically toggles a habit before the authoritative refresh resolves", async () => {
     const { actions, habitsApi, stores } = await setup();
-    const pendingTodayState = createDeferred<TodayState>();
+    const pendingPatch = createDeferred<HabitStatusPatch>();
 
-    habitsApi.toggleHabit.mockImplementation(() => pendingTodayState.promise);
+    habitsApi.toggleHabit.mockImplementation(() => pendingPatch.promise);
+
+    const initialHabit = createTodayHabit();
+    const initialTodayState = createTodayState({
+      habits: [initialHabit],
+    });
 
     stores.useTodayStore.setState({
-      todayState: createTodayState({
-        habits: [
-          {
-            category: "productivity",
-            completed: false,
-            createdAt: "2026-03-01T00:00:00.000Z",
-            frequency: "daily",
-            id: 1,
-            isArchived: false,
-            name: "Plan top 3 tasks",
-            sortOrder: 0,
-          },
-        ],
-      }),
+      todayState: initialTodayState,
     });
+    stores.syncTodayCollections(initialTodayState);
 
     const togglePromise = actions.handleToggleHabit(1);
 
-    expect(
-      stores.useTodayStore.getState().todayState?.habits[0]?.completed
-    ).toBeTruthy();
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
 
-    pendingTodayState.resolve(
-      createTodayState({
-        habits: [
-          {
-            category: "productivity",
-            completed: true,
-            createdAt: "2026-03-01T00:00:00.000Z",
-            frequency: "daily",
-            id: 1,
-            isArchived: false,
-            name: "Plan top 3 tasks",
-            sortOrder: 0,
-          },
-        ],
-      })
-    );
+    pendingPatch.resolve({
+      habit: {
+        category: "productivity",
+        completed: true,
+        completedCount: 1,
+        createdAt: "2026-03-01T00:00:00.000Z",
+        frequency: "daily",
+        id: 1,
+        isArchived: false,
+        name: "Plan top 3 tasks",
+        sortOrder: 0,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
 
     await togglePromise;
 
-    expect(
-      stores.useTodayStore.getState().todayState?.habits[0]?.completed
-    ).toBeTruthy();
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
+  });
+
+  it("bases rapid optimistic toggles on the live habit collection", async () => {
+    const { actions, habitsApi, stores } = await setup();
+    const firstPatch = createDeferred<HabitStatusPatch>();
+    const secondPatch = createDeferred<HabitStatusPatch>();
+
+    habitsApi.toggleHabit
+      .mockImplementationOnce(() => firstPatch.promise)
+      .mockImplementationOnce(() => secondPatch.promise);
+
+    const initialHabit = createTodayHabit();
+    const initialTodayState = createTodayState({
+      habits: [initialHabit],
+    });
+
+    stores.useTodayStore.setState({
+      todayState: initialTodayState,
+    });
+    stores.syncTodayCollections(initialTodayState);
+    const firstToggle = actions.handleToggleHabit(1);
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
+
+    const secondToggle = actions.handleToggleHabit(1);
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
+
+    firstPatch.resolve({
+      habit: {
+        ...initialHabit,
+        completed: true,
+        completedCount: 1,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
+    secondPatch.resolve({
+      habit: {
+        ...initialHabit,
+        completed: false,
+        completedCount: 0,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
+
+    await Promise.all([firstToggle, secondToggle]);
+
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
+  });
+
+  it("does not let older habit status responses overwrite newer clicks", async () => {
+    const { actions, habitsApi, stores } = await setup();
+    const firstPatch = createDeferred<HabitStatusPatch>();
+    const secondPatch = createDeferred<HabitStatusPatch>();
+
+    habitsApi.toggleHabit
+      .mockImplementationOnce(() => firstPatch.promise)
+      .mockImplementationOnce(() => secondPatch.promise);
+
+    const initialHabit = createTodayHabit();
+    const initialTodayState = createTodayState({
+      habits: [initialHabit],
+    });
+
+    stores.useTodayStore.setState({
+      todayState: initialTodayState,
+    });
+    stores.syncTodayCollections(initialTodayState);
+    const firstToggle = actions.handleToggleHabit(1);
+    const secondToggle = actions.handleToggleHabit(1);
+
+    secondPatch.resolve({
+      habit: {
+        ...initialHabit,
+        completed: false,
+        completedCount: 0,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
+    await secondToggle;
+
+    firstPatch.resolve({
+      habit: {
+        ...initialHabit,
+        completed: true,
+        completedCount: 1,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
+    await firstToggle;
+
+    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
   });
 
   it("restores the previous today state when an optimistic toggle fails", async () => {

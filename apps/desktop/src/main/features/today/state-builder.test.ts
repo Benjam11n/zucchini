@@ -14,8 +14,9 @@ function createRepository(
     getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
     getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
     getDayStatus?: ReturnType<typeof vi.fn>;
-    getHistoricalHabitsWithStatus?: ReturnType<typeof vi.fn>;
+    getHistoricalHabitPeriodStatusesOverlappingRange?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
+    getHabitWithStatus?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
     getSettledHistory?: ReturnType<typeof vi.fn>;
     getSettings?: ReturnType<typeof vi.fn>;
@@ -31,9 +32,11 @@ function createRepository(
       overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
     getFocusSessionsInRange:
       overrides.getFocusSessionsInRange ?? vi.fn(() => []),
+    getHabitWithStatus: overrides.getHabitWithStatus ?? vi.fn(() => null),
     getHabitsWithStatus: overrides.getHabitsWithStatus ?? vi.fn(() => []),
-    getHistoricalHabitsWithStatus:
-      overrides.getHistoricalHabitsWithStatus ?? vi.fn(() => []),
+    getHistoricalHabitPeriodStatusesOverlappingRange:
+      overrides.getHistoricalHabitPeriodStatusesOverlappingRange ??
+      vi.fn(() => []),
     getPersistedStreakState:
       overrides.getPersistedStreakState ??
       vi.fn(() => ({
@@ -164,12 +167,28 @@ describe("state builder", () => {
         id: 1,
         isArchived: false,
         name: "Run",
+        selectedWeekdays: null,
         sortOrder: 0,
         targetCount: 1,
       };
       const repository = createRepository({
         getHabitsWithStatus: vi.fn(() => [runHabit]),
-        getHistoricalHabitsWithStatus: vi.fn(() => [runHabit]),
+        getHistoricalHabitPeriodStatusesOverlappingRange: vi.fn(() => [
+          {
+            category: runHabit.category,
+            completed: true,
+            completedCount: 1,
+            createdAt: runHabit.createdAt,
+            frequency: runHabit.frequency,
+            habitId: runHabit.id,
+            name: runHabit.name,
+            periodEnd: "2025-12-31",
+            periodStart: "2025-12-31",
+            selectedWeekdays: runHabit.selectedWeekdays ?? null,
+            sortOrder: runHabit.sortOrder,
+            targetCount: runHabit.targetCount,
+          },
+        ]),
         getSettledHistory: vi.fn(() => [
           {
             allCompleted: true,

@@ -1,4 +1,5 @@
 import type { HabitsService } from "@/main/features/habits/habits-application-service";
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
   HabitCommandResult,
@@ -39,7 +40,7 @@ function executeFocusQuotaGoalCommand(
 function executeHabitCommand(
   service: HabitsService,
   command: Extract<HabitCommand, { type: `habit.${string}` }>
-): TodayState {
+): HabitStatusPatch | TodayState {
   switch (command.type) {
     case "habit.archive": {
       return service.archiveHabit(command.payload.habitId);

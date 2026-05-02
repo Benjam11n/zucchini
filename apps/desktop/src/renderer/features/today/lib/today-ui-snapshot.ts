@@ -2,7 +2,7 @@ import type { PersistedTodayUiState } from "@/renderer/features/today/today.type
 import type { TodayState } from "@/shared/contracts/today-state";
 
 export function createTodayUiSnapshot(
-  state: TodayState,
+  state: Pick<TodayState, "date" | "streak">,
   completedCount: number
 ): PersistedTodayUiState {
   return {

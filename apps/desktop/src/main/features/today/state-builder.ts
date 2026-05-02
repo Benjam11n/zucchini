@@ -17,6 +17,104 @@ import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
+import { addDays } from "@/shared/utils/date";
+
+function mapStatusToHabit(status: {
+  category: HabitWithStatus["category"];
+  completed: boolean;
+  completedCount?: number;
+  createdAt?: string;
+  frequency: HabitWithStatus["frequency"];
+  habitId: number;
+  name: string;
+  periodStart: string;
+  selectedWeekdays?: HabitWithStatus["selectedWeekdays"];
+  sortOrder: number;
+  targetCount?: number;
+}): HabitWithStatus {
+  return {
+    category: status.category,
+    completed: status.completed,
+    completedCount: status.completedCount ?? 0,
+    createdAt: status.createdAt ?? status.periodStart,
+    frequency: status.frequency,
+    id: status.habitId,
+    isArchived: false,
+    name: status.name,
+    selectedWeekdays: status.selectedWeekdays ?? null,
+    sortOrder: status.sortOrder,
+    targetCount: status.targetCount ?? 1,
+  };
+}
+
+export function buildHistoricalHabitsByDate(
+  summaries: DailySummary[],
+  statuses: ReturnType<
+    AppRepository["getHistoricalHabitPeriodStatusesOverlappingRange"]
+  >
+): Map<string, HabitWithStatus[]> {
+  const habitsByDate = new Map<string, HabitWithStatus[]>();
+  const sortedSummaries = [...summaries].toSorted((left, right) =>
+    left.date.localeCompare(right.date)
+  );
+  const firstDate = sortedSummaries[0]?.date;
+  const lastDate = sortedSummaries.at(-1)?.date;
+
+  if (!firstDate || !lastDate) {
+    return habitsByDate;
+  }
+
+  for (const status of statuses) {
+    for (
+      let date =
+        status.periodStart < firstDate ? firstDate : status.periodStart;
+      date <= status.periodEnd && date <= lastDate;
+      date = addDays(date, 1)
+    ) {
+      const dayHabits = habitsByDate.get(date) ?? [];
+      dayHabits.push(mapStatusToHabit(status));
+      habitsByDate.set(date, dayHabits);
+    }
+  }
+
+  for (const [date, habits] of habitsByDate) {
+    habitsByDate.set(
+      date,
+      habits.toSorted(
+        (left, right) => left.sortOrder - right.sortOrder || left.id - right.id
+      )
+    );
+  }
+
+  return habitsByDate;
+}
+
+function buildHistoricalHabitDays(
+  summaries: DailySummary[],
+  habitsByDate: Map<string, HabitWithStatus[]>
+): HabitStreakDay[] {
+  if (summaries.length === 0) {
+    return [];
+  }
+
+  const sortedSummaries = [...summaries].toSorted((left, right) =>
+    left.date.localeCompare(right.date)
+  );
+  const firstDate = sortedSummaries[0]?.date;
+  const lastDate = sortedSummaries.at(-1)?.date;
+
+  if (!firstDate || !lastDate) {
+    return [];
+  }
+
+  return sortedSummaries.map((summary) => ({
+    date: summary.date,
+    dayStatus: summary.dayStatus,
+    freezeUsed: summary.freezeUsed,
+    habits: habitsByDate.get(summary.date) ?? [],
+    isOpenToday: false,
+  }));
+}
 
 export function buildTodayState(
   repository: AppRepository,
@@ -44,14 +142,20 @@ export function buildTodayState(
   const settledSummaries = repository.getSettledHistory(undefined, {
     uncapped: true,
   });
+  const oldestStreakDate = settledSummaries.at(-1)?.date;
+  const newestStreakDate = settledSummaries[0]?.date;
+  const historicalHabitsByDate =
+    oldestStreakDate && newestStreakDate
+      ? buildHistoricalHabitsByDate(
+          settledSummaries,
+          repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+            oldestStreakDate,
+            newestStreakDate
+          )
+        )
+      : new Map<string, HabitWithStatus[]>();
   const habitStreakDays: HabitStreakDay[] = [
-    ...settledSummaries.map((summary) => ({
-      date: summary.date,
-      dayStatus: summary.dayStatus,
-      freezeUsed: summary.freezeUsed,
-      habits: repository.getHistoricalHabitsWithStatus(summary.date),
-      isOpenToday: false,
-    })),
+    ...buildHistoricalHabitDays(settledSummaries, historicalHabitsByDate),
     {
       date: today,
       dayStatus: currentDayStatus?.kind ?? null,

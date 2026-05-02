@@ -13,19 +13,26 @@ import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
+import {
+  getTodayHabitFromCollection,
+  syncTodayCollections,
+} from "@/renderer/features/today/state/today-collections";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitWithStatus,
   HabitWeekday,
 } from "@/shared/domain/habit";
 
 import {
   applyTodayReloadResult,
+  applyHabitStatusPatch,
   applyTodayState,
   getCurrentYearHistoryLimit,
   refreshWeeklyReviewIfLoaded,
@@ -36,6 +43,92 @@ export type ReloadAllFn = (
   nextTodayState?: TodayState,
   historyScope?: "full" | "recent"
 ) => Promise<void>;
+
+type HabitStatusMutationKind = "decrement" | "increment" | "toggle";
+
+const habitStatusMutationVersions = new Map<number, number>();
+
+function startHabitStatusMutation(habitId: number): number {
+  const nextVersion = (habitStatusMutationVersions.get(habitId) ?? 0) + 1;
+  habitStatusMutationVersions.set(habitId, nextVersion);
+  return nextVersion;
+}
+
+function isLatestHabitStatusMutation(
+  habitId: number,
+  mutationVersion: number
+): boolean {
+  return habitStatusMutationVersions.get(habitId) === mutationVersion;
+}
+
+function toggleHabitStatus(habit: HabitWithStatus): HabitWithStatus {
+  const targetCount = habit.targetCount ?? 1;
+
+  return {
+    ...habit,
+    completed: !habit.completed,
+    completedCount: habit.completed ? 0 : targetCount,
+  };
+}
+
+function incrementHabitProgressStatus(habit: HabitWithStatus): HabitWithStatus {
+  const targetCount = habit.targetCount ?? 1;
+  const completedCount = Math.min(targetCount, (habit.completedCount ?? 0) + 1);
+
+  return {
+    ...habit,
+    completed: completedCount >= targetCount,
+    completedCount,
+  };
+}
+
+function decrementHabitProgressStatus(habit: HabitWithStatus): HabitWithStatus {
+  const targetCount = habit.targetCount ?? 1;
+  const completedCount = Math.max(0, (habit.completedCount ?? 0) - 1);
+
+  return {
+    ...habit,
+    completed: completedCount >= targetCount,
+    completedCount,
+  };
+}
+
+function getOptimisticHabitStatus(
+  habit: HabitWithStatus,
+  kind: HabitStatusMutationKind
+): HabitWithStatus {
+  switch (kind) {
+    case "decrement": {
+      return decrementHabitProgressStatus(habit);
+    }
+    case "increment": {
+      return incrementHabitProgressStatus(habit);
+    }
+    case "toggle": {
+      return toggleHabitStatus(habit);
+    }
+    default: {
+      kind satisfies never;
+      return habit;
+    }
+  }
+}
+
+function createOptimisticHabitStatusPatch(
+  habitId: number,
+  kind: HabitStatusMutationKind
+): HabitStatusPatch | null {
+  const habit = getTodayHabitFromCollection(habitId);
+
+  if (!habit) {
+    return null;
+  }
+
+  return {
+    habit: getOptimisticHabitStatus(habit, kind),
+    habitStreaksStale: true,
+  };
+}
 
 export function createTodayActions({
   loadFocusSessions,
@@ -99,6 +192,45 @@ export function createTodayActions({
     return nextTodayState;
   }
 
+  async function applyHabitStatusMutation({
+    habitId,
+    mutationKind,
+    run,
+  }: {
+    habitId: number;
+    mutationKind: HabitStatusMutationKind;
+    run: () => Promise<HabitStatusPatch>;
+  }) {
+    const previousHabit = getTodayHabitFromCollection(habitId);
+    const mutationVersion = startHabitStatusMutation(habitId);
+    const optimisticPatch = createOptimisticHabitStatusPatch(
+      habitId,
+      mutationKind
+    );
+
+    if (optimisticPatch) {
+      applyHabitStatusPatch(optimisticPatch);
+    }
+
+    try {
+      const confirmedPatch = await run();
+      if (isLatestHabitStatusMutation(habitId, mutationVersion)) {
+        applyHabitStatusPatch(confirmedPatch);
+      }
+    } catch (error) {
+      if (
+        previousHabit &&
+        isLatestHabitStatusMutation(habitId, mutationVersion)
+      ) {
+        applyHabitStatusPatch({
+          habit: previousHabit,
+          habitStreaksStale: true,
+        });
+      }
+      throw error;
+    }
+  }
+
   // oxlint-disable-next-line eslint/sort-keys
   return {
     applyTodayMutation,
@@ -130,13 +262,21 @@ export function createTodayActions({
       await applyTodayMutation(habitsClient.createWindDownAction(name));
     },
     async handleDecrementHabitProgress(habitId: number) {
-      await refreshToday(habitsClient.decrementHabitProgress(habitId));
+      await applyHabitStatusMutation({
+        habitId,
+        mutationKind: "decrement",
+        run: () => habitsClient.decrementHabitProgress(habitId),
+      });
     },
     async handleDeleteWindDownAction(actionId: number) {
       await applyTodayMutation(habitsClient.deleteWindDownAction(actionId));
     },
     async handleIncrementHabitProgress(habitId: number) {
-      await refreshToday(habitsClient.incrementHabitProgress(habitId));
+      await applyHabitStatusMutation({
+        habitId,
+        mutationKind: "increment",
+        run: () => habitsClient.incrementHabitProgress(habitId),
+      });
     },
     async handleRenameHabit(habitId: number, name: string) {
       await applyTodayMutation(habitsClient.renameHabit(habitId, name));
@@ -154,6 +294,7 @@ export function createTodayActions({
         managedHabits: nextHabits,
         todayState: reorderVisibleTodayHabits(nextHabits, previousTodayState),
       });
+      syncTodayCollections(useTodayStore.getState().todayState);
 
       try {
         await applyTodayMutation(
@@ -164,6 +305,7 @@ export function createTodayActions({
           managedHabits: previousManagedHabits,
           todayState: previousTodayState,
         });
+        syncTodayCollections(previousTodayState);
         throw error;
       }
     },
@@ -179,6 +321,12 @@ export function createTodayActions({
           // Focus-session load failures are surfaced through store state.
         });
       }
+
+      if (nextTab === "history") {
+        refreshWeeklyReviewOverview().catch(() => {
+          // Weekly review failures are surfaced through store state.
+        });
+      }
     },
     handleOpenWindDown() {
       useUiStore.getState().setTab("windDown");
@@ -187,35 +335,11 @@ export function createTodayActions({
       useUiStore.getState().setTab("today");
     },
     async handleToggleHabit(habitId: number) {
-      const previousTodayState = useTodayStore.getState().todayState;
-      const hasHabitToToggle = previousTodayState?.habits.some(
-        (habit) => habit.id === habitId
-      );
-
-      if (previousTodayState && hasHabitToToggle) {
-        useTodayStore.setState({
-          todayState: {
-            ...previousTodayState,
-            habits: previousTodayState.habits.map((habit) =>
-              habit.id === habitId
-                ? { ...habit, completed: !habit.completed }
-                : habit
-            ),
-          },
-        });
-      }
-
-      try {
-        await refreshToday(habitsClient.toggleHabit(habitId));
-      } catch (error) {
-        if (previousTodayState && hasHabitToToggle) {
-          useTodayStore.setState({
-            todayState: previousTodayState,
-          });
-        }
-
-        throw error;
-      }
+      await applyHabitStatusMutation({
+        habitId,
+        mutationKind: "toggle",
+        run: () => habitsClient.toggleHabit(habitId),
+      });
     },
     async handleToggleSickDay() {
       await refreshToday(habitsClient.toggleSickDay());

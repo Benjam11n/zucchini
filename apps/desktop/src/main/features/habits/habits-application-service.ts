@@ -15,12 +15,13 @@ import {
   executeHabitServiceCommand,
   readHabitServiceQuery,
 } from "@/main/features/habits/habits-service-routing";
+import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
+  buildHistoricalHabitsByDate,
   buildHistoryDay,
   buildTodayPreviewSummary,
-  buildTodayState,
 } from "@/main/features/today/state-builder";
 import {
   buildWeeklyReview,
@@ -28,6 +29,7 @@ import {
 } from "@/main/features/weekly-review/builder";
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
   HabitCommandResult,
@@ -84,9 +86,9 @@ export interface HabitsService {
   getHabits(): Habit[];
   getTodayState(): TodayState;
   toggleSickDay(): TodayState;
-  toggleHabit(habitId: number): TodayState;
-  incrementHabitProgress(habitId: number): TodayState;
-  decrementHabitProgress(habitId: number): TodayState;
+  toggleHabit(habitId: number): HabitStatusPatch;
+  incrementHabitProgress(habitId: number): HabitStatusPatch;
+  decrementHabitProgress(habitId: number): HabitStatusPatch;
   getFocusSessions(limit?: number): FocusSession[];
   recordFocusSession(input: CreateFocusSessionInput): FocusSession;
   getPersistedFocusTimerState(): PersistedFocusTimerState | null;
@@ -155,11 +157,13 @@ function assertValidPersistedFocusTimerState(
 export class HabitsApplicationService implements HabitsService {
   private readonly repository: AppRepository;
   private readonly clock: Clock;
+  private readonly todayReadModel: TodayReadModelService;
   private initialized = false;
 
   constructor(repository: AppRepository, clock: Clock) {
     this.repository = repository;
     this.clock = clock;
+    this.todayReadModel = new TodayReadModelService(repository, clock);
   }
 
   private static buildFocusMinutesByDate(
@@ -216,7 +220,12 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   private buildCurrentTodayState(): TodayState {
-    return buildTodayState(this.repository, this.clock);
+    return this.todayReadModel.getTodayState();
+  }
+
+  private rebuildCurrentTodayState(): TodayState {
+    this.todayReadModel.invalidate();
+    return this.buildCurrentTodayState();
   }
 
   execute(command: HabitCommand): HabitCommandResult {
@@ -248,7 +257,23 @@ export class HabitsApplicationService implements HabitsService {
 
       mutate(today);
 
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
+    });
+  }
+
+  private mutateHabitStatusPatch(
+    label: string,
+    habitId: number,
+    mutate: (today: string) => void
+  ): HabitStatusPatch {
+    return this.inInitializedTransaction(label, () => {
+      const today = this.clock.todayKey();
+
+      this.syncRollingState();
+      this.repository.ensureStatusRowsForDate(today);
+      mutate(today);
+
+      return this.todayReadModel.patchHabit(habitId);
     });
   }
 
@@ -288,41 +313,28 @@ export class HabitsApplicationService implements HabitsService {
     );
   }
 
-  toggleHabit(habitId: number): TodayState {
-    return this.mutateTodayState(
-      "toggleHabit",
-      (today) => {
-        this.repository.toggleHabit(today, habitId);
-      },
-      {
-        ensureStatusRowsForToday: true,
-        syncRollingState: true,
-      }
-    );
+  toggleHabit(habitId: number): HabitStatusPatch {
+    return this.mutateHabitStatusPatch("toggleHabit", habitId, (today) => {
+      this.repository.toggleHabit(today, habitId);
+    });
   }
 
-  incrementHabitProgress(habitId: number): TodayState {
-    return this.mutateTodayState(
+  incrementHabitProgress(habitId: number): HabitStatusPatch {
+    return this.mutateHabitStatusPatch(
       "incrementHabitProgress",
+      habitId,
       (today) => {
         this.repository.adjustHabitProgress(today, habitId, 1);
-      },
-      {
-        ensureStatusRowsForToday: true,
-        syncRollingState: true,
       }
     );
   }
 
-  decrementHabitProgress(habitId: number): TodayState {
-    return this.mutateTodayState(
+  decrementHabitProgress(habitId: number): HabitStatusPatch {
+    return this.mutateHabitStatusPatch(
       "decrementHabitProgress",
+      habitId,
       (today) => {
         this.repository.adjustHabitProgress(today, habitId, -1);
-      },
-      {
-        ensureStatusRowsForToday: true,
-        syncRollingState: true,
       }
     );
   }
@@ -373,6 +385,16 @@ export class HabitsApplicationService implements HabitsService {
         HabitsApplicationService.buildFocusMinutesByDate(
           this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
         );
+      const historicalHabitsByDate =
+        settledSummaries.length > 0
+          ? buildHistoricalHabitsByDate(
+              settledSummaries,
+              this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+                oldestDate,
+                settledSummaries[0]?.date ?? oldestDate
+              )
+            )
+          : new Map();
 
       return [
         buildHistoryDay(
@@ -384,7 +406,7 @@ export class HabitsApplicationService implements HabitsService {
         ...settledSummaries.map((summary) =>
           buildHistoryDay(
             summary,
-            this.repository.getHistoricalHabitsWithStatus(summary.date),
+            historicalHabitsByDate.get(summary.date) ?? [],
             focusMinutesByDate.get(summary.date) ?? 0,
             this.repository.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
           )
@@ -525,7 +547,7 @@ export class HabitsApplicationService implements HabitsService {
           .map((habit) => habit.id),
       ]);
       this.repository.ensureStatusRow(today, habitId);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -537,7 +559,7 @@ export class HabitsApplicationService implements HabitsService {
 
     return this.withInitialized(() => {
       this.repository.renameHabit(habitId, trimmedName);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -547,7 +569,7 @@ export class HabitsApplicationService implements HabitsService {
         habitId,
         normalizeHabitCategory(category)
       );
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -577,7 +599,7 @@ export class HabitsApplicationService implements HabitsService {
         habitId,
         Math.min(previousProgress, normalizedTargetCount)
       );
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -589,7 +611,7 @@ export class HabitsApplicationService implements HabitsService {
         .find((candidate) => candidate.id === habitId);
 
       if (!habit) {
-        return buildTodayState(this.repository, this.clock);
+        return this.rebuildCurrentTodayState();
       }
 
       const previousProgress = this.repository.getHabitProgress(today, habitId);
@@ -604,7 +626,7 @@ export class HabitsApplicationService implements HabitsService {
         habitId,
         Math.min(previousProgress, normalizedTargetCount)
       );
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -619,7 +641,7 @@ export class HabitsApplicationService implements HabitsService {
         normalizeHabitWeekdays(selectedWeekdays)
       );
       this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -680,7 +702,7 @@ export class HabitsApplicationService implements HabitsService {
       this.repository.archiveHabit(habitId);
       this.repository.normalizeHabitOrder();
       this.syncRollingState();
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -696,7 +718,7 @@ export class HabitsApplicationService implements HabitsService {
       ]);
       this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
       this.syncRollingState();
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -709,11 +731,11 @@ export class HabitsApplicationService implements HabitsService {
         habitIds.length !== activeHabits.length ||
         habitIds.some((habitId) => !activeHabitIds.has(habitId))
       ) {
-        return this.buildCurrentTodayState();
+        return this.rebuildCurrentTodayState();
       }
 
       this.repository.reorderHabits(habitIds);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -728,7 +750,7 @@ export class HabitsApplicationService implements HabitsService {
         trimmedName,
         this.clock.now().toISOString()
       );
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -740,14 +762,14 @@ export class HabitsApplicationService implements HabitsService {
 
     return this.withInitialized(() => {
       this.repository.renameWindDownAction(actionId, trimmedName);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
   deleteWindDownAction(actionId: number): TodayState {
     return this.inInitializedTransaction("deleteWindDownAction", () => {
       this.repository.deleteWindDownAction(actionId);
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 
@@ -760,7 +782,7 @@ export class HabitsApplicationService implements HabitsService {
         actionId,
         this.clock.now().toISOString()
       );
-      return this.buildCurrentTodayState();
+      return this.rebuildCurrentTodayState();
     });
   }
 

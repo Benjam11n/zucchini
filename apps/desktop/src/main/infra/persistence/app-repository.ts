@@ -79,7 +79,11 @@ export interface HabitRepositoryPort {
 
 export interface HabitStatusRepositoryPort {
   getHabitsWithStatus(date: string): HabitWithStatus[];
-  getHistoricalHabitsWithStatus(date: string): HabitWithStatus[];
+  getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null;
+  getHistoricalHabitPeriodStatusesOverlappingRange(
+    start: string,
+    end: string
+  ): HabitPeriodStatusSnapshot[];
   getHabitProgress(date: string, habitId: number): number;
   ensureStatusRowsForDate(date: string): void;
   ensureStatusRow(date: string, habitId: number): void;

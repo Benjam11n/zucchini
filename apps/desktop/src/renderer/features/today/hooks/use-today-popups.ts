@@ -18,7 +18,7 @@ import {
   writeLastUiState,
 } from "@/renderer/features/today/lib/today-ui-storage";
 import type { TodayState } from "@/shared/contracts/today-state";
-import { isDailyHabit } from "@/shared/domain/habit";
+import type { HabitWithStatus } from "@/shared/domain/habit";
 
 const POPUP_TIMEOUT_MS = 5000;
 
@@ -33,12 +33,16 @@ function getMascotIconFilename(mascotUrl: string): string | undefined {
 }
 
 interface UseTodayPopupsOptions {
+  completedCount: number;
+  dailyHabits: HabitWithStatus[];
   state: TodayState;
 }
 
-export function useTodayPopups({ state }: UseTodayPopupsOptions): void {
-  const dailyHabits = state.habits.filter(isDailyHabit);
-  const completedCount = dailyHabits.filter((habit) => habit.completed).length;
+export function useTodayPopups({
+  completedCount,
+  dailyHabits,
+  state,
+}: UseTodayPopupsOptions): void {
   const halfwayThreshold = Math.ceil(dailyHabits.length / 2);
 
   const initializedRef = useRef(false);
