@@ -11,7 +11,7 @@ export function FocusQuotaRow({ goal }: { goal: FocusQuotaGoalWithStatus }) {
 
   return (
     <div className="group flex flex-wrap items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-muted/15">
-      <div className="flex min-w-0 flex-1 basis-56 items-center gap-2">
+      <div className="flex min-w-0 flex-1 basis-0 items-center gap-2">
         <Timer
           className={cn(
             "size-3.5 shrink-0 transition-colors",

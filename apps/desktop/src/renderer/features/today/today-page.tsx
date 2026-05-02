@@ -137,7 +137,7 @@ function TodayPageComponent({
 
         <m.div
           animate="animate"
-          className="grid min-w-0 gap-6"
+          className="grid w-full min-w-0 max-w-full gap-6"
           initial="initial"
           variants={staggerContainerVariants}
         >

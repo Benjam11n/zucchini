@@ -48,8 +48,17 @@ describe("app shell", () => {
     setupUpdaterMock();
     const { container } = renderAppShell();
 
+    expect(container.querySelector("main > div")).toHaveClass(
+      "grid",
+      "w-full",
+      "max-w-full"
+    );
+    expect(container.querySelector('[data-slot="tabs"]')).toHaveClass(
+      "contents"
+    );
     expect(container.querySelector("section")).toHaveClass(
       "min-w-0",
+      "max-w-full",
       "overflow-x-hidden"
     );
     const [tabpanel] = screen.getAllByRole("tabpanel");
@@ -57,7 +66,10 @@ describe("app shell", () => {
       throw new Error("Expected a tabpanel element.");
     }
 
-    expect(container.querySelector("section > div")).toHaveClass("max-w-5xl");
+    expect(container.querySelector("section > div")).toHaveClass(
+      "w-full",
+      "max-w-full"
+    );
     expect(tabpanel).toHaveClass("min-w-0");
   });
 
@@ -70,7 +82,7 @@ describe("app shell", () => {
 
   it("renders an optional right sidebar", () => {
     setupUpdaterMock();
-    render(
+    const { container } = render(
       <AppShell
         rightSidebar={<div data-testid="right-sidebar">summary</div>}
         onTabChange={vi.fn()}
@@ -81,5 +93,8 @@ describe("app shell", () => {
     );
 
     expect(screen.getByTestId("right-sidebar")).toHaveTextContent("summary");
+    expect(container.querySelector("section + aside")).toHaveClass(
+      "min-[900px]:block"
+    );
   });
 });

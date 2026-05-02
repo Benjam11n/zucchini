@@ -93,7 +93,7 @@ export function LongerHabitListItem({
         </Button>
       </div>
 
-      <div className="flex min-w-0 flex-1 basis-56 items-center gap-3 overflow-hidden">
+      <div className="flex min-w-0 flex-1 basis-0 flex-wrap items-center gap-2 overflow-hidden">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
           <presentation.icon
             className="size-3.5 shrink-0 opacity-70 transition-all group-hover:opacity-100"
@@ -111,7 +111,7 @@ export function LongerHabitListItem({
           </span>
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2.5 tabular-nums">
+        <div className="ml-auto flex shrink-0 items-center gap-2 tabular-nums">
           <div className="relative hidden h-1 w-12 overflow-hidden rounded-full bg-muted/40 transition-colors group-hover:bg-muted/60 md:block">
             <div
               className="absolute inset-y-0 left-0 transition-all duration-500"

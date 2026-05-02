@@ -203,6 +203,7 @@ describe("longer habit checklist", () => {
 
     expect(container.querySelectorAll(".flex-wrap").length).toBeGreaterThan(0);
     expect(container.textContent).toContain("Focus quota");
-    expect(container.querySelector(".basis-56")).not.toBeNull();
+    expect(container.querySelector(".basis-56")).toBeNull();
+    expect(container.querySelectorAll(".basis-0").length).toBeGreaterThan(0);
   });
 });

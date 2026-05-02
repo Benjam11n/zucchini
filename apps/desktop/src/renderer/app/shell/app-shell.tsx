@@ -11,32 +11,13 @@ import {
   domAnimation,
   m,
 } from "framer-motion";
-import {
-  BarChart3,
-  CalendarDays,
-  MoonStar,
-  Settings2,
-  Timer,
-} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { AppTab } from "@/renderer/app/app.types";
+import { AppNav } from "@/renderer/app/shell/app-nav";
 import { UpdateButton } from "@/renderer/app/shell/update-button";
-import { MASCOTS } from "@/renderer/assets/mascots";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/renderer/shared/components/ui/tabs";
+import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
 import { pageVariants } from "@/renderer/shared/lib/motion";
-
-const APP_SHELL_CONTENT_MAX_WIDTH_CLASS = "max-w-5xl";
 
 interface AppShellProps {
   children: ReactNode;
@@ -52,136 +33,49 @@ export function AppShell({
   onTabChange,
 }: AppShellProps) {
   const contentGridClassName = rightSidebar
-    ? "lg:grid-cols-[96px_minmax(0,1fr)_300px]"
-    : "lg:grid-cols-[96px_minmax(0,1fr)]";
+    ? "lg:grid-cols-[72px_minmax(0,1fr)_240px] xl:grid-cols-[96px_minmax(0,1fr)_300px]"
+    : "lg:grid-cols-[72px_minmax(0,1fr)] xl:grid-cols-[96px_minmax(0,1fr)]";
 
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation}>
         <main className="min-h-screen bg-background text-foreground">
           <UpdateButton />
-          <Tabs
-            className={`grid min-h-screen grid-rows-[auto_1fr] lg:grid-rows-1 ${contentGridClassName}`}
-            onValueChange={(value) => onTabChange(value as AppTab)}
-            value={tab}
+          <div
+            className={`grid min-h-screen w-full max-w-full grid-rows-[auto_1fr] lg:grid-rows-1 ${contentGridClassName}`}
           >
-            <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-3 lg:py-6">
-              <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
-                <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-1 lg:text-center">
-                  <img
-                    alt="Zucchini logo"
-                    className="size-12 object-contain rounded"
-                    src={MASCOTS.icon}
-                  />
-                  <span className="text-sm font-black tracking-tight text-foreground">
-                    Zucchini
-                  </span>
+            <Tabs
+              className="contents"
+              onValueChange={(value) => onTabChange(value as AppTab)}
+              value={tab}
+            >
+              <AppNav />
+
+              <section className="min-w-0 max-w-full overflow-x-hidden px-4 py-6 sm:px-6 lg:px-4 lg:py-8 xl:px-8">
+                <div className="mx-auto min-w-0 w-full max-w-2xl xl:max-w-3xl">
+                  <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
+                    <AnimatePresence initial={false} mode="wait">
+                      <m.div
+                        key={tab}
+                        animate="animate"
+                        className="min-w-0"
+                        exit="exit"
+                        initial="initial"
+                        variants={pageVariants}
+                      >
+                        {children}
+                      </m.div>
+                    </AnimatePresence>
+                  </TabsContent>
                 </div>
-
-                <TabsList className="hidden flex-col gap-2 rounded-none bg-transparent p-0 lg:flex">
-                  <TabsTrigger
-                    aria-label="Today"
-                    className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    value="today"
-                  >
-                    <span className="sr-only">Today</span>
-                    <CalendarDays className="size-5" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="Focus"
-                    className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    value="focus"
-                  >
-                    <span className="sr-only">Focus</span>
-                    <Timer className="size-5" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="Wind Down"
-                    className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    value="windDown"
-                  >
-                    <span className="sr-only">Wind Down</span>
-                    <MoonStar className="size-5" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="History"
-                    className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    value="history"
-                  >
-                    <span className="sr-only">History</span>
-                    <BarChart3 className="size-5" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    aria-label="Settings"
-                    className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    value="settings"
-                  >
-                    <span className="sr-only">Settings</span>
-                    <Settings2 className="size-5" />
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex flex-1 items-center gap-3 lg:hidden">
-                  <TabsList className="grid flex-1 grid-cols-5 bg-muted/80 p-1">
-                    <TabsTrigger className="px-4" value="today">
-                      <CalendarDays className="size-4" />
-                      Today
-                    </TabsTrigger>
-                    <TabsTrigger className="px-4" value="focus">
-                      <Timer className="size-4" />
-                      Focus
-                    </TabsTrigger>
-                    <TabsTrigger className="px-4" value="windDown">
-                      <MoonStar className="size-4" />
-                      Wind Down
-                    </TabsTrigger>
-                    <TabsTrigger className="px-4" value="history">
-                      <BarChart3 className="size-4" />
-                      History
-                    </TabsTrigger>
-                    <TabsTrigger className="px-4" value="settings">
-                      <Settings2 className="size-4" />
-                      Settings
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <Card>
-                    <CardHeader className="px-0 py-0 text-right">
-                      <CardTitle className="text-base font-black tracking-tight text-foreground">
-                        Zucchini
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                </div>
-              </div>
-            </aside>
-
-            <section className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-6 lg:py-8 xl:px-8">
-              <div
-                className={`mx-auto min-w-0 w-full ${APP_SHELL_CONTENT_MAX_WIDTH_CLASS}`}
-              >
-                <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
-                  <AnimatePresence initial={false} mode="wait">
-                    <m.div
-                      key={tab}
-                      animate="animate"
-                      className="min-w-0"
-                      exit="exit"
-                      initial="initial"
-                      variants={pageVariants}
-                    >
-                      {children}
-                    </m.div>
-                  </AnimatePresence>
-                </TabsContent>
-              </div>
-            </section>
-            {rightSidebar ? (
-              <aside className="hidden min-w-0 overflow-hidden border-l border-border/70 bg-card/40 px-5 py-8 lg:block">
-                {rightSidebar}
-              </aside>
-            ) : null}
-          </Tabs>
+              </section>
+              {rightSidebar ? (
+                <aside className="hidden min-w-0 overflow-hidden border-l border-border/70 bg-card px-4 py-8 lg:block xl:px-5">
+                  {rightSidebar}
+                </aside>
+              ) : null}
+            </Tabs>
+          </div>
         </main>
       </LazyMotion>
     </MotionConfig>

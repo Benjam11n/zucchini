@@ -36,7 +36,7 @@ function getBarClassName(percent: number): string {
   }
 
   if (percent > 0) {
-    return "bg-primary/45";
+    return "bg-primary/60";
   }
 
   return "bg-muted";

@@ -33,12 +33,14 @@ export function HabitListCard({
   return (
     <LazyMotion features={domAnimation}>
       <Card>
-        <CardHeader className="gap-2 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="grid gap-1">
-              <div className="flex items-center gap-2">
+        <CardHeader className="min-w-0 gap-2 pb-4">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="grid min-w-0 gap-1">
+              <div className="flex min-w-0 items-center gap-2">
                 {Icon && <Icon className="size-5 text-primary" />}
-                <CardTitle className="text-base font-medium">{title}</CardTitle>
+                <CardTitle className="min-w-0 truncate text-base font-medium">
+                  {title}
+                </CardTitle>
               </div>
               {description && (
                 <CardDescription className="text-sm">
