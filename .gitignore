@@ -17,6 +17,7 @@ yarn-error.log*
 .vite/
 apps/*/.vite/
 .turbo/
+.fallow/
 
 *.db
 *.db-journal

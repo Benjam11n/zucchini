@@ -24,6 +24,13 @@
 - Prefer the root wrapper scripts when they exist:
   `pnpm run dev:desktop`, `pnpm run dev:web`, `pnpm run build:desktop`,
   `pnpm run build:web`, `pnpm run check`.
+- Use Fallow from the repository root:
+  `pnpm run fallow`, `pnpm run fallow:dead-code`,
+  `pnpm run fallow:dupes`, `pnpm run fallow:health`, and
+  `pnpm run fallow:audit`.
+- Treat Fallow output as codebase intelligence first. Do not auto-delete or
+  auto-fix findings without checking ownership, dynamic loading, and build
+  boundaries.
 - Never start a development server unless the user explicitly asks for it.
 - Before finalizing code changes, run `pnpm run format`.
 - After meaningful changes, run the relevant validation commands for the app
