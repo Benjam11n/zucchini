@@ -73,7 +73,7 @@ function toggleHabitStatus(habit: HabitWithStatus): HabitWithStatus {
 
 function incrementHabitProgressStatus(habit: HabitWithStatus): HabitWithStatus {
   const targetCount = habit.targetCount ?? 1;
-  const completedCount = Math.min(targetCount, (habit.completedCount ?? 0) + 1);
+  const completedCount = (habit.completedCount ?? 0) + 1;
 
   return {
     ...habit,

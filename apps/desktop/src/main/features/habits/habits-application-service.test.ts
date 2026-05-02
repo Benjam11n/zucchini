@@ -305,7 +305,7 @@ class FakeRepository implements AppRepository {
 
     this.getStatusValues(date, habit.frequency).set(
       habitId,
-      Math.max(0, Math.min(habit.targetCount ?? 1, Math.round(completedCount)))
+      Math.max(0, Math.round(completedCount))
     );
   }
 
@@ -317,8 +317,7 @@ class FakeRepository implements AppRepository {
 
     const values = this.getStatusValues(date, habit.frequency);
     const current = values.get(habitId) ?? 0;
-    const targetCount = habit.targetCount ?? 1;
-    values.set(habitId, Math.max(0, Math.min(targetCount, current + delta)));
+    values.set(habitId, Math.max(0, current + delta));
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
@@ -914,6 +913,38 @@ describe("habit categories", () => {
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
   });
+
+  it.each(["weekly", "monthly"] as const)(
+    "allows %s habit progress to exceed the target count",
+    (frequency) => {
+      const repository = new FakeRepository();
+      const [existingHabit] = repository.habits;
+      if (!existingHabit) {
+        throw new Error("Expected a seeded habit.");
+      }
+
+      repository.habits[0] = {
+        ...existingHabit,
+        frequency,
+        targetCount: 2,
+      };
+      repository.setHabitProgress("2026-03-08", 1, 2);
+
+      const service = new HabitsApplicationService(
+        repository,
+        new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+      );
+
+      const patch = service.incrementHabitProgress(1);
+
+      expect(patch.habit).toMatchObject({
+        completed: true,
+        completedCount: 3,
+        frequency,
+        targetCount: 2,
+      });
+    }
+  );
 
   it("preserves current progress when updating a habit target count", () => {
     const repository = new FakeRepository();

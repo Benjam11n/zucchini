@@ -1,5 +1,5 @@
 import { m } from "framer-motion";
-import { CheckCircle2, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -56,7 +56,6 @@ export function LongerHabitListItem({
       <div className="flex shrink-0 items-center gap-1.5">
         <Button
           aria-label={`Increase progress for ${habit.name}`}
-          disabled={completedCount >= targetCount}
           onClick={() => onIncrement(habit.id)}
           size="icon-xs"
           style={
@@ -71,11 +70,7 @@ export function LongerHabitListItem({
           type="button"
           variant={habit.completed ? "default" : "outline"}
         >
-          {habit.completed ? (
-            <CheckCircle2 className="size-3" />
-          ) : (
-            <Plus className="size-3" />
-          )}
+          <Plus className="size-3" />
         </Button>
         <Button
           aria-label={`Decrease progress for ${habit.name}`}

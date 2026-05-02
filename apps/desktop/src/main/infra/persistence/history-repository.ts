@@ -352,10 +352,7 @@ export class SqliteHistoryRepository {
       }
 
       const period = getHabitPeriod(habit.frequency, date);
-      const safeCompletedCount = Math.max(
-        0,
-        Math.min(habit.targetCount ?? 1, Math.round(completedCount))
-      );
+      const safeCompletedCount = Math.max(0, Math.round(completedCount));
 
       this.client
         .getDrizzle()
@@ -401,8 +398,8 @@ export class SqliteHistoryRepository {
         .getDrizzle()
         .update(habitPeriodStatus)
         .set({
-          completed: sql<boolean>`case when max(0, min(${habit.targetCount}, ${habitPeriodStatus.completedCount} + ${safeDelta})) >= ${habit.targetCount} then 1 else 0 end`,
-          completedCount: sql<number>`max(0, min(${habit.targetCount}, ${habitPeriodStatus.completedCount} + ${safeDelta}))`,
+          completed: sql<boolean>`case when max(0, ${habitPeriodStatus.completedCount} + ${safeDelta}) >= ${habit.targetCount} then 1 else 0 end`,
+          completedCount: sql<number>`max(0, ${habitPeriodStatus.completedCount} + ${safeDelta})`,
         })
         .where(
           and(

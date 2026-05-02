@@ -134,7 +134,7 @@ describe("longer habit checklist", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls increment and decrement handlers and disables unavailable actions", () => {
+  it("calls increment and decrement handlers and keeps completed habits incrementable", () => {
     const onDecrementHabitProgress = vi.fn();
     const onIncrementHabitProgress = vi.fn();
 
@@ -175,12 +175,14 @@ describe("longer habit checklist", () => {
     });
 
     expect(deepWorkDecrementButton).toBeDisabled();
-    expect(monthlyPlanningIncrementButton).toBeDisabled();
+    expect(monthlyPlanningIncrementButton).not.toBeDisabled();
 
     fireEvent.click(deepWorkIncrementButton);
+    fireEvent.click(monthlyPlanningIncrementButton);
     fireEvent.click(monthlyPlanningDecrementButton);
 
     expect(onIncrementHabitProgress).toHaveBeenCalledWith(1);
+    expect(onIncrementHabitProgress).toHaveBeenCalledWith(2);
     expect(onDecrementHabitProgress).toHaveBeenCalledWith(2);
   });
 
