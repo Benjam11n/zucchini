@@ -124,12 +124,6 @@ export function SettingsPage(props: SettingsPageProps) {
                 onChange={props.onChange}
                 settings={props.settings}
               />
-              <WindDownSettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                onOpenWindDown={props.onOpenWindDown}
-                settings={props.settings}
-              />
               <UpdateSettingsCard />
               <DataManagementSettingsCard />
             </m.div>
@@ -157,6 +151,12 @@ export function SettingsPage(props: SettingsPageProps) {
 
           <TabsContent value="habits">
             <m.div className="grid gap-6" variants={staggerItemVariants}>
+              <WindDownSettingsCard
+                fieldErrors={props.fieldErrors}
+                onChange={props.onChange}
+                onOpenWindDown={props.onOpenWindDown}
+                settings={props.settings}
+              />
               <CategorySettingsCard
                 fieldErrors={props.fieldErrors}
                 onChange={props.onChange}
