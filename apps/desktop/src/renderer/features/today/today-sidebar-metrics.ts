@@ -44,9 +44,7 @@ export function getTodayCompletion(
   };
 }
 
-export function getHistoryCompletion(
-  historyDay: HistoryDay
-): TodaySidebarCompletion {
+function getHistoryCompletion(historyDay: HistoryDay): TodaySidebarCompletion {
   const dailyHabits = historyDay.habits.filter(
     (habit) => habit.frequency === "daily"
   );

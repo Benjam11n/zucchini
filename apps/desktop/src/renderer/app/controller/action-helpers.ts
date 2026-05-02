@@ -26,18 +26,6 @@ import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
-import { parseDateKey } from "@/shared/utils/date";
-
-export function getCurrentYearHistoryLimit(todayDate: string): number {
-  const today = parseDateKey(todayDate);
-  const yearStart = new Date(today.getFullYear(), 0, 1);
-  const millisecondsPerDay = 24 * 60 * 60 * 1000;
-
-  return Math.min(
-    366,
-    Math.floor((today.getTime() - yearStart.getTime()) / millisecondsPerDay) + 1
-  );
-}
 
 export function reorderVisibleTodayHabits(
   nextManagedHabits: Habit[],
