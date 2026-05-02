@@ -5,7 +5,7 @@ import type {
   FocusSessionEntryKind,
 } from "@/shared/domain/focus-session";
 
-export interface FocusSessionEntryView {
+interface FocusSessionEntryView {
   completedAt: string;
   completedDate: string;
   durationSeconds: number;
@@ -24,7 +24,7 @@ interface FocusHistorySessionTimelineSegmentBase {
   widthPercent: number;
 }
 
-export interface FocusHistorySessionEntryTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
+interface FocusHistorySessionEntryTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
   completedAt: string;
   durationSeconds: number;
   entryKind: FocusSessionEntryKind;
@@ -33,19 +33,19 @@ export interface FocusHistorySessionEntryTimelineSegment extends FocusHistorySes
   startedAt: string;
 }
 
-export interface FocusHistorySessionBreakTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
+interface FocusHistorySessionBreakTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
   durationMinutes: number;
   id: string;
   kind: "break";
 }
 
-export interface FocusHistorySessionPauseTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
+interface FocusHistorySessionPauseTimelineSegment extends FocusHistorySessionTimelineSegmentBase {
   durationMinutes: number;
   id: string;
   kind: "pause";
 }
 
-export type FocusHistorySessionTimelineSegment =
+type FocusHistorySessionTimelineSegment =
   | FocusHistorySessionBreakTimelineSegment
   | FocusHistorySessionEntryTimelineSegment
   | FocusHistorySessionPauseTimelineSegment;

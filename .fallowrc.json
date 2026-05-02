@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.fallow.tools/config-schema.json",
+  "entry": [
+    "apps/desktop/scripts/**/*.{mjs,ts}",
+    "apps/desktop/tsdown.config.mts"
+  ],
+  "ignoreDependencies": ["shadcn"],
+  "overrides": [
+    {
+      "files": ["apps/desktop/src/renderer/globals.css"],
+      "rules": {
+        "unresolved-imports": "off"
+      }
+    }
+  ],
+  "resolve": {
+    "conditions": ["style"]
+  }
+}

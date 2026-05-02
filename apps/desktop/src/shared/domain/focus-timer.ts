@@ -5,8 +5,8 @@
  * and synced across renderer windows via IPC. Includes phase (focus/break),
  * status (idle/running/paused), remaining time, and cycle tracking.
  */
-export type FocusTimerPhase = "focus" | "break";
-export type FocusTimerStatus = "idle" | "running" | "paused";
+type FocusTimerPhase = "focus" | "break";
+type FocusTimerStatus = "idle" | "running" | "paused";
 export type FocusBreakVariant = "short" | "long";
 
 export interface PersistedCompletedBreakState {

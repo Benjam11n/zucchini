@@ -14,7 +14,7 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import type { AppSettings } from "@/shared/domain/settings";
 
-export interface SettingsStoreState {
+interface SettingsStoreState {
   settingsDraft: AppSettings | null;
   settingsFieldErrors: SettingsFieldErrors;
   settingsSaveErrorMessage: string | null;

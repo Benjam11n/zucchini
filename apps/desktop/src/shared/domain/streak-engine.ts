@@ -8,13 +8,13 @@ import type { DayStatusKind } from "./day-status";
  */
 import { awardedFreezeForStreak } from "./freeze";
 
-export interface RollingStreakState {
+interface RollingStreakState {
   currentStreak: number;
   bestStreak: number;
   availableFreezes: number;
 }
 
-export type SettledDayResult = RollingStreakState & {
+type SettledDayResult = RollingStreakState & {
   freezeUsed: boolean;
   allCompleted: boolean;
   completedAt: string | null;

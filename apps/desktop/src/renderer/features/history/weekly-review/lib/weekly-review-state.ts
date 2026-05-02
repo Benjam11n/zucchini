@@ -3,7 +3,7 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
-export interface WeeklyReviewStateSnapshot {
+interface WeeklyReviewStateSnapshot {
   overview: WeeklyReviewOverview;
   selectedWeeklyReview: WeeklyReview | null;
 }

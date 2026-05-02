@@ -9,7 +9,7 @@ import { create } from "zustand";
 
 import type { AppTab } from "@/renderer/app/app.types";
 import { getSystemTheme } from "@/renderer/shared/lib/theme";
-export interface UiStoreState {
+interface UiStoreState {
   systemTheme: "dark" | "light";
   tab: AppTab;
   setSystemTheme: (systemTheme: "dark" | "light") => void;

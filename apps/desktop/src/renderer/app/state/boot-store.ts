@@ -10,7 +10,7 @@ import { create } from "zustand";
 
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 
-export interface BootStoreState {
+interface BootStoreState {
   bootError: HabitsIpcError | null;
   bootPhase: "error" | "loading" | "ready";
   setBootError: (error: HabitsIpcError | null) => void;

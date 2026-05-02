@@ -5,7 +5,7 @@ const CHART_MIN_HEIGHT = 240;
 const CHART_ROW_HEIGHT = 36;
 const Y_AXIS_LABEL_LENGTH = 18;
 
-export interface WeeklyReviewHabitChartRow {
+interface WeeklyReviewHabitChartRow {
   category: WeeklyReviewHabitMetric["category"];
   color: string;
   completionRate: number;
@@ -16,7 +16,7 @@ export interface WeeklyReviewHabitChartRow {
   shortName: string;
 }
 
-export interface WeeklyReviewHabitChartState {
+interface WeeklyReviewHabitChartState {
   chartHeight: number;
   viewportHeight: number;
   visibleHabits: WeeklyReviewHabitChartRow[];

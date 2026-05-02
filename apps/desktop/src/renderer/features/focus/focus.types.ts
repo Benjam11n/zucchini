@@ -10,8 +10,6 @@ import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type {
   FocusBreakVariant,
-  FocusTimerPhase,
-  FocusTimerStatus,
   PersistedCompletedBreakState,
   PersistedFocusTimerState,
 } from "@/shared/domain/focus-timer";
@@ -24,8 +22,6 @@ import type { AppSettings } from "@/shared/domain/settings";
 export type FocusSessionsPhase = AsyncPhase;
 export type {
   FocusBreakVariant,
-  FocusTimerPhase,
-  FocusTimerStatus,
   PersistedCompletedBreakState,
   PersistedFocusTimerState,
 };

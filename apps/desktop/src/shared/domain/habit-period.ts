@@ -14,7 +14,7 @@ import {
 
 import type { HabitFrequency } from "./habit";
 
-export interface HabitPeriod {
+interface HabitPeriod {
   end: string;
   frequency: HabitFrequency;
   start: string;

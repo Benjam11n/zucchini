@@ -4,13 +4,13 @@ import { addDays, startOfWeek } from "@/shared/utils/date";
 
 type TodayMetricsState = Pick<TodayState, "date" | "habits">;
 
-export interface TodaySidebarCompletion {
+interface TodaySidebarCompletion {
   completed: number;
   percent: number;
   total: number;
 }
 
-export interface TodaySidebarWeekDay {
+interface TodaySidebarWeekDay {
   completed: number;
   date: string;
   label: string;
@@ -18,12 +18,12 @@ export interface TodaySidebarWeekDay {
   total: number;
 }
 
-export interface TodaySidebarConsistencyDay {
+interface TodaySidebarConsistencyDay {
   completed: boolean;
   date: string;
 }
 
-export interface TodaySidebarConsistencySummary {
+interface TodaySidebarConsistencySummary {
   completedDays: number;
   days: TodaySidebarConsistencyDay[];
   percent: number;

@@ -13,7 +13,7 @@ export const APP_UPDATER_CHANNELS = {
   stateChanged: "app-updater:stateChanged",
 } as const;
 
-export type AppUpdaterIpcErrorCode = "UPDATE_ERROR";
+type AppUpdaterIpcErrorCode = "UPDATE_ERROR";
 
 export interface SerializedAppUpdaterIpcError {
   code: AppUpdaterIpcErrorCode;
@@ -34,7 +34,7 @@ export class AppUpdaterIpcError extends Error {
   }
 }
 
-export type AppUpdateStatus =
+type AppUpdateStatus =
   | "idle"
   | "checking"
   | "available"

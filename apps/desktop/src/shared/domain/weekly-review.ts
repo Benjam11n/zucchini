@@ -6,7 +6,7 @@
  */
 import type { HabitCategory, HabitFrequency } from "./habit";
 
-export type WeeklyReviewDayStatus =
+type WeeklyReviewDayStatus =
   | "complete"
   | "empty"
   | "freeze"

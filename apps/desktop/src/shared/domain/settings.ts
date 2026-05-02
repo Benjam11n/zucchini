@@ -16,7 +16,7 @@ export interface PomodoroTimerSettings {
   focusShortBreakSeconds: number;
 }
 
-export interface FocusTimerShortcutSettings {
+interface FocusTimerShortcutSettings {
   resetFocusTimerShortcut: string;
   toggleFocusTimerShortcut: string;
 }

@@ -5,10 +5,7 @@ import type { HabitCommand, ResultForCommand } from "./habits-ipc-commands";
 import type { HabitQuery, ResultForQuery } from "./habits-ipc-queries";
 
 export type FocusTimerAction = "reset" | "toggle";
-export type FocusTimerActionSource =
-  | "global-shortcut"
-  | "main-window"
-  | "widget";
+type FocusTimerActionSource = "global-shortcut" | "main-window" | "widget";
 
 export interface FocusTimerActionRequest {
   action: FocusTimerAction;
@@ -27,13 +24,13 @@ export interface FocusTimerShortcutStatus {
   toggle: FocusTimerShortcutRegistration;
 }
 
-export type DesktopNotificationAvailability =
+type DesktopNotificationAvailability =
   | "available"
   | "blocked"
   | "unsupported"
   | "unknown";
 
-export type DesktopNotificationReason =
+type DesktopNotificationReason =
   | "app-busy"
   | "do-not-disturb"
   | "full-screen-app"

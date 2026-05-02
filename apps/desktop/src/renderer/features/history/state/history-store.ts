@@ -13,7 +13,7 @@ import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 
-export interface HistoryStoreState {
+interface HistoryStoreState {
   history: HistoryDay[];
   historyLoadError: HabitsIpcError | null;
   historyScope: "full" | "recent";

@@ -10,7 +10,7 @@ import { create } from "zustand";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 
-export interface TodayStoreState {
+interface TodayStoreState {
   managedHabits: Habit[];
   todayState: TodayState | null;
   setManagedHabits: (managedHabits: Habit[]) => void;

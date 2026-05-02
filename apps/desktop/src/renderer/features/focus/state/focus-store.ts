@@ -19,7 +19,7 @@ import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
-export interface FocusStoreState {
+interface FocusStoreState {
   focusSaveErrorMessage: string | null;
   focusSessions: FocusSession[];
   focusSessionsLoadError: HabitsIpcError | null;

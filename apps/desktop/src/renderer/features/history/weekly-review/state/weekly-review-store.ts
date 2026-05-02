@@ -19,7 +19,7 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
-export interface WeeklyReviewStoreState {
+interface WeeklyReviewStoreState {
   isWeeklyReviewSpotlightOpen: boolean;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: HabitsIpcError | null;

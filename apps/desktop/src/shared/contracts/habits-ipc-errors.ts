@@ -1,4 +1,4 @@
-export type HabitsIpcErrorCode =
+type HabitsIpcErrorCode =
   | "VALIDATION_ERROR"
   | "DATABASE_ERROR"
   | "INTERNAL_ERROR";

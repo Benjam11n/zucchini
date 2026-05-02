@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { memo } from "react";
 
 import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
@@ -19,10 +18,6 @@ vi.mock<typeof TodayHistoryCarouselModule>(
     TodayHistoryCarousel: () => <div>history carousel</div>,
   })
 );
-
-vi.mock(import("@/renderer/features/today/components/streak-card"), () => ({
-  StreakCard: memo(() => <div>streak card</div>),
-}));
 
 vi.mock<typeof LongerHabitChecklistModule>(
   import("@/renderer/features/today/components/longer-habit-checklist"),
