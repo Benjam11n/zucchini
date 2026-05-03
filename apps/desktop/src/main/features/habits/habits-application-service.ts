@@ -71,7 +71,6 @@ import type {
   HabitWithStatus,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
@@ -97,7 +96,6 @@ export interface HabitsService {
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
-  getTodayHabitStreaks(): Record<number, HabitStreak>;
   toggleSickDay(): TodayState;
   toggleHabit(habitId: number): HabitStatusPatch;
   incrementHabitProgress(habitId: number): HabitStatusPatch;
@@ -301,12 +299,6 @@ export class HabitsApplicationService implements HabitsService {
   getTodayState(): TodayState {
     return this.withSyncedRead("getTodayState", () =>
       this.buildCurrentTodayState()
-    );
-  }
-
-  getTodayHabitStreaks(): Record<number, HabitStreak> {
-    return this.withSyncedRead("getTodayHabitStreaks", () =>
-      this.todayReadModel.getHabitStreaks()
     );
   }
 

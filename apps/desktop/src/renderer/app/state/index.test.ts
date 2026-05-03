@@ -213,21 +213,21 @@ describe("app store actions", () => {
       await import("@/renderer/features/focus/state/focus-store");
     const { resetHistoryStore, useHistoryStore } =
       await import("@/renderer/features/history/state/history-store");
+    const { historyDayCollection, syncHistoryCollections } =
+      await import("@/renderer/features/history/state/history-collections");
     const { resetWeeklyReviewStore, useWeeklyReviewStore } =
       await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
     const { resetSettingsStore, useSettingsStore } =
       await import("@/renderer/features/settings/state/settings-store");
     const { resetTodayStore, useTodayStore } =
       await import("@/renderer/features/today/state/today-store");
-    const { syncTodayCollections, todayHabitCollection } =
-      await import("@/renderer/features/today/state/today-collections");
 
     resetBootStore();
     resetFocusStore();
     resetHistoryStore();
+    syncHistoryCollections(null);
     resetSettingsStore();
     resetTodayStore();
-    syncTodayCollections(null);
     resetUiStore();
     resetWeeklyReviewStore();
 
@@ -240,8 +240,8 @@ describe("app store actions", () => {
       getWeeklyReviewOverviewMock,
       habitsApi,
       stores: {
-        syncTodayCollections,
-        todayHabitCollection,
+        historyDayCollection,
+        syncHistoryCollections,
         useBootStore,
         useFocusStore,
         useHistoryStore,
@@ -332,6 +332,9 @@ describe("app store actions", () => {
     expect(
       stores.useHistoryStore.getState().history.map((day) => day.date)
     ).toStrictEqual(["2026-03-10", "2026-03-09"]);
+    expect(
+      [...stores.historyDayCollection.state.keys()].toSorted()
+    ).toStrictEqual(["2026-03-09", "2026-03-10"]);
   });
 
   it("does not reload history after a structural habit mutation once full history has been opened", async () => {
@@ -375,7 +378,6 @@ describe("app store actions", () => {
     stores.useTodayStore.setState({
       todayState: reorderedState,
     });
-    stores.syncTodayCollections(reorderedState);
 
     const nextHabits = [...reorderedState.habits].toReversed();
     const reorderPromise = actions.handleReorderHabits(nextHabits);
@@ -384,7 +386,9 @@ describe("app store actions", () => {
       nextHabits
     );
     expect(
-      [...stores.todayHabitCollection.state.values()].map((habit) => habit.id)
+      stores.useTodayStore
+        .getState()
+        .todayState?.habits.map((habit) => habit.id)
     ).toStrictEqual(nextHabits.map((habit) => habit.id));
 
     reorderRequest.resolve({
@@ -408,11 +412,12 @@ describe("app store actions", () => {
     stores.useTodayStore.setState({
       todayState: initialTodayState,
     });
-    stores.syncTodayCollections(initialTodayState);
 
     const togglePromise = actions.handleToggleHabit(1);
 
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeTruthy();
 
     pendingPatch.resolve({
       habit: {
@@ -432,10 +437,12 @@ describe("app store actions", () => {
 
     await togglePromise;
 
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeTruthy();
   });
 
-  it("bases rapid optimistic toggles on the live habit collection", async () => {
+  it("bases rapid optimistic toggles on the current today state", async () => {
     const { actions, habitsApi, stores } = await setup();
     const firstPatch = createDeferred<HabitStatusPatch>();
     const secondPatch = createDeferred<HabitStatusPatch>();
@@ -452,12 +459,15 @@ describe("app store actions", () => {
     stores.useTodayStore.setState({
       todayState: initialTodayState,
     });
-    stores.syncTodayCollections(initialTodayState);
     const firstToggle = actions.handleToggleHabit(1);
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeTruthy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeTruthy();
 
     const secondToggle = actions.handleToggleHabit(1);
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeFalsy();
 
     firstPatch.resolve({
       habit: {
@@ -480,7 +490,9 @@ describe("app store actions", () => {
 
     await Promise.all([firstToggle, secondToggle]);
 
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeFalsy();
   });
 
   it("does not let older habit status responses overwrite newer clicks", async () => {
@@ -500,7 +512,6 @@ describe("app store actions", () => {
     stores.useTodayStore.setState({
       todayState: initialTodayState,
     });
-    stores.syncTodayCollections(initialTodayState);
     const firstToggle = actions.handleToggleHabit(1);
     const secondToggle = actions.handleToggleHabit(1);
 
@@ -526,7 +537,9 @@ describe("app store actions", () => {
     });
     await firstToggle;
 
-    expect(stores.todayHabitCollection.state.get(1)?.completed).toBeFalsy();
+    expect(
+      stores.useTodayStore.getState().todayState?.habits[0]?.completed
+    ).toBeFalsy();
   });
 
   it("restores the previous today state when an optimistic toggle fails", async () => {

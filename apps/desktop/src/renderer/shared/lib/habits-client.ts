@@ -103,10 +103,6 @@ export const habitsClient = {
             type: "history.summary",
           }
     ),
-  getTodayHabitStreaks: () =>
-    query({
-      type: "today.habitStreaks",
-    }),
   getTodayState: () =>
     query({
       type: "today.get",

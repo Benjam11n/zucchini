@@ -528,7 +528,6 @@ export const habitQuerySchema = z.discriminatedUnion("type", [
     })
     .strict(),
   z.object({ type: z.literal("today.get") }).strict(),
-  z.object({ type: z.literal("today.habitStreaks") }).strict(),
   z
     .object({
       payload: z.object({ weekStart: dateKeySchema }).strict(),

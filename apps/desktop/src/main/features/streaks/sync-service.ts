@@ -10,7 +10,150 @@ import type { Clock } from "@/main/app/clock";
 import { createRollingStreakState } from "@/main/features/today/state-builder";
 import type { AppRepository } from "@/main/infra/persistence/app-repository";
 import { isDailyHabit } from "@/shared/domain/habit";
+import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
+
+function createEmptyHabitStreakState(
+  habitId: number
+): PersistedHabitStreakState {
+  return {
+    bestStreak: 0,
+    currentStreak: 0,
+    habitId,
+    lastEvaluatedDate: null,
+  };
+}
+
+function getNextHabitStreakState({
+  cursor,
+  dayStatus,
+  freezeUsed,
+  habit,
+  state,
+}: {
+  cursor: string;
+  dayStatus: "sick" | null;
+  freezeUsed: boolean;
+  habit: HabitWithStatus | null;
+  state: PersistedHabitStreakState;
+}): PersistedHabitStreakState {
+  if (dayStatus === "sick" || freezeUsed || !habit) {
+    return {
+      ...state,
+      lastEvaluatedDate: cursor,
+    };
+  }
+
+  if (!habit.completed) {
+    return {
+      ...state,
+      currentStreak: 0,
+      lastEvaluatedDate: cursor,
+    };
+  }
+
+  const currentStreak = state.currentStreak + 1;
+
+  return {
+    ...state,
+    bestStreak: Math.max(state.bestStreak, currentStreak),
+    currentStreak,
+    lastEvaluatedDate: cursor,
+  };
+}
+
+function syncHabitStreakStates(
+  repository: AppRepository,
+  clock: Clock,
+  firstTrackedDate: string,
+  yesterday: string
+): void {
+  const dailyHabits = repository.getHabits().filter(isDailyHabit);
+  const habitIds = dailyHabits.map((habit) => habit.id);
+  if (habitIds.length === 0) {
+    return;
+  }
+
+  const persistedStates = repository.getPersistedHabitStreakStates(habitIds);
+  const shouldBackfillMissingStates = persistedStates.length === 0;
+  const stateByHabitId = new Map(
+    persistedStates.map((state) => [state.habitId, state])
+  );
+  let addedMissingState = false;
+
+  for (const habitId of habitIds) {
+    if (stateByHabitId.has(habitId)) {
+      continue;
+    }
+
+    stateByHabitId.set(habitId, {
+      ...createEmptyHabitStreakState(habitId),
+      lastEvaluatedDate: shouldBackfillMissingStates ? null : yesterday,
+    });
+    addedMissingState = true;
+  }
+
+  const firstUnevaluatedDates = dailyHabits
+    .map((habit) => {
+      const state = stateByHabitId.get(habit.id);
+      return state?.lastEvaluatedDate
+        ? clock.addDays(state.lastEvaluatedDate, 1)
+        : firstTrackedDate;
+    })
+    .filter((date) => clock.compareDateKeys(date, yesterday) <= 0);
+
+  const [firstUnevaluatedDate] = firstUnevaluatedDates.toSorted((left, right) =>
+    left.localeCompare(right)
+  );
+  if (!firstUnevaluatedDate) {
+    if (addedMissingState) {
+      repository.savePersistedHabitStreakStates([...stateByHabitId.values()]);
+    }
+    return;
+  }
+
+  let cursor = firstUnevaluatedDate;
+
+  while (clock.compareDateKeys(cursor, yesterday) <= 0) {
+    repository.ensureStatusRowsForDate(cursor);
+    const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
+    const [summary] = repository.getDailySummariesInRange(cursor, cursor);
+    const habitById = new Map(
+      repository
+        .getHabitsWithStatus(cursor)
+        .filter(isDailyHabit)
+        .map((habit) => [habit.id, habit])
+    );
+
+    for (const habit of dailyHabits) {
+      const currentState =
+        stateByHabitId.get(habit.id) ?? createEmptyHabitStreakState(habit.id);
+      const nextDate = currentState.lastEvaluatedDate
+        ? clock.addDays(currentState.lastEvaluatedDate, 1)
+        : firstTrackedDate;
+
+      if (clock.compareDateKeys(nextDate, cursor) > 0) {
+        continue;
+      }
+
+      stateByHabitId.set(
+        habit.id,
+        getNextHabitStreakState({
+          cursor,
+          dayStatus,
+          freezeUsed: summary?.freezeUsed ?? false,
+          habit: habitById.get(habit.id) ?? null,
+          state: currentState,
+        })
+      );
+    }
+
+    cursor = clock.addDays(cursor, 1);
+  }
+
+  repository.savePersistedHabitStreakStates([...stateByHabitId.values()]);
+}
 
 export function syncRollingState(
   repository: AppRepository,
@@ -32,6 +175,7 @@ export function syncRollingState(
     : firstTrackedDate;
 
   if (clock.compareDateKeys(cursor, yesterday) > 0) {
+    syncHabitStreakStates(repository, clock, firstTrackedDate, yesterday);
     return;
   }
 
@@ -79,4 +223,5 @@ export function syncRollingState(
   }
 
   repository.savePersistedStreakState(rollingState);
+  syncHabitStreakStates(repository, clock, firstTrackedDate, yesterday);
 }

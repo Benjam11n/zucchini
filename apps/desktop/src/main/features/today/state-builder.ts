@@ -11,8 +11,7 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
-import { calculateHabitStreaks } from "@/shared/domain/habit-streak";
-import type { HabitStreak, HabitStreakDay } from "@/shared/domain/habit-streak";
+import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
@@ -89,31 +88,32 @@ export function buildHistoricalHabitsByDate(
   return habitsByDate;
 }
 
-function buildHistoricalHabitDays(
-  summaries: DailySummary[],
-  habitsByDate: Map<string, HabitWithStatus[]>
-): HabitStreakDay[] {
-  if (summaries.length === 0) {
-    return [];
-  }
-
-  const sortedSummaries = [...summaries].toSorted((left, right) =>
-    left.date.localeCompare(right.date)
+function buildTodayHabitStreaksFromHabits(
+  repository: TodayReadModelRepositoryPort,
+  habits: HabitWithStatus[]
+): Record<number, HabitStreak> {
+  const dailyHabits = habits.filter(isDailyHabit);
+  const persistedStateByHabitId = new Map(
+    repository
+      .getPersistedHabitStreakStates(dailyHabits.map((habit) => habit.id))
+      .map((state) => [state.habitId, state])
   );
-  const firstDate = sortedSummaries[0]?.date;
-  const lastDate = sortedSummaries.at(-1)?.date;
+  const habitStreaks: Record<number, HabitStreak> = {};
 
-  if (!firstDate || !lastDate) {
-    return [];
+  for (const habit of dailyHabits) {
+    const persistedState = persistedStateByHabitId.get(habit.id);
+    const settledCurrentStreak = persistedState?.currentStreak ?? 0;
+    const currentStreak = habit.completed
+      ? settledCurrentStreak + 1
+      : settledCurrentStreak;
+
+    habitStreaks[habit.id] = {
+      bestStreak: Math.max(persistedState?.bestStreak ?? 0, currentStreak),
+      currentStreak,
+    };
   }
 
-  return sortedSummaries.map((summary) => ({
-    date: summary.date,
-    dayStatus: summary.dayStatus,
-    freezeUsed: summary.freezeUsed,
-    habits: habitsByDate.get(summary.date) ?? [],
-    isOpenToday: false,
-  }));
+  return habitStreaks;
 }
 
 export function buildTodayState(
@@ -144,6 +144,7 @@ export function buildTodayState(
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
+    habitStreaks: buildTodayHabitStreaksFromHabits(repository, habits),
     habits,
     settings: repository.getSettings(clock.timezone()),
     streak: {
@@ -164,44 +165,6 @@ export function buildTodayState(
             totalCount: windDownActions.length,
           },
   };
-}
-
-export function buildTodayHabitStreaks(
-  repository: TodayReadModelRepositoryPort,
-  clock: Clock
-): Record<number, HabitStreak> {
-  const today = clock.todayKey();
-  repository.ensureStatusRowsForDate(today);
-
-  const habits = repository.getHabitsWithStatus(today);
-  const currentDayStatus = repository.getDayStatus(today);
-  const settledSummaries = repository.getSettledHistory(undefined, {
-    uncapped: true,
-  });
-  const oldestStreakDate = settledSummaries.at(-1)?.date;
-  const newestStreakDate = settledSummaries[0]?.date;
-  const historicalHabitsByDate =
-    oldestStreakDate && newestStreakDate
-      ? buildHistoricalHabitsByDate(
-          settledSummaries,
-          repository.getHistoricalHabitPeriodStatusesOverlappingRange(
-            oldestStreakDate,
-            newestStreakDate
-          )
-        )
-      : new Map<string, HabitWithStatus[]>();
-  const habitStreakDays: HabitStreakDay[] = [
-    ...buildHistoricalHabitDays(settledSummaries, historicalHabitsByDate),
-    {
-      date: today,
-      dayStatus: currentDayStatus?.kind ?? null,
-      freezeUsed: false,
-      habits,
-      isOpenToday: true,
-    },
-  ];
-
-  return calculateHabitStreaks(habits, habitStreakDays);
 }
 
 export function buildTodayPreviewSummary(

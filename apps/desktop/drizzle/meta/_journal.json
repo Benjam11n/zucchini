@@ -106,6 +106,13 @@
       "when": 1776600000000,
       "tag": "0014_focus_session_ids_not_null",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1776700000000,
+      "tag": "0015_habit_streak_state",
+      "breakpoints": true
     }
   ]
 }

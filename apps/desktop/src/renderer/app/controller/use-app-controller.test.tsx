@@ -422,7 +422,7 @@ describe("use app controller", () => {
     });
   });
 
-  it("opens the weekly review spotlight on Monday and routes through the open action", async () => {
+  it("loads the weekly review from History before opening the Monday spotlight", async () => {
     cleanup();
     (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
     document.documentElement.className = "";
@@ -439,7 +439,13 @@ describe("use app controller", () => {
     });
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(3500);
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(habits.getWeeklyReviewOverview).not.toHaveBeenCalled();
+
+    act(() => {
+      hook.result.current.actions.handleTabChange("history");
     });
 
     await waitFor(() => {

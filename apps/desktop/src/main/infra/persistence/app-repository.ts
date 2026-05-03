@@ -28,6 +28,7 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import type {
@@ -143,6 +144,12 @@ export interface HistoryRepositoryPort {
 export interface StreakRepositoryPort {
   getPersistedStreakState(): StreakState;
   savePersistedStreakState(state: StreakState): void;
+  getPersistedHabitStreakStates(
+    habitIds: readonly number[]
+  ): PersistedHabitStreakState[];
+  savePersistedHabitStreakStates(
+    states: readonly PersistedHabitStreakState[]
+  ): void;
 }
 
 export interface SettingsRepositoryPort {
@@ -195,6 +202,7 @@ export type TodayReadModelRepositoryPort = Pick<
   | "getHabitWithStatus"
   | "getHabitsWithStatus"
   | "getHistoricalHabitPeriodStatusesOverlappingRange"
+  | "getPersistedHabitStreakStates"
   | "getPersistedStreakState"
   | "getSettings"
   | "getSettledHistory"

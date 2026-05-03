@@ -199,9 +199,6 @@ export function readHabitServiceQuery(
     case "today.get": {
       return service.getTodayState();
     }
-    case "today.habitStreaks": {
-      return service.getTodayHabitStreaks();
-    }
     case "weeklyReview.get": {
       return service.getWeeklyReview(query.payload.weekStart);
     }

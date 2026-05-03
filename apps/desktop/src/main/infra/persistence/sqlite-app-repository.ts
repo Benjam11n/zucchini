@@ -30,6 +30,7 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import type {
@@ -259,6 +260,18 @@ export class SqliteAppRepository implements AppRepository {
 
   savePersistedStreakState(state: StreakState): void {
     this.streakRepository.savePersistedStreakState(state);
+  }
+
+  getPersistedHabitStreakStates(
+    habitIds: readonly number[]
+  ): PersistedHabitStreakState[] {
+    return this.streakRepository.getPersistedHabitStreakStates(habitIds);
+  }
+
+  savePersistedHabitStreakStates(
+    states: readonly PersistedHabitStreakState[]
+  ): void {
+    this.streakRepository.savePersistedHabitStreakStates(states);
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {

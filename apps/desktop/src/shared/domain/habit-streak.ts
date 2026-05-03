@@ -6,6 +6,11 @@ export interface HabitStreak {
   currentStreak: number;
 }
 
+export interface PersistedHabitStreakState extends HabitStreak {
+  habitId: number;
+  lastEvaluatedDate: string | null;
+}
+
 export interface HabitStreakDay {
   date: string;
   dayStatus: "sick" | null;

@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 
-import { streakState } from "@/main/infra/db/schema";
+import { habitStreakState, streakState } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { StreakState } from "@/shared/domain/streak";
 
-import { mapStreakState } from "./mappers";
+import { mapHabitStreakState, mapStreakState } from "./mappers";
 
 export class SqliteStreakRepository {
   private readonly client: SqliteDatabaseClient;
@@ -62,6 +63,55 @@ export class SqliteStreakRepository {
           lastEvaluatedDate: state.lastEvaluatedDate,
         })
         .where(eq(streakState.id, 1))
+        .run();
+    });
+  }
+
+  getPersistedHabitStreakStates(
+    habitIds: readonly number[]
+  ): PersistedHabitStreakState[] {
+    if (habitIds.length === 0) {
+      return [];
+    }
+
+    return this.client.run("getPersistedHabitStreakStates", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(habitStreakState)
+        .where(inArray(habitStreakState.habitId, [...habitIds]))
+        .all()
+        .map((row) => mapHabitStreakState(row))
+    );
+  }
+
+  savePersistedHabitStreakStates(
+    states: readonly PersistedHabitStreakState[]
+  ): void {
+    if (states.length === 0) {
+      return;
+    }
+
+    this.client.run("savePersistedHabitStreakStates", () => {
+      this.client
+        .getDrizzle()
+        .insert(habitStreakState)
+        .values(
+          states.map((state) => ({
+            bestStreak: state.bestStreak,
+            currentStreak: state.currentStreak,
+            habitId: state.habitId,
+            lastEvaluatedDate: state.lastEvaluatedDate,
+          }))
+        )
+        .onConflictDoUpdate({
+          set: {
+            bestStreak: sql.raw("excluded.best_streak"),
+            currentStreak: sql.raw("excluded.current_streak"),
+            lastEvaluatedDate: sql.raw("excluded.last_evaluated_date"),
+          },
+          target: habitStreakState.habitId,
+        })
         .run();
     });
   }

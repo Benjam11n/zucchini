@@ -1,7 +1,6 @@
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { Habit } from "@/shared/domain/habit";
-import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type {
   WeeklyReview,
@@ -30,7 +29,6 @@ export type HabitQuery =
       type: "history.summary";
     }
   | { type: "today.get" }
-  | { type: "today.habitStreaks" }
   | { payload: { weekStart: string }; type: "weeklyReview.get" }
   | { type: "weeklyReview.overview" };
 
@@ -40,7 +38,6 @@ export type HabitQueryResult =
   | HistoryDay[]
   | HistoryDay
   | HistorySummaryDay[]
-  | Record<number, HabitStreak>
   | PersistedFocusTimerState
   | TodayState
   | WeeklyReview
@@ -55,7 +52,6 @@ interface HabitQueryResultByType {
   "history.getDay": HistoryDay;
   "history.summary": HistorySummaryDay[];
   "today.get": TodayState;
-  "today.habitStreaks": Record<number, HabitStreak>;
   "weeklyReview.get": WeeklyReview;
   "weeklyReview.overview": WeeklyReviewOverview;
 }

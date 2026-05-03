@@ -30,6 +30,7 @@ import type {
 } from "@/shared/domain/habit";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -74,6 +75,7 @@ class FakeRepository implements AppRepository {
     currentStreak: 3,
     lastEvaluatedDate: "2026-03-05",
   };
+  habitStreakStates = new Map<number, PersistedHabitStreakState>();
   settings: AppSettings = {
     ...createDefaultAppSettings("Asia/Singapore"),
     launchAtLogin: false,
@@ -388,6 +390,23 @@ class FakeRepository implements AppRepository {
 
   savePersistedStreakState(state: StreakState): void {
     this.streak = { ...state };
+  }
+
+  getPersistedHabitStreakStates(
+    habitIds: readonly number[]
+  ): PersistedHabitStreakState[] {
+    return habitIds.flatMap((habitId) => {
+      const state = this.habitStreakStates.get(habitId);
+      return state ? [{ ...state }] : [];
+    });
+  }
+
+  savePersistedHabitStreakStates(
+    states: readonly PersistedHabitStreakState[]
+  ): void {
+    for (const state of states) {
+      this.habitStreakStates.set(state.habitId, { ...state });
+    }
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
@@ -769,6 +788,12 @@ class FakeRepository implements AppRepository {
 describe("habitService rollover", () => {
   it("uses a freeze for the first missed closed day and resets on the next missed day", () => {
     const repository = new FakeRepository();
+    repository.habitStreakStates.set(1, {
+      bestStreak: 5,
+      currentStreak: 3,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-05",
+    });
     repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
     repository.setStatusForDate("2026-03-07", new Map([[1, false]]));
 
@@ -801,6 +826,12 @@ describe("habitService rollover", () => {
       availableFreezes: 0,
       bestStreak: 5,
       currentStreak: 0,
+      lastEvaluatedDate: "2026-03-07",
+    });
+    expect(repository.habitStreakStates.get(1)).toStrictEqual({
+      bestStreak: 5,
+      currentStreak: 0,
+      habitId: 1,
       lastEvaluatedDate: "2026-03-07",
     });
   });

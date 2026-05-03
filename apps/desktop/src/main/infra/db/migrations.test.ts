@@ -40,11 +40,18 @@ describeWithSqlite("runMigrations", () => {
       )
       .pluck()
       .get();
+    const habitStreakStateTableExists = sqlite
+      .prepare(
+        "select 1 from sqlite_master where type = 'table' and name = 'habit_streak_state'"
+      )
+      .pluck()
+      .get();
     const migrationsCount = sqlite
       .prepare(`select count(*) as count from "__drizzle_migrations"`)
       .get() as { count: number };
 
     expect(settingsTableExists).toBe(1);
+    expect(habitStreakStateTableExists).toBe(1);
     expect(migrationsCount.count).toBeGreaterThan(0);
 
     client.close();

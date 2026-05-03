@@ -2,8 +2,8 @@
  * App lifecycle React effects.
  *
  * Manages side effects that run during the app's lifecycle: initial boot,
- * weekly review overview loading, spotlight triggers, system theme syncing,
- * and the midnight rollover that refreshes data when the calendar day changes.
+ * lightweight history loading, spotlight triggers, system theme syncing, and
+ * the midnight rollover that refreshes data when the calendar day changes.
  */
 import { useEffect } from "react";
 
@@ -30,8 +30,6 @@ export function useAppLifecycleEffects({
   bootApp,
   bootPhase,
   loadHistorySummary,
-  loadTodayHabitStreaks,
-  loadWeeklyReviewOverview,
   openWindDown,
   openWeeklyReviewSpotlight,
   refreshForNewDay,
@@ -45,12 +43,6 @@ export function useAppLifecycleEffects({
   bootApp: ReturnType<typeof createAppActions>["bootApp"];
   bootPhase: AppControllerState["bootPhase"];
   loadHistorySummary: ReturnType<typeof createAppActions>["loadHistorySummary"];
-  loadTodayHabitStreaks: ReturnType<
-    typeof createAppActions
-  >["loadTodayHabitStreaks"];
-  loadWeeklyReviewOverview: ReturnType<
-    typeof createAppActions
-  >["loadWeeklyReviewOverview"];
   openWindDown: ReturnType<typeof createAppActions>["handleOpenWindDown"];
   openWeeklyReviewSpotlight: ReturnType<
     typeof createAppActions
@@ -85,7 +77,7 @@ export function useAppLifecycleEffects({
   }, [openWindDown]);
 
   useEffect(() => {
-    if (bootPhase !== "ready" || weeklyReviewPhase !== "idle") {
+    if (bootPhase !== "ready") {
       return;
     }
 
@@ -93,26 +85,10 @@ export function useAppLifecycleEffects({
       void loadHistorySummary();
     }, 1800);
 
-    const cancelHabitStreaks = scheduleDeferredTask(() => {
-      void loadTodayHabitStreaks();
-    }, 2400);
-
-    const cancelWeeklyReview = scheduleDeferredTask(() => {
-      void loadWeeklyReviewOverview();
-    }, 3500);
-
     return () => {
       cancelHistorySummary();
-      cancelHabitStreaks();
-      cancelWeeklyReview();
     };
-  }, [
-    bootPhase,
-    loadHistorySummary,
-    loadTodayHabitStreaks,
-    loadWeeklyReviewOverview,
-    weeklyReviewPhase,
-  ]);
+  }, [bootPhase, loadHistorySummary]);
 
   useEffect(() => {
     const latestReview = weeklyReviewOverview?.latestReview ?? null;

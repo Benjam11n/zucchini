@@ -114,10 +114,10 @@ describe("today page", () => {
     expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
   });
 
-  it("reserves habit streak space while streak data loads", () => {
+  it("does not show habit streaks when streak data is absent", () => {
     renderTodayPage();
 
-    expect(screen.getByLabelText("Loading habit streak")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Current streak/u)).toBeNull();
   });
 
   it("shows loaded habit streaks without keeping the loading placeholder", () => {
@@ -132,7 +132,6 @@ describe("today page", () => {
     });
 
     expect(screen.getByLabelText("Current streak 2 days")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Loading habit streak")).toBeNull();
   });
 
   it("removes the placeholder when loaded streak data has no current streak", () => {
@@ -146,7 +145,6 @@ describe("today page", () => {
       },
     });
 
-    expect(screen.queryByLabelText("Loading habit streak")).toBeNull();
     expect(screen.queryByLabelText(/Current streak/u)).toBeNull();
   });
 });

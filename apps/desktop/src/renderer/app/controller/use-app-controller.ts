@@ -183,8 +183,6 @@ export function useAppController() {
     bootApp: actions.bootApp,
     bootPhase: coreState.bootPhase,
     loadHistorySummary: actions.loadHistorySummary,
-    loadTodayHabitStreaks: actions.loadTodayHabitStreaks,
-    loadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
     openWindDown: actions.handleOpenWindDown,
     refreshForNewDay: actions.refreshForNewDay,

@@ -11,10 +11,6 @@ import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
-import {
-  getTodayHabitFromCollection,
-  syncTodayCollections,
-} from "@/renderer/features/today/state/today-collections";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
@@ -116,7 +112,9 @@ function createOptimisticHabitStatusPatch(
   habitId: number,
   kind: HabitStatusMutationKind
 ): HabitStatusPatch | null {
-  const habit = getTodayHabitFromCollection(habitId);
+  const habit = useTodayStore
+    .getState()
+    .todayState?.habits.find((candidate) => candidate.id === habitId);
 
   if (!habit) {
     return null;
@@ -176,22 +174,6 @@ export function createTodayActions({
     await refreshWeeklyReviewOverview();
   }
 
-  async function loadTodayHabitStreaks() {
-    const habitStreaks = await habitsClient.getTodayHabitStreaks();
-    const { todayState } = useTodayStore.getState();
-
-    if (!todayState) {
-      return;
-    }
-
-    useTodayStore.setState({
-      todayState: {
-        ...todayState,
-        habitStreaks,
-      },
-    });
-  }
-
   async function applyTodayMutation(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
     const managedHabits = await habitsClient.getHabits();
@@ -209,7 +191,10 @@ export function createTodayActions({
     mutationKind: HabitStatusMutationKind;
     run: () => Promise<HabitStatusPatch>;
   }) {
-    const previousHabit = getTodayHabitFromCollection(habitId);
+    const previousTodayState = useTodayStore.getState().todayState;
+    const previousHabit = previousTodayState?.habits.find(
+      (habit) => habit.id === habitId
+    );
     const mutationVersion = startHabitStatusMutation(habitId);
     const optimisticPatch = createOptimisticHabitStatusPatch(
       habitId,
@@ -235,19 +220,12 @@ export function createTodayActions({
     } catch (error) {
       if (
         previousHabit &&
+        previousTodayState &&
         isLatestHabitStatusMutation(habitId, mutationVersion)
       ) {
-        applyHabitStatusPatch({
-          habit: previousHabit,
-          habitStreaksStale: true,
+        useTodayStore.setState({
+          todayState: previousTodayState,
         });
-        if (previousHabit.frequency === "daily") {
-          applyOptimisticHabitStreakPatch({
-            habitId,
-            nextCompleted: previousHabit.completed,
-            previousCompleted: !previousHabit.completed,
-          });
-        }
       }
       throw error;
     }
@@ -316,7 +294,6 @@ export function createTodayActions({
         managedHabits: nextHabits,
         todayState: reorderVisibleTodayHabits(nextHabits, previousTodayState),
       });
-      syncTodayCollections(useTodayStore.getState().todayState);
 
       try {
         await applyTodayMutation(
@@ -327,7 +304,6 @@ export function createTodayActions({
           managedHabits: previousManagedHabits,
           todayState: previousTodayState,
         });
-        syncTodayCollections(previousTodayState);
         throw error;
       }
     },
@@ -343,7 +319,7 @@ export function createTodayActions({
       }
 
       if (nextTab === "history") {
-        void refreshWeeklyReviewOverview();
+        void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
       }
     },
     handleOpenWindDown() {
@@ -407,7 +383,6 @@ export function createTodayActions({
       );
     },
     refreshForNewDay,
-    loadTodayHabitStreaks,
     reloadAll,
     setSystemTheme(systemTheme: "dark" | "light") {
       useUiStore.getState().setSystemTheme(systemTheme);

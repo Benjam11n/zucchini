@@ -7,6 +7,7 @@
  */
 import { create } from "zustand";
 
+import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
@@ -69,6 +70,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         });
       },
       onSuccess: (history) => {
+        syncHistoryCollections(history);
         set({
           history,
           historyLoadError: null,
@@ -108,9 +110,13 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       },
     });
   },
-  setHistory: (history) => set({ history }),
+  setHistory: (history) => {
+    syncHistoryCollections(history);
+    set({ history });
+  },
 }));
 
 export function resetHistoryStore() {
+  syncHistoryCollections(null);
   useHistoryStore.setState(getInitialHistoryState());
 }

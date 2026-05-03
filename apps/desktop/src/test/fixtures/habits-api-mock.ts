@@ -30,7 +30,6 @@ export type MockHabitsApi = Record<keyof HabitsApi, MockFn> &
     | "getHistory"
     | "getHistoryDay"
     | "getHistorySummary"
-    | "getTodayHabitStreaks"
     | "getTodayState"
     | "getWeeklyReview"
     | "getWeeklyReviewOverview"
@@ -182,7 +181,6 @@ function createQueryHandlers(mock: MockHabitsApiInternals) {
         ? getMock(mock, "getHistorySummary")(query.payload.limit)
         : getMock(mock, "getHistorySummary")(),
     "today.get": () => getMock(mock, "getTodayState")(),
-    "today.habitStreaks": () => getMock(mock, "getTodayHabitStreaks")(),
     "weeklyReview.get": (
       query: Extract<HabitQuery, { type: "weeklyReview.get" }>
     ) => getMock(mock, "getWeeklyReview")(query.payload.weekStart),
@@ -230,7 +228,6 @@ function createMockHabitsApi(
     getHistory: vi.fn().mockResolvedValue([]),
     getHistoryDay: vi.fn().mockResolvedValue(null),
     getHistorySummary: vi.fn().mockResolvedValue([]),
-    getTodayHabitStreaks: vi.fn().mockResolvedValue({}),
     getTodayState: vi.fn().mockResolvedValue(null),
     getWeeklyReview: vi.fn().mockResolvedValue(null),
     getWeeklyReviewOverview: vi.fn().mockResolvedValue(null),

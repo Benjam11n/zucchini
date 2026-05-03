@@ -5,7 +5,6 @@
  * recent history, streak summary, daily checklist, longer-cycle habits, and
  * celebration toasts.
  */
-import { useLiveQuery } from "@tanstack/react-db";
 import { ListChecks, Plus } from "lucide-react";
 import { memo, useMemo } from "react";
 
@@ -16,7 +15,6 @@ import { TodayHabitManagerDialog } from "@/renderer/features/today/components/to
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
-import { todayHabitCollection } from "@/renderer/features/today/state/today-collections";
 import { Button } from "@/renderer/shared/components/ui/button";
 import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
 import type { TodayState } from "@/shared/contracts/today-state";
@@ -52,18 +50,12 @@ function TodayPageComponent({
   onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: TodayPageProps) {
-  const { data: liveHabits } = useLiveQuery((query) =>
-    query
-      .from({ habit: todayHabitCollection })
-      .orderBy(({ habit }) => habit.sortOrder, "asc")
-  );
-  const visibleHabits = liveHabits.length > 0 ? liveHabits : state.habits;
   const { completedCount, dailyHabits, periodicHabits } = useMemo(() => {
     const nextDailyHabits: HabitWithStatus[] = [];
     const nextPeriodicHabits: HabitWithStatus[] = [];
     let nextCompletedCount = 0;
 
-    for (const habit of visibleHabits) {
+    for (const habit of state.habits) {
       if (isDailyHabit(habit)) {
         nextDailyHabits.push(habit);
         if (habit.completed) {
@@ -80,7 +72,7 @@ function TodayPageComponent({
       dailyHabits: nextDailyHabits,
       periodicHabits: nextPeriodicHabits,
     };
-  }, [visibleHabits]);
+  }, [state.habits]);
   useTodayPopups({ completedCount, dailyHabits, state });
 
   const celebration = useTodayCelebration({

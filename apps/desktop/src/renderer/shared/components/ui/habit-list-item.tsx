@@ -21,7 +21,6 @@ interface HabitListItemStreak {
 
 interface HabitListItemProps {
   habit: HabitWithStatus;
-  isStreakLoading?: boolean;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
   streak?: HabitListItemStreak;
@@ -32,10 +31,8 @@ const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
 const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };
 
 function HabitStreakLabel({
-  isLoading,
   streak,
 }: {
-  isLoading?: boolean | undefined;
   streak?: HabitListItemStreak | undefined;
 }) {
   if (streak && streak.currentStreak > 0) {
@@ -50,21 +47,11 @@ function HabitStreakLabel({
     );
   }
 
-  if (isLoading) {
-    return (
-      <span
-        aria-label="Loading habit streak"
-        className="h-4 w-11 shrink-0 animate-pulse rounded-full bg-muted"
-      />
-    );
-  }
-
   return null;
 }
 
 function HabitListItemComponent({
   habit,
-  isStreakLoading,
   onToggle,
   showCategory,
   streak,
@@ -82,7 +69,6 @@ function HabitListItemComponent({
       animate={HABIT_ITEM_ANIMATE}
       htmlFor={`habit-${habit.id}`}
       initial={HABIT_ITEM_INITIAL}
-      layout
       className={cn(
         "group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
         habit.completed ? "text-muted-foreground/50" : "hover:bg-muted/25"
@@ -124,7 +110,7 @@ function HabitListItemComponent({
           </span>
         )}
       </div>
-      <HabitStreakLabel isLoading={isStreakLoading} streak={streak} />
+      <HabitStreakLabel streak={streak} />
       {trailingActions ? (
         <div className="z-10 flex shrink-0 items-center gap-1">
           {trailingActions}

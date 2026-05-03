@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 
 import type * as HistoryCalendarCardModule from "@/renderer/features/history/components/history-calendar-card";
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
+import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import type * as GitHubCalendarModule from "@/renderer/shared/components/github-calendar";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
@@ -197,6 +198,10 @@ function createWeeklyReviewOverview(): WeeklyReviewOverview {
 }
 
 describe("history page", () => {
+  beforeEach(() => {
+    syncHistoryCollections(null);
+  });
+
   it("shows summary badges for completion, freeze, and missed history", () => {
     const history = [
       createHistoryDay("2026-03-10", { allCompleted: true }),

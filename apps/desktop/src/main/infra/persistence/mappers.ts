@@ -15,6 +15,7 @@ import {
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
+import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { isThemeMode } from "@/shared/domain/settings";
 import type { ThemeMode } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -27,6 +28,7 @@ import type {
   HabitPeriodStatusRow,
   HabitPeriodStatusSnapshot,
   HabitRow,
+  HabitStreakStateRow,
   StreakStateRow,
   WindDownActionRow,
 } from "./types";
@@ -131,6 +133,17 @@ export function mapStreakState(row: StreakStateRow): StreakState {
     availableFreezes: row.availableFreezes,
     bestStreak: row.bestStreak,
     currentStreak: row.currentStreak,
+    lastEvaluatedDate: row.lastEvaluatedDate,
+  };
+}
+
+export function mapHabitStreakState(
+  row: HabitStreakStateRow
+): PersistedHabitStreakState {
+  return {
+    bestStreak: row.bestStreak,
+    currentStreak: row.currentStreak,
+    habitId: row.habitId,
     lastEvaluatedDate: row.lastEvaluatedDate,
   };
 }

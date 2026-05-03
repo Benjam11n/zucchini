@@ -1,6 +1,5 @@
 import type { Clock } from "@/main/app/clock";
 import {
-  buildTodayHabitStreaks,
   buildHistoryDay,
   buildTodayPreviewSummary,
   buildTodayState,
@@ -18,6 +17,7 @@ function createRepository(
     getHistoricalHabitPeriodStatusesOverlappingRange?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getHabitWithStatus?: ReturnType<typeof vi.fn>;
+    getPersistedHabitStreakStates?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
     getSettledHistory?: ReturnType<typeof vi.fn>;
     getSettings?: ReturnType<typeof vi.fn>;
@@ -38,6 +38,8 @@ function createRepository(
     getHistoricalHabitPeriodStatusesOverlappingRange:
       overrides.getHistoricalHabitPeriodStatusesOverlappingRange ??
       vi.fn(() => []),
+    getPersistedHabitStreakStates:
+      overrides.getPersistedHabitStreakStates ?? vi.fn(() => []),
     getPersistedStreakState:
       overrides.getPersistedStreakState ??
       vi.fn(() => ({
@@ -159,7 +161,7 @@ describe("state builder", () => {
       });
     });
 
-    it("builds per-habit streaks from uncapped settled history", () => {
+    it("builds per-habit streaks from persisted state plus today's preview", () => {
       const runHabit = {
         category: "fitness" as const,
         completed: true,
@@ -174,42 +176,24 @@ describe("state builder", () => {
       };
       const repository = createRepository({
         getHabitsWithStatus: vi.fn(() => [runHabit]),
-        getHistoricalHabitPeriodStatusesOverlappingRange: vi.fn(() => [
+        getPersistedHabitStreakStates: vi.fn(() => [
           {
-            category: runHabit.category,
-            completed: true,
-            completedCount: 1,
-            createdAt: runHabit.createdAt,
-            frequency: runHabit.frequency,
+            bestStreak: 4,
+            currentStreak: 1,
             habitId: runHabit.id,
-            name: runHabit.name,
-            periodEnd: "2025-12-31",
-            periodStart: "2025-12-31",
-            selectedWeekdays: runHabit.selectedWeekdays ?? null,
-            sortOrder: runHabit.sortOrder,
-            targetCount: runHabit.targetCount,
-          },
-        ]),
-        getSettledHistory: vi.fn(() => [
-          {
-            allCompleted: true,
-            completedAt: "2025-12-31T10:00:00.000Z",
-            date: "2025-12-31",
-            dayStatus: null,
-            freezeUsed: false,
-            streakCountAfterDay: 1,
+            lastEvaluatedDate: "2025-12-31",
           },
         ]),
       });
       const clock = createClock("2026-01-01");
 
-      const habitStreaks = buildTodayHabitStreaks(repository, clock);
+      const todayState = buildTodayState(repository, clock);
 
-      expect(repository.getSettledHistory).toHaveBeenCalledWith(undefined, {
-        uncapped: true,
-      });
-      expect(habitStreaks[1]).toStrictEqual({
-        bestStreak: 2,
+      expect(repository.getPersistedHabitStreakStates).toHaveBeenCalledWith([
+        1,
+      ]);
+      expect(todayState.habitStreaks?.[1]).toStrictEqual({
+        bestStreak: 4,
         currentStreak: 2,
       });
     });

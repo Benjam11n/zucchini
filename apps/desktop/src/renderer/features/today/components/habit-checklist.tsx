@@ -142,7 +142,6 @@ function HabitChecklistComponent({
                   <HabitListItem
                     key={habit.id}
                     habit={habit}
-                    isStreakLoading={habitStreaks === undefined}
                     onToggle={onToggleHabit}
                     {...streakProps}
                   />

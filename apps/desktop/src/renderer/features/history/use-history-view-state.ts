@@ -5,6 +5,7 @@
  * (total days, completion rate), builds the day lookup map, and provides
  * callbacks for selecting dates and navigating between years.
  */
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useEffect, useMemo, useState } from "react";
 
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
@@ -12,6 +13,7 @@ import {
   getHistoryDayLookup,
   getHistoryStats,
 } from "@/renderer/features/history/lib/history-summary";
+import { historyDayCollection } from "@/renderer/features/history/state/history-collections";
 import { parseDateKey } from "@/shared/utils/date";
 
 export interface HistoryViewState {
@@ -41,27 +43,50 @@ export function useHistoryViewState({
   const [viewState, setViewState] = useState<HistoryViewState>(() =>
     createInitialHistoryViewState(history, todayDate)
   );
+  const { data: liveHistory } = useLiveQuery((query) =>
+    query
+      .from({ historyDay: historyDayCollection })
+      .orderBy(({ historyDay }) => historyDay.date, "desc")
+  );
+  const { data: liveSelectedYearHistory } = useLiveQuery(
+    (query) =>
+      query
+        .from({ historyDay: historyDayCollection })
+        .where(({ historyDay }) => eq(historyDay.year, viewState.selectedYear))
+        .orderBy(({ historyDay }) => historyDay.date, "desc"),
+    [viewState.selectedYear]
+  );
+  const allHistory = liveHistory.length > 0 ? liveHistory : history;
+  const selectedYearHasLiveRows =
+    liveHistory.length > 0 && liveSelectedYearHistory.length > 0;
 
   const availableYears = useMemo(
     () =>
       [
         ...new Set(
-          history.map((day) => Number.parseInt(day.date.slice(0, 4), 10))
+          allHistory.map((day) => Number.parseInt(day.date.slice(0, 4), 10))
         ),
       ]
         .filter((year) => !Number.isNaN(year))
         .toSorted((left, right) => right - left),
-    [history]
+    [allHistory]
   );
 
-  const filteredHistory = useMemo(
-    () =>
-      history.filter(
-        (day) =>
-          Number.parseInt(day.date.slice(0, 4), 10) === viewState.selectedYear
-      ),
-    [history, viewState.selectedYear]
-  );
+  const filteredHistory = useMemo(() => {
+    if (selectedYearHasLiveRows) {
+      return liveSelectedYearHistory;
+    }
+
+    return allHistory.filter(
+      (day) =>
+        Number.parseInt(day.date.slice(0, 4), 10) === viewState.selectedYear
+    );
+  }, [
+    allHistory,
+    liveSelectedYearHistory,
+    selectedYearHasLiveRows,
+    viewState.selectedYear,
+  ]);
 
   const stats = useMemo(
     () => getHistoryStats(filteredHistory),
@@ -85,7 +110,7 @@ export function useHistoryViewState({
     const nextSelectedYear = selectedYearStillExists
       ? viewState.selectedYear
       : (availableYears[0] ?? Number.parseInt(todayDate.slice(0, 4), 10));
-    const nextHistory = history.filter(
+    const nextHistory = allHistory.filter(
       (day) => Number.parseInt(day.date.slice(0, 4), 10) === nextSelectedYear
     );
     const fallbackDate = nextHistory[0]?.date ?? null;
@@ -112,7 +137,7 @@ export function useHistoryViewState({
           ? current.visibleMonth
           : parseDateKey(fallbackDate),
     }));
-  }, [availableYears, history, todayDate, viewState.selectedYear]);
+  }, [allHistory, availableYears, todayDate, viewState.selectedYear]);
 
   return {
     availableYears,

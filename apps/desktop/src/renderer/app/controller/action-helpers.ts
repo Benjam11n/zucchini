@@ -11,13 +11,10 @@ import { unstable_batchedUpdates } from "react-dom";
 import { useBootStore } from "@/renderer/app/state/boot-store";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
-import {
-  patchTodayHabitCollection,
-  syncTodayCollections,
-} from "@/renderer/features/today/state/today-collections";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
@@ -73,6 +70,7 @@ export function applyTodayReloadResult({
       historyScope,
       isHistoryLoading: false,
     });
+    syncHistoryCollections(history);
     useSettingsStore.setState((state) => ({
       settingsDraft: state.settingsDraft ?? todayState.settings,
     }));
@@ -80,7 +78,6 @@ export function applyTodayReloadResult({
       managedHabits,
       todayState,
     });
-    syncTodayCollections(todayState);
   });
 }
 
@@ -97,12 +94,23 @@ export function applyTodayState(
         nextManagedHabits ?? useTodayStore.getState().managedHabits,
       todayState: nextTodayState,
     });
-    syncTodayCollections(nextTodayState);
   });
 }
 
 export function applyHabitStatusPatch(patch: HabitStatusPatch): void {
-  patchTodayHabitCollection(patch.habit);
+  const { todayState } = useTodayStore.getState();
+  if (!todayState) {
+    return;
+  }
+
+  useTodayStore.setState({
+    todayState: {
+      ...todayState,
+      habits: todayState.habits.map((habit) =>
+        habit.id === patch.habit.id ? patch.habit : habit
+      ),
+    },
+  });
 }
 
 export function applyOptimisticHabitStreakPatch({
@@ -165,6 +173,7 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
       historyScope: "recent",
       isHistoryLoading: false,
     });
+    syncHistoryCollections(null);
     useSettingsStore.setState({
       settingsDraft: null,
     });
@@ -172,7 +181,6 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
       managedHabits: [],
       todayState: null,
     });
-    syncTodayCollections(null);
     useUiStore.setState({
       tab: "today",
     });

@@ -1,12 +1,8 @@
 import type { Clock } from "@/main/app/clock";
-import {
-  buildTodayHabitStreaks,
-  buildTodayState,
-} from "@/main/features/today/state-builder";
+import { buildTodayState } from "@/main/features/today/state-builder";
 import type { TodayReadModelRepositoryPort } from "@/main/infra/persistence/app-repository";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { TodayState } from "@/shared/contracts/today-state";
-import type { HabitStreak } from "@/shared/domain/habit-streak";
 
 const DEBUG_READ_MODELS =
   typeof process !== "undefined" &&
@@ -50,12 +46,6 @@ export class TodayReadModelService {
     return this.cachedTodayState;
   }
 
-  getHabitStreaks(): Record<number, HabitStreak> {
-    return traceReadModel("today.habitStreaks", () =>
-      buildTodayHabitStreaks(this.repository, this.clock)
-    );
-  }
-
   invalidate(): void {
     this.cachedTodayState = null;
   }
@@ -69,16 +59,7 @@ export class TodayReadModelService {
       throw new Error(`Habit ${habitId} is not scheduled for today.`);
     }
 
-    if (this.cachedTodayState?.date === today) {
-      const { habitStreaks: _habitStreaks, ...todayStateWithoutStreaks } =
-        this.cachedTodayState;
-      this.cachedTodayState = {
-        ...todayStateWithoutStreaks,
-        habits: this.cachedTodayState.habits.map((candidate) =>
-          candidate.id === habitId ? habit : candidate
-        ),
-      };
-    }
+    this.invalidate();
 
     return {
       habit,
