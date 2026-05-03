@@ -11,6 +11,22 @@ interface WindowSecurityHarness {
   willNavigateHandler: WillNavigateHandler | null;
 }
 
+function withDevServerUrl(url: string | null, run: () => void) {
+  const originalEnv = process.env["VITE_DEV_SERVER_URL"];
+
+  if (url === null) {
+    delete process.env["VITE_DEV_SERVER_URL"];
+  } else {
+    process.env["VITE_DEV_SERVER_URL"] = url;
+  }
+
+  try {
+    run();
+  } finally {
+    process.env["VITE_DEV_SERVER_URL"] = originalEnv;
+  }
+}
+
 describe("configureWindowSecurity()", () => {
   function createHarness(): WindowSecurityHarness {
     let windowOpenHandler: WindowOpenHandler | null = null;
@@ -30,6 +46,23 @@ describe("configureWindowSecurity()", () => {
     return { willNavigateHandler, windowOpenHandler };
   }
 
+  function getWillNavigateHandler(): WillNavigateHandler {
+    const { willNavigateHandler } = createHarness();
+
+    expect(willNavigateHandler).not.toBeNull();
+    if (!willNavigateHandler) {
+      throw new Error("Expected will-navigate handler to be registered.");
+    }
+
+    return willNavigateHandler;
+  }
+
+  function navigateTo(url: string) {
+    const event = { preventDefault: vi.fn() };
+    getWillNavigateHandler()(event, url);
+    return event;
+  }
+
   it("denies all new window open requests", () => {
     const { windowOpenHandler } = createHarness();
 
@@ -42,71 +75,29 @@ describe("configureWindowSecurity()", () => {
   });
 
   it("allows navigation to the Vite dev server URL", () => {
-    const originalEnv = process.env["VITE_DEV_SERVER_URL"];
-    process.env["VITE_DEV_SERVER_URL"] = "http://localhost:5173";
-
-    try {
-      const { willNavigateHandler } = createHarness();
-
-      expect(willNavigateHandler).not.toBeNull();
-      if (!willNavigateHandler) {
-        throw new Error("Expected will-navigate handler to be registered.");
-      }
-
-      const event = { preventDefault: vi.fn() };
-      willNavigateHandler(event, "http://localhost:5173/index.html");
+    withDevServerUrl("http://localhost:5173", () => {
+      const event = navigateTo("http://localhost:5173/index.html");
 
       expect(event.preventDefault).not.toHaveBeenCalled();
-    } finally {
-      process.env["VITE_DEV_SERVER_URL"] = originalEnv;
-    }
+    });
   });
 
   it("allows navigation to file:// URLs", () => {
-    const originalEnv = process.env["VITE_DEV_SERVER_URL"];
-    delete process.env["VITE_DEV_SERVER_URL"];
-
-    try {
-      const { willNavigateHandler } = createHarness();
-
-      expect(willNavigateHandler).not.toBeNull();
-      if (!willNavigateHandler) {
-        throw new Error("Expected will-navigate handler to be registered.");
-      }
-
-      const event = { preventDefault: vi.fn() };
-      willNavigateHandler(event, "file:///app/index.html");
+    withDevServerUrl(null, () => {
+      const event = navigateTo("file:///app/index.html");
 
       expect(event.preventDefault).not.toHaveBeenCalled();
-    } finally {
-      process.env["VITE_DEV_SERVER_URL"] = originalEnv;
-    }
+    });
   });
 
   it("blocks navigation to untrusted external URLs", () => {
-    const { willNavigateHandler } = createHarness();
-
-    expect(willNavigateHandler).not.toBeNull();
-    if (!willNavigateHandler) {
-      throw new Error("Expected will-navigate handler to be registered.");
-    }
-
-    const event = { preventDefault: vi.fn() };
-    willNavigateHandler(event, "https://malicious.example.com/phish");
+    const event = navigateTo("https://malicious.example.com/phish");
 
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
   it("blocks navigation to data:// URLs", () => {
-    const { willNavigateHandler } = createHarness();
-
-    expect(willNavigateHandler).not.toBeNull();
-    if (!willNavigateHandler) {
-      throw new Error("Expected will-navigate handler to be registered.");
-    }
-
-    const event = { preventDefault: vi.fn() };
-    willNavigateHandler(event, "data:text/html,<script>alert(1)</script>");
+    const event = navigateTo("data:text/html,<script>alert(1)</script>");
 
     expect(event.preventDefault).toHaveBeenCalled();
   });

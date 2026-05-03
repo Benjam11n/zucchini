@@ -4,33 +4,48 @@ import path from "node:path";
 
 import { createDesktopLogger } from "@/main/app/logger";
 
+function createLoggerHarness() {
+  const logsDirectoryPath = mkdtempSync(path.join(tmpdir(), "zucchini-logs-"));
+  const writeStdout = vi
+    .spyOn(process.stdout, "write")
+    .mockImplementation(() => true);
+  const writeStderr = vi
+    .spyOn(process.stderr, "write")
+    .mockImplementation(() => true);
+  const logger = createDesktopLogger({
+    appLike: {
+      getPath: () => logsDirectoryPath,
+    },
+    clock: () => new Date("2026-03-31T12:00:00.000Z"),
+  });
+
+  return {
+    logger,
+    logsDirectoryPath,
+    restore() {
+      writeStdout.mockRestore();
+      writeStderr.mockRestore();
+    },
+    writeStderr,
+    writeStdout,
+  };
+}
+
+function readLogRecords(logsDirectoryPath: string) {
+  return readFileSync(path.join(logsDirectoryPath, "main.log"), "utf-8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+}
+
 describe("createDesktopLogger()", () => {
   it("writes structured JSON log lines to the logs directory", () => {
-    const logsDirectoryPath = mkdtempSync(
-      path.join(tmpdir(), "zucchini-logs-")
-    );
-    const writeStdout = vi
-      .spyOn(process.stdout, "write")
-      .mockImplementation(() => true);
-    const writeStderr = vi
-      .spyOn(process.stderr, "write")
-      .mockImplementation(() => true);
-    const logger = createDesktopLogger({
-      appLike: {
-        getPath: () => logsDirectoryPath,
-      },
-      clock: () => new Date("2026-03-31T12:00:00.000Z"),
-    });
+    const { logger, logsDirectoryPath, restore, writeStderr, writeStdout } =
+      createLoggerHarness();
 
     logger.error("Failed to warm app runtime.", new Error("boom"));
 
-    const records = readFileSync(
-      path.join(logsDirectoryPath, "main.log"),
-      "utf-8"
-    )
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
+    const records = readLogRecords(logsDirectoryPath);
 
     expect(records).toStrictEqual([
       {
@@ -50,39 +65,19 @@ describe("createDesktopLogger()", () => {
     expect(writeStdout).not.toHaveBeenCalled();
     expect(writeStderr).toHaveBeenCalledTimes(1);
 
-    writeStdout.mockRestore();
-    writeStderr.mockRestore();
+    restore();
   });
 
   it("logs non-error details without losing their structure", () => {
-    const logsDirectoryPath = mkdtempSync(
-      path.join(tmpdir(), "zucchini-logs-")
-    );
-    const writeStdout = vi
-      .spyOn(process.stdout, "write")
-      .mockImplementation(() => true);
-    const writeStderr = vi
-      .spyOn(process.stderr, "write")
-      .mockImplementation(() => true);
-    const logger = createDesktopLogger({
-      appLike: {
-        getPath: () => logsDirectoryPath,
-      },
-      clock: () => new Date("2026-03-31T12:00:00.000Z"),
-    });
+    const { logger, logsDirectoryPath, restore, writeStderr, writeStdout } =
+      createLoggerHarness();
 
     logger.warn("Permission request denied.", {
       permission: "notifications",
       url: "https://example.com",
     });
 
-    const records = readFileSync(
-      path.join(logsDirectoryPath, "main.log"),
-      "utf-8"
-    )
-      .trim()
-      .split("\n")
-      .map((line) => JSON.parse(line));
+    const records = readLogRecords(logsDirectoryPath);
 
     expect(records[0]).toMatchObject({
       details: [
@@ -98,7 +93,6 @@ describe("createDesktopLogger()", () => {
     expect(writeStdout).toHaveBeenCalledTimes(1);
     expect(writeStderr).not.toHaveBeenCalled();
 
-    writeStdout.mockRestore();
-    writeStderr.mockRestore();
+    restore();
   });
 });

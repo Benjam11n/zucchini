@@ -73,6 +73,45 @@ function createMocks() {
   };
 }
 
+function createActionsWithoutRelaunch(
+  mocks: ReturnType<typeof createMocks>
+): ReturnType<typeof createDataManagementActions> {
+  return createDataManagementActions({
+    appLike: mocks.appLike as never,
+    clock: mocks.clock,
+    dialogLike: mocks.dialogLike as never,
+    repository: mocks.repository as never,
+    service: mocks.service,
+    shellLike: mocks.shellLike,
+    shouldRelaunchAfterDataChange: false,
+  });
+}
+
+function expectImportBackupReplacedDatabase(
+  repository: ReturnType<typeof createMocks>["repository"]
+) {
+  expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+  expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
+  expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+}
+
+function expectAppQuitWithoutRelaunch({
+  appLike,
+  onBeforeQuit,
+}: Pick<ReturnType<typeof createMocks>, "appLike" | "onBeforeQuit">) {
+  expect(appLike.relaunch).not.toHaveBeenCalled();
+  expect(onBeforeQuit).toHaveBeenCalledOnce();
+  expect(appLike.quit).toHaveBeenCalledOnce();
+}
+
+function expectNoRestartOrImport(mocks: ReturnType<typeof createMocks>) {
+  expect(mocks.repository.replaceDatabase).not.toHaveBeenCalled();
+  expect(mocks.repository.exportBackup).not.toHaveBeenCalled();
+  expect(mocks.appLike.relaunch).not.toHaveBeenCalled();
+  expect(mocks.onBeforeQuit).not.toHaveBeenCalled();
+  expect(mocks.appLike.quit).not.toHaveBeenCalled();
+}
+
 describe("createDataManagementActions()", () => {
   it("clears the live database and restarts the app", async () => {
     const { actions, appLike, onBeforeQuit, repository } = createMocks();
@@ -86,31 +125,13 @@ describe("createDataManagementActions()", () => {
   });
 
   it("clears data without relaunching when restart is delegated to the dev launcher", async () => {
-    const {
-      appLike,
-      clock,
-      dialogLike,
-      onBeforeQuit,
-      repository,
-      service,
-      shellLike,
-    } = createMocks();
-    const actions = createDataManagementActions({
-      appLike: appLike as never,
-      clock,
-      dialogLike: dialogLike as never,
-      repository: repository as never,
-      service,
-      shellLike,
-      shouldRelaunchAfterDataChange: false,
-    });
+    const mocks = createMocks();
+    const actions = createActionsWithoutRelaunch(mocks);
 
-    await expect(actions.clearData(onBeforeQuit)).resolves.toBeTruthy();
+    await expect(actions.clearData(mocks.onBeforeQuit)).resolves.toBeTruthy();
 
-    expect(repository.resetDatabase).toHaveBeenCalledOnce();
-    expect(appLike.relaunch).not.toHaveBeenCalled();
-    expect(onBeforeQuit).toHaveBeenCalledOnce();
-    expect(appLike.quit).toHaveBeenCalledOnce();
+    expect(mocks.repository.resetDatabase).toHaveBeenCalledOnce();
+    expectAppQuitWithoutRelaunch(mocks);
   });
 
   it("validates a selected backup before replacing the live database", async () => {
@@ -118,9 +139,7 @@ describe("createDataManagementActions()", () => {
 
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
-    expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
-    expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+    expectImportBackupReplacedDatabase(repository);
     const [validateCallOrder] =
       repository.validateDatabase.mock.invocationCallOrder;
     const [exportCallOrder] = repository.exportBackup.mock.invocationCallOrder;
@@ -143,33 +162,15 @@ describe("createDataManagementActions()", () => {
   });
 
   it("quits without relaunching when import restart is delegated to the dev launcher", async () => {
-    const {
-      appLike,
-      clock,
-      dialogLike,
-      onBeforeQuit,
-      repository,
-      service,
-      shellLike,
-    } = createMocks();
-    const actions = createDataManagementActions({
-      appLike: appLike as never,
-      clock,
-      dialogLike: dialogLike as never,
-      repository: repository as never,
-      service,
-      shellLike,
-      shouldRelaunchAfterDataChange: false,
-    });
+    const mocks = createMocks();
+    const actions = createActionsWithoutRelaunch(mocks);
 
-    await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
+    await expect(
+      actions.importBackup(mocks.onBeforeQuit)
+    ).resolves.toBeTruthy();
 
-    expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
-    expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(appLike.relaunch).not.toHaveBeenCalled();
-    expect(onBeforeQuit).toHaveBeenCalledOnce();
-    expect(appLike.quit).toHaveBeenCalledOnce();
+    expectImportBackupReplacedDatabase(mocks.repository);
+    expectAppQuitWithoutRelaunch(mocks);
   });
 
   it("does not relaunch or replace the database when validation fails", async () => {
@@ -182,11 +183,7 @@ describe("createDataManagementActions()", () => {
       mocks.actions.importBackup(mocks.onBeforeQuit)
     ).rejects.toThrow("invalid backup");
 
-    expect(mocks.repository.replaceDatabase).not.toHaveBeenCalled();
-    expect(mocks.repository.exportBackup).not.toHaveBeenCalled();
-    expect(mocks.appLike.relaunch).not.toHaveBeenCalled();
-    expect(mocks.onBeforeQuit).not.toHaveBeenCalled();
-    expect(mocks.appLike.quit).not.toHaveBeenCalled();
+    expectNoRestartOrImport(mocks);
   });
 
   it("returns false when the user cancels the open dialog", async () => {
@@ -201,10 +198,7 @@ describe("createDataManagementActions()", () => {
     );
 
     expect(mocks.repository.validateDatabase).not.toHaveBeenCalled();
-    expect(mocks.repository.replaceDatabase).not.toHaveBeenCalled();
-    expect(mocks.appLike.relaunch).not.toHaveBeenCalled();
-    expect(mocks.onBeforeQuit).not.toHaveBeenCalled();
-    expect(mocks.appLike.quit).not.toHaveBeenCalled();
+    expectNoRestartOrImport(mocks);
   });
 
   it("returns the backup file path on successful export", async () => {
