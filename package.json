@@ -22,10 +22,10 @@
     "check": "pnpm run lint && pnpm run test:desktop && pnpm run build:web"
   },
   "devDependencies": {
-    "fallow": "^2.48.5",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.55.0",
-    "ultracite": "^7.3.0"
+    "fallow": "^2.49.0",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
+    "ultracite": "^7.6.2"
   },
   "engines": {
     "node": "24.x",
