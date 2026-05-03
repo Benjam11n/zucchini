@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.3 - 2026-05-03
+
+Changes since `v0.1.2-beta.2`.
+
+### Features
+
+- Curate timezone list with formatted labels and improve sidebar sticky positioning
+- Allow habit progress to exceed the target count by removing capping logic
+- Show per-habit streaks
+- Implement streak tracking and add today metrics sidebar to main window
+- Enforce non-nullable timerSessionId in focus sessions and implement migration backfilling for legacy records
+
+### Fixes
+
+- Decrease MAIN_WINDOW_MIN_HEIGHT to allow for smaller window resizing
+- Cap longer goal progress
+- Improve habit color contrast
+
+### Refactors
+
+- Simplify app root composition
+- Replace knip with fallow and extract test fixtures for clock and updater mocks
+- Remove unused history limit logic and privatize sidebar completion helper
+- Improve layout responsiveness and text truncation in habit category settings components
+- Move WindDownSettingsCard from general settings to habits tab
+- Modularize app navigation and update responsive layout grid system
+- Decompose app actions into domain-specific modules for focus, history, and settings
+- Migrate vscode tasks from bun to pnpm commands
+- Split focus timer lifecycle hooks
+- Split habits ipc contracts
+- Clean up app boundaries and renderer lifecycle
+- Consolidate all habits IPC methods into unified command and query patterns
+- Remove hero badge component and associated styles from homepage
+
+### Maintenance
+
+- Replace custom duplication check with fallow
+- Remove avoidable lint suppressions
+- Clean desktop fallow dead code
+- Consolidate lint and format scripts
+- Add fallow support
+- Switch dependabot schedule to cron biweekly
+- Make dependabot biweekly cadence
+
+### Other
+
+- Update main window dimensions and sidebar grid column widths
+- Defer today history work
+- Optimize today habit updates
+- Require sqlite coverage in ci
+- Merge branch 'main' of github.com:Benjam11n/zucchini
+- Merge pull request #51 from Benjam11n/codex/update-dependabot-frequency-to-biweekly
+- Refine history calendar and settings feedback state
+- Remove unused dropdown menu exports
+- Increase timeout for fixture data generation tests to prevent flakiness
+
 ## 0.1.2-beta.2 - 2026-04-18
 
 Changes since `v0.1.2-beta.1`.
