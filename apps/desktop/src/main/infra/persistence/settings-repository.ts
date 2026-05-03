@@ -1,14 +1,9 @@
 import { settings } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
-import {
-  createDefaultAppSettings,
-  isValidGlobalShortcutAccelerator,
-  normalizeHabitCategoryPreferences,
-} from "@/shared/domain/settings";
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type {
   AppSettings,
-  HabitCategoryMetadata,
   HabitCategoryPreferences,
 } from "@/shared/domain/settings";
 
@@ -26,25 +21,11 @@ function deserializeCategoryPreferences(
   value: string,
   defaults: HabitCategoryPreferences
 ): HabitCategoryPreferences {
-  let parsed: unknown;
-
   try {
-    parsed = JSON.parse(value);
+    return JSON.parse(value) as HabitCategoryPreferences;
   } catch {
     return defaults;
   }
-
-  if (!parsed || typeof parsed !== "object") {
-    return defaults;
-  }
-
-  // `0008_typed_settings` migrated legacy rows without category icons, so
-  // current reads still need to normalize partial stored metadata.
-  return normalizeHabitCategoryPreferences(
-    parsed as Partial<
-      Record<keyof HabitCategoryPreferences, Partial<HabitCategoryMetadata>>
-    >
-  );
 }
 
 export class SqliteSettingsRepository {
@@ -113,10 +94,6 @@ export class SqliteSettingsRepository {
         return defaults;
       }
 
-      const needsLegacyShortcutRepair =
-        !isValidGlobalShortcutAccelerator(row.resetFocusTimerShortcut) ||
-        !isValidGlobalShortcutAccelerator(row.toggleFocusTimerShortcut);
-
       const candidateSettings: AppSettings = {
         categoryPreferences: deserializeCategoryPreferences(
           row.categoryPreferences,
@@ -131,24 +108,16 @@ export class SqliteSettingsRepository {
         reminderEnabled: row.reminderEnabled,
         reminderSnoozeMinutes: row.reminderSnoozeMinutes,
         reminderTime: row.reminderTime,
-        resetFocusTimerShortcut: needsLegacyShortcutRepair
-          ? defaults.resetFocusTimerShortcut
-          : row.resetFocusTimerShortcut,
+        resetFocusTimerShortcut: row.resetFocusTimerShortcut,
         themeMode: normalizeThemeMode(row.themeMode),
         timezone: row.timezone || defaults.timezone,
-        toggleFocusTimerShortcut: needsLegacyShortcutRepair
-          ? defaults.toggleFocusTimerShortcut
-          : row.toggleFocusTimerShortcut,
+        toggleFocusTimerShortcut: row.toggleFocusTimerShortcut,
         windDownTime: row.windDownTime,
       };
 
       const validationResult = appSettingsSchema.safeParse(candidateSettings);
       if (!validationResult.success) {
         return defaults;
-      }
-
-      if (needsLegacyShortcutRepair) {
-        this.persistSettings(validationResult.data);
       }
 
       return validationResult.data;

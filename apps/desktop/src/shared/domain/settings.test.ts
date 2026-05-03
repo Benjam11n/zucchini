@@ -4,10 +4,6 @@ import {
   createDefaultAppSettings,
   createDefaultFocusTimerShortcutSettings,
   isValidGlobalShortcutAccelerator,
-  normalizeHabitCategoryColor,
-  normalizeHabitCategoryIcon,
-  normalizeHabitCategoryLabel,
-  normalizeHabitCategoryPreferences,
   normalizeGlobalShortcutAccelerator,
 } from "@/shared/domain/settings";
 
@@ -76,28 +72,5 @@ describe("focus timer shortcut settings", () => {
         label: "Productivity",
       },
     });
-  });
-
-  it("normalizes invalid category labels and colors back to defaults", () => {
-    const defaults = createDefaultHabitCategoryPreferences();
-
-    expect(normalizeHabitCategoryLabel("  ", defaults.fitness.label)).toBe(
-      defaults.fitness.label
-    );
-    expect(normalizeHabitCategoryColor("teal", defaults.fitness.color)).toBe(
-      defaults.fitness.color
-    );
-    expect(normalizeHabitCategoryIcon("sparkles", defaults.fitness.icon)).toBe(
-      defaults.fitness.icon
-    );
-    expect(
-      normalizeHabitCategoryPreferences({
-        fitness: {
-          color: "teal",
-          icon: "sparkles" as never,
-          label: "",
-        },
-      })
-    ).toStrictEqual(defaults);
   });
 });

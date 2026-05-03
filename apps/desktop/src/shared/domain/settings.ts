@@ -48,7 +48,7 @@ export const HABIT_CATEGORY_ICON_VALUES = [
 
 export type HabitCategoryIcon = (typeof HABIT_CATEGORY_ICON_VALUES)[number];
 
-export interface HabitCategoryMetadata {
+interface HabitCategoryMetadata {
   color: string;
   icon: HabitCategoryIcon;
   label: string;
@@ -298,19 +298,6 @@ export function isValidHabitCategoryLabel(value: string): boolean {
   );
 }
 
-export function normalizeHabitCategoryLabel(
-  value: string | null | undefined,
-  fallback: string
-): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  const trimmed = value.trim();
-
-  return isValidHabitCategoryLabel(trimmed) ? trimmed : fallback;
-}
-
 export function isValidHabitCategoryColor(value: string): boolean {
   return HEX_COLOR_PATTERN.test(value);
 }
@@ -319,59 +306,6 @@ export function isValidHabitCategoryIcon(
   value: string
 ): value is HabitCategoryIcon {
   return HABIT_CATEGORY_ICON_VALUES.includes(value as HabitCategoryIcon);
-}
-
-export function normalizeHabitCategoryColor(
-  value: string | null | undefined,
-  fallback: string
-): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  const normalizedValue = value.trim().toUpperCase();
-
-  return isValidHabitCategoryColor(normalizedValue)
-    ? normalizedValue
-    : fallback;
-}
-
-export function normalizeHabitCategoryIcon(
-  value: string | null | undefined,
-  fallback: HabitCategoryIcon
-): HabitCategoryIcon {
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  const normalizedValue = value.trim();
-
-  return isValidHabitCategoryIcon(normalizedValue) ? normalizedValue : fallback;
-}
-
-export function normalizeHabitCategoryPreferences(
-  value:
-    | Partial<Record<HabitCategory, Partial<HabitCategoryMetadata>>>
-    | null
-    | undefined
-): HabitCategoryPreferences {
-  const defaults = createDefaultHabitCategoryPreferences();
-
-  return Object.fromEntries(
-    HABIT_CATEGORY_SLOTS.map(({ value: category }) => {
-      const candidate = value?.[category];
-      const fallback = defaults[category];
-
-      return [
-        category,
-        {
-          color: normalizeHabitCategoryColor(candidate?.color, fallback.color),
-          icon: normalizeHabitCategoryIcon(candidate?.icon, fallback.icon),
-          label: normalizeHabitCategoryLabel(candidate?.label, fallback.label),
-        },
-      ];
-    })
-  ) as HabitCategoryPreferences;
 }
 
 export function normalizeGlobalShortcutAccelerator(

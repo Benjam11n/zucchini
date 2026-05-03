@@ -38,16 +38,109 @@ interface FocusRunCardProps {
   session: FocusHistorySessionView;
 }
 
+function getRunCounts(session: FocusHistorySessionView) {
+  return {
+    breakCount: session.idleGapMinutesBetweenEntries.filter((gap) => gap > 0)
+      .length,
+    pauseCount: session.timelineSegments.filter(
+      (segment) => segment.kind === "pause"
+    ).length,
+  };
+}
+
+function FocusRunBadges({ session }: { session: FocusHistorySessionView }) {
+  const totalMinutes = formatFocusMinutes(session.totalDurationSeconds);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <Badge variant="outline" className="rounded-full border-border/70">
+        {getFocusMinutesLabel(totalMinutes)}
+      </Badge>
+      <Badge variant="secondary" className="rounded-full">
+        {session.completedLoopCount} completed loop
+        {session.completedLoopCount === 1 ? "" : "s"}
+      </Badge>
+      {session.hasPartialEntry ? (
+        <Badge variant="outline" className="rounded-full border-amber-500/40">
+          Interrupted
+        </Badge>
+      ) : null}
+      {session.hasPausedTime ? (
+        <Badge
+          variant="outline"
+          className="rounded-full border-slate-400/50 text-slate-600"
+        >
+          Paused
+        </Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function FocusRunSummary({
+  breakCount,
+  firstEntry,
+  lastEntry,
+  pauseCount,
+  session,
+}: {
+  breakCount: number;
+  firstEntry: FocusHistorySessionView["entries"][number];
+  lastEntry: FocusHistorySessionView["entries"][number];
+  pauseCount: number;
+  session: FocusHistorySessionView;
+}) {
+  const rangeLabel =
+    session.entries.length === 1
+      ? formatEntryRange(firstEntry.startedAt, firstEntry.completedAt)
+      : formatEntryRange(firstEntry.startedAt, lastEntry.completedAt);
+
+  return (
+    <div className="min-w-0">
+      <p className="text-sm font-medium text-foreground">{rangeLabel}</p>
+      <p className="text-xs text-muted-foreground">
+        {session.completedLoopCount} completed loop
+        {session.completedLoopCount === 1 ? "" : "s"}
+        {session.hasPartialEntry ? " · 1 partial entry" : ""}
+        {breakCount > 0
+          ? ` · ${breakCount} break${breakCount === 1 ? "" : "s"}`
+          : ""}
+        {pauseCount > 0
+          ? ` · ${pauseCount} pause${pauseCount === 1 ? "" : "s"}`
+          : ""}
+      </p>
+    </div>
+  );
+}
+
+function FocusRunDetails({
+  detailsId,
+  session,
+}: {
+  detailsId: string;
+  session: FocusHistorySessionView;
+}) {
+  return (
+    <div className="grid gap-2" id={detailsId}>
+      {session.entries.map((entry, index) => (
+        <FocusRunEntryRow
+          key={entry.id}
+          completedAt={entry.completedAt}
+          durationSeconds={entry.durationSeconds}
+          entryKind={entry.entryKind}
+          idleGap={session.idleGapMinutesBetweenEntries[index - 1] ?? 0}
+          index={index}
+          startedAt={entry.startedAt}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function FocusRunCard({ session }: FocusRunCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = useId();
-  const totalMinutes = formatFocusMinutes(session.totalDurationSeconds);
-  const breakCount = session.idleGapMinutesBetweenEntries.filter(
-    (gap) => gap > 0
-  ).length;
-  const pauseCount = session.timelineSegments.filter(
-    (segment) => segment.kind === "pause"
-  ).length;
+  const { breakCount, pauseCount } = getRunCounts(session);
   const [firstEntry] = session.entries;
   const lastEntry = session.entries.at(-1);
 
@@ -70,55 +163,19 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
             {formatSessionWindow(session.sessionSpanMinutes)}
           </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <Badge variant="outline" className="rounded-full border-border/70">
-            {getFocusMinutesLabel(totalMinutes)}
-          </Badge>
-          <Badge variant="secondary" className="rounded-full">
-            {session.completedLoopCount} completed loop
-            {session.completedLoopCount === 1 ? "" : "s"}
-          </Badge>
-          {session.hasPartialEntry ? (
-            <Badge
-              variant="outline"
-              className="rounded-full border-amber-500/40"
-            >
-              Interrupted
-            </Badge>
-          ) : null}
-          {session.hasPausedTime ? (
-            <Badge
-              variant="outline"
-              className="rounded-full border-slate-400/50 text-slate-600"
-            >
-              Paused
-            </Badge>
-          ) : null}
-        </div>
+        <FocusRunBadges session={session} />
       </div>
 
       <FocusRunTimeline session={session} />
 
       <div className="flex items-center justify-between gap-3 rounded-md border border-border/50 bg-background/60 px-3 py-2">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">
-            {session.entries.length === 1
-              ? formatEntryRange(firstEntry.startedAt, firstEntry.completedAt)
-              : `${formatEntryRange(firstEntry.startedAt, lastEntry.completedAt)}`}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {session.completedLoopCount} completed loop
-            {session.completedLoopCount === 1 ? "" : "s"}
-            {session.hasPartialEntry ? " · 1 partial entry" : ""}
-            {breakCount > 0
-              ? ` · ${breakCount} break${breakCount === 1 ? "" : "s"}`
-              : ""}
-            {pauseCount > 0
-              ? ` · ${pauseCount} pause${pauseCount === 1 ? "" : "s"}`
-              : ""}
-          </p>
-        </div>
+        <FocusRunSummary
+          breakCount={breakCount}
+          firstEntry={firstEntry}
+          lastEntry={lastEntry}
+          pauseCount={pauseCount}
+          session={session}
+        />
 
         <Button
           aria-controls={detailsId}
@@ -140,24 +197,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
       </div>
 
       {isExpanded ? (
-        <div className="grid gap-2" id={detailsId}>
-          {session.entries.map((entry, index) => {
-            const idleGap =
-              session.idleGapMinutesBetweenEntries[index - 1] ?? 0;
-
-            return (
-              <FocusRunEntryRow
-                key={entry.id}
-                completedAt={entry.completedAt}
-                durationSeconds={entry.durationSeconds}
-                entryKind={entry.entryKind}
-                idleGap={idleGap}
-                index={index}
-                startedAt={entry.startedAt}
-              />
-            );
-          })}
-        </div>
+        <FocusRunDetails detailsId={detailsId} session={session} />
       ) : null}
     </div>
   );

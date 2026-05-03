@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { runChild } from "./run-child.mjs";
 
 const hasSpaceInCwd = /\s/.test(process.cwd());
 
@@ -14,26 +14,13 @@ if (hasSpaceInCwd) {
   process.exit(0);
 }
 
-const child =
-  process.platform === "win32"
-    ? spawn(
-        process.env["ComSpec"] ?? "cmd.exe",
-        ["/d", "/s", "/c", "pnpm exec electron-builder install-app-deps"],
-        {
-          cwd: process.cwd(),
-          stdio: "inherit",
-        }
-      )
-    : spawn("pnpm", ["exec", "electron-builder", "install-app-deps"], {
-        cwd: process.cwd(),
-        stdio: "inherit",
-      });
-
-child.on("exit", (code, signal) => {
-  if (signal) {
-    process.kill(process.pid, signal);
-    return;
-  }
-
-  process.exit(code ?? 0);
-});
+if (process.platform === "win32") {
+  runChild(process.env["ComSpec"] ?? "cmd.exe", [
+    "/d",
+    "/s",
+    "/c",
+    "pnpm exec electron-builder install-app-deps",
+  ]);
+} else {
+  runChild("pnpm", ["exec", "electron-builder", "install-app-deps"]);
+}

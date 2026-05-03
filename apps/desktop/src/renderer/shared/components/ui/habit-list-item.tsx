@@ -1,6 +1,5 @@
 import { m } from "framer-motion";
 import type { CSSProperties } from "react";
-import { memo } from "react";
 
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -109,24 +108,4 @@ function HabitListItemComponent({
   );
 }
 
-function areHabitListItemPropsEqual(
-  previous: HabitListItemProps,
-  next: HabitListItemProps
-): boolean {
-  return (
-    previous.habit.id === next.habit.id &&
-    previous.habit.name === next.habit.name &&
-    previous.habit.category === next.habit.category &&
-    previous.habit.completed === next.habit.completed &&
-    previous.onToggle === next.onToggle &&
-    previous.showCategory === next.showCategory &&
-    previous.streak?.bestStreak === next.streak?.bestStreak &&
-    previous.streak?.currentStreak === next.streak?.currentStreak &&
-    previous.trailingActions === next.trailingActions
-  );
-}
-
-export const HabitListItem = memo(
-  HabitListItemComponent,
-  areHabitListItemPropsEqual
-);
+export const HabitListItem = HabitListItemComponent;
