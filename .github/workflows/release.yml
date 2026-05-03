@@ -40,14 +40,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Rebuild native desktop dependencies
-        run: pnpm --dir apps/desktop rebuild:native
-
       - name: Audit dependencies
         run: pnpm --dir apps/desktop audit:ci
 
       - name: Run tests
         run: pnpm --dir apps/desktop test
+
+      - name: Rebuild native desktop dependencies
+        run: pnpm --dir apps/desktop rebuild:native
 
       - name: Build app bundles
         run: pnpm --dir apps/desktop build
