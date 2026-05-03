@@ -78,6 +78,19 @@ interface GeneratedHabit {
   targetCount: number;
 }
 
+interface GeneratedHabitTiming {
+  createdAt: string;
+  createdDate: string;
+  endDate: string;
+  isArchived: boolean;
+}
+
+interface FocusQuotaGoalRevision {
+  archivedAt: string | null;
+  createdAt: string;
+  isArchived: boolean;
+}
+
 interface StatusRow {
   completed: boolean;
   completedCount: number;
@@ -323,6 +336,100 @@ function createTargetCount(
   );
 }
 
+function createHabitFrequencies(config: PresetConfig): HabitFrequency[] {
+  const weeklyCount = Math.max(6, Math.round(config.habitCount * 0.22));
+  const monthlyCount = Math.max(4, Math.round(config.habitCount * 0.11));
+  const dailyCount = config.habitCount - weeklyCount - monthlyCount;
+
+  return [
+    ...Array.from({ length: dailyCount }, () => "daily" as const),
+    ...Array.from({ length: weeklyCount }, () => "weekly" as const),
+    ...Array.from({ length: monthlyCount }, () => "monthly" as const),
+  ];
+}
+
+function alignDateToFrequency(date: string, frequency: HabitFrequency): string {
+  if (frequency === "weekly") {
+    return startOfWeek(date);
+  }
+
+  if (frequency === "monthly") {
+    return startOfMonth(date);
+  }
+
+  return date;
+}
+
+function createHabitTiming({
+  config,
+  endDate,
+  frequency,
+  index,
+  rng,
+  startDate,
+}: {
+  config: PresetConfig;
+  endDate: string;
+  frequency: HabitFrequency;
+  index: number;
+  rng: () => number;
+  startDate: string;
+}): GeneratedHabitTiming {
+  const initialCreatedDate =
+    frequency === "daily" && index < 4
+      ? startDate
+      : addDays(startDate, randomInt(rng, 0, 45));
+  const createdDate = alignDateToFrequency(initialCreatedDate, frequency);
+  const archivedStart = config.habitCount - config.archivedHabitCount;
+  const isArchived = index >= archivedStart;
+  const endOffset = isArchived
+    ? randomInt(
+        rng,
+        45,
+        Math.max(60, Math.floor(config.trackedDayCount * 0.35))
+      )
+    : 0;
+  const rawEndDate = isArchived ? addDays(endDate, -endOffset) : endDate;
+  const alignedEndDate =
+    createdDate > rawEndDate
+      ? createdDate
+      : alignDateToFrequency(rawEndDate, frequency);
+
+  return {
+    createdAt: toIsoAt(createdDate, 7 + (index % 4), 5),
+    createdDate,
+    endDate: alignedEndDate,
+    isArchived,
+  };
+}
+
+function createBaseCompletionRate(
+  frequency: HabitFrequency,
+  rng: () => number
+): number {
+  if (frequency === "daily") {
+    return 0.72 + rng() * 0.22;
+  }
+
+  if (frequency === "weekly") {
+    return 0.48 + rng() * 0.3;
+  }
+
+  return 0.42 + rng() * 0.28;
+}
+
+function createSelectedWeekdays(
+  frequency: HabitFrequency,
+  index: number,
+  rng: () => number
+): HabitWeekday[] | null {
+  if (frequency !== "daily" || rng() >= 0.35) {
+    return null;
+  }
+
+  return [...(WEEKDAY_PATTERNS[index % WEEKDAY_PATTERNS.length] ?? [])];
+}
+
 function createHabits(
   config: PresetConfig,
   startDate: string,
@@ -330,74 +437,33 @@ function createHabits(
   preset: TestDataPreset,
   rng: () => number
 ): GeneratedHabit[] {
-  const weeklyCount = Math.max(6, Math.round(config.habitCount * 0.22));
-  const monthlyCount = Math.max(4, Math.round(config.habitCount * 0.11));
-  const dailyCount = config.habitCount - weeklyCount - monthlyCount;
-  const frequencies: HabitFrequency[] = [
-    ...Array.from({ length: dailyCount }, () => "daily" as const),
-    ...Array.from({ length: weeklyCount }, () => "weekly" as const),
-    ...Array.from({ length: monthlyCount }, () => "monthly" as const),
-  ];
-  const archivedStart = config.habitCount - config.archivedHabitCount;
+  const frequencies = createHabitFrequencies(config);
   const categories: HabitCategory[] = ["productivity", "fitness", "nutrition"];
   const habits: GeneratedHabit[] = [];
 
   for (const [index, frequency] of frequencies.entries()) {
     const category = categories[index % categories.length] ?? "productivity";
-    let createdDate =
-      frequency === "daily" && index < 4
-        ? startDate
-        : addDays(startDate, randomInt(rng, 0, 45));
-
-    if (frequency === "weekly") {
-      createdDate = startOfWeek(createdDate);
-    } else if (frequency === "monthly") {
-      createdDate = startOfMonth(createdDate);
-    }
-
-    const isArchived = index >= archivedStart;
-    const endOffset = isArchived
-      ? randomInt(
-          rng,
-          45,
-          Math.max(60, Math.floor(config.trackedDayCount * 0.35))
-        )
-      : 0;
-    const habitEndDate = isArchived ? addDays(endDate, -endOffset) : endDate;
-    const selectedWeekdays =
-      frequency === "daily" && rng() < 0.35
-        ? [...(WEEKDAY_PATTERNS[index % WEEKDAY_PATTERNS.length] ?? [])]
-        : null;
-    const createdAt = toIsoAt(createdDate, 7 + (index % 4), 5);
+    const timing = createHabitTiming({
+      config,
+      endDate,
+      frequency,
+      index,
+      rng,
+      startDate,
+    });
     const targetCount = createTargetCount(frequency, preset, rng);
-    let resolvedEndDate = habitEndDate;
-
-    if (createdDate > habitEndDate) {
-      resolvedEndDate = createdDate;
-    } else if (frequency === "weekly") {
-      resolvedEndDate = startOfWeek(habitEndDate);
-    } else if (frequency === "monthly") {
-      resolvedEndDate = startOfMonth(habitEndDate);
-    }
-
-    let baseCompletionRate = 0.42 + rng() * 0.28;
-    if (frequency === "daily") {
-      baseCompletionRate = 0.72 + rng() * 0.22;
-    } else if (frequency === "weekly") {
-      baseCompletionRate = 0.48 + rng() * 0.3;
-    }
 
     habits.push({
-      baseCompletionRate,
+      baseCompletionRate: createBaseCompletionRate(frequency, rng),
       category,
-      createdAt,
-      createdDate,
-      endDate: resolvedEndDate,
+      createdAt: timing.createdAt,
+      createdDate: timing.createdDate,
+      endDate: timing.endDate,
       frequency,
       id: index + 1,
-      isArchived,
+      isArchived: timing.isArchived,
       name: createHabitName(category, frequency, index, preset),
-      selectedWeekdays,
+      selectedWeekdays: createSelectedWeekdays(frequency, index, rng),
       sortOrder: index,
       targetCount,
     });
@@ -690,15 +756,15 @@ function createFocusSessions(
   );
 }
 
-function createFocusQuotaGoals(
+function getFocusQuotaGoalRevisionOffsets(
   trackedDates: readonly string[],
-  preset: TestDataPreset,
-  rng: () => number
-): FocusQuotaGoal[] {
+  preset: TestDataPreset
+): number[] {
   const revisionCount = PRESET_CONFIGS[preset].goalRevisionCount;
   const revisionFractions =
     preset === "stress" ? [0.08, 0.34, 0.62, 0.84] : [0.18, 0.72];
-  const revisionOffsets = revisionFractions
+
+  return revisionFractions
     .slice(0, revisionCount)
     .map((fraction, index) =>
       Math.min(
@@ -706,38 +772,84 @@ function createFocusQuotaGoals(
         Math.max(index, Math.floor((trackedDates.length - 1) * fraction))
       )
     );
+}
+
+function createFocusQuotaGoalRevision(
+  trackedDates: readonly string[],
+  revisionOffsets: readonly number[],
+  revisionIndex: number
+): FocusQuotaGoalRevision | null {
+  const offset = revisionOffsets[revisionIndex];
+  const createdDate =
+    offset === undefined ? undefined : (trackedDates[offset] ?? undefined);
+
+  if (!createdDate) {
+    return null;
+  }
+
+  const nextOffset = revisionOffsets[revisionIndex + 1];
+  const nextCreatedDate =
+    nextOffset === undefined ? null : (trackedDates[nextOffset] ?? null);
+
+  return {
+    archivedAt:
+      nextCreatedDate === null ? null : toIsoAt(nextCreatedDate, 8, 45),
+    createdAt: toIsoAt(createdDate, 8, 30),
+    isArchived: nextCreatedDate !== null,
+  };
+}
+
+function createFocusQuotaTargetMinutes(
+  frequency: GoalFrequency,
+  revisionIndex: number,
+  rng: () => number
+): number {
+  const baseTargetMinutes = frequency === "weekly" ? 180 : 480;
+  const stepMinutes =
+    frequency === "weekly" ? randomInt(rng, 45, 120) : randomInt(rng, 120, 360);
+
+  return normalizeFocusQuotaTargetMinutes(
+    frequency,
+    baseTargetMinutes + revisionIndex * stepMinutes
+  );
+}
+
+function createFocusQuotaGoals(
+  trackedDates: readonly string[],
+  preset: TestDataPreset,
+  rng: () => number
+): FocusQuotaGoal[] {
+  const revisionOffsets = getFocusQuotaGoalRevisionOffsets(
+    trackedDates,
+    preset
+  );
   const frequencies: GoalFrequency[] = ["weekly", "monthly"];
   const goals: FocusQuotaGoal[] = [];
   let id = 1;
 
   for (const frequency of frequencies) {
-    for (const [revisionIndex, offset] of revisionOffsets.entries()) {
-      const createdDate = trackedDates[offset] ?? trackedDates.at(-1);
-      if (!createdDate) {
+    for (const revisionIndex of revisionOffsets.keys()) {
+      const revision = createFocusQuotaGoalRevision(
+        trackedDates,
+        revisionOffsets,
+        revisionIndex
+      );
+
+      if (!revision) {
         continue;
       }
 
-      const nextOffset = revisionOffsets[revisionIndex + 1];
-      const nextCreatedDate =
-        nextOffset === undefined ? null : (trackedDates[nextOffset] ?? null);
-      const baseTargetMinutes = frequency === "weekly" ? 180 : 480;
-      const stepMinutes =
-        frequency === "weekly"
-          ? randomInt(rng, 45, 120)
-          : randomInt(rng, 120, 360);
-      const normalizedTargetMinutes = normalizeFocusQuotaTargetMinutes(
-        frequency,
-        baseTargetMinutes + revisionIndex * stepMinutes
-      );
-
       goals.push({
-        archivedAt:
-          nextCreatedDate === null ? null : toIsoAt(nextCreatedDate, 8, 45),
-        createdAt: toIsoAt(createdDate, 8, 30),
+        archivedAt: revision.archivedAt,
+        createdAt: revision.createdAt,
         frequency: normalizeGoalFrequency(frequency),
         id,
-        isArchived: nextCreatedDate !== null,
-        targetMinutes: normalizedTargetMinutes,
+        isArchived: revision.isArchived,
+        targetMinutes: createFocusQuotaTargetMinutes(
+          frequency,
+          revisionIndex,
+          rng
+        ),
       });
       id += 1;
     }

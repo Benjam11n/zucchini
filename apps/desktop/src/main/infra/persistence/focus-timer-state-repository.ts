@@ -9,6 +9,60 @@ const FOCUS_TIMER_STATE_ROW_ID = 1;
 
 type FocusTimerStateRow = typeof focusTimerState.$inferSelect;
 
+function toLastCompletedBreak(row: FocusTimerStateRow) {
+  if (
+    !row.lastCompletedBreakCompletedAt ||
+    !row.lastCompletedBreakTimerSessionId ||
+    !row.lastCompletedBreakVariant
+  ) {
+    return null;
+  }
+
+  return {
+    completedAt: row.lastCompletedBreakCompletedAt,
+    timerSessionId: row.lastCompletedBreakTimerSessionId,
+    variant: row.lastCompletedBreakVariant,
+  };
+}
+
+function toPersistedFocusTimerStateInput(row: FocusTimerStateRow) {
+  return {
+    breakVariant: row.breakVariant,
+    completedFocusCycles: row.completedFocusCycles,
+    cycleId: row.cycleId,
+    endsAt: row.endsAt,
+    focusDurationMs: row.focusDurationMs,
+    lastCompletedBreak: toLastCompletedBreak(row),
+    lastUpdatedAt: row.lastUpdatedAt,
+    phase: row.phase,
+    remainingMs: row.remainingMs,
+    startedAt: row.startedAt,
+    status: row.status,
+    timerSessionId: row.timerSessionId,
+  };
+}
+
+function toFocusTimerStateRow(state: PersistedFocusTimerState) {
+  return {
+    breakVariant: state.breakVariant,
+    completedFocusCycles: state.completedFocusCycles,
+    cycleId: state.cycleId,
+    endsAt: state.endsAt,
+    focusDurationMs: state.focusDurationMs,
+    lastCompletedBreakCompletedAt:
+      state.lastCompletedBreak?.completedAt ?? null,
+    lastCompletedBreakTimerSessionId:
+      state.lastCompletedBreak?.timerSessionId ?? null,
+    lastCompletedBreakVariant: state.lastCompletedBreak?.variant ?? null,
+    lastUpdatedAt: state.lastUpdatedAt,
+    phase: state.phase,
+    remainingMs: state.remainingMs,
+    startedAt: state.startedAt,
+    status: state.status,
+    timerSessionId: state.timerSessionId,
+  };
+}
+
 function toPersistedFocusTimerState(
   row: FocusTimerStateRow | undefined
 ): PersistedFocusTimerState | null {
@@ -16,29 +70,9 @@ function toPersistedFocusTimerState(
     return null;
   }
 
-  const parsed = persistedFocusTimerStateSchema.safeParse({
-    breakVariant: row.breakVariant,
-    completedFocusCycles: row.completedFocusCycles,
-    cycleId: row.cycleId,
-    endsAt: row.endsAt,
-    focusDurationMs: row.focusDurationMs,
-    lastCompletedBreak:
-      row.lastCompletedBreakCompletedAt &&
-      row.lastCompletedBreakTimerSessionId &&
-      row.lastCompletedBreakVariant
-        ? {
-            completedAt: row.lastCompletedBreakCompletedAt,
-            timerSessionId: row.lastCompletedBreakTimerSessionId,
-            variant: row.lastCompletedBreakVariant,
-          }
-        : null,
-    lastUpdatedAt: row.lastUpdatedAt,
-    phase: row.phase,
-    remainingMs: row.remainingMs,
-    startedAt: row.startedAt,
-    status: row.status,
-    timerSessionId: row.timerSessionId,
-  });
+  const parsed = persistedFocusTimerStateSchema.safeParse(
+    toPersistedFocusTimerStateInput(row)
+  );
 
   return parsed.success ? parsed.data : null;
 }
@@ -64,49 +98,18 @@ export class SqliteFocusTimerStateRepository {
   }
 
   saveState(state: PersistedFocusTimerState): PersistedFocusTimerState {
+    const row = toFocusTimerStateRow(state);
+
     this.client.run("saveFocusTimerState", () => {
       this.client
         .getDrizzle()
         .insert(focusTimerState)
         .values({
-          breakVariant: state.breakVariant,
-          completedFocusCycles: state.completedFocusCycles,
-          cycleId: state.cycleId,
-          endsAt: state.endsAt,
-          focusDurationMs: state.focusDurationMs,
           id: FOCUS_TIMER_STATE_ROW_ID,
-          lastCompletedBreakCompletedAt:
-            state.lastCompletedBreak?.completedAt ?? null,
-          lastCompletedBreakTimerSessionId:
-            state.lastCompletedBreak?.timerSessionId ?? null,
-          lastCompletedBreakVariant: state.lastCompletedBreak?.variant ?? null,
-          lastUpdatedAt: state.lastUpdatedAt,
-          phase: state.phase,
-          remainingMs: state.remainingMs,
-          startedAt: state.startedAt,
-          status: state.status,
-          timerSessionId: state.timerSessionId,
+          ...row,
         })
         .onConflictDoUpdate({
-          set: {
-            breakVariant: state.breakVariant,
-            completedFocusCycles: state.completedFocusCycles,
-            cycleId: state.cycleId,
-            endsAt: state.endsAt,
-            focusDurationMs: state.focusDurationMs,
-            lastCompletedBreakCompletedAt:
-              state.lastCompletedBreak?.completedAt ?? null,
-            lastCompletedBreakTimerSessionId:
-              state.lastCompletedBreak?.timerSessionId ?? null,
-            lastCompletedBreakVariant:
-              state.lastCompletedBreak?.variant ?? null,
-            lastUpdatedAt: state.lastUpdatedAt,
-            phase: state.phase,
-            remainingMs: state.remainingMs,
-            startedAt: state.startedAt,
-            status: state.status,
-            timerSessionId: state.timerSessionId,
-          },
+          set: row,
           target: focusTimerState.id,
         })
         .run();
