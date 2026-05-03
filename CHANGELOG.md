@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.4 - 2026-05-03
+
+Changes since `v0.1.2-beta.3`.
+
+### Fixes
+
+- Rebuild native deps after release tests
+
 ## 0.1.2-beta.3 - 2026-05-03
 
 Changes since `v0.1.2-beta.2`.
