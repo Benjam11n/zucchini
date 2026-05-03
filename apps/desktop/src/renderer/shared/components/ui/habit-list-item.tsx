@@ -21,6 +21,7 @@ interface HabitListItemStreak {
 
 interface HabitListItemProps {
   habit: HabitWithStatus;
+  isStreakLoading?: boolean;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
   streak?: HabitListItemStreak;
@@ -29,8 +30,41 @@ interface HabitListItemProps {
 
 const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
 const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };
+
+function HabitStreakLabel({
+  isLoading,
+  streak,
+}: {
+  isLoading?: boolean | undefined;
+  streak?: HabitListItemStreak | undefined;
+}) {
+  if (streak && streak.currentStreak > 0) {
+    return (
+      <span
+        aria-label={`Current streak ${streak.currentStreak} days`}
+        className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
+        title={`Current streak: ${streak.currentStreak} days. Best: ${streak.bestStreak} days.`}
+      >
+        {streak.currentStreak} {streak.currentStreak === 1 ? "day" : "days"}
+      </span>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <span
+        aria-label="Loading habit streak"
+        className="h-4 w-11 shrink-0 animate-pulse rounded-full bg-muted"
+      />
+    );
+  }
+
+  return null;
+}
+
 function HabitListItemComponent({
   habit,
+  isStreakLoading,
   onToggle,
   showCategory,
   streak,
@@ -90,15 +124,7 @@ function HabitListItemComponent({
           </span>
         )}
       </div>
-      {streak && streak.currentStreak > 0 ? (
-        <span
-          aria-label={`Current streak ${streak.currentStreak} days`}
-          className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
-          title={`Current streak: ${streak.currentStreak} days. Best: ${streak.bestStreak} days.`}
-        >
-          {streak.currentStreak} {streak.currentStreak === 1 ? "day" : "days"}
-        </span>
-      ) : null}
+      <HabitStreakLabel isLoading={isStreakLoading} streak={streak} />
       {trailingActions ? (
         <div className="z-10 flex shrink-0 items-center gap-1">
           {trailingActions}

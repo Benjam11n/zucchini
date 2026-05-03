@@ -81,8 +81,8 @@ const state: TodayState = {
 };
 
 describe("today page", () => {
-  it("opens in-flow habit management from the daily checklist", () => {
-    render(
+  function renderTodayPage(todayState: TodayState = state) {
+    return render(
       <TodayPage
         hasLoadedHistorySummary
         historySummary={history}
@@ -92,7 +92,7 @@ describe("today page", () => {
         onRenameHabit={vi.fn(() => Promise.resolve())}
         onReorderHabits={vi.fn(() => Promise.resolve())}
         onUnarchiveHabit={vi.fn(() => Promise.resolve())}
-        state={state}
+        state={todayState}
         onDecrementHabitProgress={vi.fn()}
         onIncrementHabitProgress={vi.fn()}
         onToggleHabit={vi.fn()}
@@ -102,11 +102,51 @@ describe("today page", () => {
         onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
       />
     );
+  }
+
+  it("opens in-flow habit management from the daily checklist", () => {
+    renderTodayPage();
 
     fireEvent.click(screen.getByRole("button", { name: "Manage" }));
 
     expect(screen.getByText("Manage habits")).toBeInTheDocument();
     expect(screen.getByText("Add a habit")).toBeInTheDocument();
     expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
+  });
+
+  it("reserves habit streak space while streak data loads", () => {
+    renderTodayPage();
+
+    expect(screen.getByLabelText("Loading habit streak")).toBeInTheDocument();
+  });
+
+  it("shows loaded habit streaks without keeping the loading placeholder", () => {
+    renderTodayPage({
+      ...state,
+      habitStreaks: {
+        1: {
+          bestStreak: 4,
+          currentStreak: 2,
+        },
+      },
+    });
+
+    expect(screen.getByLabelText("Current streak 2 days")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Loading habit streak")).toBeNull();
+  });
+
+  it("removes the placeholder when loaded streak data has no current streak", () => {
+    renderTodayPage({
+      ...state,
+      habitStreaks: {
+        1: {
+          bestStreak: 4,
+          currentStreak: 0,
+        },
+      },
+    });
+
+    expect(screen.queryByLabelText("Loading habit streak")).toBeNull();
+    expect(screen.queryByLabelText(/Current streak/u)).toBeNull();
   });
 });
