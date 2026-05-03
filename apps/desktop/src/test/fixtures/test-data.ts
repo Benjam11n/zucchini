@@ -430,7 +430,87 @@ function createPeriodicCompletedCount(
   );
 }
 
-function createStatusRows(
+function createStatusRow({
+  completedCount,
+  habit,
+  periodEnd,
+  periodStart,
+}: {
+  completedCount: number;
+  habit: GeneratedHabit;
+  periodEnd: string;
+  periodStart: string;
+}): StatusRow {
+  return {
+    completed: completedCount >= habit.targetCount,
+    completedCount,
+    frequency: habit.frequency,
+    habitCategory: habit.category,
+    habitCreatedAt: habit.createdAt,
+    habitId: habit.id,
+    habitName: habit.name,
+    habitSelectedWeekdays: habit.selectedWeekdays
+      ? JSON.stringify(habit.selectedWeekdays)
+      : null,
+    habitSortOrder: habit.sortOrder,
+    habitTargetCount: habit.targetCount,
+    periodEnd,
+    periodStart,
+  };
+}
+
+function getEligibleDailyHabits(
+  habits: readonly GeneratedHabit[],
+  date: string
+): GeneratedHabit[] {
+  return habits.filter(
+    (habit) =>
+      habit.frequency === "daily" &&
+      date >= habit.createdDate &&
+      date <= habit.endDate &&
+      isScheduledOnDate(habit, date)
+  );
+}
+
+function createDailyStatusMap(
+  eligibleDailyHabits: readonly GeneratedHabit[],
+  rng: () => number
+): Map<number, boolean> {
+  const dayMode = rng();
+  const statusMap = new Map<number, boolean>();
+
+  if (dayMode < 0.58) {
+    for (const habit of eligibleDailyHabits) {
+      statusMap.set(habit.id, true);
+    }
+
+    return statusMap;
+  }
+
+  let completedCount = 0;
+
+  for (const habit of eligibleDailyHabits) {
+    const target =
+      dayMode < 0.82
+        ? habit.baseCompletionRate - 0.1 + rng() * 0.08
+        : habit.baseCompletionRate - 0.45 + rng() * 0.12;
+    const completed = rng() < Math.max(0.05, Math.min(0.95, target));
+    statusMap.set(habit.id, completed);
+    completedCount += Number(completed);
+  }
+
+  if (completedCount === eligibleDailyHabits.length) {
+    const index = randomInt(rng, 0, eligibleDailyHabits.length - 1);
+    const habit = eligibleDailyHabits[index];
+    if (habit) {
+      statusMap.set(habit.id, false);
+    }
+  }
+
+  return statusMap;
+}
+
+function createDailyStatusRows(
   habits: readonly GeneratedHabit[],
   trackedDates: readonly string[],
   rng: () => number
@@ -442,129 +522,87 @@ function createStatusRows(
   const dailyStatusesByDate = new Map<string, Map<number, boolean>>();
 
   for (const date of trackedDates) {
-    const eligibleDailyHabits = habits.filter(
-      (habit) =>
-        habit.frequency === "daily" &&
-        date >= habit.createdDate &&
-        date <= habit.endDate &&
-        isScheduledOnDate(habit, date)
-    );
+    const eligibleDailyHabits = getEligibleDailyHabits(habits, date);
 
     if (eligibleDailyHabits.length === 0) {
       continue;
     }
 
-    const dayMode = rng();
-    const statusMap = new Map<number, boolean>();
-
-    if (dayMode < 0.58) {
-      for (const habit of eligibleDailyHabits) {
-        statusMap.set(habit.id, true);
-      }
-    } else {
-      let completedCount = 0;
-
-      for (const habit of eligibleDailyHabits) {
-        const target =
-          dayMode < 0.82
-            ? habit.baseCompletionRate - 0.1 + rng() * 0.08
-            : habit.baseCompletionRate - 0.45 + rng() * 0.12;
-        const completed = rng() < Math.max(0.05, Math.min(0.95, target));
-        statusMap.set(habit.id, completed);
-        completedCount += Number(completed);
-      }
-
-      if (completedCount === eligibleDailyHabits.length) {
-        const index = randomInt(rng, 0, eligibleDailyHabits.length - 1);
-        const habit = eligibleDailyHabits[index];
-        if (habit) {
-          statusMap.set(habit.id, false);
-        }
-      }
-    }
-
+    const statusMap = createDailyStatusMap(eligibleDailyHabits, rng);
     dailyStatusesByDate.set(date, statusMap);
 
     for (const habit of eligibleDailyHabits) {
       const completed = statusMap.get(habit.id) ?? false;
 
-      statusRows.push({
-        completed,
-        completedCount: completed ? 1 : 0,
-        frequency: habit.frequency,
-        habitCategory: habit.category,
-        habitCreatedAt: habit.createdAt,
-        habitId: habit.id,
-        habitName: habit.name,
-        habitSelectedWeekdays: habit.selectedWeekdays
-          ? JSON.stringify(habit.selectedWeekdays)
-          : null,
-        habitSortOrder: habit.sortOrder,
-        habitTargetCount: habit.targetCount,
-        periodEnd: date,
-        periodStart: date,
-      });
-    }
-  }
-
-  for (const habit of habits.filter((item) => item.frequency !== "daily")) {
-    if (habit.createdDate > habit.endDate) {
-      continue;
-    }
-
-    if (habit.frequency === "weekly") {
-      for (
-        let cursor = startOfWeek(habit.createdDate);
-        cursor <= habit.endDate;
-        cursor = addDays(cursor, 7)
-      ) {
-        const period = getHabitPeriod("weekly", cursor);
-        const completedCount = createPeriodicCompletedCount(habit, rng);
-
-        statusRows.push({
-          completed: completedCount >= habit.targetCount,
-          completedCount,
-          frequency: habit.frequency,
-          habitCategory: habit.category,
-          habitCreatedAt: habit.createdAt,
-          habitId: habit.id,
-          habitName: habit.name,
-          habitSelectedWeekdays: null,
-          habitSortOrder: habit.sortOrder,
-          habitTargetCount: habit.targetCount,
-          periodEnd: period.end,
-          periodStart: period.start,
-        });
-      }
-      continue;
-    }
-
-    for (
-      let cursor = startOfMonth(habit.createdDate);
-      cursor <= habit.endDate;
-      cursor = addMonths(cursor, 1)
-    ) {
-      const period = getHabitPeriod("monthly", cursor);
-      const completedCount = createPeriodicCompletedCount(habit, rng);
-
-      statusRows.push({
-        completed: completedCount >= habit.targetCount,
-        completedCount,
-        frequency: habit.frequency,
-        habitCategory: habit.category,
-        habitCreatedAt: habit.createdAt,
-        habitId: habit.id,
-        habitName: habit.name,
-        habitSelectedWeekdays: null,
-        habitSortOrder: habit.sortOrder,
-        habitTargetCount: habit.targetCount,
-        periodEnd: period.end,
-        periodStart: period.start,
-      });
+      statusRows.push(
+        createStatusRow({
+          completedCount: completed ? 1 : 0,
+          habit,
+          periodEnd: date,
+          periodStart: date,
+        })
+      );
     }
   }
 
   return { dailyStatusesByDate, statusRows };
+}
+
+function createPeriodicStatusRows(
+  habits: readonly GeneratedHabit[],
+  rng: () => number
+): StatusRow[] {
+  const statusRows: StatusRow[] = [];
+
+  for (const habit of habits) {
+    if (habit.frequency === "daily" || habit.createdDate > habit.endDate) {
+      continue;
+    }
+
+    const startDate =
+      habit.frequency === "weekly"
+        ? startOfWeek(habit.createdDate)
+        : startOfMonth(habit.createdDate);
+    const addPeriod = habit.frequency === "weekly" ? addDays : addMonths;
+    const increment = habit.frequency === "weekly" ? 7 : 1;
+
+    for (
+      let cursor = startDate;
+      cursor <= habit.endDate;
+      cursor = addPeriod(cursor, increment)
+    ) {
+      const period = getHabitPeriod(habit.frequency, cursor);
+      const completedCount = createPeriodicCompletedCount(habit, rng);
+
+      statusRows.push(
+        createStatusRow({
+          completedCount,
+          habit,
+          periodEnd: period.end,
+          periodStart: period.start,
+        })
+      );
+    }
+  }
+
+  return statusRows;
+}
+
+function createStatusRows(
+  habits: readonly GeneratedHabit[],
+  trackedDates: readonly string[],
+  rng: () => number
+): {
+  dailyStatusesByDate: Map<string, Map<number, boolean>>;
+  statusRows: StatusRow[];
+} {
+  const dailyStatusRows = createDailyStatusRows(habits, trackedDates, rng);
+  const periodicStatusRows = createPeriodicStatusRows(habits, rng);
+
+  return {
+    dailyStatusesByDate: dailyStatusRows.dailyStatusesByDate,
+    statusRows: [...dailyStatusRows.statusRows, ...periodicStatusRows],
+  };
 }
 
 function createDailySummaries(

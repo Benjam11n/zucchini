@@ -1,30 +1,18 @@
 /**
  * Top-level React application composition.
  *
- * This file decides which major screen to show, lazy-loads heavier tabs, and
- * turns controller state into the app shell plus loading or error states.
+ * Keeps boot states visible at the root, then hands the ready application shell
+ * to route composition.
  */
 import { lazy, Suspense } from "react";
 
 import { AppErrorBoundary } from "@/renderer/app/app-error-boundary";
+import { AppReadyShell } from "@/renderer/app/app-ready-shell";
+import { BootErrorScreen } from "@/renderer/app/boot-error-screen";
 import { getBootErrorDisplay } from "@/renderer/app/boot/boot-errors";
 import { useAppController } from "@/renderer/app/controller/use-app-controller";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
-import { AppShell } from "@/renderer/app/shell/app-shell";
-import { MASCOTS } from "@/renderer/assets/mascots";
-import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
-import { TodayPage } from "@/renderer/features/today/today-page";
-import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
-import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
 import { Toaster } from "@/renderer/shared/components/ui/sonner";
-import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 
 const FocusWidget = lazy(async () => {
   const module =
@@ -32,30 +20,17 @@ const FocusWidget = lazy(async () => {
 
   return { default: module.FocusWidget };
 });
-const HistoryPage = lazy(async () => {
-  const module = await import("@/renderer/features/history/history-page");
 
-  return { default: module.HistoryPage };
-});
-const FocusPage = lazy(async () => {
-  const module = await import("@/renderer/features/focus/focus-page");
-
-  return { default: module.FocusPage };
-});
-const SettingsPage = lazy(async () => {
-  const module = await import("@/renderer/features/settings/settings-page");
-
-  return { default: module.SettingsPage };
-});
-const WeeklyReviewSpotlightDialog = lazy(async () => {
-  const module =
-    await import("@/renderer/features/history/weekly-review/components/weekly-review-spotlight-dialog");
-
-  return { default: module.WeeklyReviewSpotlightDialog };
-});
+type AppController = ReturnType<typeof useAppController>;
+export type ReadyAppController = AppController & {
+  state: AppController["state"] & {
+    todayState: NonNullable<AppController["state"]["todayState"]>;
+  };
+};
 
 function MainApp() {
-  const { actions, state, tab } = useAppController();
+  const controller = useAppController();
+  const { actions, state } = controller;
 
   if (state.bootPhase === "loading") {
     return (
@@ -68,29 +43,11 @@ function MainApp() {
   }
 
   if (state.bootPhase === "error") {
-    const errorDisplay = getBootErrorDisplay(state.bootError);
-
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center gap-6 px-6 pt-10 pb-0">
-            <img
-              alt="Sad Zucchini mascot"
-              className="size-28 object-contain"
-              src={MASCOTS.sad}
-            />
-          </CardContent>
-          <CardHeader className="items-center text-center">
-            <CardTitle>{errorDisplay.title}</CardTitle>
-            <CardDescription>{errorDisplay.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="px-6 pt-0 pb-6">
-            <Button className="w-full" onClick={actions.handleRetryBoot}>
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      </main>
+      <BootErrorScreen
+        errorDisplay={getBootErrorDisplay(state.bootError)}
+        onRetry={actions.handleRetryBoot}
+      />
     );
   }
 
@@ -98,172 +55,7 @@ function MainApp() {
     return null;
   }
 
-  let renderedPage = (
-    <TodayPage
-      hasLoadedHistorySummary={state.hasLoadedHistorySummary}
-      historySummary={state.historySummary}
-      managedHabits={state.managedHabits}
-      onArchiveHabit={actions.handleArchiveHabit}
-      onCreateHabit={actions.handleCreateHabit}
-      onDecrementHabitProgress={actions.handleDecrementHabitProgress}
-      onIncrementHabitProgress={actions.handleIncrementHabitProgress}
-      onRenameHabit={actions.handleRenameHabit}
-      onReorderHabits={actions.handleReorderHabits}
-      onUnarchiveHabit={actions.handleUnarchiveHabit}
-      state={state.todayState}
-      onToggleHabit={actions.handleToggleHabit}
-      onUpdateHabitCategory={actions.handleUpdateHabitCategory}
-      onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
-      onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
-      onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
-    />
-  );
-
-  if (tab === "windDown") {
-    renderedPage = (
-      <WindDownPage
-        onCreateAction={actions.handleCreateWindDownAction}
-        onDeleteAction={actions.handleDeleteWindDownAction}
-        onRenameAction={actions.handleRenameWindDownAction}
-        onToggleAction={actions.handleToggleWindDownAction}
-        state={state.todayState}
-      />
-    );
-  }
-
-  if (tab === "history") {
-    renderedPage = (
-      <Suspense
-        fallback={
-          <LoadingStateCard
-            description="Loading history and weekly review charts."
-            title="Loading history"
-          />
-        }
-      >
-        <HistoryPage
-          history={state.history}
-          historyLoadError={state.historyLoadError}
-          historyScope={state.historyScope}
-          isHistoryLoading={state.isHistoryLoading}
-          onLoadOlderHistory={actions.handleLoadOlderHistory}
-          onNavigateToToday={() => actions.handleTabChange("today")}
-          todayDate={state.todayState.date}
-          onSelectWeeklyReview={actions.handleWeeklyReviewSelect}
-          selectedWeeklyReview={state.selectedWeeklyReview}
-          weeklyReviewError={state.weeklyReviewError}
-          weeklyReviewOverview={state.weeklyReviewOverview}
-          weeklyReviewPhase={state.weeklyReviewPhase}
-        />
-      </Suspense>
-    );
-  }
-
-  if (tab === "focus") {
-    renderedPage = (
-      <Suspense
-        fallback={
-          <LoadingStateCard
-            description="Loading your focus timer and recent sessions."
-            title="Loading focus"
-          />
-        }
-      >
-        <FocusPage
-          fieldErrors={state.settingsFieldErrors}
-          focusSaveErrorMessage={state.focusSaveErrorMessage}
-          focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
-          phase={state.focusSessionsPhase}
-          sessions={state.focusSessions}
-          sessionsLoadError={state.focusSessionsLoadError}
-          settings={state.settingsDraft ?? state.todayState.settings}
-          settingsSavePhase={state.settingsSavePhase}
-          timerState={state.timerState}
-          todayDate={state.todayState.date}
-          onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
-          onChangeSettings={actions.handleSettingsDraftChange}
-          onShowWidget={actions.handleShowFocusWidget}
-          onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
-          onRetryLoad={actions.handleRetryFocusLoad}
-        />
-      </Suspense>
-    );
-  }
-
-  if (tab === "settings") {
-    renderedPage = (
-      <Suspense
-        fallback={
-          <LoadingStateCard
-            description="Loading settings and habit management tools."
-            title="Loading settings"
-          />
-        }
-      >
-        <SettingsPage
-          fieldErrors={state.settingsFieldErrors}
-          focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
-          habits={state.managedHabits}
-          settings={state.settingsDraft ?? state.todayState.settings}
-          saveErrorMessage={state.settingsSaveErrorMessage}
-          savePhase={state.settingsSavePhase}
-          onArchiveHabit={actions.handleArchiveHabit}
-          onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
-          onChange={actions.handleSettingsDraftChange}
-          onCreateHabit={actions.handleCreateHabit}
-          onOpenWindDown={actions.handleOpenWindDown}
-          onRenameHabit={actions.handleRenameHabit}
-          onReorderHabits={actions.handleReorderHabits}
-          onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
-          onUnarchiveHabit={actions.handleUnarchiveHabit}
-          onUnarchiveFocusQuotaGoal={actions.handleUnarchiveFocusQuotaGoal}
-          onUpdateHabitCategory={actions.handleUpdateHabitCategory}
-          onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
-          onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
-          onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
-        />
-      </Suspense>
-    );
-  }
-
-  const rightSidebar =
-    tab === "today" ? (
-      <TodaySidebar
-        history={state.history}
-        isSickDay={state.todayState.dayStatus === "sick"}
-        state={state.todayState}
-        onToggleSickDay={actions.handleToggleSickDay}
-      />
-    ) : undefined;
-
-  return (
-    <HabitCategoryPreferencesProvider
-      preferences={
-        (state.settingsDraft ?? state.todayState.settings).categoryPreferences
-      }
-    >
-      <>
-        <AppShell
-          rightSidebar={rightSidebar}
-          tab={tab}
-          onTabChange={actions.handleTabChange}
-        >
-          {renderedPage}
-        </AppShell>
-        {state.isWeeklyReviewSpotlightOpen &&
-        state.weeklyReviewOverview?.latestReview ? (
-          <Suspense fallback={null}>
-            <WeeklyReviewSpotlightDialog
-              onDismiss={actions.handleDismissWeeklyReviewSpotlight}
-              onOpenReview={actions.handleWeeklyReviewOpen}
-              open={state.isWeeklyReviewSpotlightOpen}
-              review={state.weeklyReviewOverview.latestReview}
-            />
-          </Suspense>
-        ) : null}
-      </>
-    </HabitCategoryPreferencesProvider>
-  );
+  return <AppReadyShell controller={controller as ReadyAppController} />;
 }
 
 export default function App() {
@@ -289,10 +81,8 @@ export default function App() {
       description="The app hit an unexpected error. Reload Zucchini to continue."
       title="Unexpected app error"
     >
-      <>
-        <MainApp />
-        <Toaster />
-      </>
+      <MainApp />
+      <Toaster />
     </AppErrorBoundary>
   );
 }
