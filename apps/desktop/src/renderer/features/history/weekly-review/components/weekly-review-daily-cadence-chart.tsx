@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Suspense, lazy } from "react";
 
 import { WeeklyReviewChartFallback } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-fallback";
@@ -9,11 +7,12 @@ interface WeeklyReviewDailyCadenceChartProps {
   review: WeeklyReview;
 }
 
-const WeeklyReviewDailyCadenceChartImpl = lazy(() =>
-  import("./weekly-review-daily-cadence-chart-impl").then((module) => ({
+const WeeklyReviewDailyCadenceChartImpl = lazy(async () => {
+  const module = await import("./weekly-review-daily-cadence-chart-impl");
+  return {
     default: module.WeeklyReviewDailyCadenceChartImpl,
-  }))
-);
+  };
+});
 
 export function WeeklyReviewDailyCadenceChart({
   review,

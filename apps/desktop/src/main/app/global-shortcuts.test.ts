@@ -22,12 +22,12 @@ function createGlobalShortcutMock() {
       return callbacks.has(accelerator);
     },
     // Electron's API is callback-based; the mock mirrors that surface.
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    register(accelerator: string, callback: () => void) {
+    register(accelerator: string, ...callbackArgs: [() => void]) {
       if (rejectedAccelerators.has(accelerator)) {
         return false;
       }
 
+      const [callback] = callbackArgs;
       callbacks.set(accelerator, callback);
       return true;
     },

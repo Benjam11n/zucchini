@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Suspense, lazy } from "react";
 
 import { ChartSectionFallback } from "@/renderer/features/history/components/chart-section-fallback";
@@ -15,29 +13,29 @@ import {
 } from "@/renderer/shared/components/ui/card";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
 
-const WeeklyReviewDailyCadenceChart = lazy(() =>
-  import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart").then(
-    (module) => ({
-      default: module.WeeklyReviewDailyCadenceChart,
-    })
-  )
-);
+const WeeklyReviewDailyCadenceChart = lazy(async () => {
+  const module =
+    await import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart");
+  return {
+    default: module.WeeklyReviewDailyCadenceChart,
+  };
+});
 
-const WeeklyReviewHabitChart = lazy(() =>
-  import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart").then(
-    (module) => ({
-      default: module.WeeklyReviewHabitChart,
-    })
-  )
-);
+const WeeklyReviewHabitChart = lazy(async () => {
+  const module =
+    await import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart");
+  return {
+    default: module.WeeklyReviewHabitChart,
+  };
+});
 
-const WeeklyReviewTrendChart = lazy(() =>
-  import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart").then(
-    (module) => ({
-      default: module.WeeklyReviewTrendChart,
-    })
-  )
-);
+const WeeklyReviewTrendChart = lazy(async () => {
+  const module =
+    await import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart");
+  return {
+    default: module.WeeklyReviewTrendChart,
+  };
+});
 
 export function WeeklyReviewSection({
   onSelectWeeklyReview,

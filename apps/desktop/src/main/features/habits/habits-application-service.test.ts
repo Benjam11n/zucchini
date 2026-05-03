@@ -96,8 +96,9 @@ class FakeRepository implements AppRepository {
   focusQuotaGoals: FocusQuotaGoal[] = [];
   focusTimerState: PersistedFocusTimerState | null = null;
 
-  // oxlint-disable-next-line class-methods-use-this
-  initializeSchema(): void {}
+  initializeSchema = (): void => {
+    void this.habits;
+  };
   runInTransaction<A>(label: string, execute: () => A): A {
     if (this.failTransactionForLabel === label) {
       throw new Error(`transaction failed: ${label}`);
@@ -105,8 +106,9 @@ class FakeRepository implements AppRepository {
 
     return execute();
   }
-  // oxlint-disable-next-line class-methods-use-this
-  seedDefaults(): void {}
+  seedDefaults = (): void => {
+    void this.habits;
+  };
 
   getHabits(): Habit[] {
     return this.habits

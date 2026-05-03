@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import { watch } from "node:fs";
@@ -138,14 +136,18 @@ function scheduleRestart() {
 
   restartTimer = setTimeout(() => {
     restartTimer = null;
-    restartQueue = restartQueue
-      .catch(() => null)
-      .then(async () => {
-        await stopApp();
-        if (!shuttingDown) {
-          startApp();
-        }
-      });
+    restartQueue = (async () => {
+      try {
+        await restartQueue;
+      } catch (error) {
+        console.warn("Previous Electron restart failed.", error);
+      }
+
+      await stopApp();
+      if (!shuttingDown) {
+        startApp();
+      }
+    })();
   }, restartDebounceMs);
 }
 
@@ -205,12 +207,23 @@ startWatchers();
 cleanupStaleDevApps();
 startApp();
 
+function requestShutdown(exitCode) {
+  void (async () => {
+    try {
+      await shutdown(exitCode);
+    } catch (error) {
+      console.error("Failed to shut down Electron dev process.", error);
+      process.exit(1);
+    }
+  })();
+}
+
 process.once("SIGINT", () => {
-  shutdown(130).catch(reportAppReadyFailure);
+  requestShutdown(130);
 });
 process.once("SIGTERM", () => {
-  shutdown(143).catch(reportAppReadyFailure);
+  requestShutdown(143);
 });
 process.once("SIGHUP", () => {
-  shutdown(129).catch(reportAppReadyFailure);
+  requestShutdown(129);
 });

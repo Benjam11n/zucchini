@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Download, RefreshCw, Rocket } from "lucide-react";
 
 import { clearDismissedUpdateVersion } from "@/renderer/app/shell/update-toast-storage";

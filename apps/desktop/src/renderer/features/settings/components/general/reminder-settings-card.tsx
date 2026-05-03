@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Bell, Globe2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -188,15 +186,11 @@ export function ReminderSettingsCard({
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        refreshNotificationStatus().catch(() => {
-          // `refreshNotificationStatus` already updates the fallback state.
-        });
+        void refreshNotificationStatus();
       }
     };
 
-    refreshNotificationStatus().catch(() => {
-      // `refreshNotificationStatus` already updates the fallback state.
-    });
+    void refreshNotificationStatus();
     window.addEventListener("focus", handleVisibilityChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 

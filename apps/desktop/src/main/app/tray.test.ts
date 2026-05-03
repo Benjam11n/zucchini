@@ -29,32 +29,30 @@ vi.mock("electron", async (importOriginal) => {
     },
     Tray: Object.assign(
       class {
+        private readonly state = trayState;
+
         constructor() {
           trayState.trayCount += 1;
         }
 
-        // oxlint-disable-next-line class-methods-use-this
-        destroy(): void {
-          trayState.destroyCount += 1;
-        }
+        destroy = (): void => {
+          this.state.destroyCount += 1;
+        };
 
-        // oxlint-disable-next-line class-methods-use-this
-        on(event: string, handler: () => void): void {
+        on = (event: string, handler: () => void): void => {
           if (event === "click") {
-            trayState.clickHandler = handler;
+            this.state.clickHandler = handler;
           }
-        }
+        };
 
-        // oxlint-disable-next-line class-methods-use-this
-        setContextMenu(
+        setContextMenu = (
           menu: ElectronModule.MenuItemConstructorOptions[]
-        ): void {
-          trayState.setContextMenuCount += 1;
-          trayState.lastMenu = menu;
-        }
+        ): void => {
+          this.state.setContextMenuCount += 1;
+          this.state.lastMenu = menu;
+        };
 
-        // oxlint-disable-next-line class-methods-use-this
-        setToolTip(): void {}
+        setToolTip = vi.fn();
       },
       actual.Tray
     ),

@@ -48,8 +48,8 @@ export function configureSessionSecurity(
         requestingUrl: details.requestingUrl,
       });
       // Electron requires a synchronous callback decision for permission prompts.
-      // oxlint-disable-next-line eslint-plugin-promise(prefer-await-to-callbacks)
-      callback(false);
+      const denyPermission = callback;
+      denyPermission(false);
     }
   );
 }

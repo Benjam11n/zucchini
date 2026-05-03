@@ -229,11 +229,13 @@ async function setupUseAppController({
     configurable: true,
     value: vi.fn().mockReturnValue(mediaQuery),
   });
-  /* oxlint-disable promise/prefer-await-to-callbacks */
   Object.defineProperty(window, "requestIdleCallback", {
     configurable: true,
-    value: vi.fn((callback: IdleRequestCallback) => {
-      callback({ didTimeout: false, timeRemaining: () => 50 });
+    value: vi.fn((...callbackArgs: [IdleRequestCallback]) => {
+      const [callback] = callbackArgs;
+      Reflect.apply(callback, undefined, [
+        { didTimeout: false, timeRemaining: () => 50 },
+      ]);
       return 1;
     }),
     writable: true,

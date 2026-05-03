@@ -6,8 +6,6 @@
  * bridge (`window.habits`) and optimistically updates the Zustand store on
  * success. Reorder and toggle actions include optimistic rollback on failure.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import type { AppTab } from "@/renderer/app/app.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
@@ -341,15 +339,11 @@ export function createTodayActions({
       }
 
       if (nextTab === "focus") {
-        loadFocusSessions().catch(() => {
-          // Focus-session load failures are surfaced through store state.
-        });
+        void loadFocusSessions();
       }
 
       if (nextTab === "history") {
-        refreshWeeklyReviewOverview().catch(() => {
-          // Weekly review failures are surfaced through store state.
-        });
+        void refreshWeeklyReviewOverview();
       }
     },
     handleOpenWindDown() {

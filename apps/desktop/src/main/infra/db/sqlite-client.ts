@@ -37,21 +37,19 @@ export interface SqliteDatabaseClientOptions {
   databasePath?: string;
 }
 
+function runWithDatabaseError<A>(label: string, execute: () => A): A {
+  return Effect.runSync(
+    Effect.try({
+      catch: (cause) => new DatabaseError(label, cause),
+      try: execute,
+    })
+  );
+}
+
 export class SqliteDatabaseClient {
   private database: Database.Database | null = null;
   private drizzleDb: DrizzleDatabase | null = null;
   private readonly databasePath: string | undefined;
-  // eslint-disable-next-line class-methods-use-this
-  private readonly runWithDatabaseError = <A>(
-    label: string,
-    execute: () => A
-  ): A =>
-    Effect.runSync(
-      Effect.try({
-        catch: (cause) => new DatabaseError(label, cause),
-        try: execute,
-      })
-    );
 
   constructor(options: SqliteDatabaseClientOptions = {}) {
     this.databasePath = options.databasePath;
@@ -77,6 +75,11 @@ export class SqliteDatabaseClient {
 
   run<A>(label: string, execute: () => A): A {
     return this.runWithDatabaseError(label, execute);
+  }
+
+  private runWithDatabaseError<A>(label: string, execute: () => A): A {
+    void this.databasePath;
+    return runWithDatabaseError(label, execute);
   }
 
   transaction<A>(label: string, execute: () => A): A {

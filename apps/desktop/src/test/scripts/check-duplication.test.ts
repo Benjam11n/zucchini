@@ -40,7 +40,7 @@ describe("check-duplication args", () => {
       json: false,
       jsonOut: null,
       maxFindings: 30,
-      minLines: 8,
+      minLines: 12,
       minTokens: 40,
       root: "src",
       threshold: 2,
@@ -298,7 +298,7 @@ describe("check-duplication exit codes", () => {
           fileSimilarityThreshold: 0.35,
           include: [],
           maxFindings: 20,
-          minLines: 8,
+          minLines: 12,
           minTokens: 40,
           threshold: 5,
         },
@@ -327,7 +327,7 @@ describe("check-duplication exit codes", () => {
           fileSimilarityThreshold: 0.35,
           include: [],
           maxFindings: 20,
-          minLines: 8,
+          minLines: 12,
           minTokens: 40,
           threshold: 5,
         },
@@ -405,7 +405,10 @@ describe("check-duplication integration", () => {
     );
     writeFile(tempDir, "src/other.ts", `export const unrelated = 1;`);
 
-    const options = parseArgs(["--threshold", "99"], tempDir);
+    const options = parseArgs(
+      ["--min-lines", "4", "--threshold", "99"],
+      tempDir
+    );
     const files = collectSourceFiles(options);
     const parsedFiles = files.map((filePath) =>
       parseSourceText(

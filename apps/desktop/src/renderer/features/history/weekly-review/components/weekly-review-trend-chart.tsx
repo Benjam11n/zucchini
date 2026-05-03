@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Suspense, lazy } from "react";
 
 import { WeeklyReviewChartFallback } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-fallback";
@@ -9,11 +7,12 @@ interface WeeklyReviewTrendChartProps {
   trend: WeeklyReviewTrendPoint[];
 }
 
-const WeeklyReviewTrendChartImpl = lazy(() =>
-  import("./weekly-review-trend-chart-impl").then((module) => ({
+const WeeklyReviewTrendChartImpl = lazy(async () => {
+  const module = await import("./weekly-review-trend-chart-impl");
+  return {
     default: module.WeeklyReviewTrendChartImpl,
-  }))
-);
+  };
+});
 
 export function WeeklyReviewTrendChart({ trend }: WeeklyReviewTrendChartProps) {
   return (

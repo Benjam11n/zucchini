@@ -2,7 +2,7 @@ import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
 import { SqliteFocusTimerStateRepository } from "./focus-timer-state-repository";
 
-function createFakeClient(initialRow: Record<string, unknown> | undefined) {
+function createFakeClient(initialRow?: Record<string, unknown>) {
   let row = initialRow;
 
   return {
@@ -49,8 +49,7 @@ function createFakeClient(initialRow: Record<string, unknown> | undefined) {
 describe("SqliteFocusTimerStateRepository", () => {
   it("returns null when no timer state row exists", () => {
     const repository = new SqliteFocusTimerStateRepository(
-      // oxlint-disable-next-line unicorn/no-useless-undefined
-      createFakeClient(undefined) as never
+      createFakeClient() as never
     );
 
     expect(repository.getState()).toBeNull();
@@ -58,8 +57,7 @@ describe("SqliteFocusTimerStateRepository", () => {
 
   it("round-trips focus timer state through the repository", () => {
     const repository = new SqliteFocusTimerStateRepository(
-      // oxlint-disable-next-line unicorn/no-useless-undefined
-      createFakeClient(undefined) as never
+      createFakeClient() as never
     );
     const state: PersistedFocusTimerState = {
       breakVariant: "long",

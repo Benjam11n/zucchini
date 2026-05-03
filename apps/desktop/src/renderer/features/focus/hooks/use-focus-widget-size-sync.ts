@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect } from "react";
 
 export function useFocusWidgetSizeSync(widgetElement: HTMLElement | null) {
@@ -14,9 +12,7 @@ export function useFocusWidgetSizeSync(widgetElement: HTMLElement | null) {
       animationFrame = 0;
       const width = Math.ceil(widgetElement.getBoundingClientRect().width);
       const height = Math.ceil(widgetElement.getBoundingClientRect().height);
-      window.habits.resizeFocusWidget(width, height).catch(() => {
-        // Widget resize sync is best-effort UI behavior.
-      });
+      void window.habits.resizeFocusWidget(width, height);
     };
 
     const scheduleSync = () => {

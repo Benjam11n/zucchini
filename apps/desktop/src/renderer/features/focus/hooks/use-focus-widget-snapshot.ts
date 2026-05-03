@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect, useState } from "react";
 
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
@@ -26,13 +24,9 @@ export function useFocusWidgetSnapshot() {
       }
     };
 
-    loadSnapshot().catch(() => {
-      // `loadSnapshot` already applies the fallback state.
-    });
+    void loadSnapshot();
     const timer = window.setInterval(() => {
-      loadSnapshot().catch(() => {
-        // `loadSnapshot` already applies the fallback state.
-      });
+      void loadSnapshot();
     }, SNAPSHOT_REFRESH_MS);
 
     return () => {

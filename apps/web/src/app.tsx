@@ -95,23 +95,22 @@ export default function App() {
                 {/* History Carousel Mock */}
                 <div className="history-carousel">
                   {[
-                    "SUN",
-                    "MON",
-                    "TUE",
-                    "WED",
-                    "THU",
-                    "FRI",
-                    "SAT",
-                    "SUN",
-                    "MON",
-                    "TUE",
-                    "WED",
-                    "THU",
-                    "FRI",
-                    "SAT",
-                  ].map((day, i) => (
-                    // oxlint-disable-next-line react/no-array-index-key
-                    <div key={`hist-${day}-${i}`} className="history-day">
+                    { day: "SUN", id: "week-1-sun", progressIndex: 0 },
+                    { day: "MON", id: "week-1-mon", progressIndex: 1 },
+                    { day: "TUE", id: "week-1-tue", progressIndex: 2 },
+                    { day: "WED", id: "week-1-wed", progressIndex: 3 },
+                    { day: "THU", id: "week-1-thu", progressIndex: 4 },
+                    { day: "FRI", id: "week-1-fri", progressIndex: 5 },
+                    { day: "SAT", id: "week-1-sat", progressIndex: 6 },
+                    { day: "SUN", id: "week-2-sun", progressIndex: 7 },
+                    { day: "MON", id: "week-2-mon", progressIndex: 8 },
+                    { day: "TUE", id: "week-2-tue", progressIndex: 9 },
+                    { day: "WED", id: "week-2-wed", progressIndex: 10 },
+                    { day: "THU", id: "week-2-thu", progressIndex: 11 },
+                    { day: "FRI", id: "week-2-fri", progressIndex: 12 },
+                    { day: "SAT", id: "week-2-sat", progressIndex: 13 },
+                  ].map(({ day, id, progressIndex }) => (
+                    <div key={id} className="history-day">
                       <svg viewBox="0 0 40 40" width="32" height="32">
                         {/* Fitness Ring (Outer) */}
                         <circle
@@ -130,7 +129,7 @@ export default function App() {
                           stroke="#ff2d55"
                           strokeWidth="3.5"
                           strokeDasharray="113"
-                          strokeDashoffset={20 + (i % 5) * 10}
+                          strokeDashoffset={20 + (progressIndex % 5) * 10}
                           strokeLinecap="round"
                           transform="rotate(-90 20 20)"
                         />
@@ -152,7 +151,7 @@ export default function App() {
                           stroke="#a3f900"
                           strokeWidth="3.5"
                           strokeDasharray="85"
-                          strokeDashoffset={15 + (i % 4) * 12}
+                          strokeDashoffset={15 + (progressIndex % 4) * 12}
                           strokeLinecap="round"
                           transform="rotate(-90 20 20)"
                         />
@@ -174,7 +173,7 @@ export default function App() {
                           stroke="#04c7dd"
                           strokeWidth="3.5"
                           strokeDasharray="57"
-                          strokeDashoffset={10 + (i % 3) * 15}
+                          strokeDashoffset={10 + (progressIndex % 3) * 15}
                           strokeLinecap="round"
                           transform="rotate(-90 20 20)"
                         />

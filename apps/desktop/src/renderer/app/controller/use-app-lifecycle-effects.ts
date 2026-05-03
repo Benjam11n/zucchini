@@ -5,8 +5,6 @@
  * weekly review overview loading, spotlight triggers, system theme syncing,
  * and the midnight rollover that refreshes data when the calendar day changes.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
@@ -66,9 +64,7 @@ export function useAppLifecycleEffects({
   weeklyReviewPhase: AppControllerState["weeklyReviewPhase"];
 }) {
   useEffect(() => {
-    bootApp().catch(() => {
-      // Boot failures are surfaced through controller state.
-    });
+    void bootApp();
   }, [bootApp]);
 
   useEffect(() => {
@@ -94,21 +90,15 @@ export function useAppLifecycleEffects({
     }
 
     const cancelHistorySummary = scheduleDeferredTask(() => {
-      loadHistorySummary().catch(() => {
-        // History summary failures are surfaced through controller state.
-      });
+      void loadHistorySummary();
     }, 1800);
 
     const cancelHabitStreaks = scheduleDeferredTask(() => {
-      loadTodayHabitStreaks().catch(() => {
-        // Habit streak failures are surfaced through controller state.
-      });
+      void loadTodayHabitStreaks();
     }, 2400);
 
     const cancelWeeklyReview = scheduleDeferredTask(() => {
-      loadWeeklyReviewOverview().catch(() => {
-        // Weekly review failures are surfaced through controller state.
-      });
+      void loadWeeklyReviewOverview();
     }, 3500);
 
     return () => {
@@ -163,9 +153,7 @@ export function useAppLifecycleEffects({
         return;
       }
 
-      refreshForNewDay().catch(() => {
-        // Refresh failures are surfaced through controller state.
-      });
+      void refreshForNewDay();
     };
 
     const scheduleNextRefresh = () => {

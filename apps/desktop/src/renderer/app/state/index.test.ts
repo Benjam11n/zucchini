@@ -124,14 +124,15 @@ function createFocusSession(
 }
 
 function createDeferred<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void;
-  let reject!: (reason?: unknown) => void;
-  // Deferred promises are intentional here so tests can control async resolution.
-  // eslint-disable-next-line promise/avoid-new
-  const promise = new Promise<T>((_resolve, _reject) => {
-    resolve = _resolve;
-    reject = _reject;
-  });
+  const { promise, reject, resolve } = (
+    Promise as typeof Promise & {
+      withResolvers<T>(): {
+        promise: Promise<T>;
+        reject: (reason?: unknown) => void;
+        resolve: (value: T | PromiseLike<T>) => void;
+      };
+    }
+  ).withResolvers<T>();
 
   return {
     promise,

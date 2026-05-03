@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect, useReducer } from "react";
 
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
@@ -98,9 +96,7 @@ export function useAppUpdaterState({
       }
     };
 
-    loadState().catch(() => {
-      // `loadState` already updates the visible failure state.
-    });
+    void loadState();
 
     const unsubscribe = window.updater.onStateChange((nextState) => {
       dispatch({ state: nextState, type: "loadSucceeded" });

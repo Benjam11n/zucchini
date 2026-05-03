@@ -57,10 +57,8 @@ describe("focus widget", () => {
     });
 
     class ResizeObserverMock {
-      // oxlint-disable-next-line class-methods-use-this
-      observe() {}
-      // oxlint-disable-next-line class-methods-use-this
-      disconnect() {}
+      observe = vi.fn();
+      disconnect = vi.fn();
     }
 
     Object.defineProperty(globalThis, "ResizeObserver", {

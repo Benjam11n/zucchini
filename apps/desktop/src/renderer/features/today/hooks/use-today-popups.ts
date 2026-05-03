@@ -6,8 +6,6 @@
  * images. Persists the last-seen UI snapshot to avoid duplicate popups
  * across re-renders.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import { createElement, useEffect, useRef } from "react";
 import { toast } from "sonner";
 

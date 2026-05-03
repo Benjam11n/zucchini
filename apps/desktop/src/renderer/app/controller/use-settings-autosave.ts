@@ -6,8 +6,6 @@
  * action. Tracks save phase transitions (idle → pending → saving → saved/error)
  * and surfaces validation errors at the field level.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect, useRef } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
@@ -94,7 +92,7 @@ export function useSettingsAutosave({
     }
 
     const timer = setTimeout(() => {
-      runAsyncTask(() => handleUpdateSettings(validationResult.data), {
+      void runAsyncTask(() => handleUpdateSettings(validationResult.data), {
         onError: () => {
           setSettingsSavePhase("error");
           setSettingsSaveErrorMessage(
@@ -109,8 +107,6 @@ export function useSettingsAutosave({
           setSettingsSavePhase("saved");
           setSettingsSaveErrorMessage(null);
         },
-      }).catch(() => {
-        // `runAsyncTask` routes user-visible failures through its callbacks.
       });
     }, 600);
 

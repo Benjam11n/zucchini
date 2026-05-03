@@ -4,8 +4,6 @@
  * Wires smaller timer concerns together: persistence sync, external IPC
  * events, idle-duration updates, and the leadership tick loop.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import { useEffect, useRef } from "react";
 
 import {

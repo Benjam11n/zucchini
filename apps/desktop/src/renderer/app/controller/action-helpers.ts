@@ -6,8 +6,6 @@
  * and today-state reordering. All multi-store writes use
  * `unstable_batchedUpdates` to avoid intermediate renders.
  */
-/* eslint-disable promise/prefer-await-to-then */
-
 import { unstable_batchedUpdates } from "react-dom";
 
 import { useBootStore } from "@/renderer/app/state/boot-store";
@@ -152,12 +150,7 @@ export function refreshWeeklyReviewIfLoaded(): void {
     return;
   }
 
-  useWeeklyReviewStore
-    .getState()
-    .loadWeeklyReviewOverview()
-    .catch(() => {
-      // Weekly review failures are surfaced through store state.
-    });
+  void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
 }
 
 export function applyBootFailureState(bootError: HabitsIpcError): void {

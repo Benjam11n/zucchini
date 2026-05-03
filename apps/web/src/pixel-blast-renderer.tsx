@@ -1,4 +1,3 @@
-/* oxlint-disable eslint(complexity) */
 import { Effect, EffectComposer, EffectPass, RenderPass } from "postprocessing";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
@@ -35,6 +34,25 @@ interface ReinitConfig {
   noiseAmount: number;
 }
 
+interface PixelBlastRuntimeConfig extends ReinitConfig {
+  autoPauseOffscreen: boolean;
+  color: string;
+  edgeFade: number;
+  enableRipples: boolean;
+  liquidRadius: number;
+  liquidStrength: number;
+  liquidWobbleSpeed: number;
+  patternDensity: number;
+  patternScale: number;
+  pixelSize: number;
+  pixelSizeJitter: number;
+  rippleIntensityScale: number;
+  rippleSpeed: number;
+  rippleThickness: number;
+  transparent: boolean;
+  variant: PixelBlastVariant;
+}
+
 export interface PixelBlastRendererOptions {
   antialias?: boolean;
   autoPauseOffscreen?: boolean;
@@ -57,6 +75,29 @@ export interface PixelBlastRendererOptions {
   transparent?: boolean;
   variant?: PixelBlastVariant;
 }
+
+const DEFAULT_PIXEL_BLAST_OPTIONS = {
+  antialias: true,
+  autoPauseOffscreen: true,
+  color: "#B19EEF",
+  edgeFade: 0.5,
+  enableRipples: true,
+  liquid: false,
+  liquidRadius: 1,
+  liquidStrength: 0.1,
+  liquidWobbleSpeed: 4.5,
+  noiseAmount: 0,
+  patternDensity: 1,
+  patternScale: 2,
+  pixelSize: 3,
+  pixelSizeJitter: 0,
+  rippleIntensityScale: 1,
+  rippleSpeed: 0.3,
+  rippleThickness: 0.1,
+  speed: 0.5,
+  transparent: true,
+  variant: "square",
+} satisfies Required<PixelBlastRendererOptions>;
 
 interface PixelBlastUniforms {
   uClickPos: { value: THREE.Vector2[] };
@@ -500,31 +541,181 @@ function disposeState(
   }
 }
 
+function applyRendererTransparency(
+  renderer: THREE.WebGLRenderer,
+  transparent: boolean
+) {
+  if (transparent) {
+    renderer.setClearAlpha(0);
+    return;
+  }
+
+  renderer.setClearColor(0, 1);
+}
+
+function shouldReinitPixelBlast(
+  previousConfig: ReinitConfig | null,
+  config: ReinitConfig,
+  state: PixelBlastState | null
+): boolean {
+  return (
+    !previousConfig ||
+    previousConfig.antialias !== config.antialias ||
+    previousConfig.liquid !== config.liquid ||
+    previousConfig.noiseAmount !== config.noiseAmount ||
+    state === null
+  );
+}
+
+function createPixelBlastUniforms(
+  renderer: THREE.WebGLRenderer,
+  config: PixelBlastRuntimeConfig
+): PixelBlastUniforms {
+  return {
+    uClickPos: {
+      value: Array.from(
+        { length: MAX_CLICKS },
+        () => new THREE.Vector2(-1, -1)
+      ),
+    },
+    uClickTimes: { value: new Float32Array(MAX_CLICKS) },
+    uColor: { value: new THREE.Color(config.color) },
+    uDensity: { value: config.patternDensity },
+    uEdgeFade: { value: config.edgeFade },
+    uEnableRipples: { value: config.enableRipples ? 1 : 0 },
+    uPixelJitter: { value: config.pixelSizeJitter },
+    uPixelSize: { value: config.pixelSize * renderer.getPixelRatio() },
+    uResolution: { value: new THREE.Vector2(0, 0) },
+    uRippleIntensity: { value: config.rippleIntensityScale },
+    uRippleSpeed: { value: config.rippleSpeed },
+    uRippleThickness: { value: config.rippleThickness },
+    uScale: { value: config.patternScale },
+    uShapeType: { value: SHAPE_MAP[config.variant] ?? 0 },
+    uTime: { value: 0 },
+  };
+}
+
+function createBasePixelBlastScene(uniforms: PixelBlastUniforms) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const material = new THREE.ShaderMaterial({
+    depthTest: false,
+    depthWrite: false,
+    fragmentShader: FRAGMENT_SOURCE,
+    glslVersion: THREE.GLSL3,
+    transparent: true,
+    uniforms: uniforms as unknown as Record<string, THREE.IUniform>,
+    vertexShader: VERTEX_SOURCE,
+  });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  scene.add(quad);
+
+  return { camera, material, quad, scene };
+}
+
+function createLiquidComposer({
+  camera,
+  config,
+  renderer,
+  scene,
+}: {
+  camera: THREE.OrthographicCamera;
+  config: PixelBlastRuntimeConfig;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+}) {
+  if (!config.liquid) {
+    return {};
+  }
+
+  const touch = createTouchTexture();
+  touch.radiusScale = config.liquidRadius;
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  const liquidEffect = createLiquidEffect(touch.texture, {
+    freq: config.liquidWobbleSpeed,
+    strength: config.liquidStrength,
+  });
+
+  const effectPass = new EffectPass(camera, liquidEffect);
+  effectPass.renderToScreen = true;
+  composer.addPass(effectPass);
+
+  return { composer, liquidEffect, touch };
+}
+
+function addNoiseComposerPass({
+  camera,
+  composer,
+  noiseAmount,
+  renderer,
+  scene,
+}: {
+  camera: THREE.OrthographicCamera;
+  composer: EffectComposer | undefined;
+  noiseAmount: number;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+}): EffectComposer | undefined {
+  if (noiseAmount <= 0) {
+    return composer;
+  }
+
+  const nextComposer = composer ?? new EffectComposer(renderer);
+  if (!composer) {
+    nextComposer.addPass(new RenderPass(scene, camera));
+  }
+
+  const noiseEffect = new Effect(
+    "NoiseEffect",
+    "uniform float uTime; uniform float uAmount; float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);} void mainUv(inout vec2 uv){} void mainImage(const in vec4 inputColor,const in vec2 uv,out vec4 outputColor){ float n=hash(floor(uv*vec2(1920.0,1080.0))+floor(uTime*60.0)); float g=(n-0.5)*uAmount; outputColor=inputColor+vec4(vec3(g),0.0);} ",
+    {
+      uniforms: new Map<string, THREE.Uniform>([
+        ["uAmount", new THREE.Uniform(noiseAmount)],
+        ["uTime", new THREE.Uniform(0)],
+      ]),
+    }
+  );
+
+  const noisePass = new EffectPass(camera, noiseEffect);
+  noisePass.renderToScreen = true;
+
+  for (const pass of nextComposer.passes) {
+    pass.renderToScreen = false;
+  }
+
+  nextComposer.addPass(noisePass);
+  return nextComposer;
+}
+
 export function usePixelBlastRenderer(
   containerRef: RefObject<HTMLDivElement | null>,
-  {
-    antialias = true,
-    autoPauseOffscreen = true,
-    color = "#B19EEF",
-    edgeFade = 0.5,
-    enableRipples = true,
-    liquid = false,
-    liquidRadius = 1,
-    liquidStrength = 0.1,
-    liquidWobbleSpeed = 4.5,
-    noiseAmount = 0,
-    patternDensity = 1,
-    patternScale = 2,
-    pixelSize = 3,
-    pixelSizeJitter = 0,
-    rippleIntensityScale = 1,
-    rippleSpeed = 0.3,
-    rippleThickness = 0.1,
-    speed = 0.5,
-    transparent = true,
-    variant = "square",
-  }: PixelBlastRendererOptions
+  options: PixelBlastRendererOptions
 ) {
+  const {
+    antialias,
+    autoPauseOffscreen,
+    color,
+    edgeFade,
+    enableRipples,
+    liquid,
+    liquidRadius,
+    liquidStrength,
+    liquidWobbleSpeed,
+    noiseAmount,
+    patternDensity,
+    patternScale,
+    pixelSize,
+    pixelSizeJitter,
+    rippleIntensityScale,
+    rippleSpeed,
+    rippleThickness,
+    speed,
+    transparent,
+    variant,
+  } = { ...DEFAULT_PIXEL_BLAST_OPTIONS, ...options };
   const speedRef = useRef(speed);
   const threeRef = useRef<PixelBlastState | null>(null);
   const prevConfigRef = useRef<ReinitConfig | null>(null);
@@ -565,13 +756,11 @@ export function usePixelBlastRenderer(
       liquid,
       noiseAmount,
     };
-    const previousConfig = prevConfigRef.current;
-    const needsReinit =
-      !previousConfig ||
-      previousConfig.antialias !== config.antialias ||
-      previousConfig.liquid !== config.liquid ||
-      previousConfig.noiseAmount !== config.noiseAmount ||
-      threeRef.current === null;
+    const needsReinit = shouldReinitPixelBlast(
+      prevConfigRef.current,
+      config,
+      threeRef.current
+    );
 
     if (needsReinit) {
       disposeState(container, threeRef.current);
@@ -590,49 +779,32 @@ export function usePixelBlastRenderer(
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       container.append(renderer.domElement);
 
-      if (transparent) {
-        renderer.setClearAlpha(0);
-      } else {
-        renderer.setClearColor(0, 1);
-      }
-
-      const uniforms: PixelBlastUniforms = {
-        uClickPos: {
-          value: Array.from(
-            { length: MAX_CLICKS },
-            () => new THREE.Vector2(-1, -1)
-          ),
-        },
-        uClickTimes: { value: new Float32Array(MAX_CLICKS) },
-        uColor: { value: new THREE.Color(color) },
-        uDensity: { value: patternDensity },
-        uEdgeFade: { value: edgeFade },
-        uEnableRipples: { value: enableRipples ? 1 : 0 },
-        uPixelJitter: { value: pixelSizeJitter },
-        uPixelSize: { value: pixelSize * renderer.getPixelRatio() },
-        uResolution: { value: new THREE.Vector2(0, 0) },
-        uRippleIntensity: { value: rippleIntensityScale },
-        uRippleSpeed: { value: rippleSpeed },
-        uRippleThickness: { value: rippleThickness },
-        uScale: { value: patternScale },
-        uShapeType: { value: SHAPE_MAP[variant] ?? 0 },
-        uTime: { value: 0 },
+      const runtimeConfig: PixelBlastRuntimeConfig = {
+        antialias,
+        autoPauseOffscreen,
+        color,
+        edgeFade,
+        enableRipples,
+        liquid,
+        liquidRadius,
+        liquidStrength,
+        liquidWobbleSpeed,
+        noiseAmount,
+        patternDensity,
+        patternScale,
+        pixelSize,
+        pixelSizeJitter,
+        rippleIntensityScale,
+        rippleSpeed,
+        rippleThickness,
+        transparent,
+        variant,
       };
+      applyRendererTransparency(renderer, transparent);
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-      const material = new THREE.ShaderMaterial({
-        depthTest: false,
-        depthWrite: false,
-        fragmentShader: FRAGMENT_SOURCE,
-        glslVersion: THREE.GLSL3,
-        transparent: true,
-        uniforms: uniforms as unknown as Record<string, THREE.IUniform>,
-        vertexShader: VERTEX_SOURCE,
-      });
-
-      const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-      scene.add(quad);
+      const uniforms = createPixelBlastUniforms(renderer, runtimeConfig);
+      const { camera, material, quad, scene } =
+        createBasePixelBlastScene(uniforms);
 
       const clock = new THREE.Clock();
       const updateSize = () => {
@@ -661,53 +833,21 @@ export function usePixelBlastRenderer(
       resizeObserver.observe(container);
 
       const timeOffset = randomFloat() * 1000;
-      let composer: EffectComposer | undefined;
-      let touch: TouchTexture | undefined;
-      let liquidEffect: Effect | undefined;
-
-      if (liquid) {
-        touch = createTouchTexture();
-        touch.radiusScale = liquidRadius;
-
-        composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
-
-        liquidEffect = createLiquidEffect(touch.texture, {
-          freq: liquidWobbleSpeed,
-          strength: liquidStrength,
-        });
-
-        const effectPass = new EffectPass(camera, liquidEffect);
-        effectPass.renderToScreen = true;
-        composer.addPass(effectPass);
-      }
-
-      if (noiseAmount > 0) {
-        if (!composer) {
-          composer = new EffectComposer(renderer);
-          composer.addPass(new RenderPass(scene, camera));
-        }
-
-        const noiseEffect = new Effect(
-          "NoiseEffect",
-          "uniform float uTime; uniform float uAmount; float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);} void mainUv(inout vec2 uv){} void mainImage(const in vec4 inputColor,const in vec2 uv,out vec4 outputColor){ float n=hash(floor(uv*vec2(1920.0,1080.0))+floor(uTime*60.0)); float g=(n-0.5)*uAmount; outputColor=inputColor+vec4(vec3(g),0.0);} ",
-          {
-            uniforms: new Map<string, THREE.Uniform>([
-              ["uAmount", new THREE.Uniform(noiseAmount)],
-              ["uTime", new THREE.Uniform(0)],
-            ]),
-          }
-        );
-
-        const noisePass = new EffectPass(camera, noiseEffect);
-        noisePass.renderToScreen = true;
-
-        for (const pass of composer.passes) {
-          pass.renderToScreen = false;
-        }
-
-        composer.addPass(noisePass);
-      }
+      const liquidComposer = createLiquidComposer({
+        camera,
+        config: runtimeConfig,
+        renderer,
+        scene,
+      });
+      const { touch } = liquidComposer;
+      const { liquidEffect } = liquidComposer;
+      const composer = addNoiseComposerPass({
+        camera,
+        composer: liquidComposer.composer,
+        noiseAmount,
+        renderer,
+        scene,
+      });
 
       composer?.setSize(renderer.domElement.width, renderer.domElement.height);
 
@@ -837,11 +977,7 @@ export function usePixelBlastRenderer(
       state.uniforms.uRippleSpeed.value = rippleSpeed;
       state.uniforms.uEdgeFade.value = edgeFade;
 
-      if (transparent) {
-        state.renderer.setClearAlpha(0);
-      } else {
-        state.renderer.setClearColor(0, 1);
-      }
+      applyRendererTransparency(state.renderer, transparent);
 
       if (state.liquidEffect) {
         const strengthUniform = state.liquidEffect.uniforms.get("uStrength");

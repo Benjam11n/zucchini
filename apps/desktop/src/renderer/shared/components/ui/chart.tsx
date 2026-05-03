@@ -1,5 +1,3 @@
-/* eslint-disable promise/prefer-await-to-then */
-
 import { Suspense, lazy } from "react";
 import type * as React from "react";
 
@@ -74,17 +72,19 @@ interface ChartResponsiveContainerProps {
   width?: number | `${number}%`;
 }
 
-const RechartsResponsiveContainer = lazy(() =>
-  import("recharts").then((module) => ({
+const RechartsResponsiveContainer = lazy(async () => {
+  const module = await import("recharts");
+  return {
     default: module.ResponsiveContainer,
-  }))
-);
+  };
+});
 
-const RechartsTooltip = lazy(() =>
-  import("recharts").then((module) => ({
+const RechartsTooltip = lazy(async () => {
+  const module = await import("recharts");
+  return {
     default: module.Tooltip,
-  }))
-);
+  };
+});
 
 function ChartTooltipContent({
   active,
