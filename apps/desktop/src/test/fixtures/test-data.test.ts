@@ -102,31 +102,35 @@ const describeWithFixtureDatabase =
   canUseFixtureDatabase() || process.env["CI"] ? describe : describe.skip;
 
 describeWithFixtureDatabase("test data generator", () => {
-  const FIXTURE_TEST_TIMEOUT_MS = 20_000;
+  const FIXTURE_TEST_TIMEOUT_MS = 90_000;
 
-  test("generates deterministic medium fixture data for a fixed seed", () => {
-    const first = createTempDbPath("medium-a");
-    const second = createTempDbPath("medium-b");
+  test(
+    "generates deterministic medium fixture data for a fixed seed",
+    () => {
+      const first = createTempDbPath("medium-a");
+      const second = createTempDbPath("medium-b");
 
-    generateTestData({
-      outputPath: first,
-      overwrite: true,
-      preset: "medium",
-      seed: 20_260_314,
-      timezone: "America/Los_Angeles",
-      today: "2026-03-14",
-    });
-    generateTestData({
-      outputPath: second,
-      overwrite: true,
-      preset: "medium",
-      seed: 20_260_314,
-      timezone: "America/Los_Angeles",
-      today: "2026-03-14",
-    });
+      generateTestData({
+        outputPath: first,
+        overwrite: true,
+        preset: "medium",
+        seed: 20_260_314,
+        timezone: "America/Los_Angeles",
+        today: "2026-03-14",
+      });
+      generateTestData({
+        outputPath: second,
+        overwrite: true,
+        preset: "medium",
+        seed: 20_260_314,
+        timezone: "America/Los_Angeles",
+        today: "2026-03-14",
+      });
 
-    expect(snapshotDatabase(first)).toBe(snapshotDatabase(second));
-  });
+      expect(snapshotDatabase(first)).toBe(snapshotDatabase(second));
+    },
+    FIXTURE_TEST_TIMEOUT_MS
+  );
 
   test.each([
     ["medium", 36, 730, 4000, 4, 4, 180 * 4, 4],

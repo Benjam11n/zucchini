@@ -1,4 +1,11 @@
+import path from "node:path";
+
 import { createDataManagementActions } from "@/main/app/data-management";
+
+const preImportBackupPath = path.join(
+  "/tmp",
+  "zucchini-before-import-20260330141516789.db"
+);
 
 // oxlint-disable-next-line eslint/sort-keys
 function createMocks() {
@@ -112,9 +119,7 @@ describe("createDataManagementActions()", () => {
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
     expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(repository.exportBackup).toHaveBeenCalledWith(
-      "/tmp/zucchini-before-import-20260330141516789.db"
-    );
+    expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
     expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
     const [validateCallOrder] =
       repository.validateDatabase.mock.invocationCallOrder;
@@ -160,9 +165,7 @@ describe("createDataManagementActions()", () => {
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
     expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
-    expect(repository.exportBackup).toHaveBeenCalledWith(
-      "/tmp/zucchini-before-import-20260330141516789.db"
-    );
+    expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
     expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
     expect(appLike.relaunch).not.toHaveBeenCalled();
     expect(onBeforeQuit).toHaveBeenCalledOnce();
