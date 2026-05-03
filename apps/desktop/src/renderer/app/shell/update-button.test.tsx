@@ -5,7 +5,10 @@ import { toast } from "sonner";
 import type { ExternalToast } from "sonner";
 
 import { STORAGE_KEYS } from "@/renderer/shared/lib/storage";
-import type { AppUpdateState } from "@/shared/contracts/app-updater";
+import {
+  IDLE_UPDATE_STATE,
+  setUpdaterState,
+} from "@/test/fixtures/updater-api-mock";
 
 import { UpdateButton } from "./update-button";
 
@@ -48,39 +51,6 @@ vi.mock(import("sonner"), async (importOriginal) => {
     }),
   };
 });
-
-const IDLE_UPDATE_STATE: AppUpdateState = {
-  availableVersion: null,
-  currentVersion: "0.1.1-beta.1",
-  errorMessage: null,
-  progressPercent: null,
-  status: "idle",
-};
-
-function setUpdaterState(state: AppUpdateState) {
-  let stateChangeListener: ((state: AppUpdateState) => void) | null = null;
-  const onStateChange = vi.fn((listener: (state: AppUpdateState) => void) => {
-    stateChangeListener = listener;
-    return vi.fn();
-  });
-  const updater = {
-    checkForUpdates: vi.fn(async () => {}),
-    downloadUpdate: vi.fn(async () => {}),
-    emitStateChange(nextState: AppUpdateState) {
-      stateChangeListener?.(nextState);
-    },
-    getState: vi.fn().mockResolvedValue(state),
-    installUpdate: vi.fn(async () => {}),
-    onStateChange,
-  };
-
-  Object.defineProperty(window, "updater", {
-    configurable: true,
-    value: updater,
-  });
-
-  return updater;
-}
 
 describe("update button", () => {
   beforeEach(() => {

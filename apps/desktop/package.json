@@ -20,7 +20,6 @@
     "audit": "pnpm audit",
     "audit:ci": "pnpm audit --prod --audit-level high",
     "check:duplication": "tsx scripts/check-duplication.ts",
-    "knip": "knip",
     "test": "vitest run",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
@@ -53,7 +52,6 @@
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.36.0",
     "jsdom": "^29.0.1",
-    "knip": "^6.1.1",
     "lucide-react": "^1.7.0",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.55.0",

@@ -1,4 +1,3 @@
-import type { Clock } from "@/main/app/clock";
 import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
@@ -38,48 +37,9 @@ import type {
   WindDownAction,
   WindDownActionWithStatus,
 } from "@/shared/domain/wind-down";
-import { parseDateKey } from "@/shared/utils/date";
+import { FakeClock } from "@/test/fixtures/fake-clock";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
-
-class FakeClock implements Clock {
-  private readonly today: string;
-  private readonly nowIso: string;
-  private readonly tz: string;
-
-  constructor(today: string, nowIso: string, tz = "Asia/Singapore") {
-    this.today = today;
-    this.nowIso = nowIso;
-    this.tz = tz;
-  }
-
-  now(): Date {
-    return new Date(this.nowIso);
-  }
-
-  todayKey(): string {
-    return this.today;
-  }
-
-  // oxlint-disable-next-line class-methods-use-this
-  addDays(dateKey: string, amount: number): string {
-    const next = parseDateKey(dateKey);
-    next.setDate(next.getDate() + amount);
-    const y = next.getFullYear();
-    const m = String(next.getMonth() + 1).padStart(2, "0");
-    const d = String(next.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-
-  // oxlint-disable-next-line class-methods-use-this
-  compareDateKeys(left: string, right: string): number {
-    return left.localeCompare(right);
-  }
-
-  timezone(): string {
-    return this.tz;
-  }
-}
 
 class FakeRepository implements AppRepository {
   failTransactionForLabel: string | null = null;

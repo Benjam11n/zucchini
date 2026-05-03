@@ -3,42 +3,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { STORAGE_KEYS } from "@/renderer/shared/lib/storage";
-import type { AppUpdateState } from "@/shared/contracts/app-updater";
+import {
+  createIdleUpdateState,
+  setUpdaterState,
+} from "@/test/fixtures/updater-api-mock";
 
 import { UpdateSettingsCard } from "./update-settings-card";
 
-const IDLE_UPDATE_STATE: AppUpdateState = {
-  availableVersion: null,
+const IDLE_UPDATE_STATE = createIdleUpdateState({
   currentVersion: "0.1.1-beta.9",
-  errorMessage: null,
-  progressPercent: null,
-  status: "idle",
-};
-
-function setUpdaterState(state: AppUpdateState) {
-  let stateChangeListener: ((state: AppUpdateState) => void) | null = null;
-  const onStateChange = vi.fn((listener: (state: AppUpdateState) => void) => {
-    stateChangeListener = listener;
-    return vi.fn();
-  });
-  const updater = {
-    checkForUpdates: vi.fn(async () => {}),
-    downloadUpdate: vi.fn(async () => {}),
-    emitStateChange(nextState: AppUpdateState) {
-      stateChangeListener?.(nextState);
-    },
-    getState: vi.fn().mockResolvedValue(state),
-    installUpdate: vi.fn(async () => {}),
-    onStateChange,
-  };
-
-  Object.defineProperty(window, "updater", {
-    configurable: true,
-    value: updater,
-  });
-
-  return updater;
-}
+});
 
 const storage = new Map<string, string>();
 

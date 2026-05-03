@@ -15,7 +15,7 @@
 - Common validations:
   `pnpm run lint`
   `pnpm run test:desktop`
-  `pnpm --dir apps/desktop knip`
+  `pnpm run fallow:dead-code`
   `pnpm run build:desktop`
 - Run `pnpm run format` from the workspace root before finalizing changes.
 

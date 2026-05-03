@@ -34,7 +34,7 @@ pnpm run build:desktop
 pnpm --dir apps/desktop typecheck
 pnpm run lint
 pnpm run test:desktop
-pnpm --dir apps/desktop knip
+pnpm run fallow:dead-code
 pnpm --dir apps/desktop react-doctor
 pnpm --dir apps/desktop dist:desktop
 ```
@@ -64,7 +64,7 @@ Before shipping changes, run:
 pnpm run format
 pnpm run lint
 pnpm run test:desktop
-pnpm --dir apps/desktop knip
+pnpm run fallow:dead-code
 ```
 
 Use `pnpm --dir apps/desktop typecheck` when you want a quick

@@ -5,52 +5,13 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
-import type { Clock } from "@/main/app/clock";
 import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
-import { getPreviousCompletedIsoWeek, parseDateKey } from "@/shared/utils/date";
+import { getPreviousCompletedIsoWeek } from "@/shared/utils/date";
+import { FakeClock } from "@/test/fixtures/fake-clock";
 import { generateTestData } from "@/test/fixtures/test-data";
 import type { TestDataPreset } from "@/test/fixtures/test-data";
-
-class FakeClock implements Clock {
-  private readonly today: string;
-  private readonly nowIso: string;
-  private readonly tz: string;
-
-  constructor(today: string, nowIso: string, tz = "America/Los_Angeles") {
-    this.today = today;
-    this.nowIso = nowIso;
-    this.tz = tz;
-  }
-
-  now(): Date {
-    return new Date(this.nowIso);
-  }
-
-  todayKey(): string {
-    return this.today;
-  }
-
-  // oxlint-disable-next-line class-methods-use-this
-  addDays(dateKey: string, amount: number): string {
-    const next = parseDateKey(dateKey);
-    next.setDate(next.getDate() + amount);
-    const y = next.getFullYear();
-    const m = String(next.getMonth() + 1).padStart(2, "0");
-    const d = String(next.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-
-  // oxlint-disable-next-line class-methods-use-this
-  compareDateKeys(left: string, right: string): number {
-    return left.localeCompare(right);
-  }
-
-  timezone(): string {
-    return this.tz;
-  }
-}
 
 function createTempDbPath(name: string): string {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "zucchini-fixture-"));
