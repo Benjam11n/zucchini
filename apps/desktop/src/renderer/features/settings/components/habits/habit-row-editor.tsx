@@ -368,7 +368,7 @@ export function HabitRowEditor({
                       compact
                       frequency={habit.frequency}
                       onChange={async (targetCount) => {
-                        await onUpdateHabitTargetCount?.(habit.id, targetCount);
+                        await onUpdateHabitTargetCount(habit.id, targetCount);
                       }}
                       value={habit.targetCount ?? 1}
                     />

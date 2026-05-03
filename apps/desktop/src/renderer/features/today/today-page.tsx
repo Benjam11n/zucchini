@@ -18,57 +18,20 @@ import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-c
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
 import { todayHabitCollection } from "@/renderer/features/today/state/today-collections";
 import { Button } from "@/renderer/shared/components/ui/button";
+import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
 import type { TodayState } from "@/shared/contracts/today-state";
 import { isDailyHabit } from "@/shared/domain/habit";
-import type {
-  Habit,
-  HabitCategory,
-  HabitFrequency,
-  HabitWeekday,
-  HabitWithStatus,
-} from "@/shared/domain/habit";
+import type { Habit, HabitWithStatus } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
-interface TodayPageProps {
+interface TodayPageProps extends HabitMutationActions {
   hasLoadedHistorySummary: boolean;
   historySummary: HistorySummaryDay[];
   managedHabits: Habit[];
-  onArchiveHabit: (habitId: number) => Promise<void>;
-  onCreateHabit: (
-    name: string,
-    category: HabitCategory,
-    frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null,
-    targetCount?: number | null
-  ) => Promise<void>;
-  onDecrementHabitProgress?: (habitId: number) => void;
-  onIncrementHabitProgress?: (habitId: number) => void;
-  onRenameHabit: (habitId: number, name: string) => Promise<void>;
-  onReorderHabits: (habits: Habit[]) => Promise<void>;
-  onUnarchiveHabit: (habitId: number) => Promise<void>;
+  onDecrementHabitProgress: (habitId: number) => void;
+  onIncrementHabitProgress: (habitId: number) => void;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
-  onUpdateHabitCategory: (
-    habitId: number,
-    category: HabitCategory
-  ) => Promise<void>;
-  onUpdateHabitFrequency: (
-    habitId: number,
-    frequency: HabitFrequency,
-    targetCount?: number | null
-  ) => Promise<void>;
-  onUpdateHabitTargetCount?: (
-    habitId: number,
-    targetCount: number
-  ) => Promise<void>;
-  onUpdateHabitWeekdays: (
-    habitId: number,
-    selectedWeekdays: HabitWeekday[] | null
-  ) => Promise<void>;
-}
-
-function noopHabitProgress(_habitId: number) {
-  return null;
 }
 
 function TodayPageComponent({
@@ -155,10 +118,8 @@ function TodayPageComponent({
                 onUnarchiveHabit={onUnarchiveHabit}
                 onUpdateHabitCategory={onUpdateHabitCategory}
                 onUpdateHabitFrequency={onUpdateHabitFrequency}
+                onUpdateHabitTargetCount={onUpdateHabitTargetCount}
                 onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                {...(onUpdateHabitTargetCount
-                  ? { onUpdateHabitTargetCount }
-                  : {})}
                 trigger={
                   <Button size="sm" type="button" variant="outline">
                     <Plus className="size-4" />
@@ -177,10 +138,8 @@ function TodayPageComponent({
                 onUnarchiveHabit={onUnarchiveHabit}
                 onUpdateHabitCategory={onUpdateHabitCategory}
                 onUpdateHabitFrequency={onUpdateHabitFrequency}
+                onUpdateHabitTargetCount={onUpdateHabitTargetCount}
                 onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                {...(onUpdateHabitTargetCount
-                  ? { onUpdateHabitTargetCount }
-                  : {})}
               />
             }
             habits={dailyHabits}
@@ -198,12 +157,8 @@ function TodayPageComponent({
               dateKey={state.date}
               focusQuotaGoals={state.focusQuotaGoals ?? []}
               habits={periodicHabits}
-              onDecrementHabitProgress={
-                onDecrementHabitProgress ?? noopHabitProgress
-              }
-              onIncrementHabitProgress={
-                onIncrementHabitProgress ?? noopHabitProgress
-              }
+              onDecrementHabitProgress={onDecrementHabitProgress}
+              onIncrementHabitProgress={onIncrementHabitProgress}
             />
           </section>
         ) : null}

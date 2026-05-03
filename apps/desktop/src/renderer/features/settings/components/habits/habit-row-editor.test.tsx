@@ -104,6 +104,7 @@ function renderHabitRowEditor(
       onReorderHabits={vi.fn().mockResolvedValue(42)}
       onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
       onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
       onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
       {...overrides}
     />
@@ -174,6 +175,7 @@ describe("habit row editor", () => {
         onReorderHabits={onReorderHabits}
         onUpdateHabitCategory={onUpdateHabitCategory}
         onUpdateHabitFrequency={onUpdateHabitFrequency}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
         onUpdateHabitWeekdays={onUpdateHabitWeekdays}
       />
     );
@@ -257,6 +259,7 @@ describe("habit row editor", () => {
         onReorderHabits={onReorderHabits}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
         onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
         onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
       />
     );
@@ -294,6 +297,7 @@ describe("habit row editor", () => {
         onReorderHabits={vi.fn().mockResolvedValue(42)}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
         onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
         onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
       />
     );

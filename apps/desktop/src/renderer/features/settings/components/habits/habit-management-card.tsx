@@ -73,7 +73,6 @@ export function HabitManagementCard({
     ...(focusQuotaGoals.length > 0 ? { focusQuotaGoals } : {}),
     ...(onArchiveFocusQuotaGoal ? { onArchiveFocusQuotaGoal } : {}),
     ...(onUpsertFocusQuotaGoal ? { onUpsertFocusQuotaGoal } : {}),
-    ...(onUpdateHabitTargetCount ? { onUpdateHabitTargetCount } : {}),
   };
 
   return (
@@ -93,6 +92,7 @@ export function HabitManagementCard({
           onUnarchiveHabit={onUnarchiveHabit}
           onUpdateHabitCategory={onUpdateHabitCategory}
           onUpdateHabitFrequency={onUpdateHabitFrequency}
+          onUpdateHabitTargetCount={onUpdateHabitTargetCount}
           onUpdateHabitWeekdays={onUpdateHabitWeekdays}
           {...optionalProps}
         />

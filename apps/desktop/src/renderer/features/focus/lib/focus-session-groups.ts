@@ -109,36 +109,44 @@ function sortEntriesByStartTime(
   });
 }
 
-function getTrailingBreakEndMs({
+function getIdleCompletedBreakEndMs({
   activeTimerState,
-  now,
   sessionId,
   sessionLastCompletedAt,
+  sessionLastCompletedAtMs,
 }: {
-  activeTimerState?: PersistedFocusTimerState;
-  now: Date;
+  activeTimerState: PersistedFocusTimerState;
   sessionId: string;
   sessionLastCompletedAt: string;
+  sessionLastCompletedAtMs: number;
 }): number | null {
-  if (!activeTimerState) {
+  const completedBreak = activeTimerState.lastCompletedBreak;
+  if (
+    activeTimerState.status !== "idle" ||
+    completedBreak?.timerSessionId !== sessionId ||
+    completedBreak.completedAt <= sessionLastCompletedAt
+  ) {
     return null;
   }
 
-  const sessionLastCompletedAtMs = Date.parse(sessionLastCompletedAt);
+  const completedBreakEndMs = Date.parse(completedBreak.completedAt);
 
-  const completedBreak = activeTimerState.lastCompletedBreak;
-  if (
-    activeTimerState.status === "idle" &&
-    completedBreak?.timerSessionId === sessionId &&
-    completedBreak.completedAt > sessionLastCompletedAt
-  ) {
-    const completedBreakEndMs = Date.parse(completedBreak.completedAt);
+  return completedBreakEndMs > sessionLastCompletedAtMs
+    ? completedBreakEndMs
+    : null;
+}
 
-    return completedBreakEndMs > sessionLastCompletedAtMs
-      ? completedBreakEndMs
-      : null;
-  }
-
+function getRunningTrailingBreakEndMs({
+  activeTimerState,
+  now,
+  sessionId,
+  sessionLastCompletedAtMs,
+}: {
+  activeTimerState: PersistedFocusTimerState;
+  now: Date;
+  sessionId: string;
+  sessionLastCompletedAtMs: number;
+}): number | null {
   if (
     activeTimerState.status !== "running" ||
     activeTimerState.timerSessionId !== sessionId
@@ -159,6 +167,306 @@ function getTrailingBreakEndMs({
   }
 
   return null;
+}
+
+function getTrailingBreakEndMs({
+  activeTimerState,
+  now,
+  sessionId,
+  sessionLastCompletedAt,
+}: {
+  activeTimerState?: PersistedFocusTimerState;
+  now: Date;
+  sessionId: string;
+  sessionLastCompletedAt: string;
+}): number | null {
+  if (!activeTimerState) {
+    return null;
+  }
+
+  const sessionLastCompletedAtMs = Date.parse(sessionLastCompletedAt);
+
+  return (
+    getIdleCompletedBreakEndMs({
+      activeTimerState,
+      sessionId,
+      sessionLastCompletedAt,
+      sessionLastCompletedAtMs,
+    }) ??
+    getRunningTrailingBreakEndMs({
+      activeTimerState,
+      now,
+      sessionId,
+      sessionLastCompletedAtMs,
+    })
+  );
+}
+
+function getSegmentWidthPercent(
+  startMinutes: number,
+  endMinutes: number,
+  sessionSpanMinutes: number,
+  minimumWidthPercent: number
+): number {
+  return Math.max(
+    (endMinutes - startMinutes) / sessionSpanMinutes,
+    minimumWidthPercent
+  );
+}
+
+function buildFocusEntrySegment({
+  entry,
+  focusEndMinutes,
+  segmentStartMinutes,
+  sessionSpanMinutes,
+}: {
+  entry: FocusSessionEntryView;
+  focusEndMinutes: number;
+  segmentStartMinutes: number;
+  sessionSpanMinutes: number;
+}): FocusHistorySessionEntryTimelineSegment {
+  return {
+    completedAt: entry.completedAt,
+    durationSeconds: entry.durationSeconds,
+    endOffsetMinutes: focusEndMinutes,
+    entryKind: entry.entryKind,
+    id: `${entry.id}`,
+    kind: "entry",
+    startOffsetMinutes: segmentStartMinutes,
+    startedAt: entry.startedAt,
+    widthPercent: getSegmentWidthPercent(
+      segmentStartMinutes,
+      focusEndMinutes,
+      sessionSpanMinutes,
+      0.04
+    ),
+  };
+}
+
+function buildPauseSegment({
+  entry,
+  entryEndMinutes,
+  focusEndMinutes,
+  sessionSpanMinutes,
+}: {
+  entry: FocusSessionEntryView;
+  entryEndMinutes: number;
+  focusEndMinutes: number;
+  sessionSpanMinutes: number;
+}): FocusHistorySessionPauseTimelineSegment | null {
+  const pauseDurationMinutes = Math.max(
+    0,
+    Math.round(
+      (Date.parse(entry.completedAt) -
+        Date.parse(entry.startedAt) -
+        entry.durationSeconds * 1000) /
+        MS_PER_MINUTE
+    )
+  );
+
+  if (pauseDurationMinutes <= 0 || entryEndMinutes <= focusEndMinutes) {
+    return null;
+  }
+
+  return {
+    durationMinutes: pauseDurationMinutes,
+    endOffsetMinutes: entryEndMinutes,
+    id: `pause-${entry.id}`,
+    kind: "pause",
+    startOffsetMinutes: focusEndMinutes,
+    widthPercent: getSegmentWidthPercent(
+      focusEndMinutes,
+      entryEndMinutes,
+      sessionSpanMinutes,
+      0.02
+    ),
+  };
+}
+
+function buildBreakSegment({
+  entry,
+  entryEndMinutes,
+  nextEntry,
+  sessionSpanMinutes,
+  sessionStartMs,
+}: {
+  entry: FocusSessionEntryView;
+  entryEndMinutes: number;
+  nextEntry: FocusSessionEntryView;
+  sessionSpanMinutes: number;
+  sessionStartMs: number;
+}): FocusHistorySessionBreakTimelineSegment | null {
+  const breakStartMinutes = entryEndMinutes;
+  const breakEndMinutes =
+    (Date.parse(nextEntry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
+  const breakDurationMinutes = Math.max(
+    0,
+    Math.round(
+      (Date.parse(nextEntry.startedAt) - Date.parse(entry.completedAt)) /
+        MS_PER_MINUTE
+    )
+  );
+
+  if (breakDurationMinutes <= 0 || breakEndMinutes <= breakStartMinutes) {
+    return null;
+  }
+
+  return {
+    durationMinutes: breakDurationMinutes,
+    endOffsetMinutes: breakEndMinutes,
+    id: `break-${entry.id}-${nextEntry.id}`,
+    kind: "break",
+    startOffsetMinutes: breakStartMinutes,
+    widthPercent: getSegmentWidthPercent(
+      breakStartMinutes,
+      breakEndMinutes,
+      sessionSpanMinutes,
+      0.02
+    ),
+  };
+}
+
+function buildEntryTimelineSegments({
+  entry,
+  nextEntry,
+  sessionSpanMinutes,
+  sessionStartMs,
+}: {
+  entry: FocusSessionEntryView;
+  nextEntry?: FocusSessionEntryView;
+  sessionSpanMinutes: number;
+  sessionStartMs: number;
+}): FocusHistorySessionTimelineSegment[] {
+  const segmentStartMinutes =
+    (Date.parse(entry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
+  const entryEndMinutes =
+    (Date.parse(entry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
+  const focusDurationMinutes = Math.max(
+    Math.min(entry.durationSeconds / 60, entryEndMinutes - segmentStartMinutes),
+    0
+  );
+  const focusEndMinutes = segmentStartMinutes + focusDurationMinutes;
+  const segments: FocusHistorySessionTimelineSegment[] = [
+    buildFocusEntrySegment({
+      entry,
+      focusEndMinutes,
+      segmentStartMinutes,
+      sessionSpanMinutes,
+    }),
+  ];
+
+  const pauseSegment = buildPauseSegment({
+    entry,
+    entryEndMinutes,
+    focusEndMinutes,
+    sessionSpanMinutes,
+  });
+  if (pauseSegment) {
+    segments.push(pauseSegment);
+  }
+
+  if (!nextEntry) {
+    return segments;
+  }
+
+  const breakSegment = buildBreakSegment({
+    entry,
+    entryEndMinutes,
+    nextEntry,
+    sessionSpanMinutes,
+    sessionStartMs,
+  });
+  if (breakSegment) {
+    segments.push(breakSegment);
+  }
+
+  return segments;
+}
+
+function appendTrailingBreakSegment({
+  lastEntry,
+  sessionSpanMinutes,
+  sessionStartMs,
+  timelineSegments,
+  trailingBreakEndMs,
+}: {
+  lastEntry: FocusSessionEntryView;
+  sessionSpanMinutes: number;
+  sessionStartMs: number;
+  timelineSegments: FocusHistorySessionTimelineSegment[];
+  trailingBreakEndMs: number | null;
+}): FocusHistorySessionTimelineSegment[] {
+  if (!trailingBreakEndMs) {
+    return timelineSegments;
+  }
+
+  const trailingBreakStartMinutes =
+    (Date.parse(lastEntry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
+  const trailingBreakEndMinutes =
+    (trailingBreakEndMs - sessionStartMs) / MS_PER_MINUTE;
+  const trailingBreakDurationMinutes = Math.max(
+    0,
+    Math.round(
+      (trailingBreakEndMs - Date.parse(lastEntry.completedAt)) / MS_PER_MINUTE
+    )
+  );
+
+  if (
+    trailingBreakDurationMinutes <= 0 ||
+    trailingBreakEndMinutes <= trailingBreakStartMinutes
+  ) {
+    return timelineSegments;
+  }
+
+  return [
+    ...timelineSegments,
+    {
+      durationMinutes: trailingBreakDurationMinutes,
+      endOffsetMinutes: trailingBreakEndMinutes,
+      id: `break-${lastEntry.id}-active`,
+      kind: "break",
+      startOffsetMinutes: trailingBreakStartMinutes,
+      widthPercent: getSegmentWidthPercent(
+        trailingBreakStartMinutes,
+        trailingBreakEndMinutes,
+        sessionSpanMinutes,
+        0.02
+      ),
+    },
+  ];
+}
+
+function buildTimelineSegments({
+  lastEntry,
+  sessionSpanMinutes,
+  sessionStartMs,
+  sortedEntries,
+  trailingBreakEndMs,
+}: {
+  lastEntry: FocusSessionEntryView;
+  sessionSpanMinutes: number;
+  sessionStartMs: number;
+  sortedEntries: FocusSessionEntryView[];
+  trailingBreakEndMs: number | null;
+}): FocusHistorySessionTimelineSegment[] {
+  const timelineSegments = sortedEntries.flatMap((entry, index) =>
+    buildEntryTimelineSegments({
+      entry,
+      sessionSpanMinutes,
+      sessionStartMs,
+      ...(sortedEntries[index + 1]
+        ? { nextEntry: sortedEntries[index + 1] }
+        : {}),
+    })
+  );
+
+  return appendTrailingBreakSegment({
+    lastEntry,
+    sessionSpanMinutes,
+    sessionStartMs,
+    timelineSegments,
+    trailingBreakEndMs,
+  });
 }
 
 function buildHistorySessionView(
@@ -229,133 +537,13 @@ function buildHistorySessionView(
     sessionId,
     sessionSpanMinutes,
     startedAt: firstEntry.startedAt,
-    timelineSegments: (() => {
-      const timelineSegments = sortedEntries.flatMap((entry, index) => {
-        const segmentStartMinutes =
-          (Date.parse(entry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
-        const entryEndMinutes =
-          (Date.parse(entry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
-        const focusDurationMinutes = Math.max(
-          Math.min(
-            entry.durationSeconds / 60,
-            entryEndMinutes - segmentStartMinutes
-          ),
-          0
-        );
-        const focusEndMinutes = segmentStartMinutes + focusDurationMinutes;
-        const segments: FocusHistorySessionTimelineSegment[] = [
-          {
-            completedAt: entry.completedAt,
-            durationSeconds: entry.durationSeconds,
-            endOffsetMinutes: focusEndMinutes,
-            entryKind: entry.entryKind,
-            id: `${entry.id}`,
-            kind: "entry",
-            startOffsetMinutes: segmentStartMinutes,
-            startedAt: entry.startedAt,
-            widthPercent: Math.max(
-              (focusEndMinutes - segmentStartMinutes) / sessionSpanMinutes,
-              0.04
-            ),
-          } satisfies FocusHistorySessionEntryTimelineSegment,
-        ];
-
-        const pauseDurationMinutes = Math.max(
-          0,
-          Math.round(
-            (Date.parse(entry.completedAt) -
-              Date.parse(entry.startedAt) -
-              entry.durationSeconds * 1000) /
-              MS_PER_MINUTE
-          )
-        );
-
-        if (pauseDurationMinutes > 0 && entryEndMinutes > focusEndMinutes) {
-          segments.push({
-            durationMinutes: pauseDurationMinutes,
-            endOffsetMinutes: entryEndMinutes,
-            id: `pause-${entry.id}`,
-            kind: "pause",
-            startOffsetMinutes: focusEndMinutes,
-            widthPercent: Math.max(
-              (entryEndMinutes - focusEndMinutes) / sessionSpanMinutes,
-              0.02
-            ),
-          } satisfies FocusHistorySessionPauseTimelineSegment);
-        }
-
-        const nextEntry = sortedEntries[index + 1];
-
-        if (!nextEntry) {
-          return segments;
-        }
-
-        const breakStartMinutes = entryEndMinutes;
-        const breakEndMinutes =
-          (Date.parse(nextEntry.startedAt) - sessionStartMs) / MS_PER_MINUTE;
-        const breakDurationMinutes = Math.max(
-          0,
-          Math.round(
-            (Date.parse(nextEntry.startedAt) - Date.parse(entry.completedAt)) /
-              MS_PER_MINUTE
-          )
-        );
-
-        if (breakDurationMinutes <= 0 || breakEndMinutes <= breakStartMinutes) {
-          return segments;
-        }
-
-        segments.push({
-          durationMinutes: breakDurationMinutes,
-          endOffsetMinutes: breakEndMinutes,
-          id: `break-${entry.id}-${nextEntry.id}`,
-          kind: "break",
-          startOffsetMinutes: breakStartMinutes,
-          widthPercent: Math.max(
-            (breakEndMinutes - breakStartMinutes) / sessionSpanMinutes,
-            0.02
-          ),
-        } satisfies FocusHistorySessionBreakTimelineSegment);
-
-        return segments;
-      });
-
-      if (!trailingBreakEndMs) {
-        return timelineSegments;
-      }
-
-      const trailingBreakStartMinutes =
-        (Date.parse(lastEntry.completedAt) - sessionStartMs) / MS_PER_MINUTE;
-      const trailingBreakEndMinutes =
-        (trailingBreakEndMs - sessionStartMs) / MS_PER_MINUTE;
-      const trailingBreakDurationMinutes = Math.max(
-        0,
-        Math.round(
-          (trailingBreakEndMs - Date.parse(lastEntry.completedAt)) /
-            MS_PER_MINUTE
-        )
-      );
-
-      if (
-        trailingBreakDurationMinutes > 0 &&
-        trailingBreakEndMinutes > trailingBreakStartMinutes
-      ) {
-        timelineSegments.push({
-          durationMinutes: trailingBreakDurationMinutes,
-          endOffsetMinutes: trailingBreakEndMinutes,
-          id: `break-${lastEntry.id}-active`,
-          kind: "break",
-          startOffsetMinutes: trailingBreakStartMinutes,
-          widthPercent: Math.max(
-            (trailingBreakEndMinutes - trailingBreakStartMinutes) /
-              sessionSpanMinutes,
-            0.02
-          ),
-        });
-      }
-
-      return timelineSegments;
-    })(),
+    timelineSegments: buildTimelineSegments({
+      lastEntry,
+      sessionSpanMinutes,
+      sessionStartMs,
+      sortedEntries,
+      trailingBreakEndMs,
+    }),
     totalDurationSeconds,
   };
 }

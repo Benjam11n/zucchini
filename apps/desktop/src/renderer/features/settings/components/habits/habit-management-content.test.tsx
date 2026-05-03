@@ -40,6 +40,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={createAsyncMock()}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
@@ -78,6 +79,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={createAsyncMock()}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
@@ -103,6 +105,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={onUnarchiveHabit}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
@@ -145,6 +148,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={createAsyncMock()}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
@@ -186,6 +190,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={createAsyncMock()}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );
@@ -216,6 +221,7 @@ describe("habit management content", () => {
         onUnarchiveHabit={createAsyncMock()}
         onUpdateHabitCategory={createAsyncMock()}
         onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
         onUpdateHabitWeekdays={createAsyncMock()}
       />
     );

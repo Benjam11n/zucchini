@@ -175,12 +175,8 @@ export function SettingsPage(props: SettingsPageProps) {
                 onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
+                onUpdateHabitTargetCount={props.onUpdateHabitTargetCount}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
-                {...(props.onUpdateHabitTargetCount
-                  ? {
-                      onUpdateHabitTargetCount: props.onUpdateHabitTargetCount,
-                    }
-                  : {})}
               />
             </m.div>
           </TabsContent>

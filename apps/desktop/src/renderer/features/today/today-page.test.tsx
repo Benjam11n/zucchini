@@ -93,9 +93,12 @@ describe("today page", () => {
         onReorderHabits={vi.fn(() => Promise.resolve())}
         onUnarchiveHabit={vi.fn(() => Promise.resolve())}
         state={state}
+        onDecrementHabitProgress={vi.fn()}
+        onIncrementHabitProgress={vi.fn()}
         onToggleHabit={vi.fn()}
         onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
         onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
+        onUpdateHabitTargetCount={vi.fn(() => Promise.resolve())}
         onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
       />
     );

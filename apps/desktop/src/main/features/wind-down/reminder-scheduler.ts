@@ -7,13 +7,16 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import {
-  getDelayUntilNextZonedOccurrence,
   isAtOrPastZonedTime,
-  isSameZonedCalendarDate,
   parseReminderClockTime,
 } from "../reminders/reminder-timezone";
-
-type TimerHandle = ReturnType<typeof setTimeout>;
+import {
+  clearTimer,
+  createRuntimeStateStore,
+  scheduleDailyNotification,
+  wasSentToday,
+} from "../reminders/scheduler-utils";
+import type { TimerHandle } from "../reminders/scheduler-utils";
 
 interface WindDownReminderSchedulerOptions {
   clock?: Pick<Clock, "now">;
@@ -28,60 +31,42 @@ interface WindDownReminderScheduler {
   schedule: (settings: AppSettings) => void;
 }
 
-function noopSaveState(_state: WindDownRuntimeState): void {
-  // Tests can omit persistence when they only need scheduling behavior.
-}
-
 export function createWindDownReminderScheduler({
   clock = systemClock,
   getTodayState,
   loadState = () => ({ ...DEFAULT_WIND_DOWN_RUNTIME_STATE }),
   onOpenWindDown,
-  saveState = noopSaveState,
+  saveState,
 }: WindDownReminderSchedulerOptions): WindDownReminderScheduler {
   let reminderTimeout: TimerHandle | null = null;
-  let stateLoaded = false;
-  let state = { ...DEFAULT_WIND_DOWN_RUNTIME_STATE };
-
-  function ensureStateLoaded(): void {
-    if (stateLoaded) {
-      return;
-    }
-
-    state = loadState();
-    stateLoaded = true;
-  }
+  const runtimeState = createRuntimeStateStore({
+    defaultState: { ...DEFAULT_WIND_DOWN_RUNTIME_STATE },
+    loadState,
+    ...(saveState ? { saveState } : {}),
+  });
 
   function persistState(nextState: WindDownRuntimeState): void {
-    ensureStateLoaded();
-    state = nextState;
-    saveState(state);
+    runtimeState.set(nextState);
   }
 
   function clearReminderTimeout(): void {
-    if (reminderTimeout) {
-      clearTimeout(reminderTimeout);
-      reminderTimeout = null;
-    }
-  }
-
-  function wasSentToday(sentAt: string | null, timezone: string): boolean {
-    if (!sentAt) {
-      return false;
-    }
-
-    return isSameZonedCalendarDate(new Date(sentAt), clock.now(), timezone);
+    reminderTimeout = clearTimer(reminderTimeout);
   }
 
   function shouldSend(settings: AppSettings): boolean {
     const today = getTodayState();
     const { windDown } = today;
+    const state = runtimeState.get();
 
     return Boolean(
       windDown &&
       windDown.totalCount > 0 &&
       !windDown.isComplete &&
-      !wasSentToday(state.lastReminderSentAt, settings.timezone)
+      !wasSentToday({
+        clock,
+        sentAt: state.lastReminderSentAt,
+        timezone: settings.timezone,
+      })
     );
   }
 
@@ -103,22 +88,22 @@ export function createWindDownReminderScheduler({
   ): void {
     clearReminderTimeout();
 
-    reminderTimeout = setTimeout(
-      () => {
+    scheduleDailyNotification({
+      clock,
+      hours,
+      minutes,
+      onFire: () => {
         deliverReminder(settings);
-        scheduleNext(settings, hours, minutes);
       },
-      getDelayUntilNextZonedOccurrence(
-        settings.timezone,
-        hours,
-        minutes,
-        clock.now()
-      )
-    );
+      setTimer: (timer) => {
+        reminderTimeout = timer;
+      },
+      timezone: settings.timezone,
+    });
   }
 
   function schedule(settings: AppSettings): void {
-    ensureStateLoaded();
+    runtimeState.get();
     clearReminderTimeout();
 
     const parsedTime = parseReminderClockTime(settings.windDownTime);

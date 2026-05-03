@@ -25,6 +25,28 @@ const EMPTY_HISTORY_SUMMARY: AppControllerState["historySummary"] = [];
 const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
+const DEFAULT_HISTORY_STATE = {
+  hasLoadedHistorySummary: false,
+  history: EMPTY_HISTORY,
+  historyLoadError: null,
+  historyScope: "recent",
+  historySummary: EMPTY_HISTORY_SUMMARY,
+  isHistoryLoading: false,
+} satisfies NonNullable<ReturnType<typeof useNonSettingsHistoryState>>;
+
+const DEFAULT_HISTORY_PAGE_STATE = {
+  selectedWeeklyReview: null,
+  weeklyReviewError: null,
+} satisfies NonNullable<ReturnType<typeof useHistoryPageState>>;
+
+const DEFAULT_SETTINGS_PAGE_STATE = {
+  settingsFieldErrors: EMPTY_SETTINGS_FIELD_ERRORS,
+  settingsSaveErrorMessage: null,
+} satisfies Omit<
+  NonNullable<ReturnType<typeof useSettingsPageState>>,
+  "settingsSavePhase"
+>;
+
 function buildControllerActions({
   actions,
   latestReview,
@@ -88,81 +110,6 @@ function buildControllerActions({
   };
 }
 
-function buildFocusControllerState(
-  focusPageState: ReturnType<typeof useFocusPageState>
-): Pick<
-  AppControllerState,
-  | "focusSaveErrorMessage"
-  | "focusSessions"
-  | "focusSessionsLoadError"
-  | "focusSessionsPhase"
-  | "hasLoadedFocusSessions"
-  | "timerState"
-> {
-  return {
-    focusSaveErrorMessage: focusPageState?.focusSaveErrorMessage ?? null,
-    focusSessions: focusPageState?.focusSessions ?? EMPTY_FOCUS_SESSIONS,
-    focusSessionsLoadError: focusPageState?.focusSessionsLoadError ?? null,
-    focusSessionsPhase: focusPageState?.focusSessionsPhase ?? "idle",
-    hasLoadedFocusSessions: focusPageState?.hasLoadedFocusSessions ?? false,
-    timerState:
-      focusPageState?.timerState ?? useFocusStore.getState().timerState,
-  };
-}
-
-function buildHistoryControllerState({
-  historyPageState,
-  historyState,
-}: {
-  historyPageState: ReturnType<typeof useHistoryPageState>;
-  historyState: ReturnType<typeof useNonSettingsHistoryState>;
-}): Pick<
-  AppControllerState,
-  | "history"
-  | "hasLoadedHistorySummary"
-  | "historyLoadError"
-  | "historyScope"
-  | "historySummary"
-  | "isHistoryLoading"
-  | "selectedWeeklyReview"
-  | "weeklyReviewError"
-> {
-  return {
-    hasLoadedHistorySummary: historyState?.hasLoadedHistorySummary ?? false,
-    history: historyState?.history ?? EMPTY_HISTORY,
-    historyLoadError: historyState?.historyLoadError ?? null,
-    historyScope: historyState?.historyScope ?? "recent",
-    historySummary: historyState?.historySummary ?? EMPTY_HISTORY_SUMMARY,
-    isHistoryLoading: historyState?.isHistoryLoading ?? false,
-    selectedWeeklyReview: historyPageState?.selectedWeeklyReview ?? null,
-    weeklyReviewError: historyPageState?.weeklyReviewError ?? null,
-  };
-}
-
-function buildSettingsControllerState({
-  coreState,
-  settingsPageState,
-}: {
-  coreState: ReturnType<typeof useAppControllerCoreState>;
-  settingsPageState: ReturnType<typeof useSettingsPageState>;
-}): Pick<
-  AppControllerState,
-  | "settingsDraft"
-  | "settingsFieldErrors"
-  | "settingsSaveErrorMessage"
-  | "settingsSavePhase"
-> {
-  return {
-    settingsDraft: coreState.settingsDraft,
-    settingsFieldErrors:
-      settingsPageState?.settingsFieldErrors ?? EMPTY_SETTINGS_FIELD_ERRORS,
-    settingsSaveErrorMessage:
-      settingsPageState?.settingsSaveErrorMessage ?? null,
-    settingsSavePhase:
-      settingsPageState?.settingsSavePhase ?? coreState.settingsSavePhase,
-  };
-}
-
 function buildControllerState({
   coreState,
   focusPageState,
@@ -178,20 +125,33 @@ function buildControllerState({
   settingsPageState: ReturnType<typeof useSettingsPageState>;
   weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
 }) {
+  const focusState = focusPageState ?? {
+    focusSaveErrorMessage: null,
+    focusSessions: EMPTY_FOCUS_SESSIONS,
+    focusSessionsLoadError: null,
+    focusSessionsPhase: "idle",
+    hasLoadedFocusSessions: false,
+    timerState: useFocusStore.getState().timerState,
+  };
+  const historyStateWithDefaults = historyState ?? DEFAULT_HISTORY_STATE;
+  const historyPageStateWithDefaults =
+    historyPageState ?? DEFAULT_HISTORY_PAGE_STATE;
+  const settingsPageStateWithDefaults = {
+    settingsSavePhase: coreState.settingsSavePhase,
+    ...DEFAULT_SETTINGS_PAGE_STATE,
+    ...settingsPageState,
+  };
+
   return {
     bootError: coreState.bootError,
     bootPhase: coreState.bootPhase,
-    ...buildFocusControllerState(focusPageState),
-    ...buildHistoryControllerState({
-      historyPageState,
-      historyState,
-    }),
+    ...focusState,
+    ...historyStateWithDefaults,
+    ...historyPageStateWithDefaults,
     isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
     managedHabits: coreState.managedHabits ?? EMPTY_MANAGED_HABITS,
-    ...buildSettingsControllerState({
-      coreState,
-      settingsPageState,
-    }),
+    settingsDraft: coreState.settingsDraft,
+    ...settingsPageStateWithDefaults,
     todayState: coreState.todayState,
     weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
     weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
