@@ -3,49 +3,49 @@ import {
   registerSecondInstanceHandler,
 } from "@/main/app/single-instance";
 
-function registerHandlerForPrimaryInstance(appLike: {
+function registerHandlerForPrimaryInstance(app: {
   on: (event: "second-instance", listener: () => void) => void;
   requestSingleInstanceLock: () => boolean;
 }): void {
-  if (acquireSingleInstanceLock(appLike)) {
-    registerSecondInstanceHandler(appLike, vi.fn());
+  if (acquireSingleInstanceLock(app)) {
+    registerSecondInstanceHandler(app, vi.fn());
   }
 }
 
 describe("single-instance helpers", () => {
   it("returns true when the app acquires the single-instance lock", () => {
-    const appLike = {
+    const app = {
       requestSingleInstanceLock: vi.fn(() => true),
     };
 
-    expect(acquireSingleInstanceLock(appLike)).toBeTruthy();
-    expect(appLike.requestSingleInstanceLock.mock.calls).toHaveLength(1);
+    expect(acquireSingleInstanceLock(app)).toBeTruthy();
+    expect(app.requestSingleInstanceLock.mock.calls).toHaveLength(1);
   });
 
   it("returns false when the app fails to acquire the single-instance lock", () => {
-    const appLike = {
+    const app = {
       requestSingleInstanceLock: vi.fn(() => false),
     };
 
-    expect(acquireSingleInstanceLock(appLike)).toBeFalsy();
-    expect(appLike.requestSingleInstanceLock.mock.calls).toHaveLength(1);
+    expect(acquireSingleInstanceLock(app)).toBeFalsy();
+    expect(app.requestSingleInstanceLock.mock.calls).toHaveLength(1);
   });
 
   it("calls showMainWindow when the second-instance event fires", () => {
     const showMainWindow = vi.fn();
-    const appLike = {
+    const app = {
       on: vi.fn(),
     };
 
-    registerSecondInstanceHandler(appLike, showMainWindow);
-    const secondInstanceListener = appLike.on.mock.calls[0]?.[1] as
+    registerSecondInstanceHandler(app, showMainWindow);
+    const secondInstanceListener = app.on.mock.calls[0]?.[1] as
       | (() => void)
       | undefined;
 
     secondInstanceListener?.();
 
-    expect(appLike.on.mock.calls).toHaveLength(1);
-    expect(appLike.on).toHaveBeenCalledWith(
+    expect(app.on.mock.calls).toHaveLength(1);
+    expect(app.on).toHaveBeenCalledWith(
       "second-instance",
       expect.any(Function)
     );

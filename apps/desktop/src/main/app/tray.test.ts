@@ -1,73 +1,9 @@
-import type * as ElectronModule from "electron";
-
+import type { AppTrayShellPort } from "@/main/app/ports";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { createAppTray } from "./tray";
-
-type ElectronExports = typeof ElectronModule;
-
-const trayState = vi.hoisted(() => ({
-  clickHandler: null as null | (() => void),
-  destroyCount: 0,
-  lastMenu: null as null | ElectronModule.MenuItemConstructorOptions[],
-  setContextMenuCount: 0,
-  trayCount: 0,
-}));
-
-vi.mock("electron", async (importOriginal) => {
-  const actual = (await importOriginal()) as ElectronExports;
-
-  return {
-    ...actual,
-    Menu: {
-      ...actual.Menu,
-      buildFromTemplate: (
-        template: ElectronModule.MenuItemConstructorOptions[]
-      ) => template,
-    },
-    Tray: Object.assign(
-      class {
-        private readonly state = trayState;
-
-        constructor() {
-          trayState.trayCount += 1;
-        }
-
-        destroy = (): void => {
-          this.state.destroyCount += 1;
-        };
-
-        on = (event: string, handler: () => void): void => {
-          if (event === "click") {
-            this.state.clickHandler = handler;
-          }
-        };
-
-        setContextMenu = (
-          menu: ElectronModule.MenuItemConstructorOptions[]
-        ): void => {
-          this.state.setContextMenuCount += 1;
-          this.state.lastMenu = menu;
-        };
-
-        setToolTip = vi.fn();
-      },
-      actual.Tray
-    ),
-    app: {
-      ...actual.app,
-      getAppPath: () => "/mocked/app",
-    },
-    nativeImage: {
-      ...actual.nativeImage,
-      createFromPath: () => ({
-        resize: () => ({}),
-      }),
-    },
-  };
-});
 
 const baseSettings: AppSettings = {
   ...createDefaultAppSettings("Asia/Singapore"),
@@ -77,40 +13,77 @@ const baseSettings: AppSettings = {
   toggleFocusTimerShortcut: FOCUS_TIMER_SHORTCUT_DEFAULTS.darwin.toggle,
 };
 
-describe("createAppTray()", () => {
-  function resetTrayState(): void {
-    trayState.clickHandler = null;
-    trayState.destroyCount = 0;
-    trayState.lastMenu = null;
-    trayState.setContextMenuCount = 0;
-    trayState.trayCount = 0;
-  }
+function createTrayShellHarness() {
+  const state = {
+    clickHandler: null as null | (() => void),
+    destroyCount: 0,
+    lastMenu: null as unknown[] | null,
+    setContextMenuCount: 0,
+    trayCount: 0,
+  };
 
+  const shell: AppTrayShellPort = {
+    buildMenuFromTemplate: (template) => template as never,
+    createImageFromPath: () =>
+      ({
+        resize: () => ({}),
+      }) as never,
+    createTray: () => {
+      state.trayCount += 1;
+      return {
+        destroy: () => {
+          state.destroyCount += 1;
+        },
+        on: (event: string, handler: () => void) => {
+          if (event === "click") {
+            state.clickHandler = handler;
+          }
+        },
+        setContextMenu: (menu: unknown) => {
+          state.setContextMenuCount += 1;
+          state.lastMenu = menu as unknown[];
+        },
+        setToolTip: vi.fn(),
+      } as never;
+    },
+    resolveIconPath: () => "/mocked/icon.png",
+  };
+
+  return { shell, state };
+}
+
+function createTray(options: {
+  onOpen?: () => void;
+  onOpenWidget?: () => void;
+  onQuit?: () => void;
+  onSnooze?: (settings: AppSettings) => boolean;
+  shell: AppTrayShellPort;
+}) {
+  return createAppTray({
+    onOpen: options.onOpen ?? vi.fn(),
+    onOpenWidget: options.onOpenWidget ?? vi.fn(),
+    onQuit: options.onQuit ?? vi.fn(),
+    onSnooze: options.onSnooze ?? vi.fn(() => true),
+    shell: options.shell,
+  });
+}
+
+describe("createAppTray()", () => {
   it("creates a tray when minimize-to-tray is enabled", () => {
-    resetTrayState();
-    const tray = createAppTray({
-      onOpen: vi.fn(),
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const { shell, state } = createTrayShellHarness();
+    const tray = createTray({ shell });
 
     tray.applySettings({
       ...baseSettings,
       minimizeToTray: true,
     });
 
-    expect(trayState.trayCount).toBe(1);
+    expect(state.trayCount).toBe(1);
   });
 
   it("destroys the tray when minimize-to-tray is disabled", () => {
-    resetTrayState();
-    const tray = createAppTray({
-      onOpen: vi.fn(),
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const { shell, state } = createTrayShellHarness();
+    const tray = createTray({ shell });
 
     tray.applySettings({
       ...baseSettings,
@@ -118,17 +91,12 @@ describe("createAppTray()", () => {
     });
     tray.applySettings(baseSettings);
 
-    expect(trayState.destroyCount).toBe(1);
+    expect(state.destroyCount).toBe(1);
   });
 
   it("enables the snooze menu item when reminders are enabled", () => {
-    resetTrayState();
-    const tray = createAppTray({
-      onOpen: vi.fn(),
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const { shell, state } = createTrayShellHarness();
+    const tray = createTray({ shell });
 
     tray.applySettings({
       ...baseSettings,
@@ -136,19 +104,14 @@ describe("createAppTray()", () => {
       reminderEnabled: true,
     });
 
-    expect(trayState.lastMenu?.[3]).toMatchObject({
+    expect(state.lastMenu?.[3]).toMatchObject({
       enabled: true,
     });
   });
 
   it("disables the snooze menu item when reminders are disabled", () => {
-    resetTrayState();
-    const tray = createAppTray({
-      onOpen: vi.fn(),
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const { shell, state } = createTrayShellHarness();
+    const tray = createTray({ shell });
 
     tray.applySettings({
       ...baseSettings,
@@ -156,38 +119,28 @@ describe("createAppTray()", () => {
       reminderEnabled: false,
     });
 
-    expect(trayState.lastMenu?.[3]).toMatchObject({
+    expect(state.lastMenu?.[3]).toMatchObject({
       enabled: false,
     });
   });
 
   it("opens the main window when the tray icon is clicked", () => {
-    resetTrayState();
+    const { shell, state } = createTrayShellHarness();
     const onOpen = vi.fn();
-    const tray = createAppTray({
-      onOpen,
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const tray = createTray({ onOpen, shell });
 
     tray.applySettings({
       ...baseSettings,
       minimizeToTray: true,
     });
-    trayState.clickHandler?.();
+    state.clickHandler?.();
 
     expect(onOpen.mock.calls).toStrictEqual([[]]);
   });
 
   it("does not rebuild the tray menu for unrelated setting changes", () => {
-    resetTrayState();
-    const tray = createAppTray({
-      onOpen: vi.fn(),
-      onOpenWidget: vi.fn(),
-      onQuit: vi.fn(),
-      onSnooze: vi.fn(() => true),
-    });
+    const { shell, state } = createTrayShellHarness();
+    const tray = createTray({ shell });
 
     tray.applySettings({
       ...baseSettings,
@@ -200,6 +153,6 @@ describe("createAppTray()", () => {
       minimizeToTray: true,
     });
 
-    expect(trayState.setContextMenuCount).toBe(1);
+    expect(state.setContextMenuCount).toBe(1);
   });
 });

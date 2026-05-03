@@ -5,30 +5,23 @@
  * Shows a native error dialog, cleans up runtime resources, and exits the
  * process. Uses Electron's `showErrorBox` for macOS/Windows compatibility.
  */
+import type {
+  FatalErrorAppPort,
+  FatalErrorDialogPort,
+  LoggerPort,
+} from "@/main/app/ports";
+
 const FATAL_ERROR_TITLE = "Zucchini needs to close";
 const FATAL_ERROR_MESSAGE =
   "Zucchini hit an unexpected desktop error and will close. Please reopen the app.";
 
 type FatalErrorContext = "uncaughtException" | "unhandledRejection";
 
-interface FatalErrorAppLike {
-  exit(code?: number): void;
-  isReady(): boolean;
-}
-
-interface FatalErrorDialogLike {
-  showErrorBox(title: string, content: string): void;
-}
-
-interface LoggerLike {
-  error: (...args: unknown[]) => void;
-}
-
 interface CreateFatalErrorReporterOptions {
-  appLike: FatalErrorAppLike;
+  app: FatalErrorAppPort;
   cleanup: () => void;
-  dialogLike: FatalErrorDialogLike;
-  log: LoggerLike;
+  dialog: FatalErrorDialogPort;
+  log: Pick<LoggerPort, "error">;
 }
 
 export function normalizeFatalError(error: unknown): Error {
@@ -48,9 +41,9 @@ export function normalizeFatalError(error: unknown): Error {
 }
 
 export function createFatalErrorReporter({
-  appLike,
+  app,
   cleanup,
-  dialogLike,
+  dialog,
   log,
 }: CreateFatalErrorReporterOptions) {
   let hasHandledFatalError = false;
@@ -69,11 +62,11 @@ export function createFatalErrorReporter({
 
     hasHandledFatalError = true;
 
-    if (appLike.isReady()) {
-      dialogLike.showErrorBox(FATAL_ERROR_TITLE, FATAL_ERROR_MESSAGE);
+    if (app.isReady()) {
+      dialog.showErrorBox(FATAL_ERROR_TITLE, FATAL_ERROR_MESSAGE);
     }
 
     cleanup();
-    appLike.exit(1);
+    app.exit(1);
   };
 }

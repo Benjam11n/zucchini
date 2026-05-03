@@ -5,25 +5,22 @@
  * is launched, it forwards the focus event to the existing instance instead
  * of starting a new window.
  */
-interface SingleInstanceLockAppLike {
-  requestSingleInstanceLock(): boolean;
-}
-
-interface SecondInstanceAppLike {
-  on(event: "second-instance", listener: () => void): void;
-}
+import type {
+  SecondInstanceAppPort,
+  SingleInstanceLockAppPort,
+} from "@/main/app/ports";
 
 export function acquireSingleInstanceLock(
-  appLike: SingleInstanceLockAppLike
+  app: SingleInstanceLockAppPort
 ): boolean {
-  return appLike.requestSingleInstanceLock();
+  return app.requestSingleInstanceLock();
 }
 
 export function registerSecondInstanceHandler(
-  appLike: SecondInstanceAppLike,
+  app: SecondInstanceAppPort,
   showMainWindow: () => void
 ): void {
-  appLike.on("second-instance", () => {
+  app.on("second-instance", () => {
     showMainWindow();
   });
 }

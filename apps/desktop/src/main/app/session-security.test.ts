@@ -1,4 +1,4 @@
-import type { LoggerLike } from "@/main/app/logger";
+import type { LoggerPort } from "@/main/app/ports";
 import { configureSessionSecurity } from "@/main/app/session-security";
 
 type PermissionCheckHandler = (
@@ -15,7 +15,7 @@ type PermissionRequestHandler = (
 ) => void;
 
 interface SessionSecurityHarness {
-  log: LoggerLike;
+  log: LoggerPort;
   permissionCheckHandler: PermissionCheckHandler | null;
   permissionRequestHandler: PermissionRequestHandler | null;
 }
@@ -24,7 +24,7 @@ describe("configureSessionSecurity()", () => {
   function createHarness(): SessionSecurityHarness {
     let permissionCheckHandler: PermissionCheckHandler | null = null;
     let permissionRequestHandler: PermissionRequestHandler | null = null;
-    const log: LoggerLike = {
+    const log: LoggerPort = {
       error: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),

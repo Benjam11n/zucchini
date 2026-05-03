@@ -3,7 +3,7 @@ import {
   buildTodayHabitStreaks,
   buildTodayState,
 } from "@/main/features/today/state-builder";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { TodayReadModelRepositoryPort } from "@/main/infra/persistence/app-repository";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
@@ -30,9 +30,9 @@ function traceReadModel<T>(label: string, execute: () => T): T {
 export class TodayReadModelService {
   private cachedTodayState: TodayState | null = null;
   private readonly clock: Clock;
-  private readonly repository: AppRepository;
+  private readonly repository: TodayReadModelRepositoryPort;
 
-  constructor(repository: AppRepository, clock: Clock) {
+  constructor(repository: TodayReadModelRepositoryPort, clock: Clock) {
     this.clock = clock;
     this.repository = repository;
   }

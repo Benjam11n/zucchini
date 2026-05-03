@@ -8,40 +8,25 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-import type { App, IpcMain } from "electron";
-
+import type { UpdaterRuntimePorts } from "@/main/app/ports";
 import {
   registerAppUpdater,
   resolveAppUpdateSupportMode,
   serializeAppUpdaterIpcError,
 } from "@/main/app/updater";
-import type { AutoUpdaterLike } from "@/main/app/updater";
-import type { AppUpdateState } from "@/shared/contracts/app-updater";
-
-interface LoggerLike {
-  error: (...args: unknown[]) => void;
-  info: (...args: unknown[]) => void;
-  warn: (...args: unknown[]) => void;
-}
 
 export function registerUpdaterRuntime({
-  appLike,
+  app,
   autoUpdater,
   broadcastState,
-  ipcMainLike,
+  ipcMain,
   log,
-}: {
-  appLike: Pick<App, "getAppPath" | "getVersion" | "isPackaged">;
-  autoUpdater: AutoUpdaterLike;
-  broadcastState: (state: AppUpdateState) => void;
-  ipcMainLike: Pick<IpcMain, "handle">;
-  log: LoggerLike;
-}) {
+}: UpdaterRuntimePorts) {
   return registerAppUpdater({
     broadcastState,
-    currentVersion: appLike.getVersion(),
+    currentVersion: app.getVersion(),
     handleIpc: (channel, handler) => {
-      ipcMainLike.handle(channel, async () => {
+      ipcMain.handle(channel, async () => {
         try {
           return {
             data: await handler(),
@@ -61,12 +46,12 @@ export function registerUpdaterRuntime({
     scheduleInterval: globalThis.setInterval,
     scheduleTimeout: globalThis.setTimeout,
     supportMode: resolveAppUpdateSupportMode({
-      appIsPackaged: appLike.isPackaged,
+      appIsPackaged: app.isPackaged,
       hasConfigFile: existsSync(
         path.join(process.resourcesPath, "app-update.yml")
       ),
       hasDevConfigFile: existsSync(
-        path.join(appLike.getAppPath(), "dev-app-update.yml")
+        path.join(app.getAppPath(), "dev-app-update.yml")
       ),
       platform: process.platform,
     }),

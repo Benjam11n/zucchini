@@ -1,16 +1,10 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-export interface LoggerLike {
-  error: (...args: unknown[]) => void;
-  info: (...args: unknown[]) => void;
-  warn: (...args: unknown[]) => void;
-}
+import type { DesktopLoggerAppPort, LoggerPort } from "@/main/app/ports";
 
 interface CreateDesktopLoggerOptions {
-  appLike: {
-    getPath(name: "logs"): string;
-  };
+  app: DesktopLoggerAppPort;
   clock?: () => Date;
 }
 
@@ -64,7 +58,7 @@ function createLogRecord(
 }
 
 function writeLogRecord(
-  appLike: CreateDesktopLoggerOptions["appLike"],
+  app: DesktopLoggerAppPort,
   clock: NonNullable<CreateDesktopLoggerOptions["clock"]>,
   level: LogRecord["level"],
   args: unknown[]
@@ -74,7 +68,7 @@ function writeLogRecord(
   const stream = level === "error" ? process.stderr : process.stdout;
 
   try {
-    const logDirectoryPath = appLike.getPath("logs");
+    const logDirectoryPath = app.getPath("logs");
     mkdirSync(logDirectoryPath, {
       recursive: true,
     });
@@ -94,12 +88,12 @@ function writeLogRecord(
 }
 
 export function createDesktopLogger({
-  appLike,
+  app,
   clock = () => new Date(),
-}: CreateDesktopLoggerOptions): LoggerLike {
+}: CreateDesktopLoggerOptions): LoggerPort {
   return {
-    error: (...args) => writeLogRecord(appLike, clock, "error", args),
-    info: (...args) => writeLogRecord(appLike, clock, "info", args),
-    warn: (...args) => writeLogRecord(appLike, clock, "warn", args),
+    error: (...args) => writeLogRecord(app, clock, "error", args),
+    info: (...args) => writeLogRecord(app, clock, "info", args),
+    warn: (...args) => writeLogRecord(app, clock, "warn", args),
   };
 }

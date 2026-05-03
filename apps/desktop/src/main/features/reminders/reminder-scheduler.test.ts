@@ -1,3 +1,4 @@
+import type { HabitReminderNotifier } from "@/main/features/reminders/ports";
 import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { TodayState } from "@/shared/contracts/today-state";
@@ -5,7 +6,6 @@ import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import type * as Notifications from "./notifications";
 import { createReminderScheduler } from "./reminder-scheduler";
 
 const notificationState = vi.hoisted(() => ({
@@ -15,25 +15,6 @@ const notificationState = vi.hoisted(() => ({
   missedReminderCount: 0,
   snoozedReminderCount: 0,
   snoozedReminderMinutes: [] as number[],
-}));
-
-vi.mock<typeof Notifications>(import("./notifications"), () => ({
-  showCatchUpReminder: vi.fn(() => {
-    notificationState.catchUpReminderCount += 1;
-  }),
-  showIncompleteReminder: vi.fn(() => {
-    notificationState.incompleteReminderCount += 1;
-  }),
-  showMidnightWarning: vi.fn(() => {
-    notificationState.midnightWarningCount += 1;
-  }),
-  showMissedReminderWarning: vi.fn(() => {
-    notificationState.missedReminderCount += 1;
-  }),
-  showSnoozedReminder: vi.fn((minutes: number) => {
-    notificationState.snoozedReminderCount += 1;
-    notificationState.snoozedReminderMinutes.push(minutes);
-  }),
 }));
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -94,11 +75,40 @@ function resetNotificationState(): void {
   notificationState.snoozedReminderMinutes = [];
 }
 
+function createTestNotifier(): HabitReminderNotifier {
+  return {
+    showCatchUpReminder: () => {
+      notificationState.catchUpReminderCount += 1;
+    },
+    showIncompleteReminder: () => {
+      notificationState.incompleteReminderCount += 1;
+    },
+    showMidnightWarning: () => {
+      notificationState.midnightWarningCount += 1;
+    },
+    showMissedReminderWarning: () => {
+      notificationState.missedReminderCount += 1;
+    },
+    showSnoozedReminder: (minutes) => {
+      notificationState.snoozedReminderCount += 1;
+      notificationState.snoozedReminderMinutes.push(minutes);
+    },
+  };
+}
+
+function createTestReminderScheduler(
+  options: Omit<Parameters<typeof createReminderScheduler>[0], "notifier">
+) {
+  return createReminderScheduler({
+    ...options,
+    notifier: createTestNotifier(),
+  });
+}
+
 function withFakeTime(nowIso: string, run: () => void): void {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(nowIso));
   resetNotificationState();
-  vi.clearAllMocks();
 
   try {
     run();
@@ -111,7 +121,7 @@ describe("reminder scheduler", () => {
   it("does not load persisted reminder state until the scheduler is used", () => {
     const loadState = vi.fn(() => ({ ...DEFAULT_RUNTIME_STATE }));
 
-    createReminderScheduler({
+    createTestReminderScheduler({
       getTodayState: () => buildTodayState([buildHabit(false)]),
       loadState,
     });
@@ -122,7 +132,7 @@ describe("reminder scheduler", () => {
   it("fires the user reminder at the configured local time instead of system time", () => {
     withFakeTime("2026-01-15T13:30:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -148,7 +158,7 @@ describe("reminder scheduler", () => {
   it("shows a catch-up reminder when the app reopens after reminder time", () => {
     withFakeTime("2026-01-15T20:45:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -167,7 +177,7 @@ describe("reminder scheduler", () => {
   it("shows the missed reminder warning after 23:00 when the scheduled reminder was missed", () => {
     withFakeTime("2026-01-15T23:05:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -187,7 +197,7 @@ describe("reminder scheduler", () => {
   it("keeps the nightly 23:00 warning active even when user reminders are disabled", () => {
     withFakeTime("2026-01-15T14:30:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -218,7 +228,7 @@ describe("reminder scheduler", () => {
         reminderSnoozeMinutes: 10,
       };
 
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -243,7 +253,7 @@ describe("reminder scheduler", () => {
   it("suppresses weekly reminders before the final day of the week", () => {
     withFakeTime("2026-01-15T20:29:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () =>
           buildTodayState([buildHabit(false, "weekly")], "2026-01-15"),
         loadState: () => runtimeState,
@@ -268,7 +278,7 @@ describe("reminder scheduler", () => {
   it("fires at the intended local wall-clock time across DST spring-forward", () => {
     withFakeTime("2026-03-08T06:29:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)], "2026-03-08"),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -293,7 +303,7 @@ describe("reminder scheduler", () => {
   it("does not deliver the same reminder twice across DST fall-back", () => {
     withFakeTime("2026-11-01T05:29:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)], "2026-11-01"),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -322,7 +332,7 @@ describe("reminder scheduler", () => {
         ...DEFAULT_SETTINGS,
         reminderTime: "20:30",
       };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -349,7 +359,7 @@ describe("reminder scheduler", () => {
         ...DEFAULT_SETTINGS,
         reminderSnoozeMinutes: 10,
       };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => todayState,
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -371,7 +381,7 @@ describe("reminder scheduler", () => {
   it("preserves snoozes across timezone and reminder-time changes", () => {
     withFakeTime("2026-01-15T20:00:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {
@@ -406,7 +416,7 @@ describe("reminder scheduler", () => {
   it("deduplicates late-night warnings on repeated schedule() calls", () => {
     withFakeTime("2026-01-15T23:05:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };
-      const scheduler = createReminderScheduler({
+      const scheduler = createTestReminderScheduler({
         getTodayState: () => buildTodayState([buildHabit(false)]),
         loadState: () => runtimeState,
         saveState: (nextState) => {

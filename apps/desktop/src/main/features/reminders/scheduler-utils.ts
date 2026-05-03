@@ -1,16 +1,19 @@
 import type { Clock } from "@/main/app/clock";
+import type {
+  ReminderRuntimeStateStore,
+  ReminderTimerHandle,
+  ReminderTimerPort,
+} from "@/main/features/reminders/ports";
+import { realReminderTimers } from "@/main/features/reminders/ports";
 
 import {
   getDelayUntilNextZonedOccurrence,
   isSameZonedCalendarDate,
 } from "./reminder-timezone";
 
-export type TimerHandle = ReturnType<typeof setTimeout>;
+export type TimerHandle = ReminderTimerHandle;
 
-export interface RuntimeStateStore<TState> {
-  get: () => TState;
-  set: (state: TState) => void;
-}
+export type RuntimeStateStore<TState> = ReminderRuntimeStateStore<TState>;
 
 export function createRuntimeStateStore<TState>({
   defaultState,
@@ -46,9 +49,12 @@ export function createRuntimeStateStore<TState>({
   };
 }
 
-export function clearTimer(timer: TimerHandle | null): null {
+export function clearTimer(
+  timer: TimerHandle | null,
+  timers: ReminderTimerPort = realReminderTimers
+): null {
   if (timer) {
-    clearTimeout(timer);
+    timers.clearTimeout(timer);
   }
 
   return null;
@@ -76,6 +82,7 @@ export function scheduleDailyNotification({
   minutes,
   onFire,
   setTimer,
+  timers = realReminderTimers,
   timezone,
 }: {
   clock: Pick<Clock, "now">;
@@ -83,9 +90,10 @@ export function scheduleDailyNotification({
   minutes: number;
   onFire: () => void;
   setTimer: (timer: TimerHandle) => void;
+  timers?: ReminderTimerPort;
   timezone: string;
 }): void {
-  const timer = setTimeout(
+  const timer = timers.setTimeout(
     () => {
       onFire();
       scheduleDailyNotification({
@@ -94,6 +102,7 @@ export function scheduleDailyNotification({
         minutes,
         onFire,
         setTimer,
+        timers,
         timezone,
       });
     },

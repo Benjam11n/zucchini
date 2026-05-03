@@ -12,16 +12,12 @@ import type {
 } from "@/shared/contracts/habits-api";
 import type { AppSettings } from "@/shared/domain/settings";
 
+import type { GlobalShortcutPort } from "./ports";
+
 const SHORTCUT_REGISTRATION_ERROR =
   "This shortcut could not be registered. It may already be in use by another app.";
 
 type GlobalShortcutAction = FocusTimerAction;
-
-interface GlobalShortcutLike {
-  isRegistered: (accelerator: string) => boolean;
-  register: (accelerator: string, callback: () => void) => boolean;
-  unregister: (accelerator: string) => void;
-}
 
 interface ActiveShortcutRegistration {
   accelerator: string;
@@ -66,7 +62,7 @@ export function createFocusTimerGlobalShortcutManager({
   globalShortcut,
   onAction,
 }: {
-  globalShortcut: GlobalShortcutLike;
+  globalShortcut: GlobalShortcutPort;
   onAction: (action: GlobalShortcutAction) => void;
 }): FocusTimerGlobalShortcutManager {
   const activeRegistrations = new Map<

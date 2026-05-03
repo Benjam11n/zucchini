@@ -13,7 +13,7 @@ function createLoggerHarness() {
     .spyOn(process.stderr, "write")
     .mockImplementation(() => true);
   const logger = createDesktopLogger({
-    appLike: {
+    app: {
       getPath: () => logsDirectoryPath,
     },
     clock: () => new Date("2026-03-31T12:00:00.000Z"),

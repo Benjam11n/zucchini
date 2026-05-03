@@ -1,6 +1,12 @@
 import type { Clock } from "@/main/app/clock";
 import { systemClock } from "@/main/app/clock";
-import { showWindDownReminder } from "@/main/features/reminders/notifications";
+import { electronWindDownReminderNotifier } from "@/main/features/reminders/adapters";
+import type {
+  ReminderRuntimeStateStore,
+  ReminderTimerPort,
+  WindDownReminderNotifier,
+} from "@/main/features/reminders/ports";
+import { realReminderTimers } from "@/main/features/reminders/ports";
 import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/main/features/wind-down/runtime-state";
 import type { TodayState } from "@/shared/contracts/today-state";
@@ -22,8 +28,11 @@ interface WindDownReminderSchedulerOptions {
   clock?: Pick<Clock, "now">;
   getTodayState: () => TodayState;
   loadState?: () => WindDownRuntimeState;
+  notifier?: WindDownReminderNotifier;
   onOpenWindDown: () => void;
   saveState?: (state: WindDownRuntimeState) => void;
+  stateStore?: ReminderRuntimeStateStore<WindDownRuntimeState>;
+  timers?: ReminderTimerPort;
 }
 
 interface WindDownReminderScheduler {
@@ -35,22 +44,27 @@ export function createWindDownReminderScheduler({
   clock = systemClock,
   getTodayState,
   loadState = () => ({ ...DEFAULT_WIND_DOWN_RUNTIME_STATE }),
+  notifier = electronWindDownReminderNotifier,
   onOpenWindDown,
   saveState,
+  stateStore,
+  timers = realReminderTimers,
 }: WindDownReminderSchedulerOptions): WindDownReminderScheduler {
   let reminderTimeout: TimerHandle | null = null;
-  const runtimeState = createRuntimeStateStore({
-    defaultState: { ...DEFAULT_WIND_DOWN_RUNTIME_STATE },
-    loadState,
-    ...(saveState ? { saveState } : {}),
-  });
+  const runtimeState =
+    stateStore ??
+    createRuntimeStateStore({
+      defaultState: { ...DEFAULT_WIND_DOWN_RUNTIME_STATE },
+      loadState,
+      ...(saveState ? { saveState } : {}),
+    });
 
   function persistState(nextState: WindDownRuntimeState): void {
     runtimeState.set(nextState);
   }
 
   function clearReminderTimeout(): void {
-    reminderTimeout = clearTimer(reminderTimeout);
+    reminderTimeout = clearTimer(reminderTimeout, timers);
   }
 
   function shouldSend(settings: AppSettings): boolean {
@@ -75,7 +89,7 @@ export function createWindDownReminderScheduler({
       return;
     }
 
-    showWindDownReminder(onOpenWindDown);
+    notifier.showWindDownReminder(onOpenWindDown);
     persistState({
       lastReminderSentAt: clock.now().toISOString(),
     });
@@ -98,6 +112,7 @@ export function createWindDownReminderScheduler({
       setTimer: (timer) => {
         reminderTimeout = timer;
       },
+      timers,
       timezone: settings.timezone,
     });
   }

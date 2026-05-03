@@ -5,11 +5,9 @@
  * opening the main window, focus widget, snoozing reminders, and quitting.
  * Respects the `minimizeToTray` setting to show/hide the tray icon.
  */
-import { Menu, Tray, nativeImage } from "electron";
-
+import { electronAppTrayShell } from "@/main/app/adapters";
+import type { AppTrayShellPort } from "@/main/app/ports";
 import type { AppSettings } from "@/shared/domain/settings";
-
-import { resolveRuntimeIconPath } from "./assets";
 
 interface AppTrayController {
   applySettings: (settings: AppSettings) => void;
@@ -18,6 +16,7 @@ interface AppTrayController {
 }
 
 interface CreateAppTrayOptions {
+  shell?: AppTrayShellPort;
   onOpen: () => void;
   onOpenWidget: () => void;
   onQuit: () => void;
@@ -39,19 +38,20 @@ function hasTrayMenuChanged(
   );
 }
 
-function createTrayIcon() {
-  return nativeImage
-    .createFromPath(resolveRuntimeIconPath())
+function createTrayIcon(shell: AppTrayShellPort) {
+  return shell
+    .createImageFromPath(shell.resolveIconPath())
     .resize({ height: 18, width: 18 });
 }
 
 export function createAppTray({
+  shell = electronAppTrayShell,
   onOpen,
   onOpenWidget,
   onQuit,
   onSnooze,
 }: CreateAppTrayOptions): AppTrayController {
-  let tray: Tray | null = null;
+  let tray: ReturnType<AppTrayShellPort["createTray"]> | null = null;
   let settings: AppSettings | null = null;
 
   function rebuildMenu(): void {
@@ -60,7 +60,7 @@ export function createAppTray({
     }
 
     tray.setContextMenu(
-      Menu.buildFromTemplate([
+      shell.buildMenuFromTemplate([
         {
           click: onOpen,
           label: "Open Zucchini",
@@ -95,7 +95,7 @@ export function createAppTray({
       return;
     }
 
-    tray = new Tray(createTrayIcon());
+    tray = shell.createTray(createTrayIcon(shell));
     tray.setToolTip("Zucchini");
     tray.on("click", onOpen);
     rebuildMenu();

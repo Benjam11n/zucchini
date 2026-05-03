@@ -8,37 +8,33 @@
  */
 import path from "node:path";
 
-import type { App, Dialog, Shell } from "electron";
-
-import type { Clock } from "@/main/app/clock";
-import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
-import type { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
+import type {
+  DataManagementAppPort,
+  DataManagementClockPort,
+  DataManagementDialogPort,
+  DataManagementRepositoryPort,
+  DataManagementServicePort,
+  DataManagementShellPort,
+} from "@/main/app/ports";
 
 interface CreateDataManagementActionsOptions {
-  appLike: Pick<App, "quit" | "relaunch">;
-  clock: Pick<Clock, "now" | "todayKey">;
-  dialogLike: Pick<Dialog, "showOpenDialog" | "showSaveDialog">;
-  repository: Pick<
-    SqliteAppRepository,
-    | "exportBackup"
-    | "getDatabasePath"
-    | "replaceDatabase"
-    | "resetDatabase"
-    | "validateDatabase"
-  >;
+  app: DataManagementAppPort;
+  clock: DataManagementClockPort;
+  dialog: DataManagementDialogPort;
+  repository: DataManagementRepositoryPort;
   shouldRelaunchAfterDataChange?: boolean;
-  service: Pick<HabitsApplicationService, "initialize">;
-  shellLike: Pick<Shell, "openPath">;
+  service: DataManagementServicePort;
+  shell: DataManagementShellPort;
 }
 
 export function createDataManagementActions({
-  appLike,
+  app,
   clock,
-  dialogLike,
+  dialog,
   repository,
   shouldRelaunchAfterDataChange = !process.env["VITE_DEV_SERVER_URL"],
   service,
-  shellLike,
+  shell,
 }: CreateDataManagementActionsOptions) {
   function buildPreImportBackupPath(): string {
     const timestamp = clock.now().toISOString().replaceAll(/\D/g, "");
@@ -52,7 +48,7 @@ export function createDataManagementActions({
     service.initialize();
 
     const dataFolderPath = path.dirname(repository.getDatabasePath());
-    const errorMessage = await shellLike.openPath(dataFolderPath);
+    const errorMessage = await shell.openPath(dataFolderPath);
 
     if (errorMessage.length > 0) {
       throw new Error(errorMessage);
@@ -64,7 +60,7 @@ export function createDataManagementActions({
   async function exportBackup(): Promise<string | null> {
     service.initialize();
 
-    const { canceled, filePath } = await dialogLike.showSaveDialog({
+    const { canceled, filePath } = await dialog.showSaveDialog({
       defaultPath: path.basename(
         `zucchini-backup-${clock.todayKey().replaceAll("-", "")}.db`
       ),
@@ -86,7 +82,7 @@ export function createDataManagementActions({
   }
 
   async function importBackup(onBeforeQuit: () => void): Promise<boolean> {
-    const { canceled, filePaths } = await dialogLike.showOpenDialog({
+    const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [
         {
           extensions: ["db", "sqlite", "sqlite3"],
@@ -108,11 +104,11 @@ export function createDataManagementActions({
     repository.replaceDatabase(selectedBackupPath);
 
     if (shouldRelaunchAfterDataChange) {
-      appLike.relaunch();
+      app.relaunch();
     }
 
     onBeforeQuit();
-    appLike.quit();
+    app.quit();
     return true;
   }
 
@@ -120,11 +116,11 @@ export function createDataManagementActions({
     repository.resetDatabase();
 
     if (shouldRelaunchAfterDataChange) {
-      appLike.relaunch();
+      app.relaunch();
     }
 
     onBeforeQuit();
-    appLike.quit();
+    app.quit();
     return Promise.resolve(true);
   }
 

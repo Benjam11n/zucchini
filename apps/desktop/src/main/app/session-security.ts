@@ -1,35 +1,17 @@
-import type { LoggerLike } from "@/main/app/logger";
+import type {
+  LoggerPort,
+  PermissionWebContentsPort,
+  SessionSecurityPort,
+} from "@/main/app/ports";
 
-interface PermissionWebContentsLike {
-  getURL(): string;
-}
-
-interface SessionLike {
-  setPermissionCheckHandler(
-    handler: (
-      webContents: PermissionWebContentsLike | null,
-      permission: string,
-      requestingOrigin: string
-    ) => boolean
-  ): void;
-  setPermissionRequestHandler(
-    handler: (
-      webContents: PermissionWebContentsLike | null,
-      permission: string,
-      callback: (granted: boolean) => void,
-      details: {
-        requestingUrl: string;
-      }
-    ) => void
-  ): void;
-}
+type PermissionWebContents = PermissionWebContentsPort | null;
 
 export function configureSessionSecurity(
-  sessionLike: SessionLike,
-  log: LoggerLike
+  session: SessionSecurityPort,
+  log: Pick<LoggerPort, "warn">
 ): void {
-  sessionLike.setPermissionCheckHandler(
-    (webContents, permission, requestingOrigin) => {
+  session.setPermissionCheckHandler(
+    (webContents: PermissionWebContents, permission, requestingOrigin) => {
       log.warn("Blocked Electron permission check.", {
         permission,
         rendererUrl: webContents?.getURL() ?? null,
@@ -40,7 +22,7 @@ export function configureSessionSecurity(
     }
   );
 
-  sessionLike.setPermissionRequestHandler(
+  session.setPermissionRequestHandler(
     (webContents, permission, callback, details) => {
       log.warn("Blocked Electron permission request.", {
         permission,

@@ -40,6 +40,24 @@
 - Do not over-engineer. A simple function is better than a reusable framework
   unless repetition is already a problem.
 
+## Ports And Adapters
+
+- Use small local ports for side-effect boundaries only: Electron APIs,
+  timers, clocks, SQLite/filesystem/dialog/shell, native addons, preload IPC,
+  and browser storage.
+- Name side-effect interfaces with a `Port` suffix, for example
+  `DataManagementRepositoryPort`, `ReminderTimerPort`, or
+  `AppTrayShellPort`.
+- Keep feature-owned ports beside the feature in `ports.ts`; keep production
+  implementations beside them in `adapters.ts`.
+- Use `adapters.ts` for concrete Electron/Node/browser implementations, named
+  by technology or runtime such as `electronAppTrayShell`.
+- Do not add ports for pure domain functions, React presentational components,
+  formatting helpers, validation helpers, or one-call wrappers with no
+  meaningful behavior.
+- Prefer one deep module or coordinator per capability over many shallow public
+  helpers. Callers should see a small API while side-effect wiring stays hidden.
+
 ## Electron-Specific Rules
 
 - Preserve the current security posture:

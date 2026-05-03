@@ -184,3 +184,19 @@ export interface AppRepository
     SettingsRepositoryPort,
     ReminderRuntimeStateRepositoryPort,
     WindDownRepositoryPort {}
+
+export type TodayReadModelRepositoryPort = Pick<
+  AppRepository,
+  | "ensureStatusRowsForDate"
+  | "ensureWindDownStatusRowsForDate"
+  | "getDayStatus"
+  | "getFocusQuotaGoalsWithStatusForDate"
+  | "getFocusSessionsInRange"
+  | "getHabitWithStatus"
+  | "getHabitsWithStatus"
+  | "getHistoricalHabitPeriodStatusesOverlappingRange"
+  | "getPersistedStreakState"
+  | "getSettings"
+  | "getSettledHistory"
+  | "getWindDownActionsWithStatus"
+>;

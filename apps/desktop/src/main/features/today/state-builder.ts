@@ -6,7 +6,7 @@
  * after streak synchronization.
  */
 import type { Clock } from "@/main/app/clock";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { TodayReadModelRepositoryPort } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/today-state";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
@@ -50,7 +50,7 @@ function mapStatusToHabit(status: {
 export function buildHistoricalHabitsByDate(
   summaries: DailySummary[],
   statuses: ReturnType<
-    AppRepository["getHistoricalHabitPeriodStatusesOverlappingRange"]
+    TodayReadModelRepositoryPort["getHistoricalHabitPeriodStatusesOverlappingRange"]
   >
 ): Map<string, HabitWithStatus[]> {
   const habitsByDate = new Map<string, HabitWithStatus[]>();
@@ -117,7 +117,7 @@ function buildHistoricalHabitDays(
 }
 
 export function buildTodayState(
-  repository: AppRepository,
+  repository: TodayReadModelRepositoryPort,
   clock: Clock
 ): TodayState {
   const today = clock.todayKey();
@@ -167,7 +167,7 @@ export function buildTodayState(
 }
 
 export function buildTodayHabitStreaks(
-  repository: AppRepository,
+  repository: TodayReadModelRepositoryPort,
   clock: Clock
 ): Record<number, HabitStreak> {
   const today = clock.todayKey();

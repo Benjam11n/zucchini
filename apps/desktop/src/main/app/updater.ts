@@ -12,20 +12,14 @@ import type {
   SerializedAppUpdaterIpcError,
 } from "@/shared/contracts/app-updater";
 
+import type { AutoUpdaterPort, LoggerPort } from "./ports";
+
 const UPDATE_CHECK_DELAY_MS = 15_000;
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const SAFE_UPDATE_ERROR_MESSAGE =
   "Zucchini could not complete the update action.";
 
 export type AppUpdateSupportMode = "development" | "disabled" | "production";
-
-type AppUpdaterEventName =
-  | "checking-for-update"
-  | "download-progress"
-  | "error"
-  | "update-available"
-  | "update-downloaded"
-  | "update-not-available";
 
 interface ProgressInfo {
   percent: number;
@@ -35,32 +29,11 @@ interface UpdateInfo {
   version: string;
 }
 
-interface LoggerLike {
-  error: (...args: unknown[]) => void;
-  info: (...args: unknown[]) => void;
-  warn: (...args: unknown[]) => void;
-}
-
 type TimerHandle = ReturnType<typeof globalThis.setTimeout>;
 type ScheduleFn = (handler: () => void, delayMs: number) => TimerHandle;
 type MaybePromise<T> = Promise<T> | T;
 
 type IpcHandlerResult = AppUpdateState | undefined;
-
-export interface AutoUpdaterLike {
-  autoDownload: boolean;
-  autoInstallOnAppQuit: boolean;
-  allowPrerelease?: boolean;
-  forceDevUpdateConfig?: boolean;
-  logger?: LoggerLike | null;
-  checkForUpdates: () => Promise<unknown>;
-  downloadUpdate: () => Promise<unknown>;
-  on: (
-    event: AppUpdaterEventName,
-    listener: (...args: unknown[]) => void
-  ) => void;
-  quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void;
-}
 
 interface RegisterAppUpdaterOptions {
   broadcastState: (state: AppUpdateState) => void;
@@ -69,11 +42,11 @@ interface RegisterAppUpdaterOptions {
     channel: string,
     handler: () => MaybePromise<IpcHandlerResult>
   ) => void;
-  log: LoggerLike;
+  log: LoggerPort;
   scheduleInterval: ScheduleFn;
   scheduleTimeout: ScheduleFn;
   supportMode: AppUpdateSupportMode;
-  updater: AutoUpdaterLike;
+  updater: AutoUpdaterPort;
 }
 
 export interface AppUpdaterController {

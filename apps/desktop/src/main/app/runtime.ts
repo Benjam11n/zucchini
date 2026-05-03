@@ -7,54 +7,52 @@
  * user changes preferences.
  */
 import { systemClock } from "@/main/app/clock";
+import type { RuntimeAppPort } from "@/main/app/ports";
 import { createAppTray } from "@/main/app/tray";
 import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import { HabitsApplicationService as HabitsApplicationServiceImpl } from "@/main/features/habits/habits-application-service";
-import { createReminderScheduler } from "@/main/features/reminders/reminder-scheduler";
-import { createWindDownReminderScheduler } from "@/main/features/wind-down/reminder-scheduler";
+import { createReminderCoordinator } from "@/main/features/reminders/coordinator";
+import type { ReminderCoordinator } from "@/main/features/reminders/coordinator";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import { buildLoginItemSettings } from "./lifecycle";
 
 export interface AppRuntime {
-  reminders: ReturnType<typeof createReminderScheduler>;
-  windDownReminders: ReturnType<typeof createWindDownReminderScheduler>;
+  reminders: ReminderCoordinator;
   repository: SqliteAppRepository;
   service: HabitsApplicationService;
   tray: ReturnType<typeof createAppTray>;
 }
 
 interface CreateAppRuntimeOptions {
+  clock?: typeof systemClock;
   onOpenFocusWidget: () => void;
   onOpenMainWindow: () => void;
   onOpenWindDown: () => void;
   onQuit: () => void;
+  repository?: SqliteAppRepository;
+  service?: HabitsApplicationService;
 }
 
 export function createAppRuntime({
+  clock = systemClock,
   onOpenFocusWidget,
   onOpenMainWindow,
   onOpenWindDown,
   onQuit,
+  repository: providedRepository,
+  service: providedService,
 }: CreateAppRuntimeOptions): AppRuntime {
-  const repository = new SqliteAppRepository();
-  const service = new HabitsApplicationServiceImpl(repository, systemClock);
-  const reminders = createReminderScheduler({
-    clock: systemClock,
-    getTodayState: () => service.getTodayState(),
-    loadState: () => service.getReminderRuntimeState(),
-    saveState: (state) => {
-      service.saveReminderRuntimeState(state);
-    },
-  });
-  const windDownReminders = createWindDownReminderScheduler({
-    clock: systemClock,
-    getTodayState: () => service.getTodayState(),
-    loadState: () => service.getWindDownRuntimeState(),
+  const repository = providedRepository ?? new SqliteAppRepository();
+  const service =
+    providedService ?? new HabitsApplicationServiceImpl(repository, clock);
+  const reminders = createReminderCoordinator({
+    clock,
     onOpenWindDown,
-    saveState: (state) => {
-      service.saveWindDownRuntimeState(state);
+    repository: service,
+    today: {
+      getTodayState: () => service.getTodayState(),
     },
   });
   const tray = createAppTray({
@@ -69,31 +67,24 @@ export function createAppRuntime({
     repository,
     service,
     tray,
-    windDownReminders,
   };
 }
 
 export function applyRuntimeSettings({
   applyThemeMode,
-  appLike,
+  app,
   runtime,
   settings,
 }: {
   applyThemeMode: (themeMode: ThemeMode) => void;
-  appLike: {
-    isPackaged: boolean;
-    setLoginItemSettings: (
-      settings: ReturnType<typeof buildLoginItemSettings>
-    ) => void;
-  };
-  runtime: Pick<AppRuntime, "reminders" | "tray" | "windDownReminders">;
+  app: RuntimeAppPort;
+  runtime: Pick<AppRuntime, "reminders" | "tray">;
   settings: AppSettings;
 }): boolean {
-  if (appLike.isPackaged) {
-    appLike.setLoginItemSettings(buildLoginItemSettings(settings));
+  if (app.isPackaged) {
+    app.setLoginItemSettings(buildLoginItemSettings(settings));
   }
   runtime.reminders.schedule(settings);
-  runtime.windDownReminders.schedule(settings);
   applyThemeMode(settings.themeMode);
   runtime.tray.applySettings(settings);
   return settings.minimizeToTray;

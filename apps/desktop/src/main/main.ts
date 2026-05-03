@@ -116,7 +116,7 @@ function createMainProcessContext() {
 
 const context = createMainProcessContext();
 const logger = createDesktopLogger({
-  appLike: app,
+  app,
 });
 
 const focusTimerCoordinator = createFocusTimerCoordinator();
@@ -305,15 +305,14 @@ function cleanupRuntime(): void {
   }
 
   runtime.reminders.cancel();
-  runtime.windDownReminders.cancel();
   runtime.tray.destroy();
   runtime.repository.close();
 }
 
 const reportFatalMainProcessError = createFatalErrorReporter({
-  appLike: app,
+  app,
   cleanup: cleanupRuntime,
-  dialogLike: dialog,
+  dialog,
   log: logger,
 });
 
@@ -326,7 +325,7 @@ function warmAppRuntime(nextRuntime: AppRuntime): void {
     const todayState = nextRuntime.service.getTodayState();
     context.setTrayEnabled(
       applyRuntimeSettings({
-        appLike: app,
+        app,
         applyThemeMode: applyWindowThemeMode,
         runtime: nextRuntime,
         settings: todayState.settings,
@@ -388,12 +387,12 @@ async function bootstrapApp(): Promise<void> {
     }
 
     const dataManagement = createDataManagementActions({
-      appLike: app,
+      app,
       clock: systemClock,
-      dialogLike: dialog,
+      dialog,
       repository: appRuntime.repository,
       service: appRuntime.service,
-      shellLike: shell,
+      shell,
     });
 
     registerIpcHandlers({
@@ -416,7 +415,7 @@ async function bootstrapApp(): Promise<void> {
       onSettingsChanged: (settings) => {
         context.setTrayEnabled(
           applyRuntimeSettings({
-            appLike: app,
+            app,
             applyThemeMode: applyWindowThemeMode,
             runtime: appRuntime,
             settings,
@@ -427,16 +426,16 @@ async function bootstrapApp(): Promise<void> {
       onShowFocusWidget: showFocusWidget,
       onShowMainWindow: showMainWindow,
       onWindDownChanged: (todayState) => {
-        appRuntime.windDownReminders.schedule(todayState.settings);
+        appRuntime.reminders.schedule(todayState.settings);
       },
       service: appRuntime.service,
     });
 
     const updaterController = registerUpdaterRuntime({
-      appLike: app,
+      app,
       autoUpdater,
       broadcastState: broadcastUpdateState,
-      ipcMainLike: ipcMain,
+      ipcMain,
       log: logger,
     });
 
@@ -460,7 +459,6 @@ async function bootstrapApp(): Promise<void> {
       const runtime = context.getRuntime();
       const { settings } = runtime.service.getTodayState();
       runtime.reminders.schedule(settings);
-      runtime.windDownReminders.schedule(settings);
     });
   } catch (error) {
     reportAppReadyFailure(error);
