@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.5 - 2026-05-03
+
+Changes since `v0.1.2-beta.4`.
+
+### Fixes
+
+- Make desktop tests pass on windows
+
 ## 0.1.2-beta.4 - 2026-05-03
 
 Changes since `v0.1.2-beta.3`.
