@@ -19,7 +19,6 @@
     "typecheck": "tsgo -p tsconfig.json --noEmit",
     "audit": "pnpm audit",
     "audit:ci": "pnpm audit --prod --audit-level high",
-    "check:duplication": "tsx scripts/check-duplication.ts",
     "test": "vitest run",
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },

@@ -15,7 +15,7 @@
     "fallow": "fallow",
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
-    "fallow:health": "fallow health",
+    "fallow:health": "fallow health --max-cyclomatic 50 --max-cognitive 40 --max-crap 100",
     "fallow:audit": "fallow audit",
     "format": "ultracite fix .",
     "lint": "ultracite check .",
