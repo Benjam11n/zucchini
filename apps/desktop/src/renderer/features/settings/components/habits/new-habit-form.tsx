@@ -3,6 +3,7 @@ import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { getHabitNameError } from "@/renderer/features/settings/lib/habit-name-validation";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Collapsible,
@@ -13,7 +14,6 @@ import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { microTransition } from "@/renderer/shared/lib/motion";
-import { habitNameSchema } from "@/shared/contracts/habits-ipc-schema";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
@@ -49,18 +49,6 @@ const defaultValues: NewHabitFormValues = {
   selectedWeekdays: null,
   targetCount: 1,
 };
-
-function getHabitNameError(name: string): string | null {
-  const result = habitNameSchema.safeParse(name);
-
-  if (result.success) {
-    return null;
-  }
-
-  const [issue] = result.error.issues;
-
-  return issue?.message ?? "Habit names must be valid.";
-}
 
 export function NewHabitForm({
   onCreateHabit,

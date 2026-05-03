@@ -24,7 +24,7 @@ import {
 } from "@/shared/domain/goal";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { HabitWithStatus, Habit } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { DailySummary } from "@/shared/domain/streak";
 
@@ -39,6 +39,68 @@ import {
 import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
+
+type HabitPeriodStatusInsert = typeof habitPeriodStatus.$inferInsert;
+
+function getStatusPeriodWhere(
+  habit: Pick<Habit, "frequency">,
+  habitId: number,
+  date: string
+) {
+  const period = getHabitPeriod(habit.frequency, date);
+
+  return and(
+    eq(habitPeriodStatus.frequency, habit.frequency),
+    eq(habitPeriodStatus.periodStart, period.start),
+    eq(habitPeriodStatus.habitId, habitId)
+  );
+}
+
+function toStatusInsertValue(
+  habit: Habit,
+  date: string,
+  completedCount = 0
+): HabitPeriodStatusInsert {
+  const period = getHabitPeriod(habit.frequency, date);
+
+  return {
+    completed: completedCount >= (habit.targetCount ?? 1),
+    completedCount,
+    frequency: habit.frequency,
+    habitCategory: habit.category,
+    habitCreatedAt: habit.createdAt,
+    habitId: habit.id,
+    habitName: habit.name,
+    habitSelectedWeekdays: habit.selectedWeekdays
+      ? JSON.stringify(habit.selectedWeekdays)
+      : null,
+    habitSortOrder: habit.sortOrder,
+    habitTargetCount: habit.targetCount,
+    periodEnd: period.end,
+    periodStart: period.start,
+  };
+}
+
+function getStatusPeriodsForDateWhere(date: string) {
+  const dailyPeriod = getHabitPeriod("daily", date);
+  const weeklyPeriod = getHabitPeriod("weekly", date);
+  const monthlyPeriod = getHabitPeriod("monthly", date);
+
+  return or(
+    and(
+      eq(habitPeriodStatus.frequency, dailyPeriod.frequency),
+      eq(habitPeriodStatus.periodStart, dailyPeriod.start)
+    ),
+    and(
+      eq(habitPeriodStatus.frequency, weeklyPeriod.frequency),
+      eq(habitPeriodStatus.periodStart, weeklyPeriod.start)
+    ),
+    and(
+      eq(habitPeriodStatus.frequency, monthlyPeriod.frequency),
+      eq(habitPeriodStatus.periodStart, monthlyPeriod.start)
+    )
+  );
+}
 
 export class SqliteHistoryRepository {
   private readonly client: SqliteDatabaseClient;
@@ -107,7 +169,6 @@ export class SqliteHistoryRepository {
         return null;
       }
 
-      const period = getHabitPeriod(habit.frequency, date);
       const row = this.client
         .getDrizzle()
         .select({
@@ -115,13 +176,7 @@ export class SqliteHistoryRepository {
           completedCount: habitPeriodStatus.completedCount,
         })
         .from(habitPeriodStatus)
-        .where(
-          and(
-            eq(habitPeriodStatus.frequency, habit.frequency),
-            eq(habitPeriodStatus.periodStart, period.start),
-            eq(habitPeriodStatus.habitId, habitId)
-          )
-        )
+        .where(getStatusPeriodWhere(habit, habitId, date))
         .get();
 
       return {
@@ -139,20 +194,13 @@ export class SqliteHistoryRepository {
         return 0;
       }
 
-      const period = getHabitPeriod(habit.frequency, date);
       const row = this.client
         .getDrizzle()
         .select({
           completedCount: habitPeriodStatus.completedCount,
         })
         .from(habitPeriodStatus)
-        .where(
-          and(
-            eq(habitPeriodStatus.frequency, habit.frequency),
-            eq(habitPeriodStatus.periodStart, period.start),
-            eq(habitPeriodStatus.habitId, habitId)
-          )
-        )
+        .where(getStatusPeriodWhere(habit, habitId, date))
         .get();
 
       return row?.completedCount ?? 0;
@@ -228,24 +276,7 @@ export class SqliteHistoryRepository {
       this.client
         .getDrizzle()
         .insert(habitPeriodStatus)
-        .values(
-          dueHabits.map((habit) => ({
-            completed: false,
-            completedCount: 0,
-            frequency: habit.frequency,
-            habitCategory: habit.category,
-            habitCreatedAt: habit.createdAt,
-            habitId: habit.id,
-            habitName: habit.name,
-            habitSelectedWeekdays: habit.selectedWeekdays
-              ? JSON.stringify(habit.selectedWeekdays)
-              : null,
-            habitSortOrder: habit.sortOrder,
-            habitTargetCount: habit.targetCount,
-            periodEnd: getHabitPeriod(habit.frequency, date).end,
-            periodStart: getHabitPeriod(habit.frequency, date).start,
-          }))
-        )
+        .values(dueHabits.map((habit) => toStatusInsertValue(habit, date)))
         .onConflictDoNothing()
         .run();
     });
@@ -261,22 +292,7 @@ export class SqliteHistoryRepository {
       this.client
         .getDrizzle()
         .insert(habitPeriodStatus)
-        .values({
-          completed: false,
-          completedCount: 0,
-          frequency: habit.frequency,
-          habitCategory: habit.category,
-          habitCreatedAt: habit.createdAt,
-          habitId,
-          habitName: habit.name,
-          habitSelectedWeekdays: habit.selectedWeekdays
-            ? JSON.stringify(habit.selectedWeekdays)
-            : null,
-          habitSortOrder: habit.sortOrder,
-          habitTargetCount: habit.targetCount,
-          periodEnd: getHabitPeriod(habit.frequency, date).end,
-          periodStart: getHabitPeriod(habit.frequency, date).start,
-        })
+        .values(toStatusInsertValue(habit, date))
         .onConflictDoNothing()
         .run();
     });
@@ -284,30 +300,13 @@ export class SqliteHistoryRepository {
 
   removeStatusRowsForDate(date: string, habitId: number): void {
     this.client.run("removeStatusRowsForDate", () => {
-      const dailyPeriod = getHabitPeriod("daily", date);
-      const weeklyPeriod = getHabitPeriod("weekly", date);
-      const monthlyPeriod = getHabitPeriod("monthly", date);
-
       this.client
         .getDrizzle()
         .delete(habitPeriodStatus)
         .where(
           and(
             eq(habitPeriodStatus.habitId, habitId),
-            or(
-              and(
-                eq(habitPeriodStatus.frequency, dailyPeriod.frequency),
-                eq(habitPeriodStatus.periodStart, dailyPeriod.start)
-              ),
-              and(
-                eq(habitPeriodStatus.frequency, weeklyPeriod.frequency),
-                eq(habitPeriodStatus.periodStart, weeklyPeriod.start)
-              ),
-              and(
-                eq(habitPeriodStatus.frequency, monthlyPeriod.frequency),
-                eq(habitPeriodStatus.periodStart, monthlyPeriod.start)
-              )
-            )
+            getStatusPeriodsForDateWhere(date)
           )
         )
         .run();
@@ -321,7 +320,6 @@ export class SqliteHistoryRepository {
         return;
       }
 
-      const period = getHabitPeriod(habit.frequency, date);
       this.client
         .getDrizzle()
         .update(habitPeriodStatus)
@@ -329,13 +327,7 @@ export class SqliteHistoryRepository {
           completed: sql<boolean>`case when ${habitPeriodStatus.completed} = 1 then 0 else 1 end`,
           completedCount: sql<number>`case when ${habitPeriodStatus.completed} = 1 then 0 else ${habit.targetCount} end`,
         })
-        .where(
-          and(
-            eq(habitPeriodStatus.frequency, habit.frequency),
-            eq(habitPeriodStatus.periodStart, period.start),
-            eq(habitPeriodStatus.habitId, habitId)
-          )
-        )
+        .where(getStatusPeriodWhere(habit, habitId, date))
         .run();
     });
   }
@@ -351,7 +343,6 @@ export class SqliteHistoryRepository {
         return;
       }
 
-      const period = getHabitPeriod(habit.frequency, date);
       const safeCompletedCount = Math.max(0, Math.round(completedCount));
 
       this.client
@@ -368,13 +359,7 @@ export class SqliteHistoryRepository {
           habitSortOrder: habit.sortOrder,
           habitTargetCount: habit.targetCount ?? 1,
         })
-        .where(
-          and(
-            eq(habitPeriodStatus.frequency, habit.frequency),
-            eq(habitPeriodStatus.periodStart, period.start),
-            eq(habitPeriodStatus.habitId, habitId)
-          )
-        )
+        .where(getStatusPeriodWhere(habit, habitId, date))
         .run();
     });
   }
@@ -391,7 +376,6 @@ export class SqliteHistoryRepository {
         return;
       }
 
-      const period = getHabitPeriod(habit.frequency, date);
       const safeDelta = Math.round(delta);
 
       this.client
@@ -401,13 +385,7 @@ export class SqliteHistoryRepository {
           completed: sql<boolean>`case when max(0, ${habitPeriodStatus.completedCount} + ${safeDelta}) >= ${habit.targetCount} then 1 else 0 end`,
           completedCount: sql<number>`max(0, ${habitPeriodStatus.completedCount} + ${safeDelta})`,
         })
-        .where(
-          and(
-            eq(habitPeriodStatus.frequency, habit.frequency),
-            eq(habitPeriodStatus.periodStart, period.start),
-            eq(habitPeriodStatus.habitId, habitId)
-          )
-        )
+        .where(getStatusPeriodWhere(habit, habitId, date))
         .run();
     });
   }
@@ -599,30 +577,11 @@ export class SqliteHistoryRepository {
   }
 
   private getStatusRowsForDate(date: string): HabitPeriodStatusRow[] {
-    const dailyPeriod = getHabitPeriod("daily", date);
-    const weeklyPeriod = getHabitPeriod("weekly", date);
-    const monthlyPeriod = getHabitPeriod("monthly", date);
-
     return this.client
       .getDrizzle()
       .select()
       .from(habitPeriodStatus)
-      .where(
-        or(
-          and(
-            eq(habitPeriodStatus.frequency, dailyPeriod.frequency),
-            eq(habitPeriodStatus.periodStart, dailyPeriod.start)
-          ),
-          and(
-            eq(habitPeriodStatus.frequency, weeklyPeriod.frequency),
-            eq(habitPeriodStatus.periodStart, weeklyPeriod.start)
-          ),
-          and(
-            eq(habitPeriodStatus.frequency, monthlyPeriod.frequency),
-            eq(habitPeriodStatus.periodStart, monthlyPeriod.start)
-          )
-        )
-      )
+      .where(getStatusPeriodsForDateWhere(date))
       .all();
   }
 

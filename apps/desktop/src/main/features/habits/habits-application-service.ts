@@ -68,6 +68,7 @@ import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitWithStatus,
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
@@ -82,6 +83,13 @@ import {
   getPreviousCompletedIsoWeek,
   startOfIsoWeek,
 } from "@/shared/utils/date";
+
+interface HistoryListContext {
+  focusMinutesByDate: Map<string, number>;
+  historicalHabitsByDate: Map<string, HabitWithStatus[]>;
+  todayState: TodayState;
+  settledSummaries: ReturnType<AppRepository["getSettledHistory"]>;
+}
 
 export interface HabitsService {
   execute(command: HabitCommand): HabitCommandResult;
@@ -384,30 +392,12 @@ export class HabitsApplicationService implements HabitsService {
 
   getHistory(limit?: number): HistoryDay[] {
     return this.withSyncedRead("getHistory", () => {
-      const todayState = this.buildCurrentTodayState();
-      const settledHistoryLimit =
-        limit === undefined ? undefined : Math.max(limit - 1, 0);
-      const settledHistoryOptions =
-        limit === undefined ? { uncapped: true } : undefined;
-      const settledSummaries = this.repository.getSettledHistory(
-        settledHistoryLimit,
-        settledHistoryOptions
-      );
-      const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
-      const focusMinutesByDate =
-        HabitsApplicationService.buildFocusMinutesByDate(
-          this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
-        );
-      const historicalHabitsByDate =
-        settledSummaries.length > 0
-          ? buildHistoricalHabitsByDate(
-              settledSummaries,
-              this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
-                oldestDate,
-                settledSummaries[0]?.date ?? oldestDate
-              )
-            )
-          : new Map();
+      const {
+        focusMinutesByDate,
+        historicalHabitsByDate,
+        settledSummaries,
+        todayState,
+      } = this.buildHistoryListContext(limit);
 
       return [
         buildHistoryDay(
@@ -472,30 +462,12 @@ export class HabitsApplicationService implements HabitsService {
 
   getHistorySummary(limit?: number): HistorySummaryDay[] {
     return this.withSyncedRead("getHistorySummary", () => {
-      const todayState = this.buildCurrentTodayState();
-      const settledHistoryLimit =
-        limit === undefined ? undefined : Math.max(limit - 1, 0);
-      const settledHistoryOptions =
-        limit === undefined ? { uncapped: true } : undefined;
-      const settledSummaries = this.repository.getSettledHistory(
-        settledHistoryLimit,
-        settledHistoryOptions
-      );
-      const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
-      const focusMinutesByDate =
-        HabitsApplicationService.buildFocusMinutesByDate(
-          this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
-        );
-      const historicalHabitsByDate =
-        settledSummaries.length > 0
-          ? buildHistoricalHabitsByDate(
-              settledSummaries,
-              this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
-                oldestDate,
-                settledSummaries[0]?.date ?? oldestDate
-              )
-            )
-          : new Map();
+      const {
+        focusMinutesByDate,
+        historicalHabitsByDate,
+        settledSummaries,
+        todayState,
+      } = this.buildHistoryListContext(limit);
 
       return [
         buildHistorySummaryDay({
@@ -525,6 +497,39 @@ export class HabitsApplicationService implements HabitsService {
         ),
       ];
     });
+  }
+
+  private buildHistoryListContext(limit?: number): HistoryListContext {
+    const todayState = this.buildCurrentTodayState();
+    const settledHistoryLimit =
+      limit === undefined ? undefined : Math.max(limit - 1, 0);
+    const settledHistoryOptions =
+      limit === undefined ? { uncapped: true } : undefined;
+    const settledSummaries = this.repository.getSettledHistory(
+      settledHistoryLimit,
+      settledHistoryOptions
+    );
+    const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
+    const focusMinutesByDate = HabitsApplicationService.buildFocusMinutesByDate(
+      this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
+    );
+    const historicalHabitsByDate =
+      settledSummaries.length > 0
+        ? buildHistoricalHabitsByDate(
+            settledSummaries,
+            this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+              oldestDate,
+              settledSummaries[0]?.date ?? oldestDate
+            )
+          )
+        : new Map();
+
+    return {
+      focusMinutesByDate,
+      historicalHabitsByDate,
+      settledSummaries,
+      todayState,
+    };
   }
 
   getWeeklyReviewOverview(): WeeklyReviewOverview {

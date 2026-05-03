@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
 import type { DragEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { getHabitNameError } from "@/renderer/features/settings/lib/habit-name-validation";
 import { reorderHabitList } from "@/renderer/features/settings/lib/reorder-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -20,7 +21,6 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
-import { habitNameSchema } from "@/shared/contracts/habits-ipc-schema";
 import { HABIT_WEEKDAY_DEFINITIONS } from "@/shared/domain/habit";
 import type { Habit, HabitWeekday } from "@/shared/domain/habit";
 
@@ -60,6 +60,42 @@ interface HabitRowEditorProps extends Pick<
   onExpandedChange: (open: boolean) => void;
 }
 
+interface HabitNameFieldProps {
+  draftName: string;
+  habit: Habit;
+  nameError: string | null;
+  onCommit: (nextName: string) => Promise<void>;
+  setDraftName: (nextName: string) => void;
+  setNameError: (nextNameError: string | null) => void;
+}
+
+interface HabitRowHeaderProps {
+  categoryPresentation: ReturnType<typeof getHabitCategoryPresentation>;
+  habit: Habit;
+  habits: Habit[];
+  index: number;
+  isExpanded: boolean;
+  onArchiveHabit: HabitManagementCardProps["onArchiveHabit"];
+  onDragEnd: () => void;
+  onDragStart: () => void;
+  onReorderHabits: HabitManagementCardProps["onReorderHabits"];
+}
+
+interface HabitDetailsFormProps extends Pick<
+  HabitManagementCardProps,
+  | "onUpdateHabitCategory"
+  | "onUpdateHabitFrequency"
+  | "onUpdateHabitTargetCount"
+  | "onUpdateHabitWeekdays"
+> {
+  draftName: string;
+  habit: Habit;
+  nameError: string | null;
+  onRenameCommit: (nextName: string) => Promise<void>;
+  setDraftName: (nextName: string) => void;
+  setNameError: (nextNameError: string | null) => void;
+}
+
 const WEEKDAY_LABELS = Object.fromEntries(
   HABIT_WEEKDAY_DEFINITIONS.map(({ label, value }) => [value, label])
 ) as Record<HabitWeekday, string>;
@@ -67,18 +103,6 @@ const WEEKDAY_LABELS = Object.fromEntries(
 const WEEKDAYS: HabitWeekday[] = HABIT_WEEKDAY_DEFINITIONS.map(
   ({ value }) => value
 );
-
-function getHabitNameError(name: string): string | null {
-  const result = habitNameSchema.safeParse(name);
-
-  if (result.success) {
-    return null;
-  }
-
-  const [issue] = result.error.issues;
-
-  return issue?.message ?? "Habit names must be valid.";
-}
 
 function getCadenceSummary(habit: Habit): string {
   if (habit.frequency === "weekly") {
@@ -104,6 +128,297 @@ function getCadenceSummary(habit: Habit): string {
   }
 
   return weekdays.map((weekday) => WEEKDAY_LABELS[weekday]).join(" ");
+}
+
+function DropIndicator({
+  position,
+  show,
+}: {
+  position: "after" | "before";
+  show: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute inset-x-4 h-0.5 rounded-full bg-primary transition-opacity",
+        position === "before" ? "top-0" : "bottom-0",
+        show ? "opacity-100" : "opacity-0"
+      )}
+    />
+  );
+}
+
+function HabitNameField({
+  draftName,
+  habit,
+  nameError,
+  onCommit,
+  setDraftName,
+  setNameError,
+}: HabitNameFieldProps) {
+  async function commitInputValue(value: string) {
+    setDraftName(value);
+    await onCommit(value);
+  }
+
+  return (
+    <div className="grid gap-2">
+      <Label
+        className="text-xs font-medium text-muted-foreground"
+        htmlFor={`habit-name-${habit.id}`}
+      >
+        Name
+      </Label>
+      <Input
+        aria-describedby={
+          nameError ? `habit-name-error-${habit.id}` : undefined
+        }
+        aria-invalid={nameError ? "true" : undefined}
+        className="h-9"
+        id={`habit-name-${habit.id}`}
+        onBlur={async (event) => {
+          await commitInputValue(event.target.value);
+        }}
+        onChange={(event) => {
+          const nextName = event.target.value;
+          setDraftName(nextName);
+          setNameError(getHabitNameError(nextName.trim()));
+        }}
+        onKeyDown={async (event) => {
+          if (event.key !== "Enter") {
+            return;
+          }
+
+          event.preventDefault();
+          await commitInputValue(event.currentTarget.value);
+          event.currentTarget.blur();
+        }}
+        required
+        type="text"
+        value={draftName}
+      />
+      {nameError ? (
+        <p
+          className="text-xs font-medium text-destructive"
+          id={`habit-name-error-${habit.id}`}
+        >
+          {nameError}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function HabitRowHeader({
+  categoryPresentation,
+  habit,
+  habits,
+  index,
+  isExpanded,
+  onArchiveHabit,
+  onDragEnd,
+  onDragStart,
+  onReorderHabits,
+}: HabitRowHeaderProps) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-2.5 sm:px-3 sm:py-3">
+      <CollapsibleTrigger asChild>
+        <button
+          aria-label={
+            isExpanded
+              ? `Collapse habit details for ${habit.name}`
+              : `Expand habit details for ${habit.name}`
+          }
+          className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-1.5 text-left outline-none transition-colors hover:bg-muted/25 focus-visible:ring-3 focus-visible:ring-ring/50"
+          type="button"
+        >
+          <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
+            <p className="min-w-0 flex-1 truncate text-sm text-foreground">
+              {habit.name}
+            </p>
+            <div className="flex min-w-0 shrink items-center gap-2 overflow-hidden">
+              <span
+                className="inline-flex max-w-32 shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
+                style={{
+                  backgroundColor: categoryPresentation.color,
+                  borderColor: categoryPresentation.color,
+                  color: categoryPresentation.selectedTextColor,
+                }}
+              >
+                <span
+                  className="size-1.5 rounded-full"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${categoryPresentation.selectedTextColor} 50%, transparent)`,
+                  }}
+                />
+                <span className="min-w-0 truncate">
+                  {categoryPresentation.label}
+                </span>
+              </span>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">
+                {getCadenceSummary(habit)}
+              </span>
+            </div>
+          </div>
+        </button>
+      </CollapsibleTrigger>
+
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          aria-label={`Drag to reorder ${habit.name}`}
+          className="cursor-grab active:cursor-grabbing"
+          draggable
+          onDragEnd={onDragEnd}
+          onDragStart={(event) => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData(HABIT_DRAG_DATA_TYPE, String(habit.id));
+            onDragStart();
+          }}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <GripVertical className="size-3.5" />
+        </Button>
+        <Button
+          aria-label={`Move ${habit.name} up`}
+          disabled={index === 0}
+          onClick={async () => {
+            await onReorderHabits(reorderHabitList(habits, habit.id, -1));
+          }}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <ArrowUp className="size-3.5" />
+        </Button>
+        <Button
+          aria-label={`Move ${habit.name} down`}
+          disabled={index === habits.length - 1}
+          onClick={async () => {
+            await onReorderHabits(reorderHabitList(habits, habit.id, 1));
+          }}
+          size="icon-sm"
+          type="button"
+          variant="ghost"
+        >
+          <ArrowDown className="size-3.5" />
+        </Button>
+        <ConfirmIconButton
+          confirmLabel={`Confirm archive ${habit.name}`}
+          icon={<Archive className="size-3.5" />}
+          idleLabel={`Archive ${habit.name}`}
+          onConfirm={async () => {
+            await onArchiveHabit(habit.id);
+          }}
+          resetKey={habit.id}
+          size="icon-sm"
+          variant="destructive"
+        />
+      </div>
+    </div>
+  );
+}
+
+function HabitDetailsForm({
+  draftName,
+  habit,
+  nameError,
+  onRenameCommit,
+  onUpdateHabitCategory,
+  onUpdateHabitFrequency,
+  onUpdateHabitTargetCount,
+  onUpdateHabitWeekdays,
+  setDraftName,
+  setNameError,
+}: HabitDetailsFormProps) {
+  return (
+    <div className="grid gap-4 border-t border-border/60 px-3 py-3 sm:px-4">
+      <div
+        className={cn(
+          "grid gap-3",
+          habit.frequency === "daily"
+            ? "grid-cols-1"
+            : "grid-cols-[minmax(0,1fr)_auto] items-end"
+        )}
+      >
+        <HabitNameField
+          draftName={draftName}
+          habit={habit}
+          nameError={nameError}
+          onCommit={onRenameCommit}
+          setDraftName={setDraftName}
+          setNameError={setNameError}
+        />
+
+        {habit.frequency === "daily" ? null : (
+          <div className="grid gap-2 min-w-34">
+            <Label className="text-xs font-medium text-muted-foreground">
+              Goal
+            </Label>
+            <HabitTargetCountStepper
+              compact
+              frequency={habit.frequency}
+              onChange={async (targetCount) => {
+                await onUpdateHabitTargetCount(habit.id, targetCount);
+              }}
+              value={habit.targetCount ?? 1}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Category
+          </Label>
+          <HabitCategorySelector
+            compact
+            name={`habit-category-${habit.id}`}
+            onChange={async (category) => {
+              await onUpdateHabitCategory(habit.id, category);
+            }}
+            selectedCategory={habit.category}
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Frequency
+          </Label>
+          <HabitFrequencySelector
+            compact
+            name={`habit-frequency-${habit.id}`}
+            onChange={async (frequency) => {
+              await onUpdateHabitFrequency(
+                habit.id,
+                frequency,
+                habit.targetCount ?? 1
+              );
+            }}
+            selectedFrequency={habit.frequency}
+          />
+        </div>
+      </div>
+
+      {habit.frequency === "daily" ? (
+        <div className="grid max-w-full gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Applies on
+          </Label>
+          <HabitWeekdaySelector
+            compact
+            name={`habit-weekdays-${habit.id}`}
+            onChange={async (selectedWeekdays) => {
+              await onUpdateHabitWeekdays(habit.id, selectedWeekdays);
+            }}
+            selectedWeekdays={habit.selectedWeekdays ?? null}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function HabitRowEditor({
@@ -183,249 +498,38 @@ export function HabitRowEditor({
       transition={microTransition}
       whileHover={hoverLift}
     >
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-x-4 top-0 h-0.5 rounded-full bg-primary transition-opacity",
-          showDropBefore ? "opacity-100" : "opacity-0"
-        )}
-      />
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-primary transition-opacity",
-          showDropAfter ? "opacity-100" : "opacity-0"
-        )}
-      />
+      <DropIndicator position="before" show={showDropBefore} />
+      <DropIndicator position="after" show={showDropAfter} />
       <Collapsible open={isExpanded} onOpenChange={onExpandedChange}>
         <Item
           className="flex-col items-stretch gap-0 overflow-hidden rounded-xl border-border/70 bg-muted/20 p-0"
           variant="outline"
         >
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-2.5 sm:px-3 sm:py-3">
-            <CollapsibleTrigger asChild>
-              <button
-                aria-label={
-                  isExpanded
-                    ? `Collapse habit details for ${habit.name}`
-                    : `Expand habit details for ${habit.name}`
-                }
-                className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-1.5 text-left outline-none transition-colors hover:bg-muted/25 focus-visible:ring-3 focus-visible:ring-ring/50"
-                type="button"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
-                  <p className="min-w-0 flex-1 truncate text-sm text-foreground">
-                    {habit.name}
-                  </p>
-                  <div className="flex min-w-0 shrink items-center gap-2 overflow-hidden">
-                    <span
-                      className="inline-flex max-w-32 shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-medium"
-                      style={{
-                        backgroundColor: categoryPresentation.color,
-                        borderColor: categoryPresentation.color,
-                        color: categoryPresentation.selectedTextColor,
-                      }}
-                    >
-                      <span
-                        className="size-1.5 rounded-full"
-                        style={{
-                          backgroundColor: `color-mix(in srgb, ${categoryPresentation.selectedTextColor} 50%, transparent)`,
-                        }}
-                      />
-                      <span className="min-w-0 truncate">
-                        {categoryPresentation.label}
-                      </span>
-                    </span>
-                    <span className="min-w-0 truncate text-xs text-muted-foreground">
-                      {getCadenceSummary(habit)}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            </CollapsibleTrigger>
-
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                aria-label={`Drag to reorder ${habit.name}`}
-                className="cursor-grab active:cursor-grabbing"
-                draggable
-                onDragEnd={onDragEnd}
-                onDragStart={(event) => {
-                  event.dataTransfer.effectAllowed = "move";
-                  event.dataTransfer.setData(
-                    HABIT_DRAG_DATA_TYPE,
-                    String(habit.id)
-                  );
-                  onDragStart();
-                }}
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-              >
-                <GripVertical className="size-3.5" />
-              </Button>
-              <Button
-                aria-label={`Move ${habit.name} up`}
-                disabled={index === 0}
-                onClick={async () => {
-                  await onReorderHabits(reorderHabitList(habits, habit.id, -1));
-                }}
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-              >
-                <ArrowUp className="size-3.5" />
-              </Button>
-              <Button
-                aria-label={`Move ${habit.name} down`}
-                disabled={index === habits.length - 1}
-                onClick={async () => {
-                  await onReorderHabits(reorderHabitList(habits, habit.id, 1));
-                }}
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-              >
-                <ArrowDown className="size-3.5" />
-              </Button>
-              <ConfirmIconButton
-                confirmLabel={`Confirm archive ${habit.name}`}
-                icon={<Archive className="size-3.5" />}
-                idleLabel={`Archive ${habit.name}`}
-                onConfirm={async () => {
-                  await onArchiveHabit(habit.id);
-                }}
-                resetKey={habit.id}
-                size="icon-sm"
-                variant="destructive"
-              />
-            </div>
-          </div>
+          <HabitRowHeader
+            categoryPresentation={categoryPresentation}
+            habit={habit}
+            habits={habits}
+            index={index}
+            isExpanded={isExpanded}
+            onArchiveHabit={onArchiveHabit}
+            onDragEnd={onDragEnd}
+            onDragStart={onDragStart}
+            onReorderHabits={onReorderHabits}
+          />
 
           <CollapsibleContent>
-            <div className="grid gap-4 border-t border-border/60 px-3 py-3 sm:px-4">
-              <div
-                className={cn(
-                  "grid gap-3",
-                  habit.frequency === "daily"
-                    ? "grid-cols-1"
-                    : "grid-cols-[minmax(0,1fr)_auto] items-end"
-                )}
-              >
-                <div className="grid gap-2">
-                  <Label
-                    className="text-xs font-medium text-muted-foreground"
-                    htmlFor={`habit-name-${habit.id}`}
-                  >
-                    Name
-                  </Label>
-                  <Input
-                    aria-describedby={
-                      nameError ? `habit-name-error-${habit.id}` : undefined
-                    }
-                    aria-invalid={nameError ? "true" : undefined}
-                    className="h-9"
-                    id={`habit-name-${habit.id}`}
-                    onBlur={async (event) => {
-                      const nextName = event.target.value;
-                      setDraftName(nextName);
-                      await handleRenameCommit(nextName);
-                    }}
-                    onChange={(event) => {
-                      const nextName = event.target.value;
-                      setDraftName(nextName);
-                      setNameError(getHabitNameError(nextName.trim()));
-                    }}
-                    onKeyDown={async (event) => {
-                      if (event.key !== "Enter") {
-                        return;
-                      }
-
-                      event.preventDefault();
-                      const nextName = event.currentTarget.value;
-                      setDraftName(nextName);
-                      await handleRenameCommit(nextName);
-                      event.currentTarget.blur();
-                    }}
-                    required
-                    type="text"
-                    value={draftName}
-                  />
-                  {nameError ? (
-                    <p
-                      className="text-xs font-medium text-destructive"
-                      id={`habit-name-error-${habit.id}`}
-                    >
-                      {nameError}
-                    </p>
-                  ) : null}
-                </div>
-
-                {habit.frequency === "daily" ? null : (
-                  <div className="grid gap-2 min-w-34">
-                    <Label className="text-xs font-medium text-muted-foreground">
-                      Goal
-                    </Label>
-                    <HabitTargetCountStepper
-                      compact
-                      frequency={habit.frequency}
-                      onChange={async (targetCount) => {
-                        await onUpdateHabitTargetCount(habit.id, targetCount);
-                      }}
-                      value={habit.targetCount ?? 1}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Category
-                  </Label>
-                  <HabitCategorySelector
-                    compact
-                    name={`habit-category-${habit.id}`}
-                    onChange={async (category) => {
-                      await onUpdateHabitCategory(habit.id, category);
-                    }}
-                    selectedCategory={habit.category}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Frequency
-                  </Label>
-                  <HabitFrequencySelector
-                    compact
-                    name={`habit-frequency-${habit.id}`}
-                    onChange={async (frequency) => {
-                      await onUpdateHabitFrequency(
-                        habit.id,
-                        frequency,
-                        habit.targetCount ?? 1
-                      );
-                    }}
-                    selectedFrequency={habit.frequency}
-                  />
-                </div>
-              </div>
-
-              {habit.frequency === "daily" ? (
-                <div className="grid max-w-full gap-2">
-                  <Label className="text-xs font-medium text-muted-foreground">
-                    Applies on
-                  </Label>
-                  <HabitWeekdaySelector
-                    compact
-                    name={`habit-weekdays-${habit.id}`}
-                    onChange={async (selectedWeekdays) => {
-                      await onUpdateHabitWeekdays(habit.id, selectedWeekdays);
-                    }}
-                    selectedWeekdays={habit.selectedWeekdays ?? null}
-                  />
-                </div>
-              ) : null}
-            </div>
+            <HabitDetailsForm
+              draftName={draftName}
+              habit={habit}
+              nameError={nameError}
+              onRenameCommit={handleRenameCommit}
+              onUpdateHabitCategory={onUpdateHabitCategory}
+              onUpdateHabitFrequency={onUpdateHabitFrequency}
+              onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+              onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+              setDraftName={setDraftName}
+              setNameError={setNameError}
+            />
           </CollapsibleContent>
         </Item>
       </Collapsible>
