@@ -9,6 +9,7 @@ import path from "node:path";
 
 import { BrowserWindow } from "electron";
 
+import { loadWindowContent } from "./window-content";
 import { configureWindowSecurity } from "./window-security";
 
 const MAIN_WINDOW_DEFAULT_WIDTH = 1040;
@@ -32,21 +33,6 @@ export function createMainWindow({
   shouldHideToTray,
 }: CreateMainWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
-  const appIndexPath = path.join(__dirname, "../dist/index.html");
-  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
-
-  async function loadWindowContent(window: BrowserWindow): Promise<void> {
-    try {
-      if (devServerUrl) {
-        await window.loadURL(devServerUrl);
-        return;
-      }
-
-      await window.loadFile(appIndexPath);
-    } catch (error) {
-      console.error("Failed to load the main window.", error);
-    }
-  }
   const shouldShowInactive =
     process.env["ZUCCHINI_ELECTRON_RESTART"] === "true" &&
     process.platform === "darwin";
@@ -88,7 +74,10 @@ export function createMainWindow({
     });
   }
 
-  loadWindowContent(window);
+  loadWindowContent({
+    errorMessage: "Failed to load the main window.",
+    window,
+  });
 
   return window;
 }

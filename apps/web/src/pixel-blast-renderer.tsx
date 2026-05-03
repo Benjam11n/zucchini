@@ -136,6 +136,12 @@ interface PixelBlastState {
   uniforms: PixelBlastUniforms;
 }
 
+interface PixelBlastRefs {
+  speed: RefObject<number>;
+  state: RefObject<PixelBlastState | null>;
+  visibility: RefObject<{ visible: boolean }>;
+}
+
 const SHAPE_MAP: Record<PixelBlastVariant, number> = {
   circle: 1,
   diamond: 3,
@@ -690,6 +696,330 @@ function addNoiseComposerPass({
   return nextComposer;
 }
 
+function createPixelBlastRenderer(
+  container: HTMLDivElement,
+  config: PixelBlastRuntimeConfig
+): THREE.WebGLRenderer {
+  const canvas = document.createElement("canvas");
+  const renderer = new THREE.WebGLRenderer({
+    alpha: true,
+    antialias: config.antialias,
+    canvas,
+    powerPreference: "high-performance",
+  });
+
+  renderer.domElement.style.width = "100%";
+  renderer.domElement.style.height = "100%";
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.append(renderer.domElement);
+  applyRendererTransparency(renderer, config.transparent);
+
+  return renderer;
+}
+
+function createPixelBlastResizeObserver({
+  container,
+  pixelSize,
+  renderer,
+  stateRef,
+  uniforms,
+}: {
+  container: HTMLDivElement;
+  pixelSize: number;
+  renderer: THREE.WebGLRenderer;
+  stateRef: RefObject<PixelBlastState | null>;
+  uniforms: PixelBlastUniforms;
+}): ResizeObserver {
+  const updateSize = () => {
+    const width = container.clientWidth || 1;
+    const height = container.clientHeight || 1;
+
+    renderer.setSize(width, height, false);
+    uniforms.uResolution.value.set(
+      renderer.domElement.width,
+      renderer.domElement.height
+    );
+    stateRef.current?.composer?.setSize(
+      renderer.domElement.width,
+      renderer.domElement.height
+    );
+    uniforms.uPixelSize.value = pixelSize * renderer.getPixelRatio();
+  };
+
+  updateSize();
+
+  const resizeObserver = new ResizeObserver(updateSize);
+  resizeObserver.observe(container);
+
+  return resizeObserver;
+}
+
+function createPixelBlastPointerHandlers({
+  renderer,
+  stateRef,
+  touch,
+  uniforms,
+}: {
+  renderer: THREE.WebGLRenderer;
+  stateRef: RefObject<PixelBlastState | null>;
+  touch: TouchTexture | undefined;
+  uniforms: PixelBlastUniforms;
+}): Pick<PixelBlastState, "handlePointerDown" | "handlePointerMove"> {
+  const mapToPixels = (event: PointerEvent) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const scaleX = renderer.domElement.width / rect.width;
+    const scaleY = renderer.domElement.height / rect.height;
+    const fx = (event.clientX - rect.left) * scaleX;
+    const fy = (rect.height - (event.clientY - rect.top)) * scaleY;
+
+    return {
+      fx,
+      fy,
+      h: renderer.domElement.height,
+      w: renderer.domElement.width,
+    };
+  };
+
+  const handlePointerDown = (event: PointerEvent) => {
+    const { fx, fy } = mapToPixels(event);
+    const clickIndex = stateRef.current?.clickIndex ?? 0;
+    const clickPoint = uniforms.uClickPos.value[clickIndex];
+
+    if (!clickPoint) {
+      return;
+    }
+
+    clickPoint.set(fx, fy);
+    uniforms.uClickTimes.value[clickIndex] = uniforms.uTime.value;
+
+    if (stateRef.current) {
+      stateRef.current.clickIndex = (clickIndex + 1) % MAX_CLICKS;
+    }
+  };
+
+  const handlePointerMove = (event: PointerEvent) => {
+    if (!touch) {
+      return;
+    }
+
+    const { fx, fy, h, w } = mapToPixels(event);
+    touch.addTouch({ x: fx / w, y: fy / h });
+  };
+
+  renderer.domElement.addEventListener("pointerdown", handlePointerDown, {
+    passive: true,
+  });
+  renderer.domElement.addEventListener("pointermove", handlePointerMove, {
+    passive: true,
+  });
+
+  return { handlePointerDown, handlePointerMove };
+}
+
+function renderPixelBlastFrame({
+  camera,
+  composer,
+  liquidEffect,
+  renderer,
+  scene,
+  time,
+  touch,
+  uniforms,
+}: {
+  camera: THREE.OrthographicCamera;
+  composer: EffectComposer | undefined;
+  liquidEffect: Effect | undefined;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  time: number;
+  touch: TouchTexture | undefined;
+  uniforms: PixelBlastUniforms;
+}) {
+  uniforms.uTime.value = time;
+
+  const timeUniform = liquidEffect?.uniforms.get("uTime");
+  if (timeUniform) {
+    timeUniform.value = time;
+  }
+
+  if (!composer) {
+    renderer.render(scene, camera);
+    return;
+  }
+
+  touch?.update();
+
+  for (const pass of composer.passes) {
+    if (pass instanceof EffectPass) {
+      syncPassTime(pass, time);
+    }
+  }
+
+  composer.render();
+}
+
+function createPixelBlastAnimator({
+  autoPauseOffscreen,
+  camera,
+  clock,
+  composer,
+  liquidEffect,
+  refs,
+  renderer,
+  scene,
+  timeOffset,
+  touch,
+  uniforms,
+}: {
+  autoPauseOffscreen: boolean;
+  camera: THREE.OrthographicCamera;
+  clock: THREE.Clock;
+  composer: EffectComposer | undefined;
+  liquidEffect: Effect | undefined;
+  refs: PixelBlastRefs;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  timeOffset: number;
+  touch: TouchTexture | undefined;
+  uniforms: PixelBlastUniforms;
+}) {
+  function animate() {
+    if (!autoPauseOffscreen || refs.visibility.current.visible) {
+      renderPixelBlastFrame({
+        camera,
+        composer,
+        liquidEffect,
+        renderer,
+        scene,
+        time: timeOffset + clock.getElapsedTime() * refs.speed.current,
+        touch,
+        uniforms,
+      });
+    }
+
+    const nextFrame = requestAnimationFrame(animate);
+
+    if (refs.state.current) {
+      refs.state.current.rafId = nextFrame;
+    }
+  }
+
+  return animate;
+}
+
+function createPixelBlastState({
+  config,
+  container,
+  refs,
+}: {
+  config: PixelBlastRuntimeConfig;
+  container: HTMLDivElement;
+  refs: PixelBlastRefs;
+}): PixelBlastState {
+  const renderer = createPixelBlastRenderer(container, config);
+  const uniforms = createPixelBlastUniforms(renderer, config);
+  const { camera, material, quad, scene } = createBasePixelBlastScene(uniforms);
+  const resizeObserver = createPixelBlastResizeObserver({
+    container,
+    pixelSize: config.pixelSize,
+    renderer,
+    stateRef: refs.state,
+    uniforms,
+  });
+  const liquidComposer = createLiquidComposer({
+    camera,
+    config,
+    renderer,
+    scene,
+  });
+  const { liquidEffect, touch } = liquidComposer;
+  const composer = addNoiseComposerPass({
+    camera,
+    composer: liquidComposer.composer,
+    noiseAmount: config.noiseAmount,
+    renderer,
+    scene,
+  });
+
+  composer?.setSize(renderer.domElement.width, renderer.domElement.height);
+
+  const { handlePointerDown, handlePointerMove } =
+    createPixelBlastPointerHandlers({
+      renderer,
+      stateRef: refs.state,
+      touch,
+      uniforms,
+    });
+  const clock = new THREE.Clock();
+  const timeOffset = randomFloat() * 1000;
+  const animate = createPixelBlastAnimator({
+    autoPauseOffscreen: config.autoPauseOffscreen,
+    camera,
+    clock,
+    composer,
+    liquidEffect,
+    refs,
+    renderer,
+    scene,
+    timeOffset,
+    touch,
+    uniforms,
+  });
+
+  return {
+    camera,
+    clickIndex: 0,
+    clock,
+    composer,
+    handlePointerDown,
+    handlePointerMove,
+    liquidEffect,
+    material,
+    quad,
+    rafId: requestAnimationFrame(animate),
+    renderer,
+    resizeObserver,
+    scene,
+    timeOffset,
+    touch,
+    uniforms,
+  };
+}
+
+function updatePixelBlastState(
+  state: PixelBlastState,
+  config: PixelBlastRuntimeConfig
+) {
+  state.uniforms.uShapeType.value = SHAPE_MAP[config.variant] ?? 0;
+  state.uniforms.uPixelSize.value =
+    config.pixelSize * state.renderer.getPixelRatio();
+  state.uniforms.uColor.value.set(config.color);
+  state.uniforms.uScale.value = config.patternScale;
+  state.uniforms.uDensity.value = config.patternDensity;
+  state.uniforms.uPixelJitter.value = config.pixelSizeJitter;
+  state.uniforms.uEnableRipples.value = config.enableRipples ? 1 : 0;
+  state.uniforms.uRippleIntensity.value = config.rippleIntensityScale;
+  state.uniforms.uRippleThickness.value = config.rippleThickness;
+  state.uniforms.uRippleSpeed.value = config.rippleSpeed;
+  state.uniforms.uEdgeFade.value = config.edgeFade;
+
+  applyRendererTransparency(state.renderer, config.transparent);
+
+  const strengthUniform = state.liquidEffect?.uniforms.get("uStrength");
+  if (strengthUniform) {
+    strengthUniform.value = config.liquidStrength;
+  }
+
+  const frequencyUniform = state.liquidEffect?.uniforms.get("uFreq");
+  if (frequencyUniform) {
+    frequencyUniform.value = config.liquidWobbleSpeed;
+  }
+
+  if (state.touch) {
+    state.touch.radiusScale = config.liquidRadius;
+  }
+}
+
 export function usePixelBlastRenderer(
   containerRef: RefObject<HTMLDivElement | null>,
   options: PixelBlastRendererOptions
@@ -761,241 +1091,43 @@ export function usePixelBlastRenderer(
       config,
       threeRef.current
     );
+    const runtimeConfig: PixelBlastRuntimeConfig = {
+      antialias,
+      autoPauseOffscreen,
+      color,
+      edgeFade,
+      enableRipples,
+      liquid,
+      liquidRadius,
+      liquidStrength,
+      liquidWobbleSpeed,
+      noiseAmount,
+      patternDensity,
+      patternScale,
+      pixelSize,
+      pixelSizeJitter,
+      rippleIntensityScale,
+      rippleSpeed,
+      rippleThickness,
+      transparent,
+      variant,
+    };
 
     if (needsReinit) {
       disposeState(container, threeRef.current);
       threeRef.current = null;
 
-      const canvas = document.createElement("canvas");
-      const renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias,
-        canvas,
-        powerPreference: "high-performance",
-      });
-
-      renderer.domElement.style.width = "100%";
-      renderer.domElement.style.height = "100%";
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      container.append(renderer.domElement);
-
-      const runtimeConfig: PixelBlastRuntimeConfig = {
-        antialias,
-        autoPauseOffscreen,
-        color,
-        edgeFade,
-        enableRipples,
-        liquid,
-        liquidRadius,
-        liquidStrength,
-        liquidWobbleSpeed,
-        noiseAmount,
-        patternDensity,
-        patternScale,
-        pixelSize,
-        pixelSizeJitter,
-        rippleIntensityScale,
-        rippleSpeed,
-        rippleThickness,
-        transparent,
-        variant,
-      };
-      applyRendererTransparency(renderer, transparent);
-
-      const uniforms = createPixelBlastUniforms(renderer, runtimeConfig);
-      const { camera, material, quad, scene } =
-        createBasePixelBlastScene(uniforms);
-
-      const clock = new THREE.Clock();
-      const updateSize = () => {
-        const width = container.clientWidth || 1;
-        const height = container.clientHeight || 1;
-
-        renderer.setSize(width, height, false);
-        uniforms.uResolution.value.set(
-          renderer.domElement.width,
-          renderer.domElement.height
-        );
-
-        if (threeRef.current?.composer) {
-          threeRef.current.composer.setSize(
-            renderer.domElement.width,
-            renderer.domElement.height
-          );
-        }
-
-        uniforms.uPixelSize.value = pixelSize * renderer.getPixelRatio();
-      };
-
-      updateSize();
-
-      const resizeObserver = new ResizeObserver(updateSize);
-      resizeObserver.observe(container);
-
-      const timeOffset = randomFloat() * 1000;
-      const liquidComposer = createLiquidComposer({
-        camera,
+      threeRef.current = createPixelBlastState({
         config: runtimeConfig,
-        renderer,
-        scene,
+        container,
+        refs: {
+          speed: speedRef,
+          state: threeRef,
+          visibility: visibilityRef,
+        },
       });
-      const { touch } = liquidComposer;
-      const { liquidEffect } = liquidComposer;
-      const composer = addNoiseComposerPass({
-        camera,
-        composer: liquidComposer.composer,
-        noiseAmount,
-        renderer,
-        scene,
-      });
-
-      composer?.setSize(renderer.domElement.width, renderer.domElement.height);
-
-      const mapToPixels = (event: PointerEvent) => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        const scaleX = renderer.domElement.width / rect.width;
-        const scaleY = renderer.domElement.height / rect.height;
-        const fx = (event.clientX - rect.left) * scaleX;
-        const fy = (rect.height - (event.clientY - rect.top)) * scaleY;
-
-        return {
-          fx,
-          fy,
-          h: renderer.domElement.height,
-          w: renderer.domElement.width,
-        };
-      };
-
-      const handlePointerDown = (event: PointerEvent) => {
-        const { fx, fy } = mapToPixels(event);
-        const clickIndex = threeRef.current?.clickIndex ?? 0;
-        const clickPoint = uniforms.uClickPos.value[clickIndex];
-
-        if (!clickPoint) {
-          return;
-        }
-
-        clickPoint.set(fx, fy);
-        uniforms.uClickTimes.value[clickIndex] = uniforms.uTime.value;
-
-        if (threeRef.current) {
-          threeRef.current.clickIndex = (clickIndex + 1) % MAX_CLICKS;
-        }
-      };
-
-      const handlePointerMove = (event: PointerEvent) => {
-        if (!touch) {
-          return;
-        }
-
-        const { fx, fy, h, w } = mapToPixels(event);
-        touch.addTouch({ x: fx / w, y: fy / h });
-      };
-
-      renderer.domElement.addEventListener("pointerdown", handlePointerDown, {
-        passive: true,
-      });
-      renderer.domElement.addEventListener("pointermove", handlePointerMove, {
-        passive: true,
-      });
-
-      const animate = () => {
-        if (autoPauseOffscreen && !visibilityRef.current.visible) {
-          const nextFrame = requestAnimationFrame(animate);
-
-          if (threeRef.current) {
-            threeRef.current.rafId = nextFrame;
-          }
-
-          return;
-        }
-
-        uniforms.uTime.value =
-          timeOffset + clock.getElapsedTime() * speedRef.current;
-
-        if (liquidEffect) {
-          const timeUniform = liquidEffect.uniforms.get("uTime");
-
-          if (timeUniform) {
-            timeUniform.value = uniforms.uTime.value;
-          }
-        }
-
-        if (composer) {
-          touch?.update();
-
-          for (const pass of composer.passes) {
-            if (pass instanceof EffectPass) {
-              syncPassTime(pass, uniforms.uTime.value);
-            }
-          }
-
-          composer.render();
-        } else {
-          renderer.render(scene, camera);
-        }
-
-        const nextFrame = requestAnimationFrame(animate);
-
-        if (threeRef.current) {
-          threeRef.current.rafId = nextFrame;
-        }
-      };
-
-      const rafId = requestAnimationFrame(animate);
-
-      threeRef.current = {
-        camera,
-        clickIndex: 0,
-        clock,
-        composer,
-        handlePointerDown,
-        handlePointerMove,
-        liquidEffect,
-        material,
-        quad,
-        rafId,
-        renderer,
-        resizeObserver,
-        scene,
-        timeOffset,
-        touch,
-        uniforms,
-      };
     } else if (threeRef.current) {
-      const state = threeRef.current;
-      state.uniforms.uShapeType.value = SHAPE_MAP[variant] ?? 0;
-      state.uniforms.uPixelSize.value =
-        pixelSize * state.renderer.getPixelRatio();
-      state.uniforms.uColor.value.set(color);
-      state.uniforms.uScale.value = patternScale;
-      state.uniforms.uDensity.value = patternDensity;
-      state.uniforms.uPixelJitter.value = pixelSizeJitter;
-      state.uniforms.uEnableRipples.value = enableRipples ? 1 : 0;
-      state.uniforms.uRippleIntensity.value = rippleIntensityScale;
-      state.uniforms.uRippleThickness.value = rippleThickness;
-      state.uniforms.uRippleSpeed.value = rippleSpeed;
-      state.uniforms.uEdgeFade.value = edgeFade;
-
-      applyRendererTransparency(state.renderer, transparent);
-
-      if (state.liquidEffect) {
-        const strengthUniform = state.liquidEffect.uniforms.get("uStrength");
-
-        if (strengthUniform) {
-          strengthUniform.value = liquidStrength;
-        }
-
-        const frequencyUniform = state.liquidEffect.uniforms.get("uFreq");
-
-        if (frequencyUniform) {
-          frequencyUniform.value = liquidWobbleSpeed;
-        }
-      }
-
-      if (state.touch) {
-        state.touch.radiusScale = liquidRadius;
-      }
+      updatePixelBlastState(threeRef.current, runtimeConfig);
     }
 
     prevConfigRef.current = config;

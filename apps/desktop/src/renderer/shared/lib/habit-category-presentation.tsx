@@ -27,16 +27,31 @@ export function HabitCategoryPreferencesProvider({
   );
 }
 
+function getColorChannels(color: string): {
+  blue: number;
+  green: number;
+  luminance: number;
+  red: number;
+} {
+  const hex = color.replace("#", "");
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+
+  return {
+    blue,
+    green,
+    luminance: (red * 299 + green * 587 + blue * 114) / 1000,
+    red,
+  };
+}
+
 export function useHabitCategoryPreferences(): HabitCategoryPreferences {
   return useContext(HabitCategoryPreferencesContext);
 }
 
 function getTextColorOnColor(backgroundColor: string): string {
-  const hex = backgroundColor.replace("#", "");
-  const red = Number.parseInt(hex.slice(0, 2), 16);
-  const green = Number.parseInt(hex.slice(2, 4), 16);
-  const blue = Number.parseInt(hex.slice(4, 6), 16);
-  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+  const { luminance } = getColorChannels(backgroundColor);
 
   return luminance >= 160 ? "#102000" : "#FFFFFF";
 }
@@ -48,11 +63,7 @@ function darkenChannel(channel: number): string {
 }
 
 function getReadableAccentColor(color: string): string {
-  const hex = color.replace("#", "");
-  const red = Number.parseInt(hex.slice(0, 2), 16);
-  const green = Number.parseInt(hex.slice(2, 4), 16);
-  const blue = Number.parseInt(hex.slice(4, 6), 16);
-  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+  const { blue, green, luminance, red } = getColorChannels(color);
 
   if (luminance < 145) {
     return color;

@@ -15,6 +15,7 @@ import {
   FOCUS_WIDGET_DEFAULT_WIDTH,
   getDefaultFocusWidgetBounds,
 } from "./focus-widget-bounds";
+import { loadWindowContent } from "./window-content";
 import { configureWindowSecurity } from "./window-security";
 
 interface CreateFocusWidgetWindowOptions {
@@ -29,23 +30,6 @@ export function createFocusWidgetWindow({
   onClosed,
 }: CreateFocusWidgetWindowOptions): BrowserWindow {
   const preloadPath = path.join(__dirname, "preload.js");
-  const appIndexPath = path.join(__dirname, "../dist/index.html");
-  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
-
-  async function loadWindowContent(window: BrowserWindow): Promise<void> {
-    try {
-      if (devServerUrl) {
-        await window.loadURL(`${devServerUrl}?view=widget`);
-        return;
-      }
-
-      await window.loadFile(appIndexPath, {
-        search: "?view=widget",
-      });
-    } catch (error) {
-      console.error("Failed to load the focus widget window.", error);
-    }
-  }
   const bounds = getDefaultFocusWidgetBounds();
   const windowOptions = {
     alwaysOnTop: true,
@@ -93,7 +77,11 @@ export function createFocusWidgetWindow({
   });
   window.on("closed", onClosed);
 
-  loadWindowContent(window);
+  loadWindowContent({
+    errorMessage: "Failed to load the focus widget window.",
+    search: "?view=widget",
+    window,
+  });
 
   return window;
 }

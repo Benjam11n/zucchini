@@ -6,6 +6,20 @@ const desktopRoot = process.cwd();
 const workspaceRoot = path.resolve(import.meta.dirname, "../../..");
 const packageJsonPath = path.join(desktopRoot, "package.json");
 const changelogPath = path.join(workspaceRoot, "CHANGELOG.md");
+const ARGUMENT_OPTIONS = {
+  "--date": "date",
+  "--output": "output",
+  "--previous-tag": "previousTag",
+  "--tag": "tag",
+  "--version": "version",
+};
+const COMMIT_CATEGORIES = [
+  ["feat", "Features"],
+  ["fix", "Fixes"],
+  ["refactor", "Refactors"],
+  ["docs", "Documentation"],
+  ["chore", "Maintenance"],
+];
 
 const cliArgs = parseArgs(process.argv.slice(2));
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
@@ -63,38 +77,18 @@ function parseArgs(rawArgs) {
       continue;
     }
 
+    const optionName = ARGUMENT_OPTIONS[arg];
+    if (!optionName) {
+      throw new Error(`Unknown argument: ${arg}`);
+    }
+
     const value = rawArgs[index + 1];
 
     if (!value || value.startsWith("--")) {
       throw new Error(`Missing value for ${arg}.`);
     }
 
-    switch (arg) {
-      case "--date": {
-        parsed.date = value;
-        break;
-      }
-      case "--output": {
-        parsed.output = value;
-        break;
-      }
-      case "--previous-tag": {
-        parsed.previousTag = value;
-        break;
-      }
-      case "--tag": {
-        parsed.tag = value;
-        break;
-      }
-      case "--version": {
-        parsed.version = value;
-        break;
-      }
-      default: {
-        throw new Error(`Unknown argument: ${arg}`);
-      }
-    }
-
+    parsed[optionName] = value;
     index += 1;
   }
 
@@ -142,27 +136,13 @@ function isReleaseCommit(subject, candidateVersion, candidateTag) {
 function categorizeCommit(subject) {
   const normalized = subject.toLowerCase();
 
-  if (/^feat(\(.+\))?:/.test(normalized) || normalized.startsWith("feat ")) {
-    return "Features";
-  }
-
-  if (/^fix(\(.+\))?:/.test(normalized) || normalized.startsWith("fix ")) {
-    return "Fixes";
-  }
-
-  if (
-    /^refactor(\(.+\))?:/.test(normalized) ||
-    normalized.startsWith("refactor ")
-  ) {
-    return "Refactors";
-  }
-
-  if (/^docs(\(.+\))?:/.test(normalized) || normalized.startsWith("docs ")) {
-    return "Documentation";
-  }
-
-  if (/^chore(\(.+\))?:/.test(normalized) || normalized.startsWith("chore ")) {
-    return "Maintenance";
+  for (const [type, category] of COMMIT_CATEGORIES) {
+    if (
+      new RegExp(`^${type}(\\(.+\\))?:`).test(normalized) ||
+      normalized.startsWith(`${type} `)
+    ) {
+      return category;
+    }
   }
 
   return "Other";
