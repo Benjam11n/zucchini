@@ -186,6 +186,53 @@ describe("longer habit checklist", () => {
     expect(onDecrementHabitProgress).toHaveBeenCalledWith(2);
   });
 
+  it("caps aggregate progress when longer habits exceed their targets", () => {
+    render(
+      <LongerHabitChecklist
+        dateKey="2026-03-13"
+        focusQuotaGoals={[]}
+        habits={[
+          createHabit(1, {
+            completed: true,
+            completedCount: 3,
+            name: "Weekly writing",
+            targetCount: 2,
+          }),
+        ]}
+        onDecrementHabitProgress={vi.fn()}
+        onIncrementHabitProgress={vi.fn()}
+      />
+    );
+
+    const progressBar = screen.getByRole("progressbar");
+
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+    expect(progressBar).toHaveAttribute("aria-valuenow", "100");
+  });
+
+  it("caps aggregate progress when focus quota exceeds the target", () => {
+    render(
+      <LongerHabitChecklist
+        dateKey="2026-03-13"
+        focusQuotaGoals={[
+          createFocusQuotaGoal(1, {
+            completed: true,
+            completedMinutes: 180,
+            targetMinutes: 120,
+          }),
+        ]}
+        habits={[]}
+        onDecrementHabitProgress={vi.fn()}
+        onIncrementHabitProgress={vi.fn()}
+      />
+    );
+
+    const progressBar = screen.getByRole("progressbar");
+
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+    expect(progressBar).toHaveAttribute("aria-valuenow", "100");
+  });
+
   it("uses wrapping row layouts so longer-goal content can shrink with the window", () => {
     const { container } = render(
       <LongerHabitChecklist

@@ -14,7 +14,7 @@ import { configureWindowSecurity } from "./window-security";
 const MAIN_WINDOW_DEFAULT_WIDTH = 1040;
 const MAIN_WINDOW_MIN_WIDTH = 720;
 const MAIN_WINDOW_DEFAULT_HEIGHT = 820;
-const MAIN_WINDOW_MIN_HEIGHT = 640;
+const MAIN_WINDOW_MIN_HEIGHT = MAIN_WINDOW_DEFAULT_HEIGHT;
 
 interface CreateMainWindowOptions {
   backgroundColor: string;

@@ -13,6 +13,8 @@ function Progress({
   indicatorClassName?: string;
   indicatorStyle?: React.CSSProperties;
 }) {
+  const normalizedValue = Math.min(Math.max(value ?? 0, 0), 100);
+
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -20,6 +22,7 @@ function Progress({
         "relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted",
         className
       )}
+      value={normalizedValue}
       {...props}
     >
       <ProgressPrimitive.Indicator
@@ -29,7 +32,7 @@ function Progress({
           indicatorClassName
         )}
         style={{
-          transform: `translateX(-${100 - (value || 0)}%)`,
+          transform: `translateX(-${100 - normalizedValue}%)`,
           ...indicatorStyle,
         }}
       />

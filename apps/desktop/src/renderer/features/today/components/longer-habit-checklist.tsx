@@ -49,7 +49,9 @@ export function LongerHabitChecklist({
   let completedGoalCount = 0;
   let aggregateCompletionRatio = 0;
 
-  const sections = PERIOD_SECTIONS.map((section) => {
+  const sections = [];
+
+  for (const section of PERIOD_SECTIONS) {
     const sectionHabits = habits.filter(
       (habit) => habit.frequency === section.value
     );
@@ -81,10 +83,16 @@ export function LongerHabitChecklist({
     let sectionCompletionRatio = 0;
     for (const habit of sectionHabits) {
       const target = habit.targetCount ?? 1;
-      sectionCompletionRatio += (habit.completedCount ?? 0) / target;
+      sectionCompletionRatio += Math.min(
+        (habit.completedCount ?? 0) / target,
+        1
+      );
     }
     for (const goal of sectionFocusQuotaGoals) {
-      sectionCompletionRatio += goal.completedMinutes / goal.targetMinutes;
+      sectionCompletionRatio += Math.min(
+        goal.completedMinutes / goal.targetMinutes,
+        1
+      );
     }
 
     trackedGoalCount += goalCount;
@@ -93,22 +101,23 @@ export function LongerHabitChecklist({
       sectionFocusQuotaGoals.filter((goal) => goal.completed).length;
     aggregateCompletionRatio += sectionCompletionRatio;
 
-    // oxlint-disable-next-line eslint/sort-keys
-    return {
+    if (sectionHabits.length === 0 && sectionFocusQuotaGoals.length === 0) {
+      continue;
+    }
+
+    sections.push({
       ...section,
       completedCount,
       completedHabitGoalCount: completedHabitGoals,
       completedMinutes,
       focusQuotaGoals: sectionFocusQuotaGoals,
-      habits: sectionHabits,
       goalCount,
+      habits: sectionHabits,
       resetLabel: formatResetLabel(period.end),
       targetCount,
       targetMinutes,
-    };
-  }).filter(
-    (section) => section.habits.length > 0 || section.focusQuotaGoals.length > 0
-  );
+    });
+  }
 
   if (sections.length === 0) {
     return null;
