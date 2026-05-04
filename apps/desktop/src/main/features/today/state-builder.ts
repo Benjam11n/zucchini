@@ -8,6 +8,7 @@
 import type { Clock } from "@/main/app/clock";
 import type { TodayReadModelRepositoryPort } from "@/main/infra/persistence/app-repository";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
@@ -90,7 +91,8 @@ export function buildHistoricalHabitsByDate(
 
 function buildTodayHabitStreaksFromHabits(
   repository: TodayReadModelRepositoryPort,
-  habits: HabitWithStatus[]
+  habits: HabitWithStatus[],
+  dayStatus: DayStatusKind | null
 ): Record<number, HabitStreak> {
   const dailyHabits = habits.filter(isDailyHabit);
   const persistedStateByHabitId = new Map(
@@ -103,14 +105,24 @@ function buildTodayHabitStreaksFromHabits(
   for (const habit of dailyHabits) {
     const persistedState = persistedStateByHabitId.get(habit.id);
     const settledCurrentStreak = persistedState?.currentStreak ?? 0;
-    const currentStreak = habit.completed
-      ? settledCurrentStreak + 1
-      : settledCurrentStreak;
+    const currentStreak =
+      dayStatus !== "sick" && habit.completed
+        ? settledCurrentStreak + 1
+        : settledCurrentStreak;
 
-    habitStreaks[habit.id] = {
-      bestStreak: Math.max(persistedState?.bestStreak ?? 0, currentStreak),
-      currentStreak,
-    };
+    habitStreaks[habit.id] =
+      dayStatus === "sick"
+        ? {
+            bestStreak: persistedState?.bestStreak ?? 0,
+            currentStreak,
+          }
+        : {
+            bestStreak: Math.max(
+              persistedState?.bestStreak ?? 0,
+              currentStreak
+            ),
+            currentStreak,
+          };
   }
 
   return habitStreaks;
@@ -144,7 +156,11 @@ export function buildTodayState(
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
-    habitStreaks: buildTodayHabitStreaksFromHabits(repository, habits),
+    habitStreaks: buildTodayHabitStreaksFromHabits(
+      repository,
+      habits,
+      currentDayStatus?.kind ?? null
+    ),
     habits,
     settings: repository.getSettings(clock.timezone()),
     streak: {

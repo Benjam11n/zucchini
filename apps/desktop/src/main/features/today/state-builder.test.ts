@@ -197,6 +197,45 @@ describe("state builder", () => {
         currentStreak: 2,
       });
     });
+
+    it("does not preview per-habit streak gains on sick days", () => {
+      const runHabit = {
+        category: "fitness" as const,
+        completed: true,
+        createdAt: "2025-12-30T00:00:00.000Z",
+        frequency: "daily" as const,
+        id: 1,
+        isArchived: false,
+        name: "Run",
+        selectedWeekdays: null,
+        sortOrder: 0,
+        targetCount: 1,
+      };
+      const repository = createRepository({
+        getDayStatus: vi.fn(() => ({
+          createdAt: "2026-01-01T08:00:00.000Z",
+          date: "2026-01-01",
+          kind: "sick",
+        })),
+        getHabitsWithStatus: vi.fn(() => [runHabit]),
+        getPersistedHabitStreakStates: vi.fn(() => [
+          {
+            bestStreak: 4,
+            currentStreak: 1,
+            habitId: runHabit.id,
+            lastEvaluatedDate: "2025-12-31",
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.habitStreaks?.[1]).toStrictEqual({
+        bestStreak: 4,
+        currentStreak: 1,
+      });
+    });
   });
 
   describe("buildTodayPreviewSummary", () => {
