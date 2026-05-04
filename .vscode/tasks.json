@@ -124,9 +124,9 @@
       }
     },
     {
-      "label": "Knip",
+      "label": "Fallow Dead Code",
       "type": "shell",
-      "command": "pnpm --dir apps/desktop run knip",
+      "command": "pnpm run fallow:dead-code",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -205,7 +205,7 @@
     {
       "label": "Verify",
       "dependsOrder": "sequence",
-      "dependsOn": ["Typecheck", "Lint", "Test", "Knip"]
+      "dependsOn": ["Typecheck", "Lint", "Test", "Fallow Dead Code"]
     }
   ]
 }
