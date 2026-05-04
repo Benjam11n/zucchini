@@ -129,6 +129,7 @@ export interface HistoryRepositoryPort {
     options?: SettledHistoryOptions
   ): DailySummary[];
   getDailySummariesInRange(start: string, end: string): DailySummary[];
+  getSettledHistoryYears(): number[];
   getHabitPeriodStatusesEndingInRange(
     start: string,
     end: string

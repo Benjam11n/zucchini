@@ -94,6 +94,11 @@ export const habitsClient = {
       payload: { date },
       type: "history.getDay",
     }),
+  getHistoryForYear: (year: number) =>
+    query({
+      payload: { year },
+      type: "history.getYear",
+    }),
   getHistorySummary: (limit?: number) =>
     query(
       limit === undefined
@@ -103,6 +108,10 @@ export const habitsClient = {
             type: "history.summary",
           }
     ),
+  getHistoryYears: () =>
+    query({
+      type: "history.years",
+    }),
   getTodayState: () =>
     query({
       type: "today.get",

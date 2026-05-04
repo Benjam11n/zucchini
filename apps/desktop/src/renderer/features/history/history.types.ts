@@ -17,12 +17,14 @@ export type WeeklyReviewPhase = AsyncPhase;
 
 export interface HistoryPageProps {
   history: HistoryDay[];
+  historyYears: number[];
   historyLoadError: HabitsIpcError | null;
-  historyScope: "full" | "recent";
   isHistoryLoading: boolean;
-  onLoadOlderHistory: () => void;
+  onLoadHistoryYears: () => void;
   onNavigateToToday: () => void;
+  onSelectHistoryYear: (year: number) => void;
   todayDate: string;
+  selectedHistoryYear: number | null;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: HabitsIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;

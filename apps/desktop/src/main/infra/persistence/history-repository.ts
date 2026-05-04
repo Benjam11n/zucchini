@@ -426,6 +426,23 @@ export class SqliteHistoryRepository {
     );
   }
 
+  getSettledHistoryYears(): number[] {
+    return this.client.run("getSettledHistoryYears", () =>
+      (
+        this.client
+          .getSqlite()
+          .prepare(
+            `
+              SELECT DISTINCT CAST(substr(date, 1, 4) AS INTEGER) AS year
+              FROM daily_summary
+              ORDER BY year DESC
+            `
+          )
+          .all() as { year: number }[]
+      ).map((row) => row.year)
+    );
+  }
+
   getHabitPeriodStatusesEndingInRange(
     start: string,
     end: string

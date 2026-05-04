@@ -21,6 +21,11 @@ export type HabitQuery =
       type: "history.get";
     }
   | {
+      payload: { year: number };
+      type: "history.getYear";
+    }
+  | { type: "history.years" }
+  | {
       payload: { date: string };
       type: "history.getDay";
     }
@@ -38,6 +43,7 @@ export type HabitQueryResult =
   | HistoryDay[]
   | HistoryDay
   | HistorySummaryDay[]
+  | number[]
   | PersistedFocusTimerState
   | TodayState
   | WeeklyReview
@@ -49,8 +55,10 @@ interface HabitQueryResultByType {
   "focusTimer.getState": PersistedFocusTimerState | null;
   "habit.list": Habit[];
   "history.get": HistoryDay[];
+  "history.getYear": HistoryDay[];
   "history.getDay": HistoryDay;
   "history.summary": HistorySummaryDay[];
+  "history.years": number[];
   "today.get": TodayState;
   "weeklyReview.get": WeeklyReview;
   "weeklyReview.overview": WeeklyReviewOverview;

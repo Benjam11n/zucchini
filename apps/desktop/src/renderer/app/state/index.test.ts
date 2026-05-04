@@ -152,6 +152,13 @@ describe("app store actions", () => {
           : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
       )
     );
+    const getHistoryForYearMock = vi.fn((year: number) =>
+      Promise.resolve(
+        year === 2026
+          ? [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
+          : []
+      )
+    );
     const getHistorySummaryMock = vi.fn((limit?: number) =>
       Promise.resolve(
         limit === 14
@@ -159,6 +166,7 @@ describe("app store actions", () => {
           : [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
       )
     );
+    const getHistoryYearsMock = vi.fn().mockResolvedValue([2026]);
     const getFocusSessionsMock = vi
       .fn()
       .mockResolvedValue([createFocusSession(1)]);
@@ -187,7 +195,9 @@ describe("app store actions", () => {
       getFocusSessions: getFocusSessionsMock,
       getHabits: getHabitsMock,
       getHistory: getHistoryMock,
+      getHistoryForYear: getHistoryForYearMock,
       getHistorySummary: getHistorySummaryMock,
+      getHistoryYears: getHistoryYearsMock,
       getTodayState: getTodayStateMock,
       getWeeklyReview: getWeeklyReviewMock,
       getWeeklyReviewOverview: getWeeklyReviewOverviewMock,
@@ -213,8 +223,6 @@ describe("app store actions", () => {
       await import("@/renderer/features/focus/state/focus-store");
     const { resetHistoryStore, useHistoryStore } =
       await import("@/renderer/features/history/state/history-store");
-    const { historyDayCollection, syncHistoryCollections } =
-      await import("@/renderer/features/history/state/history-collections");
     const { resetWeeklyReviewStore, useWeeklyReviewStore } =
       await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
     const { resetSettingsStore, useSettingsStore } =
@@ -225,7 +233,6 @@ describe("app store actions", () => {
     resetBootStore();
     resetFocusStore();
     resetHistoryStore();
-    syncHistoryCollections(null);
     resetSettingsStore();
     resetTodayStore();
     resetUiStore();
@@ -235,13 +242,13 @@ describe("app store actions", () => {
       actions: appActions,
       getFocusSessionsMock,
       getHabitsMock,
+      getHistoryForYearMock,
       getHistoryMock,
       getHistorySummaryMock,
+      getHistoryYearsMock,
       getWeeklyReviewOverviewMock,
       habitsApi,
       stores: {
-        historyDayCollection,
-        syncHistoryCollections,
         useBootStore,
         useFocusStore,
         useHistoryStore,
@@ -315,37 +322,35 @@ describe("app store actions", () => {
     await actions.loadHistorySummary();
 
     expect(getHistorySummaryMock).toHaveBeenCalledWith(14);
-    expect(stores.useHistoryStore.getState().historyScope).toBe("recent");
     expect(
       stores.useHistoryStore.getState().historySummary.map((day) => day.date)
     ).toStrictEqual(["2026-03-10"]);
   });
 
-  it("loads full history only when explicitly requested", async () => {
-    const { actions, getHistoryMock, stores } = await setup();
+  it("loads year history only when explicitly requested", async () => {
+    const { actions, getHistoryForYearMock, getHistoryYearsMock, stores } =
+      await setup();
     await actions.bootApp();
 
-    await actions.loadFullHistory();
+    await actions.loadHistoryYears();
 
-    expect(getHistoryMock).toHaveBeenCalledWith();
-    expect(stores.useHistoryStore.getState().historyScope).toBe("full");
+    expect(getHistoryYearsMock).toHaveBeenCalledWith();
+    expect(getHistoryForYearMock).toHaveBeenCalledWith(2026);
+    expect(stores.useHistoryStore.getState().selectedHistoryYear).toBe(2026);
     expect(
       stores.useHistoryStore.getState().history.map((day) => day.date)
     ).toStrictEqual(["2026-03-10", "2026-03-09"]);
-    expect(
-      [...stores.historyDayCollection.state.keys()].toSorted()
-    ).toStrictEqual(["2026-03-09", "2026-03-10"]);
   });
 
-  it("does not reload history after a structural habit mutation once full history has been opened", async () => {
-    const { actions, getHistoryMock } = await setup();
+  it("does not reload year history after a structural habit mutation once history has been opened", async () => {
+    const { actions, getHistoryForYearMock } = await setup();
     await actions.bootApp();
 
-    await actions.loadFullHistory();
+    await actions.loadHistoryYears();
 
     await actions.handleRenameHabit(1, "Make buried chapters");
 
-    expect(getHistoryMock).toHaveBeenCalledTimes(1);
+    expect(getHistoryForYearMock).toHaveBeenCalledTimes(1);
   });
 
   it("optimistically updates the habit order before the reorder request resolves", async () => {

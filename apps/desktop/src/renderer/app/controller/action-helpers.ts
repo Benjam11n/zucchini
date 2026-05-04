@@ -11,7 +11,6 @@ import { unstable_batchedUpdates } from "react-dom";
 import { useBootStore } from "@/renderer/app/state/boot-store";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
@@ -20,7 +19,6 @@ import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
 
 export function reorderVisibleTodayHabits(
   nextManagedHabits: Habit[],
@@ -53,24 +51,13 @@ export function reorderVisibleTodayHabits(
 }
 
 export function applyTodayReloadResult({
-  history,
-  historyScope,
   managedHabits,
   todayState,
 }: {
-  history: HistoryDay[];
-  historyScope: "full" | "recent";
   managedHabits: Habit[];
   todayState: TodayState;
 }): void {
   unstable_batchedUpdates(() => {
-    useHistoryStore.setState({
-      history,
-      historyLoadError: null,
-      historyScope,
-      isHistoryLoading: false,
-    });
-    syncHistoryCollections(history);
     useSettingsStore.setState((state) => ({
       settingsDraft: state.settingsDraft ?? todayState.settings,
     }));
@@ -169,11 +156,12 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
     });
     useHistoryStore.setState({
       history: [],
+      historyByYear: {},
       historyLoadError: null,
-      historyScope: "recent",
+      historyYears: [],
       isHistoryLoading: false,
+      selectedHistoryYear: null,
     });
-    syncHistoryCollections(null);
     useSettingsStore.setState({
       settingsDraft: null,
     });

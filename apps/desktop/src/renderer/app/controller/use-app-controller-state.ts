@@ -64,9 +64,10 @@ export function useNonSettingsHistoryState() {
             hasLoadedHistorySummary: state.hasLoadedHistorySummary,
             history: state.history,
             historyLoadError: state.historyLoadError,
-            historyScope: state.historyScope,
             historySummary: state.historySummary,
+            historyYears: state.historyYears,
             isHistoryLoading: state.isHistoryLoading,
+            selectedHistoryYear: state.selectedHistoryYear,
           }
     )
   );

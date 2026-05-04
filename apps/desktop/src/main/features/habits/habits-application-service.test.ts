@@ -340,6 +340,16 @@ class FakeRepository implements AppRepository {
       : history.slice(0, effectiveLimit);
   }
 
+  getSettledHistoryYears(): number[] {
+    return [
+      ...new Set(
+        [...this.dailySummaries.values()].map((summary) =>
+          Number(summary.date.slice(0, 4))
+        )
+      ),
+    ].toSorted((left, right) => right - left);
+  }
+
   getDailySummariesInRange(start: string, end: string): DailySummary[] {
     return [...this.dailySummaries.values()]
       .filter((summary) => summary.date >= start && summary.date <= end)

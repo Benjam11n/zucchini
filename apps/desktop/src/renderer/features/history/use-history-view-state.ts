@@ -5,7 +5,6 @@
  * (total days, completion rate), builds the day lookup map, and provides
  * callbacks for selecting dates and navigating between years.
  */
-import { eq, useLiveQuery } from "@tanstack/react-db";
 import { useEffect, useMemo, useState } from "react";
 
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
@@ -13,7 +12,6 @@ import {
   getHistoryDayLookup,
   getHistoryStats,
 } from "@/renderer/features/history/lib/history-summary";
-import { historyDayCollection } from "@/renderer/features/history/state/history-collections";
 import { parseDateKey } from "@/shared/utils/date";
 
 export interface HistoryViewState {
@@ -24,10 +22,12 @@ export interface HistoryViewState {
 
 function createInitialHistoryViewState(
   history: HistoryPageProps["history"],
+  selectedHistoryYear: number | null,
   todayDate: string
 ): HistoryViewState {
   const fallbackDate = history[0]?.date ?? todayDate;
-  const fallbackYear = Number.parseInt(fallbackDate.slice(0, 4), 10);
+  const fallbackYear =
+    selectedHistoryYear ?? Number.parseInt(fallbackDate.slice(0, 4), 10);
 
   return {
     selectedDateKey: fallbackDate,
@@ -38,55 +38,26 @@ function createInitialHistoryViewState(
 
 export function useHistoryViewState({
   history,
+  historyYears,
+  selectedHistoryYear,
   todayDate,
-}: Pick<HistoryPageProps, "history" | "todayDate">) {
+}: Pick<
+  HistoryPageProps,
+  "history" | "historyYears" | "selectedHistoryYear" | "todayDate"
+>) {
   const [viewState, setViewState] = useState<HistoryViewState>(() =>
-    createInitialHistoryViewState(history, todayDate)
+    createInitialHistoryViewState(history, selectedHistoryYear, todayDate)
   );
-  const { data: liveHistory } = useLiveQuery((query) =>
-    query
-      .from({ historyDay: historyDayCollection })
-      .orderBy(({ historyDay }) => historyDay.date, "desc")
-  );
-  const { data: liveSelectedYearHistory } = useLiveQuery(
-    (query) =>
-      query
-        .from({ historyDay: historyDayCollection })
-        .where(({ historyDay }) => eq(historyDay.year, viewState.selectedYear))
-        .orderBy(({ historyDay }) => historyDay.date, "desc"),
-    [viewState.selectedYear]
-  );
-  const allHistory = liveHistory.length > 0 ? liveHistory : history;
-  const selectedYearHasLiveRows =
-    liveHistory.length > 0 && liveSelectedYearHistory.length > 0;
 
   const availableYears = useMemo(
     () =>
-      [
-        ...new Set(
-          allHistory.map((day) => Number.parseInt(day.date.slice(0, 4), 10))
-        ),
-      ]
-        .filter((year) => !Number.isNaN(year))
-        .toSorted((left, right) => right - left),
-    [allHistory]
+      historyYears.length > 0
+        ? historyYears
+        : [selectedHistoryYear ?? Number.parseInt(todayDate.slice(0, 4), 10)],
+    [historyYears, selectedHistoryYear, todayDate]
   );
 
-  const filteredHistory = useMemo(() => {
-    if (selectedYearHasLiveRows) {
-      return liveSelectedYearHistory;
-    }
-
-    return allHistory.filter(
-      (day) =>
-        Number.parseInt(day.date.slice(0, 4), 10) === viewState.selectedYear
-    );
-  }, [
-    allHistory,
-    liveSelectedYearHistory,
-    selectedYearHasLiveRows,
-    viewState.selectedYear,
-  ]);
+  const filteredHistory = history;
 
   const stats = useMemo(
     () => getHistoryStats(filteredHistory),
@@ -104,16 +75,13 @@ export function useHistoryViewState({
     null;
 
   useEffect(() => {
-    const selectedYearStillExists = availableYears.includes(
-      viewState.selectedYear
-    );
+    const desiredSelectedYear = selectedHistoryYear ?? viewState.selectedYear;
+    const selectedYearStillExists =
+      availableYears.includes(desiredSelectedYear);
     const nextSelectedYear = selectedYearStillExists
-      ? viewState.selectedYear
+      ? desiredSelectedYear
       : (availableYears[0] ?? Number.parseInt(todayDate.slice(0, 4), 10));
-    const nextHistory = allHistory.filter(
-      (day) => Number.parseInt(day.date.slice(0, 4), 10) === nextSelectedYear
-    );
-    const fallbackDate = nextHistory[0]?.date ?? null;
+    const fallbackDate = history[0]?.date ?? null;
 
     if (!fallbackDate) {
       setViewState({
@@ -127,7 +95,7 @@ export function useHistoryViewState({
     setViewState((current) => ({
       selectedDateKey:
         current.selectedDateKey &&
-        nextHistory.some((day) => day.date === current.selectedDateKey)
+        history.some((day) => day.date === current.selectedDateKey)
           ? current.selectedDateKey
           : fallbackDate,
       selectedYear: nextSelectedYear,
@@ -137,7 +105,13 @@ export function useHistoryViewState({
           ? current.visibleMonth
           : parseDateKey(fallbackDate),
     }));
-  }, [allHistory, availableYears, todayDate, viewState.selectedYear]);
+  }, [
+    availableYears,
+    history,
+    selectedHistoryYear,
+    todayDate,
+    viewState.selectedYear,
+  ]);
 
   return {
     availableYears,

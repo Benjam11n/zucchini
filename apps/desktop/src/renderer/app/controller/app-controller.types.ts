@@ -35,8 +35,8 @@ export interface AppControllerState {
   focusSessionsPhase: FocusSessionsPhase;
   hasLoadedFocusSessions: boolean;
   history: HistoryDay[];
+  historyYears: number[];
   historyLoadError: HabitsIpcError | null;
-  historyScope: "full" | "recent";
   historySummary: HistorySummaryDay[];
   hasLoadedHistorySummary: boolean;
   isHistoryLoading: boolean;
@@ -47,6 +47,7 @@ export interface AppControllerState {
   settingsFieldErrors: SettingsFieldErrors;
   settingsSaveErrorMessage: string | null;
   settingsSavePhase: SettingsSavePhase;
+  selectedHistoryYear: number | null;
   timerState: PersistedFocusTimerState;
   todayState: TodayState | null;
   weeklyReviewError: HabitsIpcError | null;

@@ -29,9 +29,10 @@ const DEFAULT_HISTORY_STATE = {
   hasLoadedHistorySummary: false,
   history: EMPTY_HISTORY,
   historyLoadError: null,
-  historyScope: "recent",
   historySummary: EMPTY_HISTORY_SUMMARY,
+  historyYears: [],
   isHistoryLoading: false,
+  selectedHistoryYear: null,
 } satisfies NonNullable<ReturnType<typeof useNonSettingsHistoryState>>;
 
 const DEFAULT_HISTORY_PAGE_STATE = {
@@ -70,7 +71,7 @@ function buildControllerActions({
       actions.dismissWeeklyReviewSpotlight();
     },
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
-    handleLoadOlderHistory: actions.loadFullHistory,
+    handleLoadHistoryYears: actions.loadHistoryYears,
     handleOpenWindDown: actions.handleOpenWindDown,
     handleRenameHabit: actions.handleRenameHabit,
     handleRenameWindDownAction: actions.handleRenameWindDownAction,
@@ -79,7 +80,8 @@ function buildControllerActions({
     handleRetryFocusLoad: async () => {
       await actions.loadFocusSessions(true);
     },
-    handleRetryHistoryLoad: actions.loadFullHistory,
+    handleRetryHistoryLoad: actions.loadHistoryYears,
+    handleSelectHistoryYear: actions.selectHistoryYear,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,

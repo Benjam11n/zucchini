@@ -190,11 +190,17 @@ export function readHabitServiceQuery(
     case "history.get": {
       return service.getHistory(query.payload?.limit);
     }
+    case "history.getYear": {
+      return service.getHistoryForYear(query.payload.year);
+    }
     case "history.getDay": {
       return service.getHistoryDay(query.payload.date);
     }
     case "history.summary": {
       return service.getHistorySummary(query.payload?.limit);
+    }
+    case "history.years": {
+      return service.getHistoryYears();
     }
     case "today.get": {
       return service.getTodayState();

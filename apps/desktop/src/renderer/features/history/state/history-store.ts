@@ -1,85 +1,66 @@
 /**
  * History page Zustand store.
  *
- * Tracks the loaded history days, loading scope (recent vs full), and any
- * load errors. The `loadFullHistory` action fetches all available history
- * through the preload bridge and switches the scope to `"full"`.
+ * Tracks history years, the selected year's loaded days, and lightweight recent
+ * history used by Today. Year data is cached per year so the renderer never
+ * needs to mirror the entire history table.
  */
 import { create } from "zustand";
 
-import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 
+type HistoryByYear = Record<number, HistoryDay[] | undefined>;
+
 interface HistoryStoreState {
   history: HistoryDay[];
+  historyByYear: HistoryByYear;
   historyLoadError: HabitsIpcError | null;
-  historyScope: "full" | "recent";
   historySummary: HistorySummaryDay[];
+  historyYears: number[];
   hasLoadedHistorySummary: boolean;
   isHistoryLoading: boolean;
   isHistorySummaryLoading: boolean;
+  selectedHistoryYear: number | null;
+  loadHistoryYear: (
+    year: number,
+    options?: { force?: boolean }
+  ) => Promise<void>;
+  loadHistoryYears: (options?: { force?: boolean }) => Promise<void>;
   loadHistorySummary: (limit?: number) => Promise<void>;
-  loadFullHistory: () => Promise<void>;
-  setHistory: (history: HistoryDay[]) => void;
+  selectHistoryYear: (year: number) => Promise<void>;
 }
 
 function getInitialHistoryState(): Pick<
   HistoryStoreState,
   | "history"
+  | "historyByYear"
   | "historyLoadError"
-  | "historyScope"
   | "historySummary"
+  | "historyYears"
   | "hasLoadedHistorySummary"
   | "isHistoryLoading"
   | "isHistorySummaryLoading"
+  | "selectedHistoryYear"
 > {
   return {
     hasLoadedHistorySummary: false,
     history: [],
+    historyByYear: {},
     historyLoadError: null,
-    historyScope: "recent",
     historySummary: [],
+    historyYears: [],
     isHistoryLoading: false,
     isHistorySummaryLoading: false,
+    selectedHistoryYear: null,
   };
 }
 
 export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
   ...getInitialHistoryState(),
-  loadFullHistory: async () => {
-    if (get().historyScope === "full" || get().isHistoryLoading) {
-      return;
-    }
-
-    await runAsyncTask(() => habitsClient.getHistory(), {
-      mapError: toHabitsIpcError,
-      onError: (historyLoadError) => {
-        set({
-          historyLoadError,
-          isHistoryLoading: false,
-        });
-      },
-      onStart: () => {
-        set({
-          historyLoadError: null,
-          isHistoryLoading: true,
-        });
-      },
-      onSuccess: (history) => {
-        syncHistoryCollections(history);
-        set({
-          history,
-          historyLoadError: null,
-          historyScope: "full",
-          isHistoryLoading: false,
-        });
-      },
-    });
-  },
   loadHistorySummary: async (limit = 14) => {
     if (get().isHistorySummaryLoading) {
       return;
@@ -110,13 +91,105 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       },
     });
   },
-  setHistory: (history) => {
-    syncHistoryCollections(history);
-    set({ history });
+  loadHistoryYear: async (year, options = {}) => {
+    if (
+      !options.force &&
+      (get().historyByYear[year] || get().isHistoryLoading)
+    ) {
+      const cachedHistory = get().historyByYear[year];
+      if (cachedHistory && get().selectedHistoryYear === year) {
+        set({ history: cachedHistory });
+      }
+      return;
+    }
+
+    await runAsyncTask(() => habitsClient.getHistoryForYear(year), {
+      mapError: toHabitsIpcError,
+      onError: (historyLoadError) => {
+        set({
+          historyLoadError,
+          isHistoryLoading: false,
+        });
+      },
+      onStart: () => {
+        set({
+          historyLoadError: null,
+          isHistoryLoading: true,
+        });
+      },
+      onSuccess: (history) => {
+        set((state) => ({
+          history:
+            state.selectedHistoryYear === year ||
+            state.selectedHistoryYear === null
+              ? history
+              : state.history,
+          historyByYear: {
+            ...state.historyByYear,
+            [year]: history,
+          },
+          historyLoadError: null,
+          isHistoryLoading: false,
+          selectedHistoryYear: state.selectedHistoryYear ?? year,
+        }));
+      },
+    });
+  },
+  loadHistoryYears: async (options = {}) => {
+    if (!options.force && get().historyYears.length > 0) {
+      const selectedYear = get().selectedHistoryYear ?? get().historyYears[0];
+      if (selectedYear !== undefined) {
+        await get().loadHistoryYear(selectedYear);
+      }
+      return;
+    }
+
+    await runAsyncTask(() => habitsClient.getHistoryYears(), {
+      mapError: toHabitsIpcError,
+      onError: (historyLoadError) => {
+        set({
+          historyLoadError,
+          isHistoryLoading: false,
+        });
+      },
+      onStart: () => {
+        set({
+          historyLoadError: null,
+          isHistoryLoading: true,
+        });
+      },
+      onSuccess: async (historyYears) => {
+        const currentSelectedYear = get().selectedHistoryYear;
+        const selectedHistoryYear =
+          currentSelectedYear && historyYears.includes(currentSelectedYear)
+            ? currentSelectedYear
+            : (historyYears[0] ?? null);
+
+        set({
+          historyLoadError: null,
+          historyYears,
+          isHistoryLoading: false,
+          selectedHistoryYear,
+        });
+
+        if (selectedHistoryYear !== null) {
+          await get().loadHistoryYear(
+            selectedHistoryYear,
+            options.force === undefined ? {} : { force: options.force }
+          );
+        }
+      },
+    });
+  },
+  selectHistoryYear: async (year) => {
+    set({
+      history: get().historyByYear[year] ?? [],
+      selectedHistoryYear: year,
+    });
+    await get().loadHistoryYear(year);
   },
 }));
 
 export function resetHistoryStore() {
-  syncHistoryCollections(null);
   useHistoryStore.setState(getInitialHistoryState());
 }

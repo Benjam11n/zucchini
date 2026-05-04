@@ -11,7 +11,6 @@ import type {
 } from "@/renderer/features/history/history.types";
 import type { HistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { GitHubCalendar } from "@/renderer/shared/components/github-calendar";
-import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { parseDateKey } from "@/shared/utils/date";
 
@@ -20,11 +19,10 @@ export function HistoryOverviewPanel({
   calendarWeeks,
   history,
   historyLoadError,
-  historyScope,
   historyByDate,
   isHistoryLoading,
-  onLoadOlderHistory,
   onNavigateToToday,
+  onSelectHistoryYear,
   selectedDay,
   setViewState,
   stats,
@@ -35,11 +33,10 @@ export function HistoryOverviewPanel({
   calendarWeeks: ComponentProps<typeof GitHubCalendar>["weeks"];
   history: HistoryPageProps["history"];
   historyLoadError: HistoryPageProps["historyLoadError"];
-  historyScope: HistoryPageProps["historyScope"];
   historyByDate: Map<string, HistoryPageProps["history"][number]>;
   isHistoryLoading: HistoryPageProps["isHistoryLoading"];
-  onLoadOlderHistory: HistoryPageProps["onLoadOlderHistory"];
   onNavigateToToday: HistoryPageProps["onNavigateToToday"];
+  onSelectHistoryYear: HistoryPageProps["onSelectHistoryYear"];
   selectedDay: HistoryPageProps["history"][number] | null;
   setViewState: Dispatch<SetStateAction<HistoryViewState>>;
   stats: HistoryStats;
@@ -83,17 +80,6 @@ export function HistoryOverviewPanel({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {historyScope === "recent" ? (
-                <Button
-                  disabled={isHistoryLoading}
-                  onClick={onLoadOlderHistory}
-                  variant="outline"
-                >
-                  {isHistoryLoading
-                    ? "Loading older history..."
-                    : "Load older history"}
-                </Button>
-              ) : null}
               <label className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>Year</span>
                 <select
@@ -114,6 +100,7 @@ export function HistoryOverviewPanel({
                         ? parseDateKey(fallbackDate)
                         : undefined,
                     });
+                    onSelectHistoryYear(nextYear);
                   }}
                   value={viewState.selectedYear}
                 >
@@ -126,9 +113,14 @@ export function HistoryOverviewPanel({
               </label>
             </div>
           </div>
-          {historyLoadError && historyScope !== "full" ? (
+          {historyLoadError ? (
             <div className="rounded-md border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
               {historyLoadError.message}
+            </div>
+          ) : null}
+          {isHistoryLoading ? (
+            <div className="rounded-md border border-border/60 bg-muted/25 px-4 py-3 text-sm text-muted-foreground">
+              Loading history...
             </div>
           ) : null}
           <GitHubCalendar weeks={calendarWeeks} />

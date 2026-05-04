@@ -58,9 +58,9 @@
   validation.
 - Keep side effects at system edges and keep pure logic easy to test.
 - For desktop renderer UI, prefer existing shadcn-based components in
-  `apps/desktop/src/renderer/shared/ui` and default theme tokens from
-  `apps/desktop/src/renderer/globals.css` before introducing bespoke styling or
-  arbitrary Tailwind values.
+  `apps/desktop/src/renderer/shared/components/ui` and default theme tokens
+  from `apps/desktop/src/renderer/globals.css` before introducing bespoke
+  styling or arbitrary Tailwind values.
 
 ## UI Defaults
 

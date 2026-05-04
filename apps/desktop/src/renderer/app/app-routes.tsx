@@ -68,12 +68,14 @@ function HistoryRoute({ actions, state }: ReadyAppController) {
     >
       <HistoryPage
         history={state.history}
+        historyYears={state.historyYears}
         historyLoadError={state.historyLoadError}
-        historyScope={state.historyScope}
         isHistoryLoading={state.isHistoryLoading}
-        onLoadOlderHistory={actions.handleLoadOlderHistory}
+        onLoadHistoryYears={actions.handleLoadHistoryYears}
         onNavigateToToday={() => actions.handleTabChange("today")}
+        onSelectHistoryYear={actions.handleSelectHistoryYear}
         todayDate={state.todayState.date}
+        selectedHistoryYear={state.selectedHistoryYear}
         onSelectWeeklyReview={actions.handleWeeklyReviewSelect}
         selectedWeeklyReview={state.selectedWeeklyReview}
         weeklyReviewError={state.weeklyReviewError}

@@ -6,17 +6,20 @@ export function createHistoryActions() {
     dismissWeeklyReviewSpotlight() {
       useWeeklyReviewStore.getState().dismissWeeklyReviewSpotlight();
     },
-    async loadFullHistory() {
-      await useHistoryStore.getState().loadFullHistory();
-    },
     async loadHistorySummary(limit?: number) {
       await useHistoryStore.getState().loadHistorySummary(limit);
+    },
+    async loadHistoryYears() {
+      await useHistoryStore.getState().loadHistoryYears();
     },
     async loadWeeklyReviewOverview() {
       await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
     },
     openWeeklyReviewSpotlight() {
       useWeeklyReviewStore.getState().openWeeklyReviewSpotlight();
+    },
+    async selectHistoryYear(year: number) {
+      await useHistoryStore.getState().selectHistoryYear(year);
     },
     async selectWeeklyReview(weekStart: string) {
       await useWeeklyReviewStore.getState().selectWeeklyReview(weekStart);

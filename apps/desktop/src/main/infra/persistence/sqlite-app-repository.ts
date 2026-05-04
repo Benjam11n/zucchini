@@ -244,6 +244,10 @@ export class SqliteAppRepository implements AppRepository {
     return this.historyRepository.getDailySummariesInRange(start, end);
   }
 
+  getSettledHistoryYears(): number[] {
+    return this.historyRepository.getSettledHistoryYears();
+  }
+
   getHabitPeriodStatusesEndingInRange(
     start: string,
     end: string

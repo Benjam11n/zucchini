@@ -5,7 +5,6 @@ import type { ComponentProps } from "react";
 
 import type * as HistoryCalendarCardModule from "@/renderer/features/history/components/history-calendar-card";
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
-import { syncHistoryCollections } from "@/renderer/features/history/state/history-collections";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import type * as GitHubCalendarModule from "@/renderer/shared/components/github-calendar";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
@@ -197,11 +196,31 @@ function createWeeklyReviewOverview(): WeeklyReviewOverview {
   };
 }
 
-describe("history page", () => {
-  beforeEach(() => {
-    syncHistoryCollections(null);
-  });
+function renderHistoryPage(
+  props: Partial<ComponentProps<typeof HistoryPage>> = {}
+) {
+  return render(
+    <HistoryPage
+      history={[createHistoryDay("2026-03-10")]}
+      historyLoadError={null}
+      historyYears={[2026]}
+      isHistoryLoading={false}
+      onLoadHistoryYears={vi.fn()}
+      onNavigateToToday={vi.fn()}
+      onSelectHistoryYear={vi.fn()}
+      onSelectWeeklyReview={vi.fn()}
+      selectedHistoryYear={2026}
+      selectedWeeklyReview={null}
+      todayDate="2026-03-10"
+      weeklyReviewError={null}
+      weeklyReviewOverview={null}
+      weeklyReviewPhase="idle"
+      {...props}
+    />
+  );
+}
 
+describe("history page", () => {
   it("shows summary badges for completion, freeze, and missed history", () => {
     const history = [
       createHistoryDay("2026-03-10", { allCompleted: true }),
@@ -209,22 +228,7 @@ describe("history page", () => {
       createHistoryDay("2026-03-08", { freezeUsed: true }),
     ];
 
-    render(
-      <HistoryPage
-        history={history}
-        historyLoadError={null}
-        historyScope="recent"
-        isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={vi.fn()}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="idle"
-      />
-    );
+    renderHistoryPage({ history });
 
     expect(screen.getByText("33% completion")).toBeInTheDocument();
     expect(screen.getByText("1 complete")).toBeInTheDocument();
@@ -240,22 +244,10 @@ describe("history page", () => {
     ];
     const onSelectWeeklyReview = vi.fn();
 
-    const { rerender } = render(
-      <HistoryPage
-        history={history}
-        historyLoadError={null}
-        historyScope="recent"
-        isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={onSelectWeeklyReview}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="idle"
-      />
-    );
+    const { rerender } = renderHistoryPage({
+      history,
+      onSelectWeeklyReview,
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "Select 2026-03-09" }));
     expect(screen.getByTestId("day-panel")).toHaveTextContent(
@@ -271,11 +263,13 @@ describe("history page", () => {
       <HistoryPage
         history={[latestHistoryDay]}
         historyLoadError={null}
-        historyScope="recent"
+        historyYears={[2026]}
         isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
+        onLoadHistoryYears={vi.fn()}
         onNavigateToToday={vi.fn()}
+        onSelectHistoryYear={vi.fn()}
         onSelectWeeklyReview={onSelectWeeklyReview}
+        selectedHistoryYear={2026}
         selectedWeeklyReview={null}
         todayDate="2026-03-10"
         weeklyReviewError={null}
@@ -290,43 +284,17 @@ describe("history page", () => {
   });
 
   it("shows the weekly review loading state before a review is available", () => {
-    render(
-      <HistoryPage
-        history={[createHistoryDay("2026-03-10")]}
-        historyLoadError={null}
-        historyScope="recent"
-        isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={vi.fn()}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="loading"
-      />
-    );
+    renderHistoryPage({ weeklyReviewPhase: "loading" });
 
     expect(screen.getByText("Building weekly review...")).toBeInTheDocument();
   });
 
   it("renders the latest weekly review and any non-blocking weekly review error", () => {
-    render(
-      <HistoryPage
-        history={[createHistoryDay("2026-03-10")]}
-        historyLoadError={null}
-        historyScope="recent"
-        isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={vi.fn()}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={new Error("Weekly review is stale") as never}
-        weeklyReviewOverview={createWeeklyReviewOverview()}
-        weeklyReviewPhase="ready"
-      />
-    );
+    renderHistoryPage({
+      weeklyReviewError: new Error("Weekly review is stale") as never,
+      weeklyReviewOverview: createWeeklyReviewOverview(),
+      weeklyReviewPhase: "ready",
+    });
 
     expect(screen.getByText("Weekly review is stale")).toBeInTheDocument();
     expect(screen.getByTestId("weekly-review-hero")).toHaveTextContent(
@@ -334,54 +302,25 @@ describe("history page", () => {
     );
   });
 
-  it("shows an explicit load older history action for the current-year view", () => {
-    const onLoadOlderHistory = vi.fn();
+  it("loads available history years on mount", () => {
+    const onLoadHistoryYears = vi.fn();
 
-    render(
-      <HistoryPage
-        history={[createHistoryDay("2026-03-10")]}
-        historyLoadError={null}
-        historyScope="recent"
-        isHistoryLoading={false}
-        onLoadOlderHistory={onLoadOlderHistory}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={vi.fn()}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="idle"
-      />
-    );
+    renderHistoryPage({ onLoadHistoryYears });
 
-    fireEvent.click(screen.getByRole("button", { name: "Load older history" }));
-
-    expect(onLoadOlderHistory.mock.calls).toHaveLength(1);
+    expect(onLoadHistoryYears.mock.calls).toHaveLength(1);
     expect(
       screen.getByRole("combobox", { name: "Select history year" })
     ).toBeInTheDocument();
   });
 
-  it("filters the calendar and selected day when the year changes", () => {
-    render(
-      <HistoryPage
-        history={[
-          createHistoryDay("2026-03-10", { allCompleted: true }),
-          createHistoryDay("2025-12-31", { freezeUsed: true }),
-        ]}
-        historyLoadError={null}
-        historyScope="full"
-        isHistoryLoading={false}
-        onLoadOlderHistory={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectWeeklyReview={vi.fn()}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="idle"
-      />
-    );
+  it("requests the selected year when the year changes", () => {
+    const onSelectHistoryYear = vi.fn();
+
+    renderHistoryPage({
+      history: [createHistoryDay("2026-03-10", { allCompleted: true })],
+      historyYears: [2026, 2025],
+      onSelectHistoryYear,
+    });
 
     fireEvent.change(
       screen.getByRole("combobox", { name: "Select history year" }),
@@ -390,11 +329,6 @@ describe("history page", () => {
       }
     );
 
-    expect(screen.getByTestId("day-panel")).toHaveTextContent(
-      "2025-12-31:false"
-    );
-    expect(
-      screen.getByRole("button", { name: "Select 2025-12-31" })
-    ).toBeInTheDocument();
+    expect(onSelectHistoryYear).toHaveBeenCalledWith(2025);
   });
 });

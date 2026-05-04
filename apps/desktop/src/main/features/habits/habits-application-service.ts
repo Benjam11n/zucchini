@@ -108,8 +108,10 @@ export interface HabitsService {
     state: PersistedFocusTimerState
   ): PersistedFocusTimerState;
   getHistory(limit?: number): HistoryDay[];
+  getHistoryForYear(year: number): HistoryDay[];
   getHistoryDay(date: string): HistoryDay;
   getHistorySummary(limit?: number): HistorySummaryDay[];
+  getHistoryYears(): number[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
   getReminderRuntimeState(): ReminderRuntimeState;
@@ -427,6 +429,86 @@ export class HabitsApplicationService implements HabitsService {
     });
   }
 
+  getHistoryYears(): number[] {
+    return this.withSyncedRead("getHistoryYears", () =>
+      [
+        ...new Set([
+          Number.parseInt(this.buildCurrentTodayState().date.slice(0, 4), 10),
+          ...this.repository.getSettledHistoryYears(),
+        ]),
+      ].toSorted((left, right) => right - left)
+    );
+  }
+
+  getHistoryForYear(year: number): HistoryDay[] {
+    return this.withSyncedRead("getHistoryForYear", () => {
+      const rangeStart = `${year}-01-01`;
+      const rangeEnd = `${year}-12-31`;
+      const todayState = this.buildCurrentTodayState();
+      const includeToday =
+        todayState.date >= rangeStart && todayState.date <= rangeEnd;
+      const settledSummaries = this.repository
+        .getDailySummariesInRange(rangeStart, rangeEnd)
+        .filter((summary) => summary.date !== todayState.date);
+
+      if (!includeToday && settledSummaries.length === 0) {
+        return [];
+      }
+
+      const oldestDate =
+        settledSummaries[0]?.date ??
+        (includeToday ? todayState.date : rangeStart);
+      const newestDate = includeToday
+        ? todayState.date
+        : (settledSummaries.at(-1)?.date ?? rangeEnd);
+      const focusMinutesByDate =
+        HabitsApplicationService.buildFocusMinutesByDate(
+          this.repository.getFocusSessionsInRange(oldestDate, newestDate)
+        );
+      const historicalHabitsByDate =
+        settledSummaries.length > 0
+          ? buildHistoricalHabitsByDate(
+              settledSummaries,
+              this.repository.getHistoricalHabitPeriodStatusesOverlappingRange(
+                oldestDate,
+                newestDate
+              )
+            )
+          : new Map();
+      const todayHistory = includeToday
+        ? [
+            buildHistoryDay(
+              buildTodayPreviewSummary(
+                todayState,
+                this.clock.now().toISOString()
+              ),
+              this.repository.getHabitsWithStatus(this.getTodayKey()),
+              focusMinutesByDate.get(todayState.date) ?? 0,
+              this.repository.getFocusQuotaGoalsWithStatusForDate(
+                todayState.date
+              )
+            ),
+          ]
+        : [];
+
+      return [
+        ...todayHistory,
+        ...settledSummaries
+          .toReversed()
+          .map((summary) =>
+            buildHistoryDay(
+              summary,
+              historicalHabitsByDate.get(summary.date) ?? [],
+              focusMinutesByDate.get(summary.date) ?? 0,
+              this.repository.getHistoricalFocusQuotaGoalsWithStatus(
+                summary.date
+              )
+            )
+          ),
+      ];
+    });
+  }
+
   getHistoryDay(date: string): HistoryDay {
     return this.withSyncedRead("getHistoryDay", () => {
       const todayState = this.buildCurrentTodayState();
@@ -440,9 +522,7 @@ export class HabitsApplicationService implements HabitsService {
         );
       }
 
-      const summary = this.repository
-        .getSettledHistory(undefined, { uncapped: true })
-        .find((candidate) => candidate.date === date);
+      const [summary] = this.repository.getDailySummariesInRange(date, date);
 
       if (!summary) {
         throw new Error(`History day ${date} was not found.`);

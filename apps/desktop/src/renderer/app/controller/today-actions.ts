@@ -35,7 +35,7 @@ import {
 
 export type ReloadAllFn = (
   nextTodayState?: TodayState,
-  historyScope?: "full" | "recent"
+  options?: { refreshHistoryYears?: boolean }
 ) => Promise<void>;
 
 type HabitStatusMutationKind = "decrement" | "increment" | "toggle";
@@ -148,29 +148,28 @@ export function createTodayActions({
     await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
   }
 
-  const reloadAll: ReloadAllFn = async (
-    nextTodayState,
-    _historyScope = useHistoryStore.getState().historyScope
-  ) => {
+  const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
     const todayState = nextTodayState ?? (await habitsClient.getTodayState());
     const managedHabits = await habitsClient.getHabits();
 
     applyTodayReloadResult({
-      history: useHistoryStore.getState().history,
-      historyScope: useHistoryStore.getState().historyScope,
       managedHabits,
       todayState,
     });
+
+    if (options.refreshHistoryYears) {
+      await useHistoryStore.getState().loadHistoryYears({ force: true });
+    }
   };
 
   async function refreshToday(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
-    await reloadAll(nextTodayState, useHistoryStore.getState().historyScope);
+    await reloadAll(nextTodayState);
     await refreshWeeklyReviewOverview();
   }
 
   async function refreshForNewDay() {
-    await reloadAll(undefined, useHistoryStore.getState().historyScope);
+    await reloadAll(undefined, { refreshHistoryYears: true });
     await refreshWeeklyReviewOverview();
   }
 
@@ -319,6 +318,7 @@ export function createTodayActions({
       }
 
       if (nextTab === "history") {
+        void useHistoryStore.getState().loadHistoryYears();
         void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
       }
     },

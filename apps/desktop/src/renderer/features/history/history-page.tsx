@@ -6,6 +6,7 @@
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { BarChart3, CalendarDays } from "lucide-react";
+import { useEffect } from "react";
 
 import { HistoryOverviewPanel } from "@/renderer/features/history/components/history-overview-panel";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
@@ -28,12 +29,14 @@ import {
 
 export function HistoryPage({
   history,
+  historyYears,
   historyLoadError,
-  historyScope,
   isHistoryLoading,
-  onLoadOlderHistory,
+  onLoadHistoryYears,
   onNavigateToToday,
+  onSelectHistoryYear,
   todayDate,
+  selectedHistoryYear,
   onSelectWeeklyReview,
   selectedWeeklyReview,
   weeklyReviewError,
@@ -50,8 +53,14 @@ export function HistoryPage({
     viewState,
   } = useHistoryViewState({
     history,
+    historyYears,
+    selectedHistoryYear,
     todayDate,
   });
+
+  useEffect(() => {
+    onLoadHistoryYears();
+  }, [onLoadHistoryYears]);
   const calendarWeeks = buildContributionWeeks(filteredHistory).map((week) => ({
     ...week,
     cells: week.cells.map((cell) => ({
@@ -94,10 +103,9 @@ export function HistoryPage({
               history={history}
               historyByDate={historyByDate}
               historyLoadError={historyLoadError}
-              historyScope={historyScope}
               isHistoryLoading={isHistoryLoading}
-              onLoadOlderHistory={onLoadOlderHistory}
               onNavigateToToday={onNavigateToToday}
+              onSelectHistoryYear={onSelectHistoryYear}
               selectedDay={selectedDay}
               setViewState={setViewState}
               stats={stats}

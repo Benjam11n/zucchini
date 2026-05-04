@@ -91,6 +91,10 @@ export function createReminderScheduler({
     return runtimeState.get();
   }
 
+  function ensureStateLoaded(): void {
+    getState();
+  }
+
   function getCurrentNow(): Date {
     return clock.now();
   }
@@ -356,7 +360,7 @@ export function createReminderScheduler({
   }
 
   function schedule(settings: AppSettings): void {
-    getState();
+    ensureStateLoaded();
     cancel();
     runCatchUpChecks(settings);
 
@@ -400,7 +404,7 @@ export function createReminderScheduler({
   }
 
   function snooze(settings: AppSettings): boolean {
-    getState();
+    ensureStateLoaded();
     if (!settings.reminderEnabled) {
       return false;
     }

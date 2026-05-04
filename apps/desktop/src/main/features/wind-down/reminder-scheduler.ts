@@ -63,6 +63,10 @@ export function createWindDownReminderScheduler({
     runtimeState.set(nextState);
   }
 
+  function ensureStateLoaded(): void {
+    runtimeState.get();
+  }
+
   function clearReminderTimeout(): void {
     reminderTimeout = clearTimer(reminderTimeout, timers);
   }
@@ -118,7 +122,7 @@ export function createWindDownReminderScheduler({
   }
 
   function schedule(settings: AppSettings): void {
-    runtimeState.get();
+    ensureStateLoaded();
     clearReminderTimeout();
 
     const parsedTime = parseReminderClockTime(settings.windDownTime);

@@ -14,7 +14,7 @@ import type { ReloadAllFn } from "./today-actions";
 
 export function createBootActions({ reloadAll }: { reloadAll: ReloadAllFn }) {
   async function bootApp() {
-    await runAsyncTask(() => reloadAll(undefined, "recent"), {
+    await runAsyncTask(() => reloadAll(), {
       mapError: toHabitsIpcError,
       onError: (bootError) => {
         applyBootFailureState(bootError);
