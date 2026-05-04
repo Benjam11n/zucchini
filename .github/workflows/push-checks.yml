@@ -49,8 +49,8 @@ jobs:
       - name: Run desktop tests
         run: pnpm run test:desktop
 
-      - name: Check desktop unused code
-        run: pnpm --dir apps/desktop knip
+      - name: Check unused code
+        run: pnpm run fallow:dead-code
 
   web-checks:
     name: Web Checks
