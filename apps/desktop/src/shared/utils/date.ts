@@ -2,6 +2,8 @@
  * Common date utilities dealing with 'YYYY-MM-DD' date keys
  */
 
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * Parses a 'YYYY-MM-DD' string into a local Date object.
  */
@@ -32,6 +34,24 @@ export function toDateKey(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+export function isValidDateKey(dateKey: string): boolean {
+  if (!DATE_KEY_PATTERN.test(dateKey)) {
+    return false;
+  }
+
+  const [yearPart, monthPart, dayPart] = dateKey.split("-");
+  const year = Number(yearPart);
+  const month = Number(monthPart);
+  const day = Number(dayPart);
+
+  if ([year, month, day].some((value) => !Number.isInteger(value))) {
+    return false;
+  }
+
+  const parsedDate = new Date(year, month - 1, day);
+  return toDateKey(parsedDate) === dateKey;
 }
 
 /**

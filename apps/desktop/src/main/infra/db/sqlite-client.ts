@@ -37,6 +37,126 @@ export interface SqliteDatabaseClientOptions {
   databasePath?: string;
 }
 
+const REQUIRED_BACKUP_SCHEMA = {
+  daily_summary: [
+    "all_completed",
+    "completed_at",
+    "date",
+    "day_status",
+    "freeze_used",
+    "streak_count_after_day",
+  ],
+  day_status: ["created_at", "date", "kind"],
+  focus_quota_goals: [
+    "archived_at",
+    "created_at",
+    "frequency",
+    "id",
+    "is_archived",
+    "target_minutes",
+  ],
+  focus_sessions: [
+    "completed_at",
+    "completed_date",
+    "duration_seconds",
+    "entry_kind",
+    "id",
+    "started_at",
+    "timer_session_id",
+  ],
+  focus_timer_state: [
+    "break_variant",
+    "completed_focus_cycles",
+    "cycle_id",
+    "ends_at",
+    "focus_duration_ms",
+    "id",
+    "last_completed_break_completed_at",
+    "last_completed_break_timer_session_id",
+    "last_completed_break_variant",
+    "last_updated_at",
+    "phase",
+    "remaining_ms",
+    "started_at",
+    "status",
+    "timer_session_id",
+  ],
+  habit_period_status: [
+    "completed",
+    "completed_count",
+    "frequency",
+    "habit_category",
+    "habit_created_at",
+    "habit_id",
+    "habit_name",
+    "habit_selected_weekdays",
+    "habit_sort_order",
+    "habit_target_count",
+    "period_end",
+    "period_start",
+  ],
+  habit_streak_state: [
+    "best_streak",
+    "current_streak",
+    "habit_id",
+    "last_evaluated_date",
+  ],
+  habits: [
+    "category",
+    "created_at",
+    "frequency",
+    "id",
+    "is_archived",
+    "name",
+    "selected_weekdays",
+    "sort_order",
+    "target_count",
+  ],
+  reminder_runtime_state: [
+    "id",
+    "last_midnight_warning_sent_at",
+    "last_missed_reminder_sent_at",
+    "last_reminder_sent_at",
+    "snoozed_until",
+  ],
+  settings: [
+    "category_preferences",
+    "focus_cycles_before_long_break",
+    "focus_default_duration_seconds",
+    "focus_long_break_seconds",
+    "focus_short_break_seconds",
+    "id",
+    "launch_at_login",
+    "minimize_to_tray",
+    "reminder_enabled",
+    "reminder_snooze_minutes",
+    "reminder_time",
+    "reset_focus_timer_shortcut",
+    "theme_mode",
+    "timezone",
+    "toggle_focus_timer_shortcut",
+    "wind_down_time",
+  ],
+  streak_state: [
+    "available_freezes",
+    "best_streak",
+    "current_streak",
+    "id",
+    "last_evaluated_date",
+  ],
+  wind_down_action_status: ["action_id", "completed", "completed_at", "date"],
+  wind_down_actions: ["created_at", "id", "name", "sort_order"],
+  wind_down_runtime_state: ["id", "last_reminder_sent_at"],
+} as const;
+
+interface TableInfoRow {
+  name: string;
+}
+
+function quoteSqlIdentifier(identifier: string): string {
+  return `"${identifier.replaceAll('"', '""')}"`;
+}
+
 function runWithDatabaseError<A>(label: string, execute: () => A): A {
   return Effect.runSync(
     Effect.try({
@@ -127,15 +247,34 @@ export class SqliteDatabaseClient {
           throw new Error("SQLite integrity check failed.");
         }
 
-        const hasSettingsTable = database
+        const tableRows = database
           .prepare(
-            "select 1 from sqlite_master where type = 'table' and name = ?"
+            "select name from sqlite_master where type = 'table' and name not like 'sqlite_%'"
           )
-          .pluck()
-          .get("settings");
+          .all() as TableInfoRow[];
+        const tableNames = new Set(tableRows.map((row) => row.name));
 
-        if (hasSettingsTable !== 1) {
-          throw new Error("Backup is missing the Zucchini settings table.");
+        for (const [tableName, requiredColumns] of Object.entries(
+          REQUIRED_BACKUP_SCHEMA
+        )) {
+          if (!tableNames.has(tableName)) {
+            throw new Error(
+              `Backup is missing the Zucchini ${tableName} table.`
+            );
+          }
+
+          const columnRows = database
+            .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
+            .all() as TableInfoRow[];
+          const columnNames = new Set(columnRows.map((row) => row.name));
+
+          for (const columnName of requiredColumns) {
+            if (!columnNames.has(columnName)) {
+              throw new Error(
+                `Backup is missing the Zucchini ${tableName}.${columnName} column.`
+              );
+            }
+          }
         }
       } finally {
         database.close();

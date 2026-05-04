@@ -25,10 +25,11 @@ import {
   isValidReminderTime,
   isValidTimeZone,
 } from "@/shared/domain/settings";
+import { isValidDateKey } from "@/shared/utils/date";
 
 export const habitIdSchema = z.number().int().positive();
-const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
-  message: "Date keys must use YYYY-MM-DD format.",
+const dateKeySchema = z.string().refine(isValidDateKey, {
+  message: "Date keys must be real calendar dates in YYYY-MM-DD format.",
 });
 const isoTimestampSchema = z.string().datetime({
   message: "Timestamps must use ISO 8601 format.",

@@ -139,6 +139,19 @@ describe("ipc validation", () => {
     });
   });
 
+  it("rejects focus session payloads with impossible completed dates", () => {
+    expect(() =>
+      validateCreateFocusSessionInput({
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-02-31",
+        durationSeconds: 1500,
+        entryKind: "completed",
+        startedAt: "2026-03-08T09:00:00.000Z",
+        timerSessionId: "timer-session-1",
+      })
+    ).toThrow(IpcValidationError);
+  });
+
   it("rejects invalid focus session limits", () => {
     expect(() => validateFocusSessionLimit(0)).toThrow(IpcValidationError);
   });
