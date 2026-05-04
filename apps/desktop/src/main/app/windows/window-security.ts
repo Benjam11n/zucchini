@@ -16,10 +16,20 @@ function stripHash(url: URL): string {
   return url.toString();
 }
 
+function isTrustedDevServerUrl(url: string, devServerUrl: string): boolean {
+  try {
+    const candidate = new URL(url);
+    const trusted = new URL(devServerUrl);
+    return candidate.origin === trusted.origin;
+  } catch {
+    return false;
+  }
+}
+
 function isTrustedAppUrl(url: string, productionAppUrl: string): boolean {
   const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
   if (devServerUrl) {
-    return url.startsWith(devServerUrl);
+    return isTrustedDevServerUrl(url, devServerUrl);
   }
 
   try {

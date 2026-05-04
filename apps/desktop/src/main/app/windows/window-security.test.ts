@@ -92,6 +92,14 @@ describe("configureWindowSecurity()", () => {
     });
   });
 
+  it("blocks URLs that only prefix-match the Vite dev server URL", () => {
+    withDevServerUrl("http://localhost:5173", () => {
+      const event = navigateTo("http://localhost:5173.evil/index.html");
+
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
+  });
+
   it("allows navigation to the packaged production app URL", () => {
     withDevServerUrl(null, () => {
       const event = navigateTo(PRODUCTION_APP_URL);

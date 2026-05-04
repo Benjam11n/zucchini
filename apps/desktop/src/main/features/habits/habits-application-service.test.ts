@@ -1409,6 +1409,29 @@ describe("focus sessions", () => {
     expect(service.getFocusSessions()).toHaveLength(1);
   });
 
+  it("records focus session dates in the OS timezone", () => {
+    const repository = new FakeRepository();
+    repository.settings = {
+      ...repository.settings,
+      timezone: "UTC",
+    };
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-09", "2026-03-08T09:00:00.000Z", "Asia/Singapore")
+    );
+
+    const focusSession = service.recordFocusSession({
+      completedAt: "2026-03-08T23:30:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      entryKind: "completed",
+      startedAt: "2026-03-08T23:05:00.000Z",
+      timerSessionId: "timer-session-timezone",
+    });
+
+    expect(focusSession.completedDate).toBe("2026-03-09");
+  });
+
   it("rejects invalid focus session payloads", () => {
     const service = new HabitsApplicationService(
       new FakeRepository(),

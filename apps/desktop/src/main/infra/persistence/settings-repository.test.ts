@@ -161,4 +161,18 @@ describe("SqliteSettingsRepository", () => {
       focusShortBreakSeconds: 9 * 60,
     });
   });
+
+  it("uses the OS timezone instead of a previously saved timezone", () => {
+    const client = createFakeClient();
+    const repository = new SqliteSettingsRepository(client as never);
+
+    repository.saveSettings(
+      createDefaultAppSettings("Pacific/Honolulu"),
+      "Pacific/Honolulu"
+    );
+
+    expect(repository.getSettings("Asia/Singapore").timezone).toBe(
+      "Asia/Singapore"
+    );
+  });
 });

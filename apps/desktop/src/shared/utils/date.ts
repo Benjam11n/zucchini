@@ -36,6 +36,25 @@ export function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function toDateKeyInTimeZone(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: timezone,
+    year: "numeric",
+  }).formatToParts(date);
+  const valueByType = new Map(parts.map((part) => [part.type, part.value]));
+  const year = valueByType.get("year");
+  const month = valueByType.get("month");
+  const day = valueByType.get("day");
+
+  if (!year || !month || !day) {
+    throw new Error(`Unable to format date key in timezone: ${timezone}`);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
 export function isValidDateKey(dateKey: string): boolean {
   if (!DATE_KEY_PATTERN.test(dateKey)) {
     return false;

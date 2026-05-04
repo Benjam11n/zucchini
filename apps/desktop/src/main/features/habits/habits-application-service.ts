@@ -81,6 +81,7 @@ import {
   endOfIsoWeek,
   getPreviousCompletedIsoWeek,
   startOfIsoWeek,
+  toDateKeyInTimeZone,
 } from "@/shared/utils/date";
 
 interface HistoryListContext {
@@ -236,6 +237,14 @@ export class HabitsApplicationService implements HabitsService {
     return this.todayReadModel.getTodayState();
   }
 
+  private getTodayKey(): string {
+    return this.clock.todayKey();
+  }
+
+  private getTimezone(): string {
+    return this.clock.timezone();
+  }
+
   private rebuildCurrentTodayState(): TodayState {
     this.todayReadModel.invalidate();
     return this.buildCurrentTodayState();
@@ -258,7 +267,7 @@ export class HabitsApplicationService implements HabitsService {
     } = {}
   ): TodayState {
     return this.inInitializedTransaction(label, () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
 
       if (options.syncRollingState) {
         this.syncRollingState();
@@ -280,7 +289,7 @@ export class HabitsApplicationService implements HabitsService {
     mutate: (today: string) => void
   ): HabitStatusPatch {
     return this.inInitializedTransaction(label, () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
 
       this.syncRollingState();
       this.repository.ensureStatusRowsForDate(today);
@@ -361,9 +370,17 @@ export class HabitsApplicationService implements HabitsService {
   recordFocusSession(input: CreateFocusSessionInput): FocusSession {
     assertValidFocusSessionInput(input);
 
-    return this.inInitializedTransaction("recordFocusSession", () =>
-      this.repository.saveFocusSession(input)
-    );
+    return this.inInitializedTransaction("recordFocusSession", () => {
+      const normalizedInput = {
+        ...input,
+        completedDate: toDateKeyInTimeZone(
+          new Date(input.completedAt),
+          this.getTimezone()
+        ),
+      };
+
+      return this.repository.saveFocusSession(normalizedInput);
+    });
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
@@ -394,7 +411,7 @@ export class HabitsApplicationService implements HabitsService {
       return [
         buildHistoryDay(
           buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
-          this.repository.getHabitsWithStatus(this.clock.todayKey()),
+          this.repository.getHabitsWithStatus(this.getTodayKey()),
           focusMinutesByDate.get(todayState.date) ?? 0,
           this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
         ),
@@ -417,7 +434,7 @@ export class HabitsApplicationService implements HabitsService {
       if (date === todayState.date) {
         return buildHistoryDay(
           buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
-          this.repository.getHabitsWithStatus(this.clock.todayKey()),
+          this.repository.getHabitsWithStatus(this.getTodayKey()),
           todayState.focusMinutes,
           this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
         );
@@ -465,7 +482,7 @@ export class HabitsApplicationService implements HabitsService {
         buildHistorySummaryDay({
           categoryProgress: getHabitCategoryProgress(
             this.repository
-              .getHabitsWithStatus(this.clock.todayKey())
+              .getHabitsWithStatus(this.getTodayKey())
               .filter(isDailyHabit)
           ),
           date: todayState.date,
@@ -538,7 +555,7 @@ export class HabitsApplicationService implements HabitsService {
       }
 
       const latestCompletedWeek = getPreviousCompletedIsoWeek(
-        this.clock.todayKey()
+        this.getTodayKey()
       );
       if (latestTrackedDate < latestCompletedWeek.weekStart) {
         return {
@@ -598,9 +615,14 @@ export class HabitsApplicationService implements HabitsService {
   }
 
   updateSettings(settings: AppSettings): AppSettings {
-    return this.withInitialized(() =>
-      this.repository.saveSettings(settings, this.clock.timezone())
-    );
+    return this.withInitialized(() => {
+      const savedSettings = this.repository.saveSettings(
+        settings,
+        this.clock.timezone()
+      );
+      this.todayReadModel.invalidate();
+      return savedSettings;
+    });
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
@@ -634,7 +656,7 @@ export class HabitsApplicationService implements HabitsService {
     }
 
     return this.inInitializedTransaction("createHabit", () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
       this.syncRollingState();
       const habitId = this.repository.insertHabit(
         trimmedName,
@@ -688,7 +710,7 @@ export class HabitsApplicationService implements HabitsService {
     targetCount: number | null = null
   ): TodayState {
     return this.inInitializedTransaction("updateHabitFrequency", () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
       const previousProgress = this.repository.getHabitProgress(today, habitId);
       const normalizedFrequency = normalizeHabitFrequency(frequency);
       const normalizedTargetCount = normalizeHabitTargetCount(
@@ -714,7 +736,7 @@ export class HabitsApplicationService implements HabitsService {
 
   updateHabitTargetCount(habitId: number, targetCount: number): TodayState {
     return this.inInitializedTransaction("updateHabitTargetCount", () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
       const habit = this.repository
         .getHabits()
         .find((candidate) => candidate.id === habitId);
@@ -744,12 +766,12 @@ export class HabitsApplicationService implements HabitsService {
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
     return this.inInitializedTransaction("updateHabitWeekdays", () => {
-      this.repository.removeStatusRowsForDate(this.clock.todayKey(), habitId);
+      this.repository.removeStatusRowsForDate(this.getTodayKey(), habitId);
       this.repository.updateHabitWeekdays(
         habitId,
         normalizeHabitWeekdays(selectedWeekdays)
       );
-      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      this.repository.ensureStatusRow(this.getTodayKey(), habitId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -825,7 +847,7 @@ export class HabitsApplicationService implements HabitsService {
           .map((habit) => habit.id),
         habitId,
       ]);
-      this.repository.ensureStatusRow(this.clock.todayKey(), habitId);
+      this.repository.ensureStatusRow(this.getTodayKey(), habitId);
       this.syncRollingState();
       return this.rebuildCurrentTodayState();
     });
@@ -884,7 +906,7 @@ export class HabitsApplicationService implements HabitsService {
 
   toggleWindDownAction(actionId: number): TodayState {
     return this.inInitializedTransaction("toggleWindDownAction", () => {
-      const today = this.clock.todayKey();
+      const today = this.getTodayKey();
       this.repository.ensureWindDownStatusRowsForDate(today);
       this.repository.toggleWindDownAction(
         today,

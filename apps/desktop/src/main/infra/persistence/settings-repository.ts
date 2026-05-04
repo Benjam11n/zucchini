@@ -110,7 +110,7 @@ export class SqliteSettingsRepository {
         reminderTime: row.reminderTime,
         resetFocusTimerShortcut: row.resetFocusTimerShortcut,
         themeMode: normalizeThemeMode(row.themeMode),
-        timezone: row.timezone || defaults.timezone,
+        timezone: defaults.timezone,
         toggleFocusTimerShortcut: row.toggleFocusTimerShortcut,
         windDownTime: row.windDownTime,
       };
@@ -129,7 +129,10 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
-      this.persistSettings(nextSettings);
+      this.persistSettings({
+        ...nextSettings,
+        timezone: defaultTimezone,
+      });
     });
 
     return this.getSettings(defaultTimezone);

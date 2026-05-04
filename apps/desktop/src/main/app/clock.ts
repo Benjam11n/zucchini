@@ -5,7 +5,7 @@
  * timestamps and timezones. The `systemClock` singleton is the production
  * implementation used at runtime.
  */
-import { addDays, toDateKey } from "@/shared/utils/date";
+import { addDays, toDateKeyInTimeZone } from "@/shared/utils/date";
 
 export interface Clock {
   now: () => Date;
@@ -20,5 +20,5 @@ export const systemClock: Clock = {
   compareDateKeys: (left, right) => left.localeCompare(right),
   now: () => new Date(),
   timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
-  todayKey: () => toDateKey(new Date()),
+  todayKey: () => toDateKeyInTimeZone(new Date(), systemClock.timezone()),
 };

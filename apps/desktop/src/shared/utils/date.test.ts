@@ -7,6 +7,7 @@ import {
   getPreviousCompletedIsoWeek,
   isMonday,
   startOfIsoWeek,
+  toDateKeyInTimeZone,
 } from "./date";
 
 describe("iSO week helpers", () => {
@@ -53,5 +54,12 @@ describe("iSO week helpers", () => {
         minute: "2-digit",
       })
     ).toBe(formatIsoTime("2026-03-13T09:30:00.000Z"));
+  });
+
+  it("formats date keys in the requested timezone", () => {
+    const instant = new Date("2026-03-08T23:30:00.000Z");
+
+    expect(toDateKeyInTimeZone(instant, "UTC")).toBe("2026-03-08");
+    expect(toDateKeyInTimeZone(instant, "Asia/Singapore")).toBe("2026-03-09");
   });
 });

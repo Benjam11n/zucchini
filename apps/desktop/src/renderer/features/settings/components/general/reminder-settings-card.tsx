@@ -1,5 +1,5 @@
-import { Bell, Globe2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Bell } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
@@ -21,63 +21,6 @@ import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 interface NotificationStatusMessage {
   className: string;
   text: string;
-}
-
-const PREFERRED_TIMEZONES = [
-  "UTC",
-  "America/Los_Angeles",
-  "America/Denver",
-  "America/Chicago",
-  "America/New_York",
-  "America/Toronto",
-  "America/Mexico_City",
-  "America/Sao_Paulo",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Europe/Madrid",
-  "Europe/Rome",
-  "Europe/Amsterdam",
-  "Europe/Zurich",
-  "Europe/Stockholm",
-  "Europe/Warsaw",
-  "Europe/Istanbul",
-  "Africa/Cairo",
-  "Africa/Johannesburg",
-  "Asia/Dubai",
-  "Asia/Kolkata",
-  "Asia/Bangkok",
-  "Asia/Singapore",
-  "Asia/Hong_Kong",
-  "Asia/Shanghai",
-  "Asia/Taipei",
-  "Asia/Tokyo",
-  "Asia/Seoul",
-  "Australia/Perth",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-];
-
-function getTimezoneOffsetLabel(timezone: string): string | null {
-  try {
-    const formatted = new Intl.DateTimeFormat("en", {
-      timeZone: timezone,
-      timeZoneName: "shortOffset",
-    }).formatToParts(new Date());
-
-    return (
-      formatted.find((part) => part.type === "timeZoneName")?.value ?? null
-    );
-  } catch {
-    return null;
-  }
-}
-
-function formatTimezoneLabel(timezone: string): string {
-  const city = timezone.split("/").at(-1)?.replaceAll("_", " ") ?? timezone;
-  const offset = getTimezoneOffsetLabel(timezone);
-
-  return offset ? `${city} (${offset})` : city;
 }
 
 function getNotificationStatusMessage(
@@ -160,10 +103,6 @@ export function ReminderSettingsCard({
 }: Pick<SettingsPageProps, "fieldErrors" | "onChange" | "settings">) {
   const [notificationStatus, setNotificationStatus] =
     useState<DesktopNotificationStatus | null>(null);
-  const timezoneOptions = useMemo(
-    () => [...new Set([settings.timezone, ...PREFERRED_TIMEZONES])],
-    [settings.timezone]
-  );
 
   useEffect(() => {
     let isMounted = true;
@@ -209,7 +148,7 @@ export function ReminderSettingsCard({
   return (
     <Card>
       <SettingsCardHeader
-        description="Configure daily reminders and the timezone used for them."
+        description="Configure daily reminders."
         icon={Bell}
         title="Reminders"
       />
@@ -265,47 +204,6 @@ export function ReminderSettingsCard({
           {fieldErrors.reminderTime ? (
             <p className="px-0 text-xs text-destructive">
               {fieldErrors.reminderTime}
-            </p>
-          ) : null}
-
-          <Item className="py-2">
-            <ItemContent>
-              <Label
-                htmlFor="reminder-timezone"
-                className="text-sm font-medium"
-              >
-                Timezone
-              </Label>
-              <ItemDescription>
-                Choose the timezone used for reminder timing.
-              </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-              <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm ring-offset-background transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring">
-                <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
-                <select
-                  aria-label="Timezone"
-                  aria-invalid={fieldErrors.timezone ? true : undefined}
-                  id="reminder-timezone"
-                  className="w-full cursor-pointer appearance-none bg-transparent text-sm text-foreground outline-none"
-                  onChange={(event) =>
-                    onChange({ ...settings, timezone: event.target.value })
-                  }
-                  value={settings.timezone}
-                >
-                  {timezoneOptions.map((timezone) => (
-                    <option key={timezone} value={timezone}>
-                      {formatTimezoneLabel(timezone)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </ItemActions>
-          </Item>
-
-          {fieldErrors.timezone ? (
-            <p className="px-0 text-xs text-destructive">
-              {fieldErrors.timezone}
             </p>
           ) : null}
         </ItemGroup>
