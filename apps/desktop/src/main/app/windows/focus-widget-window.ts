@@ -15,7 +15,7 @@ import {
   FOCUS_WIDGET_DEFAULT_WIDTH,
   getDefaultFocusWidgetBounds,
 } from "./focus-widget-bounds";
-import { loadWindowContent } from "./window-content";
+import { getProductionAppUrl, loadWindowContent } from "./window-content";
 import { configureWindowSecurity } from "./window-security";
 
 interface CreateFocusWidgetWindowOptions {
@@ -61,7 +61,9 @@ export function createFocusWidgetWindow({
     ...(process.platform !== "darwin" && iconPath ? { icon: iconPath } : {}),
   } satisfies Electron.BrowserWindowConstructorOptions;
   const window = new BrowserWindow(windowOptions);
-  configureWindowSecurity(window);
+  configureWindowSecurity(window, {
+    productionAppUrl: getProductionAppUrl("?view=widget"),
+  });
 
   window.setAlwaysOnTop(true, "floating");
   window.once("ready-to-show", () => {

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import type { BrowserWindow } from "electron";
 
@@ -8,12 +9,18 @@ interface LoadWindowContentOptions {
   window: BrowserWindow;
 }
 
+export function getProductionAppUrl(search = ""): string {
+  const appIndexPath = path.join(__dirname, "../dist/index.html");
+  const appUrl = pathToFileURL(appIndexPath);
+  appUrl.search = search;
+  return appUrl.toString();
+}
+
 export async function loadWindowContent({
   errorMessage,
   search,
   window,
 }: LoadWindowContentOptions): Promise<void> {
-  const appIndexPath = path.join(__dirname, "../dist/index.html");
   const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
 
   try {
@@ -22,7 +29,7 @@ export async function loadWindowContent({
       return;
     }
 
-    await window.loadFile(appIndexPath, search ? { search } : undefined);
+    await window.loadURL(getProductionAppUrl(search));
   } catch (error) {
     console.error(errorMessage, error);
   }

@@ -11,6 +11,9 @@ interface WindowSecurityHarness {
   willNavigateHandler: WillNavigateHandler | null;
 }
 
+const PRODUCTION_APP_URL = "file:///app/index.html";
+const PRODUCTION_WIDGET_URL = "file:///app/index.html?view=widget";
+
 function withDevServerUrl(url: string | null, run: () => void) {
   const originalEnv = process.env["VITE_DEV_SERVER_URL"];
 
@@ -28,26 +31,33 @@ function withDevServerUrl(url: string | null, run: () => void) {
 }
 
 describe("configureWindowSecurity()", () => {
-  function createHarness(): WindowSecurityHarness {
+  function createHarness(
+    productionAppUrl = PRODUCTION_APP_URL
+  ): WindowSecurityHarness {
     let windowOpenHandler: WindowOpenHandler | null = null;
     let willNavigateHandler: WillNavigateHandler | null = null;
 
-    configureWindowSecurity({
-      webContents: {
-        on(_event: string, handler: WillNavigateHandler) {
-          willNavigateHandler = handler;
+    configureWindowSecurity(
+      {
+        webContents: {
+          on(_event: string, handler: WillNavigateHandler) {
+            willNavigateHandler = handler;
+          },
+          setWindowOpenHandler(handler: WindowOpenHandler) {
+            windowOpenHandler = handler;
+          },
         },
-        setWindowOpenHandler(handler: WindowOpenHandler) {
-          windowOpenHandler = handler;
-        },
-      },
-    } as never);
+      } as never,
+      { productionAppUrl }
+    );
 
     return { willNavigateHandler, windowOpenHandler };
   }
 
-  function getWillNavigateHandler(): WillNavigateHandler {
-    const { willNavigateHandler } = createHarness();
+  function getWillNavigateHandler(
+    productionAppUrl = PRODUCTION_APP_URL
+  ): WillNavigateHandler {
+    const { willNavigateHandler } = createHarness(productionAppUrl);
 
     expect(willNavigateHandler).not.toBeNull();
     if (!willNavigateHandler) {
@@ -57,9 +67,9 @@ describe("configureWindowSecurity()", () => {
     return willNavigateHandler;
   }
 
-  function navigateTo(url: string) {
+  function navigateTo(url: string, productionAppUrl = PRODUCTION_APP_URL) {
     const event = { preventDefault: vi.fn() };
-    getWillNavigateHandler()(event, url);
+    getWillNavigateHandler(productionAppUrl)(event, url);
     return event;
   }
 
@@ -82,11 +92,35 @@ describe("configureWindowSecurity()", () => {
     });
   });
 
-  it("allows navigation to file:// URLs", () => {
+  it("allows navigation to the packaged production app URL", () => {
     withDevServerUrl(null, () => {
-      const event = navigateTo("file:///app/index.html");
+      const event = navigateTo(PRODUCTION_APP_URL);
 
       expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+  });
+
+  it("allows navigation to the packaged widget URL for widget windows", () => {
+    withDevServerUrl(null, () => {
+      const event = navigateTo(PRODUCTION_WIDGET_URL, PRODUCTION_WIDGET_URL);
+
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+  });
+
+  it("blocks navigation to other file:// URLs in production", () => {
+    withDevServerUrl(null, () => {
+      const event = navigateTo("file:///tmp/attacker.html");
+
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
+  });
+
+  it("blocks navigation from the main window to the widget URL in production", () => {
+    withDevServerUrl(null, () => {
+      const event = navigateTo(PRODUCTION_WIDGET_URL);
+
+      expect(event.preventDefault).toHaveBeenCalled();
     });
   });
 

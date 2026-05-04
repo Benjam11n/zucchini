@@ -9,7 +9,7 @@ import path from "node:path";
 
 import { BrowserWindow } from "electron";
 
-import { loadWindowContent } from "./window-content";
+import { getProductionAppUrl, loadWindowContent } from "./window-content";
 import { configureWindowSecurity } from "./window-security";
 
 const MAIN_WINDOW_DEFAULT_WIDTH = 1040;
@@ -55,7 +55,9 @@ export function createMainWindow({
     ...(process.platform !== "darwin" && iconPath ? { icon: iconPath } : {}),
   } satisfies Electron.BrowserWindowConstructorOptions;
   const window = new BrowserWindow(windowOptions);
-  configureWindowSecurity(window);
+  configureWindowSecurity(window, {
+    productionAppUrl: getProductionAppUrl(),
+  });
 
   window.on("close", (event) => {
     const isQuitting = getIsQuitting();
