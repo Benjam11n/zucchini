@@ -1,6 +1,7 @@
 name: Push Checks
 
 on:
+  pull_request:
   push:
     branches:
       - "**"
@@ -8,12 +9,39 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  security-events: write
 
 concurrency:
   group: push-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  fallow:
+    name: Fallow Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Analyze codebase
+        uses: fallow-rs/fallow@v2
+        with:
+          format: sarif
+          comment: true
+          annotations: true
+          max-annotations: 50
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: fallow-results.sarif
+
   desktop-checks:
     name: Desktop Checks
     runs-on: ubuntu-latest
@@ -48,9 +76,6 @@ jobs:
 
       - name: Run desktop tests
         run: pnpm run test:desktop
-
-      - name: Check unused code
-        run: pnpm run fallow:dead-code
 
   web-checks:
     name: Web Checks
