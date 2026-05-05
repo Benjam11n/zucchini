@@ -7,7 +7,7 @@ const HABIT_CATEGORY_ORDER = new Map(
   ACTIVITY_RING_ORDER.map((category, index) => [category, index])
 );
 
-export function reorderHabitListByIndex(
+function reorderHabitListByIndex(
   habits: Habit[],
   fromIndex: number,
   toIndex: number

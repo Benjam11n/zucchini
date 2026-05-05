@@ -6,7 +6,7 @@ import {
   writeJsonStorage,
 } from "@/renderer/shared/lib/storage";
 
-export function isPersistedTodayUiState(
+function isPersistedTodayUiState(
   value: unknown
 ): value is PersistedTodayUiState {
   if (!value || typeof value !== "object") {

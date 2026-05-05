@@ -135,7 +135,7 @@ export function getPreviousCompletedIsoWeek(todayKey: string): {
 /**
  * Formats a given date key using the Intl API options
  */
-export function formatDate(
+function formatDate(
   date: Date,
   options: Intl.DateTimeFormatOptions,
   locale?: string

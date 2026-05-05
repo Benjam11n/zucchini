@@ -4,7 +4,6 @@ import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import {
-  getRecentConsistency,
   getRecentConsistencySummary,
   getTodayCompletion,
   getWeekCompletionSeries,
@@ -87,7 +86,7 @@ describe("today sidebar metrics", () => {
 
   it("calculates recent consistency from completed available days", () => {
     const state = todayState([habit(1, true), habit(2, true)]);
-    const consistency = getRecentConsistency(
+    const consistency = getRecentConsistencySummary(
       [
         historyDay("2026-03-11", [habit(3, true)]),
         historyDay("2026-03-12", [habit(4, false)]),
@@ -96,7 +95,7 @@ describe("today sidebar metrics", () => {
       3
     );
 
-    expect(consistency).toBe(67);
+    expect(consistency.percent).toBe(67);
   });
 
   it("builds a fixed-length consistency dot summary", () => {

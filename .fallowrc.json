@@ -2,6 +2,7 @@
   "$schema": "https://docs.fallow.tools/config-schema.json",
   "entry": [
     "apps/desktop/scripts/**/*.{mjs,ts}",
+    "apps/desktop/electron-builder.config.ts",
     "apps/desktop/tsdown.config.mts"
   ],
   "ignoreDependencies": ["shadcn"],

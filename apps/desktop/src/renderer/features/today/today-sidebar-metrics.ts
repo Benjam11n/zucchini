@@ -98,34 +98,6 @@ export function getWeekCompletionSeries(
   });
 }
 
-export function getRecentConsistency(
-  history: readonly HistoryDay[],
-  state: TodayMetricsState,
-  days = 7
-): number {
-  const historyByDate = new Map(history.map((day) => [day.date, day]));
-  let availableDays = 0;
-  let completedDays = 0;
-
-  for (let offset = days - 1; offset >= 0; offset -= 1) {
-    const date = addDays(state.date, -offset);
-    const completion = getCompletionForDate(date, historyByDate, state);
-
-    if (!completion || completion.total === 0) {
-      continue;
-    }
-
-    availableDays += 1;
-    if (completion.completed === completion.total) {
-      completedDays += 1;
-    }
-  }
-
-  return availableDays === 0
-    ? 0
-    : Math.round((completedDays / availableDays) * 100);
-}
-
 export function getRecentConsistencySummary(
   history: readonly HistoryDay[],
   state: TodayMetricsState,

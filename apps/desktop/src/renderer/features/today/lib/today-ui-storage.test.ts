@@ -1,8 +1,4 @@
-import {
-  isPersistedTodayUiState,
-  readLastUiState,
-  writeLastUiState,
-} from "./today-ui-storage";
+import { readLastUiState, writeLastUiState } from "./today-ui-storage";
 
 const storage = new Map<string, string>();
 
@@ -26,25 +22,6 @@ describe("today ui storage", () => {
       value: localStorageMock,
     });
   }
-
-  it("validates persisted UI state shape", () => {
-    installLocalStorageMock();
-
-    expect(
-      isPersistedTodayUiState({
-        completedCount: 2,
-        date: "2026-03-08",
-        streak: {
-          availableFreezes: 1,
-          bestStreak: 5,
-          currentStreak: 3,
-          lastEvaluatedDate: "2026-03-07",
-        },
-      })
-    ).toBeTruthy();
-
-    expect(isPersistedTodayUiState({ completedCount: 2 })).toBeFalsy();
-  });
 
   it("round-trips persisted state through localStorage", () => {
     installLocalStorageMock();
@@ -70,6 +47,13 @@ describe("today ui storage", () => {
         lastEvaluatedDate: "2026-03-07",
       },
     });
+  });
+
+  it("returns null for invalid persisted UI state shape", () => {
+    installLocalStorageMock();
+    storage.set("zucchini_last_state", JSON.stringify({ completedCount: 2 }));
+
+    expect(readLastUiState()).toBeNull();
   });
 
   it("returns null for invalid stored JSON", () => {

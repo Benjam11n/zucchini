@@ -42,20 +42,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Analyze codebase
+      - name: Check dead code
         uses: fallow-rs/fallow@v2
         with:
+          command: dead-code
           format: sarif
           production: true
           comment: true
           annotations: true
           max-annotations: 50
 
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
+      - name: Check duplication
+        uses: fallow-rs/fallow@v2
         with:
-          sarif_file: fallow-results.sarif
+          command: dupes
+          format: sarif
+          production: true
+          comment: true
+          annotations: true
+          max-annotations: 50
 
   desktop-checks:
     name: Desktop Checks

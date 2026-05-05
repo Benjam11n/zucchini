@@ -9,7 +9,7 @@ interface PersistedUpdateToastState {
   dismissedVersion: string | null;
 }
 
-export function isPersistedUpdateToastState(
+function isPersistedUpdateToastState(
   value: unknown
 ): value is PersistedUpdateToastState {
   if (!value || typeof value !== "object") {

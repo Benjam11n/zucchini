@@ -1,7 +1,6 @@
 import {
   reorderHabitList,
   reorderHabitListByDropPosition,
-  reorderHabitListByIndex,
   sortHabitListByCategory,
 } from "@/renderer/features/settings/lib/reorder-habits";
 import type { HabitWithStatus } from "@/shared/domain/habit";
@@ -43,10 +42,14 @@ describe("reorderHabitList()", () => {
     const habits = [createHabit(1), createHabit(2), createHabit(3)];
 
     expect(
-      reorderHabitListByIndex(habits, 0, 2).map((habit) => habit.sortOrder)
+      reorderHabitListByDropPosition(habits, 1, 3, "after").map(
+        (habit) => habit.sortOrder
+      )
     ).toStrictEqual([0, 1, 2]);
     expect(
-      reorderHabitListByIndex(habits, 0, 2).map((habit) => habit.id)
+      reorderHabitListByDropPosition(habits, 1, 3, "after").map(
+        (habit) => habit.id
+      )
     ).toStrictEqual([2, 3, 1]);
   });
 

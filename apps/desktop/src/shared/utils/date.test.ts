@@ -1,6 +1,5 @@
 import {
   endOfIsoWeek,
-  formatDate,
   formatDateKey,
   formatIsoDateTime,
   formatIsoTime,
@@ -41,13 +40,7 @@ describe("iSO week helpers", () => {
         month: "short",
         weekday: "short",
       })
-    ).toBe(
-      formatDate(new Date(2026, 2, 13), {
-        day: "numeric",
-        month: "short",
-        weekday: "short",
-      })
-    );
+    ).toBe("Fri, Mar 13");
     expect(
       formatIsoDateTime("2026-03-13T09:30:00.000Z", {
         hour: "numeric",
