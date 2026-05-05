@@ -11,20 +11,20 @@
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {
-    "lucide-react": "1.7.0",
-    "postprocessing": "^6.36.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "three": "^0.183.2"
+    "lucide-react": "1.11.0",
+    "postprocessing": "^6.39.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.183.1",
+    "@types/three": "^0.184.0",
     "@typescript/native-preview": "^7.0.0-dev.20260410.1",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.0.10"
   },
   "engines": {
     "node": "24.x"
