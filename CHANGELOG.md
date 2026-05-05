@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.6 - 2026-05-05
+
+Changes since `v0.1.2-beta.5`.
+
+### Features
+
+- Add habit streak loading skeleton
+
+### Fixes
+
+- Align per-habit streak preview with sick days
+- Simplify timezone and dev navigation trust
+- Restrict production window navigation
+- Harden validation boundaries
+
+### Refactors
+
+- Clean fallow findings
+- Enforce architecture boundaries
+- Simplify history loading
+- Rename Knip task to Fallow Dead Code and update verification dependencies
+- Remove orphaned habit streak calculator
+- Standardize desktop ports and adapters
+- Simplify habit editor and history queries
+- Simplify fixture and timer state builders
+- Remove stale compatibility cleanup
+- Simplify habit actions and scheduler internals
+- Centralize window loading, standardize changelog parsing, extract color utilities, and refactor PixelBlast renderer components
+
+### Documentation
+
+- Document architecture boundaries
+
+### Other
+
+- Avoid duplicate fallow sarif upload
+- Gate fallow dead code and dupes
+- Run fallow in production mode
+- Align fallow duplicate checks
+- Install dependencies before fallow
+- Integrate fallow analysis
+- Run fallow dead-code in push checks
+- Smooth today page loading
+- Reduce app harness duplication
+
 ## 0.1.2-beta.5 - 2026-05-03
 
 Changes since `v0.1.2-beta.4`.
