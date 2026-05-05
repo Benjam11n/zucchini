@@ -56,7 +56,7 @@ jobs:
         uses: fallow-rs/fallow@v2
         with:
           command: dupes
-          format: sarif
+          format: json
           production: true
           comment: true
           annotations: true
