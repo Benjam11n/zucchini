@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.7 - 2026-05-05
+
+Changes since `v0.1.2-beta.6`.
+
+### Other
+
+- Normalize reminder mascot paths
+
 ## 0.1.2-beta.6 - 2026-05-05
 
 Changes since `v0.1.2-beta.5`.
