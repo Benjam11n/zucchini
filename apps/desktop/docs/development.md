@@ -55,6 +55,7 @@ pnpm --dir apps/desktop dist:desktop
 - Put business rules in `src/shared` or `src/main`.
 - Use the preload bridge for renderer-to-main communication.
 - Persist app data locally through SQLite and the repository layer.
+- See [Architecture](./architecture.md) for the full dependency-boundary model.
 
 ## Quality Checks
 
