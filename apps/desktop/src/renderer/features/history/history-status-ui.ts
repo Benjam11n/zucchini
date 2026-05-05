@@ -1,4 +1,4 @@
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
+import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 
 export const HISTORY_STATUS_UI: Record<
   HistoryStatus,

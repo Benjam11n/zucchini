@@ -18,7 +18,6 @@ import {
 import { autoUpdater } from "electron-updater";
 
 import { resolveRuntimeIconPath } from "@/main/app/assets";
-import { systemClock } from "@/main/app/clock";
 import { createDataManagementActions } from "@/main/app/data-management";
 import { createFatalErrorReporter } from "@/main/app/fatal-error";
 import { createFocusTimerGlobalShortcutManager } from "@/main/app/global-shortcuts";
@@ -51,6 +50,7 @@ import type {
   FocusTimerShortcutStatus,
 } from "@/shared/contracts/habits-api";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+import { systemClock } from "@/shared/domain/clock";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 

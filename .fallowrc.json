@@ -13,6 +13,189 @@
       }
     }
   ],
+  "boundaries": {
+    "zones": [
+      {
+        "name": "web",
+        "patterns": ["apps/web/**"]
+      },
+      {
+        "name": "desktop-test",
+        "patterns": [
+          "apps/desktop/src/test/**",
+          "apps/desktop/src/**/*.test.ts",
+          "apps/desktop/src/**/*.test.tsx"
+        ]
+      },
+      {
+        "name": "desktop-main-app",
+        "patterns": [
+          "apps/desktop/src/main/main.ts",
+          "apps/desktop/src/main/app/**"
+        ]
+      },
+      {
+        "name": "desktop-main-features",
+        "patterns": ["apps/desktop/src/main/features/**"]
+      },
+      {
+        "name": "desktop-main-ports",
+        "patterns": ["apps/desktop/src/main/ports/**"]
+      },
+      {
+        "name": "desktop-main-ipc",
+        "patterns": ["apps/desktop/src/main/infra/ipc/**"]
+      },
+      {
+        "name": "desktop-main-persistence",
+        "patterns": [
+          "apps/desktop/src/main/infra/persistence/**",
+          "apps/desktop/src/main/infra/db/**"
+        ]
+      },
+      {
+        "name": "desktop-preload",
+        "patterns": ["apps/desktop/src/preload/**"]
+      },
+      {
+        "name": "desktop-renderer-shared",
+        "patterns": [
+          "apps/desktop/src/renderer/shared/**",
+          "apps/desktop/src/renderer/assets/**",
+          "apps/desktop/src/renderer/global.d.ts"
+        ]
+      },
+      {
+        "name": "desktop-renderer",
+        "patterns": ["apps/desktop/src/renderer/**"]
+      },
+      {
+        "name": "desktop-shared-contracts",
+        "patterns": [
+          "apps/desktop/src/shared/contracts/**",
+          "apps/desktop/src/shared/security/**"
+        ]
+      },
+      {
+        "name": "desktop-shared-domain",
+        "patterns": ["apps/desktop/src/shared/domain/**"]
+      },
+      {
+        "name": "desktop-shared-utils",
+        "patterns": [
+          "apps/desktop/src/shared/utils/**",
+          "apps/desktop/src/shared/types/**"
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "from": "web",
+        "allow": []
+      },
+      {
+        "from": "desktop-test",
+        "allow": [
+          "desktop-main-app",
+          "desktop-main-features",
+          "desktop-main-ipc",
+          "desktop-main-persistence",
+          "desktop-main-ports",
+          "desktop-preload",
+          "desktop-renderer",
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-main-app",
+        "allow": [
+          "desktop-main-features",
+          "desktop-main-ipc",
+          "desktop-main-persistence",
+          "desktop-main-ports",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-main-features",
+        "allow": [
+          "desktop-main-ports",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-main-ipc",
+        "allow": [
+          "desktop-main-ports",
+          "desktop-main-features",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-main-persistence",
+        "allow": [
+          "desktop-main-ports",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-main-ports",
+        "allow": [
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-preload",
+        "allow": [
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-shared",
+        "allow": [
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-shared-contracts",
+        "allow": ["desktop-shared-domain", "desktop-shared-utils"]
+      },
+      {
+        "from": "desktop-shared-domain",
+        "allow": ["desktop-shared-utils"]
+      },
+      {
+        "from": "desktop-shared-utils",
+        "allow": []
+      }
+    ]
+  },
   "resolve": {
     "conditions": ["style"]
   }

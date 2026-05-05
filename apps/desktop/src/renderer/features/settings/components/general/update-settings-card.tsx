@@ -1,6 +1,5 @@
 import { Download, RefreshCw, Rocket } from "lucide-react";
 
-import { clearDismissedUpdateVersion } from "@/renderer/app/shell/update-toast-storage";
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
@@ -13,6 +12,7 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import { useAppUpdaterState } from "@/renderer/shared/hooks/use-app-updater-state";
+import { clearDismissedUpdateVersion } from "@/renderer/shared/lib/update-toast-storage";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 function getActionLabel(state: AppUpdateState): string {

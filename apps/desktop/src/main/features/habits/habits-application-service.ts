@@ -1,22 +1,8 @@
-/**
- * Core application service for habit management.
- *
- * Implements the {@link HabitsService} interface — the single entry point the
- * IPC layer calls for every user-facing operation. Each method runs inside a
- * SQLite transaction, synchronizes rolling streak state on read paths, and
- * returns fresh `TodayState` snapshots so the renderer stays in sync.
- *
- * @see AppRepository for the data access contract it delegates to.
- * @see syncRollingState for the streak catch-up logic.
- * @see buildTodayState for how the read-model is assembled.
- */
-import type { Clock } from "@/main/app/clock";
 import {
   executeHabitServiceCommand,
   readHabitServiceQuery,
 } from "@/main/features/habits/habits-service-routing";
 import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
   buildHistoricalHabitsByDate,
@@ -28,8 +14,7 @@ import {
   buildWeeklyReview,
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { AppRepository } from "@/main/ports/app-repository";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
@@ -44,6 +29,19 @@ import {
   persistedFocusTimerStateSchema,
 } from "@/shared/contracts/habits-ipc-schema";
 import type { TodayState } from "@/shared/contracts/today-state";
+/**
+ * Core application service for habit management.
+ *
+ * Implements the {@link HabitsService} interface — the single entry point the
+ * IPC layer calls for every user-facing operation. Each method runs inside a
+ * SQLite transaction, synchronizes rolling streak state on read paths, and
+ * returns fresh `TodayState` snapshots so the renderer stays in sync.
+ *
+ * @see AppRepository for the data access contract it delegates to.
+ * @see syncRollingState for the streak catch-up logic.
+ * @see buildTodayState for how the read-model is assembled.
+ */
+import type { Clock } from "@/shared/domain/clock";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -72,11 +70,13 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 import {
   endOfIsoWeek,
   getPreviousCompletedIsoWeek,

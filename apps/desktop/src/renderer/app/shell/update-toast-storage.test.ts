@@ -3,7 +3,7 @@ import {
   isPersistedUpdateToastState,
   readDismissedUpdateVersion,
   writeDismissedUpdateVersion,
-} from "./update-toast-storage";
+} from "@/renderer/shared/lib/update-toast-storage";
 
 const storage = new Map<string, string>();
 

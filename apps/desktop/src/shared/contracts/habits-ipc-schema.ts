@@ -6,12 +6,12 @@
  */
 import { z } from "zod";
 
-import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
 import {
   GOAL_FREQUENCY_DEFINITIONS,
   getFocusQuotaTargetMinutesBounds,
   isValidFocusQuotaTargetMinutes,
 } from "@/shared/domain/goal";
+import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/domain/keyboard-shortcuts";
 import {
   isValidGlobalShortcutAccelerator,
   isValidHabitCategoryColor,

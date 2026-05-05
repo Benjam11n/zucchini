@@ -1,5 +1,5 @@
 import { createFocusTimerGlobalShortcutManager } from "@/main/app/global-shortcuts";
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 
 function createSettings(overrides?: {
   resetFocusTimerShortcut?: string;

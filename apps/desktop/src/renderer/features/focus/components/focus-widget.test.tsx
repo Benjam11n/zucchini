@@ -15,8 +15,8 @@ import {
 } from "@/renderer/features/focus/state/focus-store";
 import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
 import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import {
   createTestAppSettings,
   minutes,

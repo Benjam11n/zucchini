@@ -1,9 +1,9 @@
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
 import type {
   ContributionCell,
   ContributionIntensity,
   ContributionWeek,
 } from "@/renderer/features/history/history.types";
+import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";

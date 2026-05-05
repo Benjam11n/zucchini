@@ -1,7 +1,5 @@
 import type * as ElectronModule from "electron";
 
-import type * as AssetsModule from "@/main/app/assets";
-
 import type * as NativeAddonModule from "./native-addon";
 import {
   getDesktopNotificationStatus,
@@ -103,6 +101,11 @@ vi.mock("electron", async (importOriginal) => {
       },
       actual.Notification
     ),
+    app: {
+      ...actual.app,
+      getAppPath: () => "/mocked",
+      isPackaged: false,
+    },
     nativeImage: {
       ...actual.nativeImage,
       createFromPath: (assetPath: string) => ({
@@ -151,10 +154,6 @@ vi.mock<typeof NativeAddonModule>(import("./native-addon"), () => ({
   },
 }));
 
-vi.mock<typeof AssetsModule>(import("@/main/app/assets"), () => ({
-  resolveMascotAssetPath: (filename: string) => `/mocked/${filename}`,
-}));
-
 const originalPlatform = process.platform;
 const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -188,7 +187,7 @@ describe("notifications", () => {
       body: "You still have habits closing today.",
       icon: {
         empty: false,
-        path: "/mocked/mascot-reminder.png",
+        path: "/mocked/public/mascot/mascot-reminder.png",
       },
       title: "Zucchini reminder",
     });
@@ -202,7 +201,7 @@ describe("notifications", () => {
       body: "You have 1 hour left to finish habits closing today.",
       icon: {
         empty: false,
-        path: "/mocked/mascot-sleepy.png",
+        path: "/mocked/public/mascot/mascot-sleepy.png",
       },
       title: "One hour left",
     });
@@ -216,7 +215,7 @@ describe("notifications", () => {
       body: "Zucchini was closed at your reminder time. You still have habits closing today.",
       icon: {
         empty: false,
-        path: "/mocked/mascot-reminder.png",
+        path: "/mocked/public/mascot/mascot-reminder.png",
       },
       title: "Catch-up reminder",
     });
@@ -230,7 +229,7 @@ describe("notifications", () => {
       body: "You missed today's scheduled reminder. You still have habits closing today, and there is only one hour left.",
       icon: {
         empty: false,
-        path: "/mocked/mascot-sleepy.png",
+        path: "/mocked/public/mascot/mascot-sleepy.png",
       },
       title: "Last reminder missed",
     });
@@ -244,7 +243,7 @@ describe("notifications", () => {
       body: "Your 15-minute Zucchini snooze has ended. You still have habits closing today.",
       icon: {
         empty: false,
-        path: "/mocked/mascot-reminder.png",
+        path: "/mocked/public/mascot/mascot-reminder.png",
       },
       title: "Snooze finished",
     });

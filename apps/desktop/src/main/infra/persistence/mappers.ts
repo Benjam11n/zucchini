@@ -15,6 +15,7 @@ import {
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { isThemeMode } from "@/shared/domain/settings";
 import type { ThemeMode } from "@/shared/domain/settings";
@@ -26,7 +27,6 @@ import type {
   DayStatusRow,
   FocusSessionRow,
   HabitPeriodStatusRow,
-  HabitPeriodStatusSnapshot,
   HabitRow,
   HabitStreakStateRow,
   StreakStateRow,

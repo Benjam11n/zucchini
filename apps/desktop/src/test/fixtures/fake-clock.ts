@@ -1,4 +1,4 @@
-import type { Clock } from "@/main/app/clock";
+import type { Clock } from "@/shared/domain/clock";
 import { parseDateKey } from "@/shared/utils/date";
 
 export class FakeClock implements Clock {

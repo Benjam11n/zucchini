@@ -1,8 +1,10 @@
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
-import type { ContributionIntensity } from "@/renderer/features/history/history.types";
 import { ContributionSquare } from "@/renderer/shared/components/github-contribution-square";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
+import type {
+  ContributionIntensity,
+  HistoryStatus,
+} from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/utils/date";
 
 interface GitHubCalendarWeek {

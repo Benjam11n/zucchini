@@ -6,9 +6,10 @@
  * Queries the macOS native addon (when available) to check for
  * Do Not Disturb and screen lock state before sending.
  */
-import { nativeImage, Notification } from "electron";
+import path from "node:path";
 
-import { resolveMascotAssetPath } from "@/main/app/assets";
+import { app, nativeImage, Notification } from "electron";
+
 import type { DesktopNotificationStatus } from "@/shared/contracts/habits-api";
 
 import { hasNativeAddonBinary } from "./native-addon";
@@ -36,6 +37,14 @@ interface WindowsNotificationStateModule {
 }
 
 const warnedMissingAddons = new Set<string>();
+
+function resolveMascotAssetPath(filename: string): string {
+  const assetBaseDir = app.isPackaged
+    ? ["dist", "mascot"]
+    : ["public", "mascot"];
+
+  return path.join(app.getAppPath(), ...assetBaseDir, filename);
+}
 
 function createBlockedStatus(
   reason: DesktopNotificationStatus["reason"]

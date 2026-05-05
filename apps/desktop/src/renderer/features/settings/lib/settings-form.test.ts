@@ -4,7 +4,7 @@ import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
 } from "@/renderer/features/settings/lib/settings-form";
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 

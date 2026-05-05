@@ -1,3 +1,5 @@
+import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
+import type { TodayState } from "@/shared/contracts/today-state";
 /**
  * Today state builder — assembles the read-model the renderer consumes.
  *
@@ -5,9 +7,7 @@
  * {@link HistoryDay}, and streak preview objects. Called on every read path
  * after streak synchronization.
  */
-import type { Clock } from "@/main/app/clock";
-import type { TodayReadModelRepositoryPort } from "@/main/infra/persistence/app-repository";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { Clock } from "@/shared/domain/clock";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";

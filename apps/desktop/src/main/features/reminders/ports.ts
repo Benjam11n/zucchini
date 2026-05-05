@@ -1,7 +1,7 @@
-import type { Clock } from "@/main/app/clock";
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { Clock } from "@/shared/domain/clock";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 
 export type ReminderClockPort = Pick<Clock, "now">;
 

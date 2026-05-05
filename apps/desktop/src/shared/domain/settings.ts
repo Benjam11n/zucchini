@@ -1,6 +1,6 @@
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { HabitCategory } from "@/shared/domain/habit";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 
 /**
  * Application settings domain and validation helpers.

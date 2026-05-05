@@ -1,9 +1,9 @@
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit, HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";

@@ -5,12 +5,11 @@ import { toast } from "sonner";
 
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import { useAppUpdaterState } from "@/renderer/shared/hooks/use-app-updater-state";
-import type { AppUpdateState } from "@/shared/contracts/app-updater";
-
 import {
   readDismissedUpdateVersion,
   writeDismissedUpdateVersion,
-} from "./update-toast-storage";
+} from "@/renderer/shared/lib/update-toast-storage";
+import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 const UPDATE_TOAST_ID = "app-update";
 

@@ -14,22 +14,10 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { Effect } from "effect";
 
+import { DatabaseError } from "@/main/ports/database-error";
+
 import { getElectronApp } from "./electron-app";
 import { schema } from "./schema";
-
-export class DatabaseError extends Error {
-  override cause: unknown;
-
-  constructor(message: string, cause: unknown) {
-    super(
-      cause instanceof Error && cause.message
-        ? `${message}: ${cause.message}`
-        : message
-    );
-    this.cause = cause;
-    this.name = "DatabaseError";
-  }
-}
 
 export type DrizzleDatabase = BetterSQLite3Database<typeof schema>;
 

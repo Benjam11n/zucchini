@@ -1,11 +1,11 @@
-import type { Clock } from "@/main/app/clock";
 import {
   buildHistoryDay,
   buildTodayPreviewSummary,
   buildTodayState,
   createRollingStreakState,
 } from "@/main/features/today/state-builder";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { AppRepository } from "@/main/ports/app-repository";
+import type { Clock } from "@/shared/domain/clock";
 
 function createRepository(
   overrides: {

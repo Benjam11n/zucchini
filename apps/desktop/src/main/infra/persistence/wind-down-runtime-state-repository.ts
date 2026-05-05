@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
-import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/main/features/wind-down/runtime-state";
 import { windDownRuntimeState } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
+import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/shared/domain/wind-down-runtime-state";
 
 const WIND_DOWN_RUNTIME_STATE_ID = 1;
 

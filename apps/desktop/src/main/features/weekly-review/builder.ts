@@ -1,3 +1,5 @@
+import { toFocusMinutes } from "@/shared/domain/focus-session";
+import type { FocusSession } from "@/shared/domain/focus-session";
 /**
  * Weekly review data builder.
  *
@@ -6,9 +8,7 @@
  * statuses. Computes per-habit completion rates, daily cadence points,
  * trend data, and most-missed habit rankings.
  */
-import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
-import { toFocusMinutes } from "@/shared/domain/focus-session";
-import type { FocusSession } from "@/shared/domain/focus-session";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {
   WeeklyReview,

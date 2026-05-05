@@ -1,15 +1,3 @@
-/**
- * Repository data-access contract.
- *
- * Defines every read and write operation the application service needs.
- * The concrete implementation (`SqliteAppRepository`) delegates to
- * domain-specific sub-repositories backed by SQLite via Drizzle ORM.
- *
- * This interface is the single boundary between business logic and
- * persistence — service code never imports database clients directly.
- */
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -28,15 +16,26 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
+/**
+ * Repository data-access contract.
+ *
+ * Defines every read and write operation the application service needs.
+ * The concrete implementation (`SqliteAppRepository`) delegates to
+ * domain-specific sub-repositories backed by SQLite via Drizzle ORM.
+ *
+ * This interface is the single boundary between business logic and
+ * persistence — service code never imports database clients directly.
+ */
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import type {
   WindDownAction,
   WindDownActionWithStatus,
 } from "@/shared/domain/wind-down";
-
-import type { HabitPeriodStatusSnapshot } from "./types";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 
 export interface SettledHistoryOptions {
   uncapped?: boolean;

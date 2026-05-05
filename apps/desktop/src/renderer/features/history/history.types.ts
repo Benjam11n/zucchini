@@ -1,10 +1,13 @@
+import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 /**
  * History page type definitions.
  *
  * Defines props for the history page and weekly review phase type.
  */
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
+import type {
+  ContributionIntensity,
+  ContributionStatus as HistoryStatus,
+} from "@/renderer/shared/types/contribution";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -32,7 +35,7 @@ export interface HistoryPageProps {
   onSelectWeeklyReview: (weekStart: string) => void;
 }
 
-export type ContributionIntensity = 0 | 1 | 2 | 3 | 4;
+export type { ContributionIntensity };
 
 export interface ContributionCell {
   completedCount: number;

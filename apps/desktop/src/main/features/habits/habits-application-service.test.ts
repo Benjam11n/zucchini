@@ -1,11 +1,8 @@
 import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import type {
   AppRepository,
   SettledHistoryOptions,
-} from "@/main/infra/persistence/app-repository";
-import type { HabitPeriodStatusSnapshot } from "@/main/infra/persistence/types";
+} from "@/main/ports/app-repository";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -30,7 +27,9 @@ import type {
 } from "@/shared/domain/habit";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -38,6 +37,7 @@ import type {
   WindDownAction,
   WindDownActionWithStatus,
 } from "@/shared/domain/wind-down";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 import { FakeClock } from "@/test/fixtures/fake-clock";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;

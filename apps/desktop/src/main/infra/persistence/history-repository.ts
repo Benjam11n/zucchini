@@ -15,6 +15,7 @@ import {
   habitPeriodStatus,
 } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { SettledHistoryOptions } from "@/main/ports/app-repository";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import {
   getFocusQuotaGoalPeriod,
@@ -26,9 +27,9 @@ import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import type { HabitWithStatus, Habit } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary } from "@/shared/domain/streak";
 
-import type { SettledHistoryOptions } from "./app-repository";
 import type { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
 import type { SqliteHabitsRepository } from "./habit-repository";
 import {
@@ -36,7 +37,7 @@ import {
   mapDayStatus,
   mapHabitPeriodStatusSnapshot,
 } from "./mappers";
-import type { HabitPeriodStatusRow, HabitPeriodStatusSnapshot } from "./types";
+import type { HabitPeriodStatusRow } from "./types";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 

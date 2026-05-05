@@ -11,7 +11,7 @@ import {
   ItemGroup,
 } from "@/renderer/shared/components/ui/item";
 import { Label } from "@/renderer/shared/components/ui/label";
-import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/contracts/keyboard-shortcuts";
+import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultFocusTimerShortcutSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 

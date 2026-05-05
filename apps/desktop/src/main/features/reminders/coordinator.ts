@@ -1,12 +1,12 @@
-import { systemClock } from "@/main/app/clock";
 import { createReminderScheduler } from "@/main/features/reminders/reminder-scheduler";
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/main/features/reminders/runtime-state";
 import { createRuntimeStateStore } from "@/main/features/reminders/scheduler-utils";
 import { createWindDownReminderScheduler } from "@/main/features/wind-down/reminder-scheduler";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
-import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/main/features/wind-down/runtime-state";
+import { systemClock } from "@/shared/domain/clock";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
+import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
+import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/shared/domain/wind-down-runtime-state";
 
 import {
   electronHabitReminderNotifier,

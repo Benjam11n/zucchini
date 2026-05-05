@@ -9,8 +9,8 @@ import type {
   Tray,
 } from "electron";
 
-import type { Clock } from "@/main/app/clock";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
+import type { Clock } from "@/shared/domain/clock";
 
 export interface LoggerPort {
   error: (...args: unknown[]) => void;

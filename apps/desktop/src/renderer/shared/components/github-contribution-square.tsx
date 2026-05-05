@@ -1,7 +1,5 @@
 import { m } from "framer-motion";
 
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
-import type { ContributionIntensity } from "@/renderer/features/history/history.types";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +7,10 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
+import type {
+  ContributionIntensity,
+  HistoryStatus,
+} from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/utils/date";
 
 interface GitHubCalendarCell {

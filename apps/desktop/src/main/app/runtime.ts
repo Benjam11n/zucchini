@@ -1,3 +1,10 @@
+import type { RuntimeAppPort } from "@/main/app/ports";
+import { createAppTray } from "@/main/app/tray";
+import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
+import { HabitsApplicationService as HabitsApplicationServiceImpl } from "@/main/features/habits/habits-application-service";
+import { createReminderCoordinator } from "@/main/features/reminders/coordinator";
+import type { ReminderCoordinator } from "@/main/features/reminders/coordinator";
+import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 /**
  * App runtime factory — creates and wires the long-lived main-process objects.
  *
@@ -6,14 +13,7 @@
  * syncs OS-level settings (login items, reminders, theme, tray) whenever the
  * user changes preferences.
  */
-import { systemClock } from "@/main/app/clock";
-import type { RuntimeAppPort } from "@/main/app/ports";
-import { createAppTray } from "@/main/app/tray";
-import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
-import { HabitsApplicationService as HabitsApplicationServiceImpl } from "@/main/features/habits/habits-application-service";
-import { createReminderCoordinator } from "@/main/features/reminders/coordinator";
-import type { ReminderCoordinator } from "@/main/features/reminders/coordinator";
-import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
+import { systemClock } from "@/shared/domain/clock";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import { buildLoginItemSettings } from "./lifecycle";

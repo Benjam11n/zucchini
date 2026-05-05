@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { schema } from "@/main/infra/db/schema";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
@@ -17,6 +16,7 @@ import type {
 } from "@/shared/domain/habit";
 import { normalizeHabitTargetCount } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";

@@ -1,3 +1,5 @@
+import { createRollingStreakState } from "@/main/features/today/state-builder";
+import type { AppRepository } from "@/main/ports/app-repository";
 /**
  * Rolling streak synchronization service.
  *
@@ -6,9 +8,7 @@
  * (complete, missed, or freeze) and writes a daily summary row.
  * This runs on every read path so the streak is always current.
  */
-import type { Clock } from "@/main/app/clock";
-import { createRollingStreakState } from "@/main/features/today/state-builder";
-import type { AppRepository } from "@/main/infra/persistence/app-repository";
+import type { Clock } from "@/shared/domain/clock";
 import { isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";

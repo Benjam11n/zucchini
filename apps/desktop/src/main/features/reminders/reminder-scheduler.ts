@@ -1,3 +1,4 @@
+import type { TodayState } from "@/shared/contracts/today-state";
 /**
  * Reminder scheduling engine.
  *
@@ -6,11 +7,10 @@
  * reminders for missed days, and midnight warnings. Persists runtime state
  * (last reminder time, snooze expiration) across app restarts.
  */
-import type { Clock } from "@/main/app/clock";
-import { systemClock } from "@/main/app/clock";
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/main/features/reminders/runtime-state";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { Clock } from "@/shared/domain/clock";
+import { systemClock } from "@/shared/domain/clock";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
+import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import { electronHabitReminderNotifier } from "./adapters";

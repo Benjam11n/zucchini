@@ -1,10 +1,10 @@
-import type { Clock } from "@/main/app/clock";
 import type {
   ReminderRuntimeStateStore,
   ReminderTimerHandle,
   ReminderTimerPort,
 } from "@/main/features/reminders/ports";
 import { realReminderTimers } from "@/main/features/reminders/ports";
+import type { Clock } from "@/shared/domain/clock";
 
 import {
   getDelayUntilNextZonedOccurrence,

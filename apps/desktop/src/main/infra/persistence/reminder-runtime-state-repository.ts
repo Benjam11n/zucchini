@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/main/features/reminders/runtime-state";
 import { reminderRuntimeState } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
+import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/shared/domain/reminder-runtime-state";
 
 const REMINDER_RUNTIME_STATE_ID = 1;
 

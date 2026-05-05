@@ -1,5 +1,5 @@
-import type { HistoryStatus } from "@/renderer/features/history/history-status";
 import type { HistoryStats } from "@/renderer/features/history/history.types";
+import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 

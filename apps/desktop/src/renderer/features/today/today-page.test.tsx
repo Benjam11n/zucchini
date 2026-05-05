@@ -4,10 +4,10 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
-import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/contracts/keyboard-shortcuts";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
+import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { TodayPage } from "./today-page";

@@ -1,17 +1,9 @@
-/**
- * Concrete SQLite implementation of {@link AppRepository}.
- *
- * Delegates every operation to domain-specific sub-repositories
- * (habits, history, focus sessions, streaks, settings, reminders)
- * that share a single `SqliteDatabaseClient`. The client manages
- * WAL-mode connections and transaction boundaries.
- *
- * @see AppRepository for the full interface contract.
- */
-import type { ReminderRuntimeState } from "@/main/features/reminders/runtime-state";
-import type { WindDownRuntimeState } from "@/main/features/wind-down/runtime-state";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type {
+  AppRepository,
+  SettledHistoryOptions,
+} from "@/main/ports/app-repository";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -30,15 +22,27 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
+/**
+ * Concrete SQLite implementation of {@link AppRepository}.
+ *
+ * Delegates every operation to domain-specific sub-repositories
+ * (habits, history, focus sessions, streaks, settings, reminders)
+ * that share a single `SqliteDatabaseClient`. The client manages
+ * WAL-mode connections and transaction boundaries.
+ *
+ * @see AppRepository for the full interface contract.
+ */
+import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import type {
   WindDownAction,
   WindDownActionWithStatus,
 } from "@/shared/domain/wind-down";
+import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 
-import type { AppRepository, SettledHistoryOptions } from "./app-repository";
 import { SqliteFocusQuotaGoalRepository } from "./focus-quota-goal-repository";
 import { SqliteFocusSessionRepository } from "./focus-session-repository";
 import { SqliteFocusTimerStateRepository } from "./focus-timer-state-repository";
@@ -47,7 +51,6 @@ import { SqliteHistoryRepository } from "./history-repository";
 import { SqliteReminderRuntimeStateRepository } from "./reminder-runtime-state-repository";
 import { SqliteSettingsRepository } from "./settings-repository";
 import { SqliteStreakRepository } from "./streak-repository";
-import type { HabitPeriodStatusSnapshot } from "./types";
 import { SqliteWindDownActionRepository } from "./wind-down-action-repository";
 import { SqliteWindDownRuntimeStateRepository } from "./wind-down-runtime-state-repository";
 
