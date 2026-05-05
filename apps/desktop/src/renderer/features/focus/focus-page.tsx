@@ -8,6 +8,7 @@ import { VisuallyHidden } from "radix-ui";
 import { memo, useState } from "react";
 
 import type { FocusPageProps } from "@/renderer/features/focus/focus.types";
+import { useFocusTimerActions } from "@/renderer/features/focus/hooks/use-focus-timer-actions";
 import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
   createRunningFocusTimerState,
@@ -17,7 +18,6 @@ import {
   setFocusTimerDuration,
   skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
 import {
   Dialog,
@@ -44,13 +44,8 @@ function FocusPageComponent({
   onShowWidget,
   onRetryLoad,
 }: FocusPageProps) {
-  const clearFocusSaveError = useFocusStore(
-    (state) => state.clearFocusSaveError
-  );
-  const setFocusSaveErrorMessage = useFocusStore(
-    (state) => state.setFocusSaveErrorMessage
-  );
-  const setTimerState = useFocusStore((state) => state.setTimerState);
+  const { clearFocusSaveError, setFocusSaveErrorMessage, setTimerState } =
+    useFocusTimerActions();
   const [isPomodoroDialogOpen, setIsPomodoroDialogOpen] = useState(false);
   const defaultFocusDurationMs = getPomodoroFocusDurationMs(settings);
 

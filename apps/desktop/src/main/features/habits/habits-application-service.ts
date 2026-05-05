@@ -72,6 +72,7 @@ import type {
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { DailySummary } from "@/shared/domain/streak";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -401,6 +402,31 @@ export class HabitsApplicationService implements HabitsService {
     );
   }
 
+  private buildTodayHistoryDay(
+    todayState: TodayState,
+    focusMinutesByDate: Map<string, number>
+  ): HistoryDay {
+    return buildHistoryDay(
+      buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
+      this.repository.getHabitsWithStatus(this.getTodayKey()),
+      focusMinutesByDate.get(todayState.date) ?? 0,
+      this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
+    );
+  }
+
+  private buildSettledHistoryDay(
+    summary: DailySummary,
+    historicalHabitsByDate: Map<string, HabitWithStatus[]>,
+    focusMinutesByDate: Map<string, number>
+  ): HistoryDay {
+    return buildHistoryDay(
+      summary,
+      historicalHabitsByDate.get(summary.date) ?? [],
+      focusMinutesByDate.get(summary.date) ?? 0,
+      this.repository.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
+    );
+  }
+
   getHistory(limit?: number): HistoryDay[] {
     return this.withSyncedRead("getHistory", () => {
       const {
@@ -411,18 +437,12 @@ export class HabitsApplicationService implements HabitsService {
       } = this.buildHistoryListContext(limit);
 
       return [
-        buildHistoryDay(
-          buildTodayPreviewSummary(todayState, this.clock.now().toISOString()),
-          this.repository.getHabitsWithStatus(this.getTodayKey()),
-          focusMinutesByDate.get(todayState.date) ?? 0,
-          this.repository.getFocusQuotaGoalsWithStatusForDate(todayState.date)
-        ),
+        this.buildTodayHistoryDay(todayState, focusMinutesByDate),
         ...settledSummaries.map((summary) =>
-          buildHistoryDay(
+          this.buildSettledHistoryDay(
             summary,
-            historicalHabitsByDate.get(summary.date) ?? [],
-            focusMinutesByDate.get(summary.date) ?? 0,
-            this.repository.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
+            historicalHabitsByDate,
+            focusMinutesByDate
           )
         ),
       ];
@@ -476,19 +496,7 @@ export class HabitsApplicationService implements HabitsService {
             )
           : new Map();
       const todayHistory = includeToday
-        ? [
-            buildHistoryDay(
-              buildTodayPreviewSummary(
-                todayState,
-                this.clock.now().toISOString()
-              ),
-              this.repository.getHabitsWithStatus(this.getTodayKey()),
-              focusMinutesByDate.get(todayState.date) ?? 0,
-              this.repository.getFocusQuotaGoalsWithStatusForDate(
-                todayState.date
-              )
-            ),
-          ]
+        ? [this.buildTodayHistoryDay(todayState, focusMinutesByDate)]
         : [];
 
       return [
@@ -496,13 +504,10 @@ export class HabitsApplicationService implements HabitsService {
         ...settledSummaries
           .toReversed()
           .map((summary) =>
-            buildHistoryDay(
+            this.buildSettledHistoryDay(
               summary,
-              historicalHabitsByDate.get(summary.date) ?? [],
-              focusMinutesByDate.get(summary.date) ?? 0,
-              this.repository.getHistoricalFocusQuotaGoalsWithStatus(
-                summary.date
-              )
+              historicalHabitsByDate,
+              focusMinutesByDate
             )
           ),
       ];

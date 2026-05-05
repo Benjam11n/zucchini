@@ -34,6 +34,44 @@ function getPathLabel(filePath: string): string {
   return filePath.split(/[/\\]/).at(-1) ?? filePath;
 }
 
+function DataActionItem({
+  description,
+  disabled,
+  icon: Icon,
+  label,
+  onClick,
+  variant = "outline",
+}: {
+  description: string;
+  disabled: boolean;
+  icon: typeof Download;
+  label: string;
+  onClick: () => Promise<void> | void;
+  variant?: "destructive" | "outline";
+}) {
+  return (
+    <Item className="py-2">
+      <ItemContent>
+        <p className="text-sm font-medium">{label}</p>
+        <ItemDescription>{description}</ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <Button
+          disabled={disabled}
+          onClick={() => {
+            void onClick();
+          }}
+          size="sm"
+          variant={variant}
+        >
+          <Icon className="size-4" />
+          {label}
+        </Button>
+      </ItemActions>
+    </Item>
+  );
+}
+
 function DestructiveDataDialog({
   actionLabel,
   description,
@@ -133,112 +171,61 @@ export function DataManagementSettingsCard() {
         />
         <CardContent className="space-y-3">
           <ItemGroup className="gap-0">
-            <Item className="py-2">
-              <ItemContent>
-                <p className="text-sm font-medium">Open data folder</p>
-                <ItemDescription>
-                  Reveal the local folder that stores your database and app
-                  state.
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button
-                  disabled={activeAction !== null}
-                  onClick={async () => {
-                    await runAction("open", async () => {
-                      const openedPath = await window.habits.openDataFolder();
-                      setFeedbackMessage(
-                        `Opened ${getPathLabel(openedPath)} in your file manager.`
-                      );
-                    });
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  <FolderOpen className="size-4" />
-                  Open folder
-                </Button>
-              </ItemActions>
-            </Item>
+            <DataActionItem
+              description="Reveal the local folder that stores your database and app state."
+              disabled={activeAction !== null}
+              icon={FolderOpen}
+              label="Open folder"
+              onClick={async () => {
+                await runAction("open", async () => {
+                  const openedPath = await window.habits.openDataFolder();
+                  setFeedbackMessage(
+                    `Opened ${getPathLabel(openedPath)} in your file manager.`
+                  );
+                });
+              }}
+            />
 
-            <Item className="py-2">
-              <ItemContent>
-                <p className="text-sm font-medium">Export backup</p>
-                <ItemDescription>
-                  Save a copy of your current `zucchini.db` to a location you
-                  choose.
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button
-                  disabled={activeAction !== null}
-                  onClick={async () => {
-                    await runAction("export", async () => {
-                      const exportedPath = await window.habits.exportBackup();
+            <DataActionItem
+              description="Save a copy of your current `zucchini.db` to a location you choose."
+              disabled={activeAction !== null}
+              icon={Download}
+              label="Export backup"
+              onClick={async () => {
+                await runAction("export", async () => {
+                  const exportedPath = await window.habits.exportBackup();
 
-                      if (exportedPath === null) {
-                        return;
-                      }
+                  if (exportedPath === null) {
+                    return;
+                  }
 
-                      setFeedbackMessage(
-                        `Backup exported as ${getPathLabel(exportedPath)}.`
-                      );
-                    });
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  <Download className="size-4" />
-                  Export backup
-                </Button>
-              </ItemActions>
-            </Item>
+                  setFeedbackMessage(
+                    `Backup exported as ${getPathLabel(exportedPath)}.`
+                  );
+                });
+              }}
+            />
 
-            <Item className="py-2">
-              <ItemContent>
-                <p className="text-sm font-medium">Import backup</p>
-                <ItemDescription>
-                  Restore from a backup file. Zucchini will restart after the
-                  import finishes.
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button
-                  disabled={activeAction !== null}
-                  onClick={() => {
-                    setIsImportDialogOpen(true);
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  <Upload className="size-4" />
-                  Import backup
-                </Button>
-              </ItemActions>
-            </Item>
+            <DataActionItem
+              description="Restore from a backup file. Zucchini will restart after the import finishes."
+              disabled={activeAction !== null}
+              icon={Upload}
+              label="Import backup"
+              onClick={() => {
+                setIsImportDialogOpen(true);
+              }}
+            />
 
-            <Item className="py-2">
-              <ItemContent>
-                <p className="text-sm font-medium">Clear local data</p>
-                <ItemDescription>
-                  Delete this device&apos;s local Zucchini data and restart with
-                  a fresh database.
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <Button
-                  disabled={activeAction !== null}
-                  onClick={() => {
-                    setIsClearDataDialogOpen(true);
-                  }}
-                  size="sm"
-                  variant="destructive"
-                >
-                  <Trash2 className="size-4" />
-                  Clear data
-                </Button>
-              </ItemActions>
-            </Item>
+            <DataActionItem
+              description="Delete this device's local Zucchini data and restart with a fresh database."
+              disabled={activeAction !== null}
+              icon={Trash2}
+              label="Clear data"
+              onClick={() => {
+                setIsClearDataDialogOpen(true);
+              }}
+              variant="destructive"
+            />
           </ItemGroup>
 
           {errorMessage ? (

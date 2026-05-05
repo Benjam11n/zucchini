@@ -5,6 +5,14 @@
     "apps/desktop/tsdown.config.mts"
   ],
   "ignoreDependencies": ["shadcn"],
+  "duplicates": {
+    "ignore": [
+      "apps/desktop/src/**/*.test.ts",
+      "apps/desktop/src/**/*.test.tsx",
+      "apps/desktop/src/main/ports/app-repository.ts",
+      "apps/desktop/src/main/infra/persistence/sqlite-app-repository.ts"
+    ]
+  },
   "overrides": [
     {
       "files": ["apps/desktop/src/renderer/globals.css"],
