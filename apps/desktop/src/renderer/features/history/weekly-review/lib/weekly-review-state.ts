@@ -8,7 +8,7 @@ interface WeeklyReviewStateSnapshot {
   selectedWeeklyReview: WeeklyReview | null;
 }
 
-export interface WeeklyReviewLoader {
+interface WeeklyReviewLoader {
   getWeeklyReview: (weekStart: string) => Promise<WeeklyReview>;
   getWeeklyReviewOverview: () => Promise<WeeklyReviewOverview>;
 }

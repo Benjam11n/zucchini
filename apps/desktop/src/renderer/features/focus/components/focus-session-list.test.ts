@@ -3,10 +3,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 
+import { getFocusTodaySummary } from "@/renderer/features/focus/lib/focus-session-summary";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
-import { FocusSessionList, getFocusTodaySummary } from "./focus-session-list";
+import { FocusSessionList } from "./focus-session-list";
 
 function createFocusSession(
   id: number,

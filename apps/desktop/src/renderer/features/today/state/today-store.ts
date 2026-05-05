@@ -32,7 +32,3 @@ export const useTodayStore = create<TodayStoreState>()((set) => ({
   setManagedHabits: (managedHabits) => set({ managedHabits }),
   setTodayState: (todayState) => set({ todayState }),
 }));
-
-export function resetTodayStore() {
-  useTodayStore.setState(getInitialTodayState());
-}

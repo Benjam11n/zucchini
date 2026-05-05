@@ -22,25 +22,6 @@ export function getActivityStatus(
   return isToday ? "in-progress" : "missed";
 }
 
-export function getActivitySummary(
-  summary: DailySummary,
-  isToday?: boolean
-): string {
-  if (summary.dayStatus === "sick") {
-    return "Day excused due to sickness";
-  }
-
-  if (summary.freezeUsed) {
-    return "Missed day covered by a freeze";
-  }
-
-  if (summary.allCompleted) {
-    return "All habits completed";
-  }
-
-  return isToday ? "In progress" : "Incomplete day";
-}
-
 export function getActivityBadgeLabel(
   summary: DailySummary,
   isToday?: boolean

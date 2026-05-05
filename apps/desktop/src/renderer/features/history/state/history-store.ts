@@ -189,7 +189,3 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
     await get().loadHistoryYear(year);
   },
 }));
-
-export function resetHistoryStore() {
-  useHistoryStore.setState(getInitialHistoryState());
-}

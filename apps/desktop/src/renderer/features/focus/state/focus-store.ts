@@ -103,7 +103,3 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
     set({ focusSaveErrorMessage }),
   setTimerState: (timerState) => set({ timerState }),
 }));
-
-export function resetFocusStore() {
-  useFocusStore.setState(getInitialFocusState());
-}

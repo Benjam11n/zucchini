@@ -4,7 +4,6 @@ import { toDateKey } from "@/shared/utils/date";
 import {
   getActivityBadgeLabel,
   getActivityStatus,
-  getActivitySummary,
   getHistoryDayLookup,
   getHistoryStats,
 } from "./history-summary";
@@ -78,23 +77,6 @@ describe("history summary", () => {
     expect(getActivityStatus(freezeSummary)).toBe("freeze");
     expect(getActivityStatus(incompleteSummary, true)).toBe("in-progress");
     expect(getActivityStatus(incompleteSummary, false)).toBe("missed");
-  });
-
-  it("returns human-readable activity summaries", () => {
-    const completeSummary = createHistoryDay("2026-03-02", {
-      allCompleted: true,
-    }).summary;
-    const freezeSummary = createHistoryDay("2026-03-03", {
-      freezeUsed: true,
-    }).summary;
-    const incompleteSummary = createHistoryDay("2026-03-04").summary;
-
-    expect(getActivitySummary(completeSummary)).toBe("All habits completed");
-    expect(getActivitySummary(freezeSummary)).toBe(
-      "Missed day covered by a freeze"
-    );
-    expect(getActivitySummary(incompleteSummary, true)).toBe("In progress");
-    expect(getActivitySummary(incompleteSummary, false)).toBe("Incomplete day");
   });
 
   it("returns activity badge labels matching the status", () => {

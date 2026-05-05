@@ -9,7 +9,7 @@ interface PersistedWeeklyReviewState {
   lastSeenWeeklyReviewStart: string | null;
 }
 
-export function isPersistedWeeklyReviewState(
+function isPersistedWeeklyReviewState(
   value: unknown
 ): value is PersistedWeeklyReviewState {
   if (!value || typeof value !== "object") {

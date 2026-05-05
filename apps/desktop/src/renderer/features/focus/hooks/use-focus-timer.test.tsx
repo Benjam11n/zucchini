@@ -9,10 +9,8 @@ import {
   pauseFocusTimerState,
   resumeFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  resetFocusStore,
-  useFocusStore,
-} from "@/renderer/features/focus/state/focus-store";
+import { resolveFocusTimerTick } from "@/renderer/features/focus/lib/focus-timer-tick";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
 import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 import type {
@@ -29,7 +27,6 @@ import {
 } from "@/test/fixtures/focus-test-utils";
 
 import { useFocusTimer } from "./use-focus-timer";
-import { resolveFocusTimerTick } from "./use-focus-timer-loop";
 
 type FocusSessionRecordedListener = (session: {
   completedAt: string;
@@ -58,7 +55,14 @@ function setupFocusTimerTest(
 ) {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-03-08T09:00:00.000Z"));
-  resetFocusStore();
+  useFocusStore.setState({
+    focusSaveErrorMessage: null,
+    focusSessions: [],
+    focusSessionsLoadError: null,
+    focusSessionsPhase: "idle",
+    hasLoadedFocusSessions: false,
+    timerState: createIdleFocusTimerState(),
+  });
   let focusSessionRecordedListener: FocusSessionRecordedListener | null = null;
   let focusTimerActionListener: FocusTimerActionListener | null = null;
   let focusTimerStateChangedListener: FocusTimerStateChangedListener | null =

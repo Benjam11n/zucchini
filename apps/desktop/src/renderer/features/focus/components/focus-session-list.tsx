@@ -3,13 +3,10 @@ import { VisuallyHidden } from "radix-ui";
 import type {
   PersistedFocusTimerState,
   FocusSessionsPhase,
-  FocusTodaySummary,
 } from "@/renderer/features/focus/focus.types";
-import {
-  formatFocusMinutes,
-  getFocusMinutesLabel,
-} from "@/renderer/features/focus/lib/focus-session-format";
+import { getFocusMinutesLabel } from "@/renderer/features/focus/lib/focus-session-format";
 import { buildFocusHistorySessions } from "@/renderer/features/focus/lib/focus-session-groups";
+import { getFocusTodaySummary } from "@/renderer/features/focus/lib/focus-session-summary";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
@@ -22,27 +19,6 @@ import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 import { FocusRunList } from "./focus-run-list";
-
-export function getFocusTodaySummary(
-  sessions: FocusSession[],
-  todayDate: string
-): FocusTodaySummary {
-  const todaySessions = sessions.filter(
-    (session) => session.completedDate === todayDate
-  );
-
-  return {
-    completedCount: todaySessions.filter(
-      (session) => session.entryKind === "completed"
-    ).length,
-    totalMinutes: formatFocusMinutes(
-      todaySessions.reduce(
-        (totalSeconds, session) => totalSeconds + session.durationSeconds,
-        0
-      )
-    ),
-  };
-}
 
 interface FocusSessionListProps {
   phase: FocusSessionsPhase;

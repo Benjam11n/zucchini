@@ -120,7 +120,3 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
     },
   })
 );
-
-export function resetWeeklyReviewStore() {
-  useWeeklyReviewStore.setState(getInitialWeeklyReviewState());
-}

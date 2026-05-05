@@ -9,10 +9,7 @@ import {
   createRunningBreakTimerState,
   createRunningFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  resetFocusStore,
-  useFocusStore,
-} from "@/renderer/features/focus/state/focus-store";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
 import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
@@ -26,6 +23,17 @@ import {
 import { FocusWidget } from "./focus-widget";
 
 describe("focus widget", () => {
+  function resetFocusStoreForTest() {
+    useFocusStore.setState({
+      focusSaveErrorMessage: null,
+      focusSessions: [],
+      focusSessionsLoadError: null,
+      focusSessionsPhase: "idle",
+      hasLoadedFocusSessions: false,
+      timerState: createIdleFocusTimerState(),
+    });
+  }
+
   function dispatchShortcut(code: string, key: string) {
     act(() => {
       window.dispatchEvent(
@@ -46,7 +54,7 @@ describe("focus widget", () => {
     persistedTimerState?: PersistedFocusTimerState | null;
     renderWidget?: boolean;
   } = {}) {
-    resetFocusStore();
+    resetFocusStoreForTest();
     const settings = createTestAppSettings({
       focusCyclesBeforeLongBreak: 4,
       focusDefaultDurationSeconds: minutes(25),

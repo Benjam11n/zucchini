@@ -32,7 +32,3 @@ export const useBootStore = create<BootStoreState>()((set) => ({
   setBootError: (bootError) => set({ bootError }),
   setBootPhase: (bootPhase) => set({ bootPhase }),
 }));
-
-export function resetBootStore() {
-  useBootStore.setState(getInitialBootState());
-}

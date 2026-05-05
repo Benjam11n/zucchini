@@ -1,3 +1,13 @@
+/**
+ * Concrete SQLite implementation of {@link AppRepository}.
+ *
+ * Delegates every operation to domain-specific sub-repositories
+ * (habits, history, focus sessions, streaks, settings, reminders)
+ * that share a single `SqliteDatabaseClient`. The client manages
+ * WAL-mode connections and transaction boundaries.
+ *
+ * @see AppRepository for the full interface contract.
+ */
 import { runMigrations } from "@/main/infra/db/migrations";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
@@ -24,16 +34,6 @@ import type {
 } from "@/shared/domain/habit";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
-/**
- * Concrete SQLite implementation of {@link AppRepository}.
- *
- * Delegates every operation to domain-specific sub-repositories
- * (habits, history, focus sessions, streaks, settings, reminders)
- * that share a single `SqliteDatabaseClient`. The client manages
- * WAL-mode connections and transaction boundaries.
- *
- * @see AppRepository for the full interface contract.
- */
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";

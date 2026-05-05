@@ -34,6 +34,68 @@ function getPathLabel(filePath: string): string {
   return filePath.split(/[/\\]/).at(-1) ?? filePath;
 }
 
+function DestructiveDataDialog({
+  actionLabel,
+  description,
+  disabled,
+  onAction,
+  onOpenChange,
+  open,
+  title,
+  warningBody,
+  warningTitle,
+  variant = "default",
+}: {
+  actionLabel: string;
+  description: string;
+  disabled: boolean;
+  onAction: () => Promise<void>;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  title: string;
+  warningBody: string;
+  warningTitle: string;
+  variant?: "default" | "destructive";
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 px-6 py-6">
+          <div
+            className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+            role="alert"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-medium">{warningTitle}</p>
+              <p className="leading-snug text-destructive/85">{warningBody}</p>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button disabled={disabled} onClick={onAction} variant={variant}>
+            {actionLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function DataManagementSettingsCard() {
   const [activeAction, setActiveAction] = useState<DataAction>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -193,125 +255,51 @@ export function DataManagementSettingsCard() {
         </CardContent>
       </Card>
 
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Import backup</DialogTitle>
-            <DialogDescription>
-              Choose a backup file to replace your current local data. Zucchini
-              will restart immediately after a successful import.
-            </DialogDescription>
-          </DialogHeader>
+      <DestructiveDataDialog
+        actionLabel="Import and restart"
+        description="Choose a backup file to replace your current local data. Zucchini will restart immediately after a successful import."
+        disabled={activeAction !== null}
+        onAction={async () => {
+          await runAction("import", async () => {
+            setIsImportDialogOpen(false);
+            const didImport = await window.habits.importBackup();
 
-          <div className="grid gap-4 px-6 py-6">
-            <div
-              className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
-              role="alert"
-            >
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              <div className="space-y-1">
-                <p className="font-medium">
-                  This replaces your current local data.
-                </p>
-                <p className="leading-snug text-destructive/85">
-                  Importing a backup overwrites the current `zucchini.db` on
-                  this device.
-                </p>
-              </div>
-            </div>
-          </div>
+            if (didImport) {
+              setFeedbackMessage("Restarting Zucchini with your backup.");
+            }
+          });
+        }}
+        open={isImportDialogOpen}
+        title="Import backup"
+        warningBody="Importing a backup overwrites the current `zucchini.db` on this device."
+        warningTitle="This replaces your current local data."
+        onOpenChange={setIsImportDialogOpen}
+      />
 
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                setIsImportDialogOpen(false);
-              }}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={activeAction !== null}
-              onClick={async () => {
-                await runAction("import", async () => {
-                  setIsImportDialogOpen(false);
-                  const didImport = await window.habits.importBackup();
+      <DestructiveDataDialog
+        actionLabel="Clear data and restart"
+        description="Delete all local Zucchini data on this device and restart with a clean database."
+        disabled={activeAction !== null}
+        onAction={async () => {
+          await runAction("clear", async () => {
+            clearZucchiniStorage();
+            setIsClearDataDialogOpen(false);
+            const didClear = await window.habits.clearData();
 
-                  if (didImport) {
-                    setFeedbackMessage("Restarting Zucchini with your backup.");
-                  }
-                });
-              }}
-            >
-              Import and restart
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+            if (didClear) {
+              setFeedbackMessage(
+                "Restarting Zucchini with a fresh local database."
+              );
+            }
+          });
+        }}
         open={isClearDataDialogOpen}
+        title="Clear local data"
+        variant="destructive"
+        warningBody="Your habits, history, focus sessions, and settings on this device will be removed. Export a backup first if you may need them later."
+        warningTitle="This permanently deletes local data."
         onOpenChange={setIsClearDataDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Clear local data</DialogTitle>
-            <DialogDescription>
-              Delete all local Zucchini data on this device and restart with a
-              clean database.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 px-6 py-6">
-            <div
-              className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
-              role="alert"
-            >
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              <div className="space-y-1">
-                <p className="font-medium">
-                  This permanently deletes local data.
-                </p>
-                <p className="leading-snug text-destructive/85">
-                  Your habits, history, focus sessions, and settings on this
-                  device will be removed. Export a backup first if you may need
-                  them later.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                setIsClearDataDialogOpen(false);
-              }}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={activeAction !== null}
-              onClick={async () => {
-                await runAction("clear", async () => {
-                  clearZucchiniStorage();
-                  setIsClearDataDialogOpen(false);
-                  const didClear = await window.habits.clearData();
-
-                  if (didClear) {
-                    setFeedbackMessage(
-                      "Restarting Zucchini with a fresh local database."
-                    );
-                  }
-                });
-              }}
-              variant="destructive"
-            >
-              Clear data and restart
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
     </>
   );
 }

@@ -196,6 +196,12 @@
       }
     ]
   },
+  "health": {
+    "ignore": ["apps/desktop/scripts/**"],
+    "maxCyclomatic": 40,
+    "maxCognitive": 30,
+    "maxCrap": 80
+  },
   "resolve": {
     "conditions": ["style"]
   }

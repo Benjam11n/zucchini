@@ -1,5 +1,4 @@
 import {
-  isPersistedWeeklyReviewState,
   readLastSeenWeeklyReviewStart,
   writeLastSeenWeeklyReviewStart,
 } from "./weekly-review-storage";
@@ -27,17 +26,6 @@ describe("weekly-review-storage", () => {
     });
   }
 
-  it("validates persisted spotlight state", () => {
-    expect(
-      isPersistedWeeklyReviewState({
-        lastSeenWeeklyReviewStart: "2026-03-02",
-      })
-    ).toBeTruthy();
-    expect(
-      isPersistedWeeklyReviewState({ lastSeenWeeklyReviewStart: 42 })
-    ).toBeFalsy();
-  });
-
   it("round-trips the last seen review week", () => {
     installLocalStorageMock();
 
@@ -49,6 +37,16 @@ describe("weekly-review-storage", () => {
   it("returns null for invalid stored JSON", () => {
     installLocalStorageMock();
     storage.set("zucchini_weekly_review", "{not-json");
+
+    expect(readLastSeenWeeklyReviewStart()).toBeNull();
+  });
+
+  it("returns null for invalid stored shape", () => {
+    installLocalStorageMock();
+    storage.set(
+      "zucchini_weekly_review",
+      JSON.stringify({ lastSeenWeeklyReviewStart: 42 })
+    );
 
     expect(readLastSeenWeeklyReviewStart()).toBeNull();
   });

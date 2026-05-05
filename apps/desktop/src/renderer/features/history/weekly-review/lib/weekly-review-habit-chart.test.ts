@@ -1,9 +1,6 @@
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
-import {
-  buildWeeklyReviewHabitChartState,
-  weeklyReviewHabitChartConstants,
-} from "./weekly-review-habit-chart";
+import { buildWeeklyReviewHabitChartState } from "./weekly-review-habit-chart";
 
 function createHabitMetric(
   overrides: Partial<WeeklyReviewHabitMetric> = {}
@@ -71,9 +68,8 @@ describe("weekly review habit chart ranking", () => {
     );
 
     expect(state.visibleHabits).toHaveLength(12);
-    expect(state.viewportHeight).toBe(
-      weeklyReviewHabitChartConstants.CHART_MAX_VIEWPORT_HEIGHT
-    );
+    expect(state.viewportHeight).toBeLessThan(state.chartHeight);
+    expect(state.viewportHeight).toBe(420);
   });
 
   it("truncates long y-axis labels and keeps a compact minimum height", () => {
@@ -87,8 +83,6 @@ describe("weekly review habit chart ranking", () => {
     );
 
     expect(state.visibleHabits[0]?.shortName).toContain("…");
-    expect(state.chartHeight).toBe(
-      weeklyReviewHabitChartConstants.CHART_MIN_HEIGHT
-    );
+    expect(state.chartHeight).toBe(240);
   });
 });

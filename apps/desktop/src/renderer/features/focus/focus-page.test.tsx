@@ -13,10 +13,7 @@ import {
   createRunningBreakTimerState,
   createRunningFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import {
-  resetFocusStore,
-  useFocusStore,
-} from "@/renderer/features/focus/state/focus-store";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import {
   createTestAppSettings,
@@ -64,10 +61,21 @@ function installHabitsMock() {
   });
 }
 
+function resetFocusStoreForTest() {
+  useFocusStore.setState({
+    focusSaveErrorMessage: null,
+    focusSessions: [],
+    focusSessionsLoadError: null,
+    focusSessionsPhase: "idle",
+    hasLoadedFocusSessions: false,
+    timerState: createIdleFocusTimerState(),
+  });
+}
+
 describe("focus tab", () => {
   it("renders the timer and empty history state", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     render(<FocusPageHarness />);
 
     expect(screen.getByText("Focused work timer")).toBeInTheDocument();
@@ -83,7 +91,7 @@ describe("focus tab", () => {
 
   it("supports start, pause, resume, and reset controls", async () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     render(<FocusPageHarness />);
 
     fireEvent.click(screen.getByRole("button", { name: "Start" }));
@@ -108,7 +116,7 @@ describe("focus tab", () => {
 
   it("lets you set a custom focus duration before starting", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     render(<FocusPageHarness />);
 
     fireEvent.change(screen.getByLabelText("Focus minutes"), {
@@ -129,7 +137,7 @@ describe("focus tab", () => {
 
   it("shows the break badge and final-minute cue", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
         breakDurationMs: minutesMs(5),
@@ -160,7 +168,7 @@ describe("focus tab", () => {
 
   it("shows the next long break threshold on the status row", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     useFocusStore
       .getState()
       .setTimerState(createIdleFocusTimerState(new Date(), minutesMs(25), 3));
@@ -172,7 +180,7 @@ describe("focus tab", () => {
 
   it("keeps the same timer session id when skipping a short break", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
         breakDurationMs: minutesMs(5),
@@ -197,7 +205,7 @@ describe("focus tab", () => {
 
   it("returns to the base idle state when skipping a long break", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     useFocusStore.getState().setTimerState(
       createRunningBreakTimerState({
         breakDurationMs: minutesMs(15),
@@ -223,7 +231,7 @@ describe("focus tab", () => {
 
   it("renders the roadmap totals for one full set", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     render(<FocusPageHarness />);
 
     expect(screen.getByText("Total set: 130m")).toBeInTheDocument();
@@ -233,7 +241,7 @@ describe("focus tab", () => {
 
   it("opens the advanced pomodoro settings in a dialog", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     render(<FocusPageHarness />);
 
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
@@ -244,7 +252,7 @@ describe("focus tab", () => {
 
   it("uses amber timer text during the last minute", () => {
     installHabitsMock();
-    resetFocusStore();
+    resetFocusStoreForTest();
     useFocusStore
       .getState()
       .setTimerState(

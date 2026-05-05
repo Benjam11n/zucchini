@@ -28,7 +28,3 @@ export const useUiStore = create<UiStoreState>()((set) => ({
   setSystemTheme: (systemTheme) => set({ systemTheme }),
   setTab: (tab) => set({ tab }),
 }));
-
-export function resetUiStore() {
-  useUiStore.setState(getInitialUiState());
-}

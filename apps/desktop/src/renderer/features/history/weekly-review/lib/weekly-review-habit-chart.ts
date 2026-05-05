@@ -77,10 +77,3 @@ export function buildWeeklyReviewHabitChartState(
     visibleHabits: rankedHabits,
   };
 }
-
-export const weeklyReviewHabitChartConstants = {
-  CHART_MAX_VIEWPORT_HEIGHT,
-  CHART_MIN_HEIGHT,
-  CHART_ROW_HEIGHT,
-  Y_AXIS_LABEL_LENGTH,
-} as const;

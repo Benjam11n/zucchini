@@ -63,7 +63,3 @@ export const useSettingsStore = create<SettingsStoreState>()((set) => ({
   setSettingsValidationErrors: (settingsFieldErrors) =>
     set({ settingsFieldErrors }),
 }));
-
-export function resetSettingsStore() {
-  useSettingsStore.setState(getInitialSettingsState());
-}

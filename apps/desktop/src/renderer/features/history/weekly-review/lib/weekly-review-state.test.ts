@@ -4,8 +4,6 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
-import type { WeeklyReviewLoader } from "./weekly-review-state";
-
 function createReview(weekStart: string): WeeklyReview {
   return {
     completedDays: 2,
@@ -59,7 +57,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(latestReview)),
-    } satisfies WeeklyReviewLoader;
+    };
 
     const result = await loadWeeklyReviewState(habitsApi, null);
 
@@ -101,7 +99,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(freshLatestReview)),
-    } satisfies WeeklyReviewLoader;
+    };
 
     const result = await loadWeeklyReviewState(habitsApi, staleLatestReview);
 
@@ -131,7 +129,7 @@ describe("loadWeeklyReviewState()", () => {
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(latestReview)),
-    } satisfies WeeklyReviewLoader;
+    };
 
     const result = await loadWeeklyReviewState(
       habitsApi,

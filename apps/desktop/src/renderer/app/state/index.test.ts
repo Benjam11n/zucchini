@@ -215,28 +215,56 @@ describe("app store actions", () => {
     });
     const { appActions } =
       await import("@/renderer/app/controller/app-actions");
-    const { resetBootStore, useBootStore } =
-      await import("@/renderer/app/state/boot-store");
-    const { resetUiStore, useUiStore } =
-      await import("@/renderer/app/state/ui-store");
-    const { resetFocusStore, useFocusStore } =
+    const { useBootStore } = await import("@/renderer/app/state/boot-store");
+    const { useUiStore } = await import("@/renderer/app/state/ui-store");
+    const { createIdleFocusTimerState } =
+      await import("@/renderer/features/focus/lib/focus-timer-state");
+    const { useFocusStore } =
       await import("@/renderer/features/focus/state/focus-store");
-    const { resetHistoryStore, useHistoryStore } =
+    const { useHistoryStore } =
       await import("@/renderer/features/history/state/history-store");
-    const { resetWeeklyReviewStore, useWeeklyReviewStore } =
+    const { useWeeklyReviewStore } =
       await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
-    const { resetSettingsStore, useSettingsStore } =
+    const { useSettingsStore } =
       await import("@/renderer/features/settings/state/settings-store");
-    const { resetTodayStore, useTodayStore } =
+    const { useTodayStore } =
       await import("@/renderer/features/today/state/today-store");
 
-    resetBootStore();
-    resetFocusStore();
-    resetHistoryStore();
-    resetSettingsStore();
-    resetTodayStore();
-    resetUiStore();
-    resetWeeklyReviewStore();
+    useBootStore.setState({ bootError: null, bootPhase: "loading" });
+    useFocusStore.setState({
+      focusSaveErrorMessage: null,
+      focusSessions: [],
+      focusSessionsLoadError: null,
+      focusSessionsPhase: "idle",
+      hasLoadedFocusSessions: false,
+      timerState: createIdleFocusTimerState(),
+    });
+    useHistoryStore.setState({
+      hasLoadedHistorySummary: false,
+      history: [],
+      historyByYear: {},
+      historyLoadError: null,
+      historySummary: [],
+      historyYears: [],
+      isHistoryLoading: false,
+      isHistorySummaryLoading: false,
+      selectedHistoryYear: null,
+    });
+    useSettingsStore.setState({
+      settingsDraft: null,
+      settingsFieldErrors: {},
+      settingsSaveErrorMessage: null,
+      settingsSavePhase: "idle",
+    });
+    useTodayStore.setState({ managedHabits: [], todayState: null });
+    useUiStore.setState({ systemTheme: "light", tab: "today" });
+    useWeeklyReviewStore.setState({
+      isWeeklyReviewSpotlightOpen: false,
+      selectedWeeklyReview: null,
+      weeklyReviewError: null,
+      weeklyReviewOverview: null,
+      weeklyReviewPhase: "idle",
+    });
 
     return {
       actions: appActions,
