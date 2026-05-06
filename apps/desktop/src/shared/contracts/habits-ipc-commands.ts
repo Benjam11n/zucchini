@@ -1,3 +1,4 @@
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -61,6 +62,7 @@ export type HabitCommand =
       type: "habit.updateWeekdays";
     }
   | { payload: AppSettings; type: "settings.update" }
+  | { payload: { kind: DayStatusKind | null }; type: "today.setDayStatus" }
   | { type: "today.toggleSickDay" }
   | { payload: { name: string }; type: "windDown.createAction" }
   | { payload: { actionId: number }; type: "windDown.deleteAction" }
@@ -96,6 +98,7 @@ interface HabitCommandResultByType {
   "habit.updateTargetCount": TodayState;
   "habit.updateWeekdays": TodayState;
   "settings.update": AppSettings;
+  "today.setDayStatus": TodayState;
   "today.toggleSickDay": TodayState;
   "windDown.createAction": TodayState;
   "windDown.deleteAction": TodayState;

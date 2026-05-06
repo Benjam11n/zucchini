@@ -42,6 +42,7 @@ import type { TodayState } from "@/shared/contracts/today-state";
  * @see buildTodayState for how the read-model is assembled.
  */
 import type { Clock } from "@/shared/domain/clock";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -98,6 +99,7 @@ export interface HabitsService {
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
+  setDayStatus(kind: DayStatusKind | null): TodayState;
   toggleSickDay(): TodayState;
   toggleHabit(habitId: number): HabitStatusPatch;
   incrementHabitProgress(habitId: number): HabitStatusPatch;
@@ -314,12 +316,33 @@ export class HabitsApplicationService implements HabitsService {
     );
   }
 
+  setDayStatus(kind: DayStatusKind | null): TodayState {
+    return this.mutateTodayState(
+      "setDayStatus",
+      (today) => {
+        if (!kind) {
+          this.repository.clearDayStatus(today);
+          return;
+        }
+
+        this.repository.setDayStatus(
+          today,
+          kind,
+          this.clock.now().toISOString()
+        );
+      },
+      {
+        ensureStatusRowsForToday: true,
+        syncRollingState: true,
+      }
+    );
+  }
+
   toggleSickDay(): TodayState {
     return this.mutateTodayState(
       "toggleSickDay",
       (today) => {
         const currentDayStatus = this.repository.getDayStatus(today);
-
         if (currentDayStatus?.kind === "sick") {
           this.repository.clearDayStatus(today);
           return;

@@ -15,9 +15,8 @@ export function AppReadyShell({
     tab === "today" ? (
       <TodaySidebar
         history={state.history}
-        isSickDay={state.todayState.dayStatus === "sick"}
         state={state.todayState}
-        onToggleSickDay={actions.handleToggleSickDay}
+        onSetDayStatus={actions.handleSetDayStatus}
       />
     ) : undefined;
 

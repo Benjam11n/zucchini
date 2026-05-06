@@ -9,6 +9,7 @@ import type { AppRepository } from "@/main/ports/app-repository";
  * This runs on every read path so the streak is always current.
  */
 import type { Clock } from "@/shared/domain/clock";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import { isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
@@ -33,12 +34,12 @@ function getNextHabitStreakState({
   state,
 }: {
   cursor: string;
-  dayStatus: "sick" | null;
+  dayStatus: DayStatusKind | null;
   freezeUsed: boolean;
   habit: HabitWithStatus | null;
   state: PersistedHabitStreakState;
 }): PersistedHabitStreakState {
-  if (dayStatus === "sick" || freezeUsed || !habit) {
+  if (dayStatus || freezeUsed || !habit) {
     return {
       ...state,
       lastEvaluatedDate: cursor,

@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Flame,
   HeartPulse,
+  Pause,
   Snowflake,
   Timer,
   XCircle,
@@ -149,6 +150,17 @@ export function HistoryDayPanel({
                   >
                     <HeartPulse className="size-3.5" />
                     Sick day preserved the streak for this day
+                  </m.div>
+                ) : null}
+                {selectedDay.summary.dayStatus === "rest" ? (
+                  <m.div
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mx-auto flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/8 px-2.5 py-1 text-xs text-sky-700 dark:text-sky-300"
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    transition={microTransition}
+                  >
+                    <Pause className="size-3.5" />
+                    Rest day preserved the streak for this day
                   </m.div>
                 ) : null}
               </CardContent>

@@ -20,6 +20,7 @@ interface HabitListItemStreak {
 }
 
 interface HabitListItemProps {
+  disabled?: boolean;
   habit: HabitWithStatus;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
@@ -51,6 +52,7 @@ function HabitStreakLabel({
 }
 
 function HabitListItemComponent({
+  disabled = false,
   habit,
   onToggle,
   showCategory,
@@ -62,7 +64,8 @@ function HabitListItemComponent({
     habit.category,
     categoryPreferences
   );
-  const hoverProps = habit.completed ? {} : { whileHover: hoverLift };
+  const hoverProps =
+    habit.completed || disabled ? {} : { whileHover: hoverLift };
 
   return (
     <m.label
@@ -70,8 +73,11 @@ function HabitListItemComponent({
       htmlFor={`habit-${habit.id}`}
       initial={HABIT_ITEM_INITIAL}
       className={cn(
-        "group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
-        habit.completed ? "text-muted-foreground/50" : "hover:bg-muted/25"
+        "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
+        disabled ? "cursor-default opacity-55" : "cursor-pointer",
+        habit.completed
+          ? "text-muted-foreground/50"
+          : !disabled && "hover:bg-muted/25"
       )}
       transition={microTransition}
       {...hoverProps}
@@ -80,8 +86,13 @@ function HabitListItemComponent({
       <Checkbox
         checked={habit.completed}
         className="size-4 shrink-0 rounded-full border-2 transition-all duration-200 group-hover:scale-110 group-active:scale-90"
+        disabled={disabled}
         id={`habit-${habit.id}`}
-        onCheckedChange={() => onToggle(habit.id)}
+        onCheckedChange={() => {
+          if (!disabled) {
+            onToggle(habit.id);
+          }
+        }}
         style={
           {
             backgroundColor: habit.completed ? presentation.color : undefined,
@@ -96,7 +107,8 @@ function HabitListItemComponent({
             "min-w-0 break-words text-sm leading-snug transition-all duration-150",
             habit.completed
               ? "line-through decoration-muted-foreground/30"
-              : "group-hover:brightness-125 dark:group-hover:brightness-150"
+              : !disabled &&
+                  "group-hover:brightness-125 dark:group-hover:brightness-150"
           )}
         >
           {habit.name}

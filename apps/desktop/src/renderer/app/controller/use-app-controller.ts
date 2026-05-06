@@ -82,6 +82,7 @@ function buildControllerActions({
     },
     handleRetryHistoryLoad: actions.loadHistoryYears,
     handleSelectHistoryYear: actions.selectHistoryYear,
+    handleSetDayStatus: actions.handleSetDayStatus,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,

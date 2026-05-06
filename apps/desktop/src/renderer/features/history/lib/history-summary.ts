@@ -11,6 +11,10 @@ export function getActivityStatus(
     return "sick";
   }
 
+  if (summary.dayStatus === "rest") {
+    return "rest";
+  }
+
   if (summary.freezeUsed) {
     return "freeze";
   }
@@ -40,6 +44,10 @@ export function getActivityBadgeLabel(
     return "Sick Day";
   }
 
+  if (status === "rest") {
+    return "Rest Day";
+  }
+
   if (status === "in-progress") {
     return "In Progress";
   }
@@ -55,7 +63,11 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
   const sickDays = history.filter(
     (day) => day.summary.dayStatus === "sick"
   ).length;
-  const missedDays = history.length - completedDays - freezeDays - sickDays;
+  const restDays = history.filter(
+    (day) => day.summary.dayStatus === "rest"
+  ).length;
+  const missedDays =
+    history.length - completedDays - freezeDays - sickDays - restDays;
   const completionRate =
     history.length === 0
       ? 0
@@ -66,6 +78,7 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
     completionRate,
     freezeDays,
     missedDays,
+    restDays,
     sickDays,
   };
 }

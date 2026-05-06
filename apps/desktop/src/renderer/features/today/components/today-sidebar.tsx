@@ -1,4 +1,10 @@
-import { MoreHorizontal } from "lucide-react";
+import {
+  CalendarPlus,
+  HeartPulse,
+  MoreHorizontal,
+  Pause,
+  X,
+} from "lucide-react";
 import { useMemo } from "react";
 
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
@@ -12,6 +18,7 @@ import {
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 
@@ -23,10 +30,32 @@ import {
 
 interface TodaySidebarProps {
   history: HistoryDay[];
-  isSickDay: boolean;
   state: TodayState;
-  onToggleSickDay: () => void;
+  onSetDayStatus: (kind: DayStatusKind | null) => void;
 }
+
+const DAY_STATUS_COPY: Record<
+  DayStatusKind,
+  {
+    icon: typeof HeartPulse;
+    iconClassName: string;
+    label: string;
+    message: string;
+  }
+> = {
+  rest: {
+    icon: Pause,
+    iconClassName: "text-sky-600 dark:text-sky-400",
+    label: "Rest day",
+    message: "Habits paused.",
+  },
+  sick: {
+    icon: HeartPulse,
+    iconClassName: "text-amber-600 dark:text-amber-400",
+    label: "Sick day",
+    message: "Streak preserved.",
+  },
+};
 
 function getBarClassName(percent: number): string {
   if (percent === 100) {
@@ -46,10 +75,12 @@ function formatDays(value: number): string {
 
 export function TodaySidebar({
   history,
-  isSickDay,
   state,
-  onToggleSickDay,
+  onSetDayStatus,
 }: TodaySidebarProps) {
+  const { dayStatus } = state;
+  const dayStatusCopy = dayStatus ? DAY_STATUS_COPY[dayStatus] : null;
+  const DayStatusIcon = dayStatusCopy?.icon;
   const todayMetricsState = useMemo(
     () => ({
       date: state.date,
@@ -96,13 +127,78 @@ export function TodaySidebar({
                 <MoreHorizontal className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onToggleSickDay}>
-                {isSickDay ? "Undo sick day" : "Mark today sick"}
+            <DropdownMenuContent align="end" className="w-64">
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                Day options
+              </div>
+              <DropdownMenuItem onClick={() => onSetDayStatus("sick")}>
+                <HeartPulse className="size-4 text-amber-600" />
+                <div className="grid gap-0.5">
+                  <span>Sick day</span>
+                  <span className="text-xs text-muted-foreground">
+                    Preserve streak today
+                  </span>
+                </div>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSetDayStatus("rest")}>
+                <Pause className="size-4 text-sky-600" />
+                <div className="grid gap-0.5">
+                  <span>Rest day</span>
+                  <span className="text-xs text-muted-foreground">
+                    Pause habits today
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <CalendarPlus className="size-4" />
+                <div className="grid gap-0.5">
+                  <span>Move unfinished</span>
+                  <span className="text-xs text-muted-foreground">
+                    Carry remaining to tomorrow
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              {dayStatus ? (
+                <DropdownMenuItem onClick={() => onSetDayStatus(null)}>
+                  <X className="size-4" />
+                  Clear day status
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {dayStatusCopy ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border/65 bg-muted/30 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className="grid size-7 shrink-0 place-items-center rounded-full bg-background/80">
+                {DayStatusIcon ? (
+                  <DayStatusIcon
+                    className={cn("size-3.5", dayStatusCopy.iconClassName)}
+                  />
+                ) : null}
+              </div>
+              <div className="grid min-w-0 gap-0.5">
+                <p className="truncate text-xs font-semibold text-foreground">
+                  {dayStatusCopy.label}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {dayStatusCopy.message}
+                </p>
+              </div>
+            </div>
+            <Button
+              aria-label="Clear day status"
+              className="size-7 shrink-0"
+              onClick={() => onSetDayStatus(null)}
+              size="icon-xs"
+              type="button"
+              variant="ghost"
+            >
+              <X className="size-3.5" />
+            </Button>
+          </div>
+        ) : null}
 
         <div className="flex justify-center py-1">
           <div
@@ -117,12 +213,6 @@ export function TodaySidebar({
           </div>
         </div>
       </section>
-
-      {isSickDay ? (
-        <p className="-mt-3 text-xs text-muted-foreground">
-          Today marked sick. Streak preserved.
-        </p>
-      ) : null}
 
       <Separator />
 

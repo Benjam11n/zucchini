@@ -22,6 +22,7 @@ interface HabitChecklistProps {
   emptyAction?: ReactNode;
   headerActions?: ReactNode;
   habitStreaks?: Readonly<Record<number, HabitStreak>>;
+  isPaused?: boolean;
   title?: string;
   icon?: React.ElementType;
 }
@@ -39,6 +40,7 @@ function HabitChecklistComponent({
   emptyAction: _emptyAction,
   headerActions,
   habitStreaks,
+  isPaused = false,
   title = "Today",
   icon: Icon,
 }: HabitChecklistProps) {
@@ -140,6 +142,7 @@ function HabitChecklistComponent({
 
                 return (
                   <HabitListItem
+                    disabled={isPaused}
                     key={habit.id}
                     habit={habit}
                     onToggle={onToggleHabit}

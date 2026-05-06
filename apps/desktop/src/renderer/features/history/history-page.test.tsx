@@ -172,6 +172,7 @@ function createWeeklyReview(): WeeklyReview {
     longestCleanRun: 3,
     missedDays: 2,
     mostMissedHabits: [],
+    restDays: 0,
     sickDays: 0,
     trackedDays: 7,
     weekEnd: "2026-03-08",

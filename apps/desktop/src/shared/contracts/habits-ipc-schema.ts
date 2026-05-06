@@ -459,6 +459,12 @@ const commandSchemas = [
   z
     .object({ payload: appSettingsSchema, type: z.literal("settings.update") })
     .strict(),
+  z
+    .object({
+      payload: z.object({ kind: z.enum(["rest", "sick"]).nullable() }).strict(),
+      type: z.literal("today.setDayStatus"),
+    })
+    .strict(),
   z.object({ type: z.literal("today.toggleSickDay") }).strict(),
   z
     .object({

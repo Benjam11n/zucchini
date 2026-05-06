@@ -2,6 +2,7 @@ import {
   ChevronLeft,
   ChevronRight,
   HeartPulse,
+  Pause,
   Snowflake,
   Timer,
   TrendingUp,
@@ -55,6 +56,11 @@ export function WeeklyReviewHeroCard({
       value: review.sickDays,
     },
     {
+      icon: Pause,
+      label: "Rest",
+      value: review.restDays,
+    },
+    {
       icon: Timer,
       label: "Focus",
       value: `${review.focusMinutes}m`,
@@ -82,7 +88,7 @@ export function WeeklyReviewHeroCard({
           </div>
 
           <div className="flex flex-col gap-5 rounded-2xl border border-border/40 bg-zinc-500/5 p-5">
-            <div className="grid grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-5 gap-4 sm:gap-6">
               {STATS.map((stat) => (
                 <WeeklyReviewHeroStat key={stat.label} {...stat} />
               ))}

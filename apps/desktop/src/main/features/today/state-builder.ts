@@ -106,23 +106,19 @@ function buildTodayHabitStreaksFromHabits(
     const persistedState = persistedStateByHabitId.get(habit.id);
     const settledCurrentStreak = persistedState?.currentStreak ?? 0;
     const currentStreak =
-      dayStatus !== "sick" && habit.completed
+      !dayStatus && habit.completed
         ? settledCurrentStreak + 1
         : settledCurrentStreak;
 
-    habitStreaks[habit.id] =
-      dayStatus === "sick"
-        ? {
-            bestStreak: persistedState?.bestStreak ?? 0,
-            currentStreak,
-          }
-        : {
-            bestStreak: Math.max(
-              persistedState?.bestStreak ?? 0,
-              currentStreak
-            ),
-            currentStreak,
-          };
+    habitStreaks[habit.id] = dayStatus
+      ? {
+          bestStreak: persistedState?.bestStreak ?? 0,
+          currentStreak,
+        }
+      : {
+          bestStreak: Math.max(persistedState?.bestStreak ?? 0, currentStreak),
+          currentStreak,
+        };
   }
 
   return habitStreaks;

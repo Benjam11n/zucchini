@@ -112,6 +112,7 @@ function createService() {
     savePersistedFocusTimerState: vi.fn((state) => state),
     saveReminderRuntimeState: vi.fn(),
     saveWindDownRuntimeState: vi.fn(),
+    setDayStatus: vi.fn(),
     toggleSickDay: vi.fn(),
     toggleHabit: vi.fn(),
     toggleWindDownAction: vi.fn(),

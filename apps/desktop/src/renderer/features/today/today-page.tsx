@@ -135,6 +135,7 @@ function TodayPageComponent({
               />
             }
             habits={dailyHabits}
+            isPaused={state.dayStatus !== null}
             onToggleHabit={onToggleHabit}
             {...(state.habitStreaks
               ? { habitStreaks: state.habitStreaks }

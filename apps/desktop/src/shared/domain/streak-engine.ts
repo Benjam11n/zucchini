@@ -31,14 +31,14 @@ export function settleClosedDay(
   state: RollingStreakState,
   input: ClosedDayInput
 ): SettledDayResult {
-  if (input.dayStatus === "sick") {
+  if (input.dayStatus) {
     return {
       allCompleted: false,
       availableFreezes: state.availableFreezes,
       bestStreak: state.bestStreak,
       completedAt: null,
       currentStreak: state.currentStreak,
-      dayStatus: "sick",
+      dayStatus: input.dayStatus,
       freezeUsed: false,
     };
   }
@@ -90,7 +90,7 @@ export function previewOpenDay(
   allCompleted: boolean,
   dayStatus: DayStatusKind | null = null
 ): RollingStreakState {
-  if (dayStatus === "sick") {
+  if (dayStatus) {
     return state;
   }
 

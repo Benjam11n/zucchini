@@ -164,6 +164,9 @@ export function executeHabitServiceCommand(
     case "settings.update": {
       return service.updateSettings(command.payload);
     }
+    case "today.setDayStatus": {
+      return service.setDayStatus(command.payload.kind);
+    }
     case "today.toggleSickDay": {
       return service.toggleSickDay();
     }

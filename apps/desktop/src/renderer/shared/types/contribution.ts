@@ -4,6 +4,7 @@ export type ContributionStatus =
   | "complete"
   | "empty"
   | "freeze"
+  | "rest"
   | "sick"
   | "missed"
   | "in-progress";

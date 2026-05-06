@@ -142,6 +142,9 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
     "settings.update": (
       command: Extract<HabitCommand, { type: "settings.update" }>
     ) => getMock(mock, "updateSettings")(command.payload),
+    "today.setDayStatus": (
+      command: Extract<HabitCommand, { type: "today.setDayStatus" }>
+    ) => getMock(mock, "setDayStatus")(command.payload.kind),
     "today.toggleSickDay": () => getMock(mock, "toggleSickDay")(),
     "windDown.createAction": (
       command: Extract<HabitCommand, { type: "windDown.createAction" }>
@@ -255,6 +258,7 @@ function createMockHabitsApi(
     reorderHabits: vi.fn().mockResolvedValue(null),
     resizeFocusWidget: vi.fn().mockResolvedValue(null),
     saveFocusTimerState: vi.fn((state: unknown) => Promise.resolve(state)),
+    setDayStatus: vi.fn().mockResolvedValue(null),
     showFocusWidget: vi.fn().mockResolvedValue(null),
     showMainWindow: vi.fn().mockResolvedValue(null),
     showNotification: vi.fn().mockResolvedValue(null),

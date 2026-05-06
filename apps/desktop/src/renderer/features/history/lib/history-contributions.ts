@@ -76,6 +76,10 @@ function getContributionStatus(
     return "sick";
   }
 
+  if (summary.dayStatus === "rest") {
+    return "rest";
+  }
+
   if (summary.allCompleted) {
     return "complete";
   }
@@ -170,6 +174,10 @@ export function formatContributionLabel(cell: ContributionCell): string {
 
   if (cell.summary.dayStatus === "sick") {
     return `${dateLabel}: ${completionLabel}, sick day preserved streak`;
+  }
+
+  if (cell.summary.dayStatus === "rest") {
+    return `${dateLabel}: ${completionLabel}, rest day preserved streak`;
   }
 
   if (cell.summary.freezeUsed) {

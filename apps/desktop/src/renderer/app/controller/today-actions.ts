@@ -15,6 +15,7 @@ import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   Habit,
@@ -337,6 +338,9 @@ export function createTodayActions({
     },
     async handleToggleSickDay() {
       await refreshToday(habitsClient.toggleSickDay());
+    },
+    async handleSetDayStatus(kind: DayStatusKind | null) {
+      await refreshToday(habitsClient.setDayStatus(kind));
     },
     async handleToggleWindDownAction(actionId: number) {
       await refreshToday(habitsClient.toggleWindDownAction(actionId));

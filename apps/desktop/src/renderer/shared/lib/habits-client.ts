@@ -6,6 +6,7 @@ import type {
   HabitQuery,
   ResultForQuery,
 } from "@/shared/contracts/habits-ipc-queries";
+import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { GoalFrequency } from "@/shared/domain/goal";
@@ -154,6 +155,11 @@ export const habitsClient = {
     command({
       payload: state,
       type: "focusTimer.saveState",
+    }),
+  setDayStatus: (kind: DayStatusKind | null) =>
+    command({
+      payload: { kind },
+      type: "today.setDayStatus",
     }),
   toggleHabit: (habitId: number) =>
     command({
