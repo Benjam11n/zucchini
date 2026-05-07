@@ -8,6 +8,7 @@
 import { ListChecks, Plus } from "lucide-react";
 import { memo, useMemo } from "react";
 
+import { CarryoverChecklist } from "@/renderer/features/today/components/carryover-checklist";
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
 import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
 import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
@@ -28,6 +29,7 @@ interface TodayPageProps extends HabitMutationActions {
   managedHabits: Habit[];
   onDecrementHabitProgress: (habitId: number) => void;
   onIncrementHabitProgress: (habitId: number) => void;
+  onToggleHabitCarryover: (sourceDate: string, habitId: number) => void;
   state: TodayState;
   onToggleHabit: (habitId: number) => void;
 }
@@ -40,6 +42,7 @@ function TodayPageComponent({
   onCreateHabit,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
+  onToggleHabitCarryover,
   onRenameHabit,
   onReorderHabits,
   onUnarchiveHabit,
@@ -142,6 +145,15 @@ function TodayPageComponent({
               : {})}
           />
         </section>
+
+        {state.habitCarryovers && state.habitCarryovers.length > 0 ? (
+          <section>
+            <CarryoverChecklist
+              carryovers={state.habitCarryovers}
+              onToggleCarryover={onToggleHabitCarryover}
+            />
+          </section>
+        ) : null}
 
         {periodicHabits.length > 0 ||
         (state.focusQuotaGoals ?? []).length > 0 ? (

@@ -152,6 +152,7 @@ export function buildTodayState(
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
+    habitCarryovers: repository.getHabitCarryoversForDate(today),
     habitStreaks: buildTodayHabitStreaksFromHabits(
       repository,
       habits,

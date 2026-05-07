@@ -34,7 +34,7 @@ import type {
 } from "./types";
 
 function normalizeDayStatusKind(value: string | null): DayStatusKind | null {
-  if (value === "rest" || value === "sick") {
+  if (value === "rescheduled" || value === "rest" || value === "sick") {
     return value;
   }
 

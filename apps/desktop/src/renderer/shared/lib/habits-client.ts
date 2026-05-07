@@ -131,6 +131,10 @@ export const habitsClient = {
       payload: { habitId },
       type: "habit.incrementProgress",
     }),
+  moveUnfinishedHabitsToTomorrow: () =>
+    command({
+      type: "today.moveUnfinishedToTomorrow",
+    }),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     command({
       payload: input,
@@ -165,6 +169,11 @@ export const habitsClient = {
     command({
       payload: { habitId },
       type: "habit.toggle",
+    }),
+  toggleHabitCarryover: (sourceDate: string, habitId: number) =>
+    command({
+      payload: { habitId, sourceDate },
+      type: "today.toggleCarryover",
     }),
   toggleSickDay: () =>
     command({

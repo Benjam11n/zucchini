@@ -291,8 +291,16 @@ export function buildWeeklyReview({
   const restDays = summariesInWeek.filter(
     (summary) => summary.dayStatus === "rest"
   ).length;
+  const rescheduledDays = summariesInWeek.filter(
+    (summary) => summary.dayStatus === "rescheduled"
+  ).length;
   const missedDays =
-    trackedDays - completedDays - freezeDays - sickDays - restDays;
+    trackedDays -
+    completedDays -
+    freezeDays -
+    sickDays -
+    restDays -
+    rescheduledDays;
   const habitMetrics = buildHabitMetrics(statusesInWeek);
 
   return {
@@ -307,6 +315,7 @@ export function buildWeeklyReview({
     longestCleanRun: getLongestCleanRun(summariesInWeek),
     missedDays,
     mostMissedHabits: getMostMissedHabits(habitMetrics),
+    rescheduledDays,
     restDays,
     sickDays,
     trackedDays,
@@ -332,6 +341,7 @@ function toTrendPoint(review: WeeklyReview): WeeklyReviewTrendPoint {
     freezeDays: review.freezeDays,
     label: review.label,
     missedDays: review.missedDays,
+    rescheduledDays: review.rescheduledDays,
     restDays: review.restDays,
     sickDays: review.sickDays,
     weekEnd: review.weekEnd,

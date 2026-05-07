@@ -1,4 +1,4 @@
-export type DayStatusKind = "rest" | "sick";
+export type DayStatusKind = "rescheduled" | "rest" | "sick";
 
 export interface DayStatus {
   createdAt: string;

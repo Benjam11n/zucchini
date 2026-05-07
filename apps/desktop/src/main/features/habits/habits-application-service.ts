@@ -80,6 +80,7 @@ import type {
 } from "@/shared/domain/weekly-review";
 import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 import {
+  addDays,
   endOfIsoWeek,
   getPreviousCompletedIsoWeek,
   startOfIsoWeek,
@@ -99,7 +100,9 @@ export interface HabitsService {
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
+  moveUnfinishedHabitsToTomorrow(): TodayState;
   setDayStatus(kind: DayStatusKind | null): TodayState;
+  toggleHabitCarryover(sourceDate: string, habitId: number): TodayState;
   toggleSickDay(): TodayState;
   toggleHabit(habitId: number): HabitStatusPatch;
   incrementHabitProgress(habitId: number): HabitStatusPatch;
@@ -321,6 +324,11 @@ export class HabitsApplicationService implements HabitsService {
       "setDayStatus",
       (today) => {
         if (!kind) {
+          const currentDayStatus = this.repository.getDayStatus(today);
+          if (currentDayStatus?.kind === "rescheduled") {
+            this.repository.clearHabitCarryoversFromSourceDate(today);
+          }
+
           this.repository.clearDayStatus(today);
           return;
         }
@@ -328,6 +336,48 @@ export class HabitsApplicationService implements HabitsService {
         this.repository.setDayStatus(
           today,
           kind,
+          this.clock.now().toISOString()
+        );
+      },
+      {
+        ensureStatusRowsForToday: true,
+        syncRollingState: true,
+      }
+    );
+  }
+
+  moveUnfinishedHabitsToTomorrow(): TodayState {
+    return this.mutateTodayState(
+      "moveUnfinishedHabitsToTomorrow",
+      (today) => {
+        this.repository.ensureStatusRowsForDate(today);
+        const unfinishedDailyHabits = this.repository
+          .getHabitsWithStatus(today)
+          .filter((habit) => isDailyHabit(habit) && !habit.completed);
+
+        if (unfinishedDailyHabits.length === 0) {
+          return;
+        }
+
+        const nowIso = this.clock.now().toISOString();
+        this.repository.createHabitCarryovers(today, addDays(today, 1), nowIso);
+        this.repository.setDayStatus(today, "rescheduled", nowIso);
+      },
+      {
+        ensureStatusRowsForToday: true,
+        syncRollingState: true,
+      }
+    );
+  }
+
+  toggleHabitCarryover(sourceDate: string, habitId: number): TodayState {
+    return this.mutateTodayState(
+      "toggleHabitCarryover",
+      (today) => {
+        this.repository.toggleHabitCarryover(
+          today,
+          sourceDate,
+          habitId,
           this.clock.now().toISOString()
         );
       },

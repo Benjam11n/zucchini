@@ -113,6 +113,13 @@
       "when": 1776700000000,
       "tag": "0015_habit_streak_state",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1778000000000,
+      "tag": "0016_habit_carryovers",
+      "breakpoints": true
     }
   ]
 }

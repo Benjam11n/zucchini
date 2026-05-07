@@ -62,7 +62,12 @@ export type HabitCommand =
       type: "habit.updateWeekdays";
     }
   | { payload: AppSettings; type: "settings.update" }
+  | { type: "today.moveUnfinishedToTomorrow" }
   | { payload: { kind: DayStatusKind | null }; type: "today.setDayStatus" }
+  | {
+      payload: { habitId: number; sourceDate: string };
+      type: "today.toggleCarryover";
+    }
   | { type: "today.toggleSickDay" }
   | { payload: { name: string }; type: "windDown.createAction" }
   | { payload: { actionId: number }; type: "windDown.deleteAction" }
@@ -98,7 +103,9 @@ interface HabitCommandResultByType {
   "habit.updateTargetCount": TodayState;
   "habit.updateWeekdays": TodayState;
   "settings.update": AppSettings;
+  "today.moveUnfinishedToTomorrow": TodayState;
   "today.setDayStatus": TodayState;
+  "today.toggleCarryover": TodayState;
   "today.toggleSickDay": TodayState;
   "windDown.createAction": TodayState;
   "windDown.deleteAction": TodayState;

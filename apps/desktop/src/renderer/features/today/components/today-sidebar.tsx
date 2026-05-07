@@ -31,6 +31,7 @@ import {
 interface TodaySidebarProps {
   history: HistoryDay[];
   state: TodayState;
+  onMoveUnfinishedHabitsToTomorrow: () => void;
   onSetDayStatus: (kind: DayStatusKind | null) => void;
 }
 
@@ -43,6 +44,12 @@ const DAY_STATUS_COPY: Record<
     message: string;
   }
 > = {
+  rescheduled: {
+    icon: CalendarPlus,
+    iconClassName: "text-emerald-600 dark:text-emerald-400",
+    label: "Moved",
+    message: "Unfinished habits carried over.",
+  },
   rest: {
     icon: Pause,
     iconClassName: "text-sky-600 dark:text-sky-400",
@@ -75,12 +82,16 @@ function formatDays(value: number): string {
 
 export function TodaySidebar({
   history,
+  onMoveUnfinishedHabitsToTomorrow,
   state,
   onSetDayStatus,
 }: TodaySidebarProps) {
   const { dayStatus } = state;
   const dayStatusCopy = dayStatus ? DAY_STATUS_COPY[dayStatus] : null;
   const DayStatusIcon = dayStatusCopy?.icon;
+  const canMoveUnfinishedHabits = state.habits.some(
+    (habit) => habit.frequency === "daily" && !habit.completed
+  );
   const todayMetricsState = useMemo(
     () => ({
       date: state.date,
@@ -149,7 +160,10 @@ export function TodaySidebar({
                   </span>
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
+              <DropdownMenuItem
+                disabled={!canMoveUnfinishedHabits}
+                onClick={onMoveUnfinishedHabitsToTomorrow}
+              >
                 <CalendarPlus className="size-4" />
                 <div className="grid gap-0.5">
                   <span>Move unfinished</span>

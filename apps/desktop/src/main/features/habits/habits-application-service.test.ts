@@ -69,6 +69,15 @@ class FakeRepository implements AppRepository {
   >();
   dailySummaries = new Map<string, DailySummary>();
   dayStatuses = new Map<string, DayStatus>();
+  habitCarryovers = new Map<
+    string,
+    {
+      completed: boolean;
+      habitId: number;
+      sourceDate: string;
+      targetDate: string;
+    }
+  >();
   streak: StreakState = {
     availableFreezes: 1,
     bestStreak: 5,
@@ -199,6 +208,26 @@ class FakeRepository implements AppRepository {
 
   getDayStatus(date: string): DayStatus | null {
     return this.dayStatuses.get(date) ?? null;
+  }
+
+  getHabitCarryoversForDate(targetDate: string) {
+    return [...this.habitCarryovers.values()]
+      .filter((carryover) => carryover.targetDate === targetDate)
+      .map((carryover) => {
+        const habit = this.habits.find((item) => item.id === carryover.habitId);
+        if (!habit) {
+          return null;
+        }
+
+        return {
+          ...habit,
+          completed: carryover.completed,
+          completedCount: carryover.completed ? (habit.targetCount ?? 1) : 0,
+          sourceDate: carryover.sourceDate,
+          targetDate: carryover.targetDate,
+        };
+      })
+      .filter((carryover) => carryover !== null);
   }
 
   ensureStatusRowsForDate(date: string): void {
@@ -547,6 +576,41 @@ class FakeRepository implements AppRepository {
       date,
       kind,
     });
+  }
+
+  createHabitCarryovers(sourceDate: string, targetDate: string): void {
+    const unfinishedDailyHabits = this.getHabitsWithStatus(sourceDate).filter(
+      (habit) => habit.frequency === "daily" && !habit.completed
+    );
+
+    for (const habit of unfinishedDailyHabits) {
+      this.habitCarryovers.set(`${sourceDate}:${targetDate}:${habit.id}`, {
+        completed: false,
+        habitId: habit.id,
+        sourceDate,
+        targetDate,
+      });
+    }
+  }
+
+  toggleHabitCarryover(
+    targetDate: string,
+    sourceDate: string,
+    habitId: number
+  ): void {
+    const key = `${sourceDate}:${targetDate}:${habitId}`;
+    const carryover = this.habitCarryovers.get(key);
+    if (carryover) {
+      carryover.completed = !carryover.completed;
+    }
+  }
+
+  clearHabitCarryoversFromSourceDate(sourceDate: string): void {
+    for (const key of this.habitCarryovers.keys()) {
+      if (key.startsWith(`${sourceDate}:`)) {
+        this.habitCarryovers.delete(key);
+      }
+    }
   }
 
   clearDayStatus(date: string): void {
@@ -1142,6 +1206,87 @@ describe("habit categories", () => {
       isArchived: false,
       sortOrder: 1,
     });
+  });
+});
+
+describe("habit carryovers", () => {
+  it("moves unfinished daily habits to tomorrow and preserves today", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Walk",
+      selectedWeekdays: null,
+      sortOrder: 1,
+      targetCount: 1,
+    });
+    repository.setStatusForDate(
+      "2026-03-08",
+      new Map([
+        [1, true],
+        [2, false],
+      ])
+    );
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const today = service.moveUnfinishedHabitsToTomorrow();
+
+    expect(today.dayStatus).toBe("rescheduled");
+    expect(repository.getHabitCarryoversForDate("2026-03-09")).toMatchObject([
+      {
+        completed: false,
+        id: 2,
+        name: "Walk",
+        sourceDate: "2026-03-08",
+        targetDate: "2026-03-09",
+      },
+    ]);
+  });
+
+  it("toggles carried-over habits without changing source-day progress", () => {
+    const repository = new FakeRepository();
+    repository.setStatusForDate("2026-03-08", new Map([[1, false]]));
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+    service.moveUnfinishedHabitsToTomorrow();
+
+    const tomorrowService = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-09", "2026-03-09T09:00:00.000Z")
+    );
+    const tomorrow = tomorrowService.toggleHabitCarryover("2026-03-08", 1);
+
+    expect(tomorrow.habitCarryovers).toMatchObject([
+      {
+        completed: true,
+        id: 1,
+        sourceDate: "2026-03-08",
+      },
+    ]);
+    expect(repository.getHabitProgress("2026-03-08", 1)).toBe(0);
+  });
+
+  it("clears carryovers when undoing a rescheduled day", () => {
+    const repository = new FakeRepository();
+    repository.setStatusForDate("2026-03-08", new Map([[1, false]]));
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+    service.moveUnfinishedHabitsToTomorrow();
+
+    const today = service.setDayStatus(null);
+
+    expect(today.dayStatus).toBeNull();
+    expect(repository.getHabitCarryoversForDate("2026-03-09")).toHaveLength(0);
   });
 });
 

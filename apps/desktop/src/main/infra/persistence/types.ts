@@ -7,6 +7,7 @@ import type {
   dailySummary,
   dayStatus,
   focusSessions,
+  habitCarryovers,
   habitStreakState,
   habits,
   habitPeriodStatus,
@@ -19,6 +20,7 @@ export type HabitPeriodStatusRow = typeof habitPeriodStatus.$inferSelect;
 export type DailySummaryRow = typeof dailySummary.$inferSelect;
 export type DayStatusRow = typeof dayStatus.$inferSelect;
 export type FocusSessionRow = typeof focusSessions.$inferSelect;
+export type HabitCarryoverRow = typeof habitCarryovers.$inferSelect;
 export type HabitStreakStateRow = typeof habitStreakState.$inferSelect;
 export type StreakStateRow = typeof streakState.$inferSelect;
 export type WindDownActionRow = typeof windDownActions.$inferSelect;

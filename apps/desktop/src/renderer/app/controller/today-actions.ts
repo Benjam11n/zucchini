@@ -326,6 +326,9 @@ export function createTodayActions({
     handleOpenWindDown() {
       useUiStore.getState().setTab("windDown");
     },
+    async handleMoveUnfinishedHabitsToTomorrow() {
+      await refreshToday(habitsClient.moveUnfinishedHabitsToTomorrow());
+    },
     handleCloseWindDown() {
       useUiStore.getState().setTab("today");
     },
@@ -335,6 +338,11 @@ export function createTodayActions({
         mutationKind: "toggle",
         run: () => habitsClient.toggleHabit(habitId),
       });
+    },
+    async handleToggleHabitCarryover(sourceDate: string, habitId: number) {
+      await refreshToday(
+        habitsClient.toggleHabitCarryover(sourceDate, habitId)
+      );
     },
     async handleToggleSickDay() {
       await refreshToday(habitsClient.toggleSickDay());

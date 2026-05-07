@@ -42,6 +42,7 @@ describe("history summary", () => {
       completionRate: 33,
       freezeDays: 1,
       missedDays: 1,
+      rescheduledDays: 0,
       restDays: 0,
       sickDays: 0,
     });
@@ -53,6 +54,7 @@ describe("history summary", () => {
       completionRate: 0,
       freezeDays: 0,
       missedDays: 0,
+      rescheduledDays: 0,
       restDays: 0,
       sickDays: 0,
     });

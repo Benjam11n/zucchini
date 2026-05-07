@@ -72,6 +72,8 @@ function buildControllerActions({
     },
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadHistoryYears: actions.loadHistoryYears,
+    handleMoveUnfinishedHabitsToTomorrow:
+      actions.handleMoveUnfinishedHabitsToTomorrow,
     handleOpenWindDown: actions.handleOpenWindDown,
     handleRenameHabit: actions.handleRenameHabit,
     handleRenameWindDownAction: actions.handleRenameWindDownAction,
@@ -87,6 +89,7 @@ function buildControllerActions({
     handleShowFocusWidget: actions.showFocusWidget,
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
+    handleToggleHabitCarryover: actions.handleToggleHabitCarryover,
     handleToggleSickDay: actions.handleToggleSickDay,
     handleToggleWindDownAction: actions.handleToggleWindDownAction,
     handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,

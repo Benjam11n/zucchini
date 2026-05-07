@@ -142,9 +142,18 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
     "settings.update": (
       command: Extract<HabitCommand, { type: "settings.update" }>
     ) => getMock(mock, "updateSettings")(command.payload),
+    "today.moveUnfinishedToTomorrow": () =>
+      getMock(mock, "moveUnfinishedHabitsToTomorrow")(),
     "today.setDayStatus": (
       command: Extract<HabitCommand, { type: "today.setDayStatus" }>
     ) => getMock(mock, "setDayStatus")(command.payload.kind),
+    "today.toggleCarryover": (
+      command: Extract<HabitCommand, { type: "today.toggleCarryover" }>
+    ) =>
+      getMock(mock, "toggleHabitCarryover")(
+        command.payload.sourceDate,
+        command.payload.habitId
+      ),
     "today.toggleSickDay": () => getMock(mock, "toggleSickDay")(),
     "windDown.createAction": (
       command: Extract<HabitCommand, { type: "windDown.createAction" }>
@@ -251,6 +260,7 @@ function createMockHabitsApi(
     onWindDownNavigationRequested: vi.fn(() => vi.fn()),
     openDataFolder: vi.fn().mockResolvedValue(""),
     query: vi.fn().mockResolvedValue(null),
+    moveUnfinishedHabitsToTomorrow: vi.fn().mockResolvedValue(null),
     recordFocusSession: vi.fn().mockResolvedValue(null),
     releaseFocusTimerLeadership: vi.fn().mockResolvedValue(null),
     renameHabit: vi.fn().mockResolvedValue(null),
@@ -259,6 +269,7 @@ function createMockHabitsApi(
     resizeFocusWidget: vi.fn().mockResolvedValue(null),
     saveFocusTimerState: vi.fn((state: unknown) => Promise.resolve(state)),
     setDayStatus: vi.fn().mockResolvedValue(null),
+    toggleHabitCarryover: vi.fn().mockResolvedValue(null),
     showFocusWidget: vi.fn().mockResolvedValue(null),
     showMainWindow: vi.fn().mockResolvedValue(null),
     showNotification: vi.fn().mockResolvedValue(null),

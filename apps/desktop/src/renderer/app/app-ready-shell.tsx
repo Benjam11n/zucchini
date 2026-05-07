@@ -16,6 +16,9 @@ export function AppReadyShell({
       <TodaySidebar
         history={state.history}
         state={state.todayState}
+        onMoveUnfinishedHabitsToTomorrow={
+          actions.handleMoveUnfinishedHabitsToTomorrow
+        }
         onSetDayStatus={actions.handleSetDayStatus}
       />
     ) : undefined;

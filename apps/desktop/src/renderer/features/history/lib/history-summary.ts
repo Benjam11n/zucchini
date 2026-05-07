@@ -15,6 +15,10 @@ export function getActivityStatus(
     return "rest";
   }
 
+  if (summary.dayStatus === "rescheduled") {
+    return "rescheduled";
+  }
+
   if (summary.freezeUsed) {
     return "freeze";
   }
@@ -48,6 +52,10 @@ export function getActivityBadgeLabel(
     return "Rest Day";
   }
 
+  if (status === "rescheduled") {
+    return "Moved";
+  }
+
   if (status === "in-progress") {
     return "In Progress";
   }
@@ -66,8 +74,16 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
   const restDays = history.filter(
     (day) => day.summary.dayStatus === "rest"
   ).length;
+  const rescheduledDays = history.filter(
+    (day) => day.summary.dayStatus === "rescheduled"
+  ).length;
   const missedDays =
-    history.length - completedDays - freezeDays - sickDays - restDays;
+    history.length -
+    completedDays -
+    freezeDays -
+    sickDays -
+    restDays -
+    rescheduledDays;
   const completionRate =
     history.length === 0
       ? 0
@@ -78,6 +94,7 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
     completionRate,
     freezeDays,
     missedDays,
+    rescheduledDays,
     restDays,
     sickDays,
   };

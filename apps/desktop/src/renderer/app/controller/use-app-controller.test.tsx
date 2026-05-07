@@ -80,7 +80,12 @@ function createManagedHabit(overrides: Partial<Habit> = {}): Habit {
 function createWeeklyReview(
   overrides: Partial<WeeklyReview> = {}
 ): WeeklyReview {
-  const { restDays = 0, sickDays = 0, ...rest } = overrides;
+  const {
+    rescheduledDays = 0,
+    restDays = 0,
+    sickDays = 0,
+    ...rest
+  } = overrides;
 
   return {
     completedDays: 5,
@@ -94,6 +99,7 @@ function createWeeklyReview(
     longestCleanRun: 4,
     missedDays: 1,
     mostMissedHabits: [],
+    rescheduledDays,
     restDays,
     sickDays,
     trackedDays: 7,

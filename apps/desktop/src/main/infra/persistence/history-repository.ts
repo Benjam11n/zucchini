@@ -12,6 +12,7 @@ import {
   dayStatus,
   focusQuotaGoals,
   focusSessions,
+  habitCarryovers,
   habitPeriodStatus,
 } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
@@ -26,6 +27,7 @@ import {
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import { isHabitScheduledForDate } from "@/shared/domain/habit";
 import type { HabitWithStatus, Habit } from "@/shared/domain/habit";
+import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -221,6 +223,69 @@ export class SqliteHistoryRepository {
     });
   }
 
+  getHabitCarryoversForDate(targetDate: string): HabitCarryover[] {
+    return this.client.run("getHabitCarryoversForDate", () =>
+      (
+        this.client
+          .getSqlite()
+          .prepare(
+            `
+              SELECT
+                carryovers.source_date AS sourceDate,
+                carryovers.target_date AS targetDate,
+                carryovers.completed AS completed,
+                status.completed_count AS sourceCompletedCount,
+                status.habit_category AS category,
+                status.habit_created_at AS createdAt,
+                status.frequency AS frequency,
+                status.habit_id AS id,
+                status.habit_name AS name,
+                status.habit_selected_weekdays AS selectedWeekdays,
+                status.habit_sort_order AS sortOrder,
+                status.habit_target_count AS targetCount
+              FROM habit_carryovers AS carryovers
+              INNER JOIN habit_period_status AS status
+                ON status.habit_id = carryovers.habit_id
+                AND status.frequency = 'daily'
+                AND status.period_start = carryovers.source_date
+              WHERE carryovers.target_date = ?
+              ORDER BY status.habit_sort_order, status.habit_id
+            `
+          )
+          .all(targetDate) as {
+          category: HabitWithStatus["category"];
+          completed: 0 | 1;
+          createdAt: string;
+          frequency: HabitWithStatus["frequency"];
+          id: number;
+          name: string;
+          selectedWeekdays: string | null;
+          sortOrder: number;
+          sourceCompletedCount: number;
+          sourceDate: string;
+          targetCount: number;
+          targetDate: string;
+        }[]
+      ).map((row) => ({
+        category: row.category,
+        completed: Boolean(row.completed),
+        completedCount: row.completed ? row.targetCount : 0,
+        createdAt: row.createdAt,
+        frequency: row.frequency,
+        id: row.id,
+        isArchived: false,
+        name: row.name,
+        selectedWeekdays: row.selectedWeekdays
+          ? JSON.parse(row.selectedWeekdays)
+          : null,
+        sortOrder: row.sortOrder,
+        sourceDate: row.sourceDate,
+        targetCount: row.targetCount,
+        targetDate: row.targetDate,
+      }))
+    );
+  }
+
   getHistoricalHabitPeriodStatusesOverlappingRange(
     start: string,
     end: string
@@ -279,6 +344,77 @@ export class SqliteHistoryRepository {
         .insert(habitPeriodStatus)
         .values(dueHabits.map((habit) => toStatusInsertValue(habit, date)))
         .onConflictDoNothing()
+        .run();
+    });
+  }
+
+  createHabitCarryovers(
+    sourceDate: string,
+    targetDate: string,
+    createdAt: string
+  ): void {
+    this.client.run("createHabitCarryovers", () => {
+      this.client
+        .getDrizzle()
+        .insert(habitCarryovers)
+        .select(
+          this.client
+            .getDrizzle()
+            .select({
+              completed: sql<boolean>`false`.as("completed"),
+              completedAt: sql<string | null>`null`.as("completed_at"),
+              createdAt: sql<string>`${createdAt}`.as("created_at"),
+              habitId: habitPeriodStatus.habitId,
+              sourceDate: sql<string>`${sourceDate}`.as("source_date"),
+              targetDate: sql<string>`${targetDate}`.as("target_date"),
+            })
+            .from(habitPeriodStatus)
+            .where(
+              and(
+                eq(habitPeriodStatus.frequency, "daily"),
+                eq(habitPeriodStatus.periodStart, sourceDate),
+                eq(habitPeriodStatus.completed, false)
+              )
+            )
+        )
+        .onConflictDoNothing()
+        .run();
+    });
+  }
+
+  toggleHabitCarryover(
+    targetDate: string,
+    sourceDate: string,
+    habitId: number,
+    completedAt: string
+  ): void {
+    this.client.run("toggleHabitCarryover", () => {
+      this.client
+        .getDrizzle()
+        .update(habitCarryovers)
+        .set({
+          completed: sql<boolean>`case when ${habitCarryovers.completed} = 1 then 0 else 1 end`,
+          completedAt: sql<
+            string | null
+          >`case when ${habitCarryovers.completed} = 1 then null else ${completedAt} end`,
+        })
+        .where(
+          and(
+            eq(habitCarryovers.targetDate, targetDate),
+            eq(habitCarryovers.sourceDate, sourceDate),
+            eq(habitCarryovers.habitId, habitId)
+          )
+        )
+        .run();
+    });
+  }
+
+  clearHabitCarryoversFromSourceDate(sourceDate: string): void {
+    this.client.run("clearHabitCarryoversFromSourceDate", () => {
+      this.client
+        .getDrizzle()
+        .delete(habitCarryovers)
+        .where(eq(habitCarryovers.sourceDate, sourceDate))
         .run();
     });
   }

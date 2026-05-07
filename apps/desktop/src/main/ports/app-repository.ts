@@ -26,6 +26,7 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
@@ -122,7 +123,14 @@ export interface FocusTimerStateRepositoryPort {
 }
 
 export interface HistoryRepositoryPort {
+  clearHabitCarryoversFromSourceDate(sourceDate: string): void;
+  createHabitCarryovers(
+    sourceDate: string,
+    targetDate: string,
+    createdAt: string
+  ): void;
   getDayStatus(date: string): DayStatus | null;
+  getHabitCarryoversForDate(targetDate: string): HabitCarryover[];
   getSettledHistory(
     limit?: number,
     options?: SettledHistoryOptions
@@ -137,6 +145,12 @@ export interface HistoryRepositoryPort {
   getLatestTrackedDate(): string | null;
   getExistingCompletedAt(date: string): string | null;
   setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void;
+  toggleHabitCarryover(
+    targetDate: string,
+    sourceDate: string,
+    habitId: number,
+    completedAt: string
+  ): void;
   clearDayStatus(date: string): void;
   saveDailySummary(summary: DailySummary): void;
 }
@@ -199,6 +213,7 @@ export type TodayReadModelRepositoryPort = Pick<
   | "getDayStatus"
   | "getFocusQuotaGoalsWithStatusForDate"
   | "getFocusSessionsInRange"
+  | "getHabitCarryoversForDate"
   | "getHabitWithStatus"
   | "getHabitsWithStatus"
   | "getHistoricalHabitPeriodStatusesOverlappingRange"

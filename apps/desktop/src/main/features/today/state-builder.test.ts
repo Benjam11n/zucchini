@@ -14,6 +14,7 @@ function createRepository(
     getFocusQuotaGoalsWithStatusForDate?: ReturnType<typeof vi.fn>;
     getFocusSessionsInRange?: ReturnType<typeof vi.fn>;
     getDayStatus?: ReturnType<typeof vi.fn>;
+    getHabitCarryoversForDate?: ReturnType<typeof vi.fn>;
     getHistoricalHabitPeriodStatusesOverlappingRange?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getHabitWithStatus?: ReturnType<typeof vi.fn>;
@@ -33,6 +34,8 @@ function createRepository(
       overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
     getFocusSessionsInRange:
       overrides.getFocusSessionsInRange ?? vi.fn(() => []),
+    getHabitCarryoversForDate:
+      overrides.getHabitCarryoversForDate ?? vi.fn(() => []),
     getHabitWithStatus: overrides.getHabitWithStatus ?? vi.fn(() => null),
     getHabitsWithStatus: overrides.getHabitsWithStatus ?? vi.fn(() => []),
     getHistoricalHabitPeriodStatusesOverlappingRange:

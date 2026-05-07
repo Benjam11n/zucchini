@@ -71,6 +71,10 @@ export function HistoryOverviewPanel({
                   label: `${stats.restDays} rest days`,
                 },
                 {
+                  className: HISTORY_METRIC_BADGE_CLASS_NAMES.rescheduledDays,
+                  label: `${stats.rescheduledDays} moved`,
+                },
+                {
                   className: HISTORY_METRIC_BADGE_CLASS_NAMES.missedDays,
                   label: `${stats.missedDays} missed`,
                 },

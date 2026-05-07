@@ -164,8 +164,17 @@ export function executeHabitServiceCommand(
     case "settings.update": {
       return service.updateSettings(command.payload);
     }
+    case "today.moveUnfinishedToTomorrow": {
+      return service.moveUnfinishedHabitsToTomorrow();
+    }
     case "today.setDayStatus": {
       return service.setDayStatus(command.payload.kind);
+    }
+    case "today.toggleCarryover": {
+      return service.toggleHabitCarryover(
+        command.payload.sourceDate,
+        command.payload.habitId
+      );
     }
     case "today.toggleSickDay": {
       return service.toggleSickDay();

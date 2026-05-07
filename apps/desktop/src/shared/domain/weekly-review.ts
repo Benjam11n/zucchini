@@ -11,6 +11,7 @@ type WeeklyReviewDayStatus =
   | "empty"
   | "freeze"
   | "missed"
+  | "rescheduled"
   | "rest"
   | "sick";
 
@@ -43,6 +44,7 @@ export interface WeeklyReviewTrendPoint {
   freezeDays: number;
   label: string;
   missedDays: number;
+  rescheduledDays: number;
   restDays: number;
   sickDays: number;
   weekEnd: string;
@@ -68,6 +70,7 @@ export interface WeeklyReview {
   longestCleanRun: number;
   missedDays: number;
   mostMissedHabits: WeeklyReviewHabitMetric[];
+  rescheduledDays: number;
   restDays: number;
   sickDays: number;
   trackedDays: number;

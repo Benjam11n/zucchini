@@ -32,6 +32,7 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
+import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
@@ -184,6 +185,10 @@ export class SqliteAppRepository implements AppRepository {
 
   getDayStatus(date: string): DayStatus | null {
     return this.historyRepository.getDayStatus(date);
+  }
+
+  getHabitCarryoversForDate(targetDate: string): HabitCarryover[] {
+    return this.historyRepository.getHabitCarryoversForDate(targetDate);
   }
 
   ensureStatusRowsForDate(date: string): void {
@@ -351,6 +356,36 @@ export class SqliteAppRepository implements AppRepository {
 
   setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void {
     this.historyRepository.setDayStatus(date, kind, createdAt);
+  }
+
+  createHabitCarryovers(
+    sourceDate: string,
+    targetDate: string,
+    createdAt: string
+  ): void {
+    this.historyRepository.createHabitCarryovers(
+      sourceDate,
+      targetDate,
+      createdAt
+    );
+  }
+
+  toggleHabitCarryover(
+    targetDate: string,
+    sourceDate: string,
+    habitId: number,
+    completedAt: string
+  ): void {
+    this.historyRepository.toggleHabitCarryover(
+      targetDate,
+      sourceDate,
+      habitId,
+      completedAt
+    );
+  }
+
+  clearHabitCarryoversFromSourceDate(sourceDate: string): void {
+    this.historyRepository.clearHabitCarryoversFromSourceDate(sourceDate);
   }
 
   clearDayStatus(date: string): void {

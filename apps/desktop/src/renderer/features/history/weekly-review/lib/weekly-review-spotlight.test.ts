@@ -14,6 +14,7 @@ const latestReview: WeeklyReview = {
   longestCleanRun: 3,
   missedDays: 1,
   mostMissedHabits: [],
+  rescheduledDays: 0,
   restDays: 0,
   sickDays: 0,
   trackedDays: 7,

@@ -76,6 +76,25 @@ export const dayStatus = sqliteTable("day_status", {
   kind: text().notNull(),
 });
 
+export const habitCarryovers = sqliteTable(
+  "habit_carryovers",
+  {
+    completed: integer({ mode: "boolean" }).notNull().default(false),
+    completedAt: text("completed_at"),
+    createdAt: text("created_at").notNull(),
+    habitId: integer("habit_id").notNull(),
+    sourceDate: text("source_date").notNull(),
+    targetDate: text("target_date").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.sourceDate, table.targetDate, table.habitId],
+    }),
+    index("habit_carryovers_source_date_idx").on(table.sourceDate),
+    index("habit_carryovers_target_date_idx").on(table.targetDate),
+  ]
+);
+
 export const focusSessions = sqliteTable(
   "focus_sessions",
   {
@@ -206,6 +225,7 @@ export const schema = {
   focusQuotaGoals,
   focusSessions,
   focusTimerState,
+  habitCarryovers,
   habitPeriodStatus,
   habitStreakState,
   habits,

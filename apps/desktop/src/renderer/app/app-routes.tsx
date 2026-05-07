@@ -35,6 +35,7 @@ function TodayRoute({ actions, state }: ReadyAppController) {
       onReorderHabits={actions.handleReorderHabits}
       onUnarchiveHabit={actions.handleUnarchiveHabit}
       state={state.todayState}
+      onToggleHabitCarryover={actions.handleToggleHabitCarryover}
       onToggleHabit={actions.handleToggleHabit}
       onUpdateHabitCategory={actions.handleUpdateHabitCategory}
       onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}

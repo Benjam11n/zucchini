@@ -96,6 +96,7 @@ describe("today page", () => {
         onDecrementHabitProgress={vi.fn()}
         onIncrementHabitProgress={vi.fn()}
         onToggleHabit={vi.fn()}
+        onToggleHabitCarryover={vi.fn()}
         onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
         onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
         onUpdateHabitTargetCount={vi.fn(() => Promise.resolve())}

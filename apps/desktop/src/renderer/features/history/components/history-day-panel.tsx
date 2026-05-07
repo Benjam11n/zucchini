@@ -1,6 +1,7 @@
 import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import {
   ArrowRight,
+  CalendarPlus,
   CheckCircle2,
   Flame,
   HeartPulse,
@@ -161,6 +162,17 @@ export function HistoryDayPanel({
                   >
                     <Pause className="size-3.5" />
                     Rest day preserved the streak for this day
+                  </m.div>
+                ) : null}
+                {selectedDay.summary.dayStatus === "rescheduled" ? (
+                  <m.div
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mx-auto flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/8 px-2.5 py-1 text-xs text-emerald-700 dark:text-emerald-300"
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    transition={microTransition}
+                  >
+                    <CalendarPlus className="size-3.5" />
+                    Unfinished habits moved to the next day
                   </m.div>
                 ) : null}
               </CardContent>

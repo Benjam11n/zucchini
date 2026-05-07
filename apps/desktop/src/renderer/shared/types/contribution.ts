@@ -7,6 +7,7 @@ export type ContributionStatus =
   | "rest"
   | "sick"
   | "missed"
+  | "rescheduled"
   | "in-progress";
 
 export type HistoryStatus = ContributionStatus;

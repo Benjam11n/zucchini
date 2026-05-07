@@ -80,6 +80,10 @@ function getContributionStatus(
     return "rest";
   }
 
+  if (summary.dayStatus === "rescheduled") {
+    return "rescheduled";
+  }
+
   if (summary.allCompleted) {
     return "complete";
   }
@@ -178,6 +182,10 @@ export function formatContributionLabel(cell: ContributionCell): string {
 
   if (cell.summary.dayStatus === "rest") {
     return `${dateLabel}: ${completionLabel}, rest day preserved streak`;
+  }
+
+  if (cell.summary.dayStatus === "rescheduled") {
+    return `${dateLabel}: ${completionLabel}, unfinished habits moved`;
   }
 
   if (cell.summary.freezeUsed) {

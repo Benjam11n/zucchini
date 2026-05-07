@@ -459,10 +459,19 @@ const commandSchemas = [
   z
     .object({ payload: appSettingsSchema, type: z.literal("settings.update") })
     .strict(),
+  z.object({ type: z.literal("today.moveUnfinishedToTomorrow") }).strict(),
   z
     .object({
-      payload: z.object({ kind: z.enum(["rest", "sick"]).nullable() }).strict(),
+      payload: z
+        .object({ kind: z.enum(["rescheduled", "rest", "sick"]).nullable() })
+        .strict(),
       type: z.literal("today.setDayStatus"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z.object({ habitId: habitIdSchema, sourceDate: dateKeySchema }),
+      type: z.literal("today.toggleCarryover"),
     })
     .strict(),
   z.object({ type: z.literal("today.toggleSickDay") }).strict(),
