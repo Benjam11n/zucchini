@@ -12,6 +12,7 @@
     "build:desktop": "pnpm --dir apps/desktop build",
     "build:web": "pnpm --dir apps/web build",
     "test:desktop": "pnpm --dir apps/desktop test",
+    "typecheck:desktop": "pnpm --dir apps/desktop run typecheck",
     "fallow": "fallow",
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
@@ -19,7 +20,7 @@
     "fallow:audit": "fallow audit",
     "format": "ultracite fix .",
     "lint": "ultracite check .",
-    "check": "pnpm run lint && pnpm run test:desktop && pnpm run build:web"
+    "check": "pnpm run lint && pnpm run fallow:dead-code && pnpm run fallow:dupes && pnpm run typecheck:desktop && pnpm run test:desktop && pnpm run build:web"
   },
   "devDependencies": {
     "fallow": "^2.54.2",

@@ -28,6 +28,9 @@
   `pnpm run fallow`, `pnpm run fallow:dead-code`,
   `pnpm run fallow:dupes`, `pnpm run fallow:health`, and
   `pnpm run fallow:audit`.
+- `pnpm run check` includes lint, Fallow dead-code, Fallow dupes, desktop
+  typecheck, desktop tests, and the web build. Treat all of those as required
+  checks before finalizing meaningful changes.
 - Treat Fallow output as codebase intelligence first. Do not auto-delete or
   auto-fix findings without checking ownership, dynamic loading, and build
   boundaries.

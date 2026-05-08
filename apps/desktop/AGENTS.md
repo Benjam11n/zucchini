@@ -14,9 +14,14 @@
   `pnpm --dir apps/desktop ...`
 - Common validations:
   `pnpm run lint`
+  `pnpm run typecheck:desktop`
   `pnpm run test:desktop`
   `pnpm run fallow:dead-code`
+  `pnpm run fallow:dupes`
   `pnpm run build:desktop`
+- For broad desktop changes, prefer `pnpm run check`; it includes lint,
+  Fallow dead-code, Fallow dupes, desktop typecheck, desktop tests, and the web
+  build.
 - Run `pnpm run format` from the workspace root before finalizing changes.
 
 ## Desktop Best Practices
