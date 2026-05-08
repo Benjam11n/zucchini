@@ -329,7 +329,11 @@ describe("today page", () => {
       },
     });
 
-    expect(screen.getByLabelText("Current streak 2 days")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Current streak 2 days. Best streak 4 days.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("2d")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
   });
 
   it("removes the placeholder when loaded streak data has no current streak", () => {

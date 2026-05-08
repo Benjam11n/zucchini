@@ -2,6 +2,12 @@ import { m } from "framer-motion";
 import type { CSSProperties } from "react";
 
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
@@ -40,14 +46,60 @@ function HabitStreakLabel({
   streak?: HabitListItemStreak | undefined;
 }) {
   if (streak && streak.currentStreak > 0) {
+    const currentUnit = streak.currentStreak === 1 ? "day" : "days";
+    const bestUnit = streak.bestStreak === 1 ? "day" : "days";
+    const bestStreak = Math.max(streak.bestStreak, streak.currentStreak);
+    const progress = Math.min(
+      100,
+      Math.max(8, (streak.currentStreak / bestStreak) * 100)
+    );
+    const isBestStreak = streak.currentStreak >= bestStreak;
+
     return (
-      <span
-        aria-label={`Current streak ${streak.currentStreak} days`}
-        className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground"
-        title={`Current streak: ${streak.currentStreak} days. Best: ${streak.bestStreak} days.`}
-      >
-        {streak.currentStreak} {streak.currentStreak === 1 ? "day" : "days"}
-      </span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              aria-label={`Current streak ${streak.currentStreak} ${currentUnit}. Best streak ${bestStreak} ${bestUnit}.`}
+              className={cn(
+                "inline-flex shrink-0 cursor-help items-center gap-1 text-xs font-medium tabular-nums",
+                isBestStreak
+                  ? "text-secondary"
+                  : "text-primary/85 dark:text-primary"
+              )}
+            >
+              <span>{streak.currentStreak}d</span>
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "relative h-1 w-5 overflow-hidden rounded-full",
+                  isBestStreak ? "bg-secondary/20" : "bg-primary/15"
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute inset-y-0 left-0 rounded-full bg-current",
+                    isBestStreak && "shadow-[0_0_8px_var(--secondary)]"
+                  )}
+                  style={{ width: `${progress}%` }}
+                />
+              </span>
+              <span
+                className={cn(
+                  "min-w-3 text-[0.68rem]",
+                  isBestStreak ? "text-secondary" : "text-muted-foreground/55"
+                )}
+              >
+                {bestStreak}
+              </span>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={8}>
+            Current streak: {streak.currentStreak} {currentUnit}. Best streak:{" "}
+            {bestStreak} {bestUnit}.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   }
 
