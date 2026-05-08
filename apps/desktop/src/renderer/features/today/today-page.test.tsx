@@ -5,16 +5,21 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistorySummaryDay } from "@/shared/domain/history";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 
 import { TodayPage } from "./today-page";
 
+const todayHistoryCarouselSpy = vi.hoisted(() => vi.fn());
+
 vi.mock<typeof TodayHistoryCarouselModule>(
   import("@/renderer/features/today/components/today-history-carousel"),
   () => ({
-    TodayHistoryCarousel: () => <div>history carousel</div>,
+    TodayHistoryCarousel: (props) => {
+      todayHistoryCarouselSpy(props);
+      return <div>history carousel</div>;
+    },
   })
 );
 
@@ -29,7 +34,30 @@ vi.mock(
   })
 );
 
-const history: HistoryDay[] = [];
+function historyDay(date: string): HistorySummaryDay {
+  return {
+    categoryProgress: [
+      {
+        category: "productivity",
+        completed: 1,
+        progress: 1,
+        total: 1,
+      },
+    ],
+    date,
+    focusMinutes: 0,
+    summary: {
+      allCompleted: true,
+      completedAt: `${date}T12:00:00.000Z`,
+      date,
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 1,
+    },
+  };
+}
+
+const history: HistorySummaryDay[] = [];
 const managedHabits: Habit[] = [
   {
     category: "productivity",
@@ -73,7 +101,14 @@ const state: TodayState = {
 };
 
 describe("today page", () => {
-  function renderTodayPage(todayState: TodayState = state) {
+  beforeEach(() => {
+    todayHistoryCarouselSpy.mockClear();
+  });
+
+  function renderTodayPage(
+    todayState: TodayState = state,
+    historySummary: HistorySummaryDay[] = history
+  ) {
     const handlers = {
       handleDecrementHabitProgress: vi.fn(),
       handleIncrementHabitProgress: vi.fn(),
@@ -84,7 +119,7 @@ describe("today page", () => {
     render(
       <TodayPage
         hasLoadedHistorySummary
-        historySummary={history}
+        historySummary={historySummary}
         managedHabits={managedHabits}
         onArchiveHabit={vi.fn(() => Promise.resolve())}
         onCreateHabit={vi.fn(() => Promise.resolve())}
@@ -120,6 +155,23 @@ describe("today page", () => {
     expect(screen.getByText("Manage habits")).toBeInTheDocument();
     expect(screen.getByText("Add a habit")).toBeInTheDocument();
     expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
+  });
+
+  it("passes only historical summary days to the top carousel", () => {
+    renderTodayPage(state, [
+      historyDay("2026-03-11"),
+      historyDay("2026-03-12"),
+      historyDay("2026-03-13"),
+    ]);
+
+    expect(todayHistoryCarouselSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        history: [
+          expect.objectContaining({ date: "2026-03-11" }),
+          expect.objectContaining({ date: "2026-03-12" }),
+        ],
+      })
+    );
   });
 
   it("does not show habit streaks when streak data is absent", () => {

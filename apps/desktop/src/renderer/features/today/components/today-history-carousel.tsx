@@ -20,13 +20,12 @@ import { formatDateKey } from "@/shared/utils/date";
 interface TodayHistoryCarouselProps {
   hasLoadedHistorySummary: boolean;
   history: HistorySummaryDay[];
-  todayDate: string;
 }
 
 const MAX_HISTORY_DAYS = 14;
 const HISTORY_SKELETON_ITEMS = Array.from(
   { length: MAX_HISTORY_DAYS },
-  (_, index) => index
+  (_, index) => `history-skeleton-${index}`
 );
 
 function TodayHistoryCarouselSkeleton() {
@@ -36,10 +35,10 @@ function TodayHistoryCarouselSkeleton() {
       className="relative flex h-[5.75rem] min-w-0 max-w-full justify-end overflow-hidden rounded-md bg-card px-1 ring-1 ring-foreground/10 sm:px-2"
     >
       <div className="flex min-w-full justify-end gap-2 sm:gap-4">
-        {HISTORY_SKELETON_ITEMS.map((index) => (
+        {HISTORY_SKELETON_ITEMS.map((skeletonItem) => (
           <div
             className="flex shrink-0 flex-col items-center gap-2 rounded-md p-2"
-            key={index}
+            key={skeletonItem}
           >
             <div className="size-12 animate-pulse rounded-full bg-muted" />
             <div className="h-2 w-8 animate-pulse rounded-full bg-muted" />
@@ -53,7 +52,6 @@ function TodayHistoryCarouselSkeleton() {
 export function TodayHistoryCarousel({
   hasLoadedHistorySummary,
   history,
-  todayDate,
 }: TodayHistoryCarouselProps) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -177,7 +175,7 @@ export function TodayHistoryCarousel({
               setSelectedDay(null);
             }}
             selectedDay={selectedDay}
-            isToday={selectedDate === todayDate}
+            isToday={false}
           />
         </DialogContent>
       </Dialog>

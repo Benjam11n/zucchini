@@ -78,6 +78,10 @@ function TodayPageComponent({
       periodicHabits: nextPeriodicHabits,
     };
   }, [state.habits]);
+  const historicalHistorySummary = useMemo(
+    () => historySummary.filter((day) => day.date < state.date),
+    [historySummary, state.date]
+  );
   useTodayPopups({ completedCount, dailyHabits, state });
 
   const celebration = useTodayCelebration({
@@ -111,8 +115,7 @@ function TodayPageComponent({
         <section className="min-w-0">
           <TodayHistoryCarousel
             hasLoadedHistorySummary={hasLoadedHistorySummary}
-            history={historySummary}
-            todayDate={state.date}
+            history={historicalHistorySummary}
           />
         </section>
 
