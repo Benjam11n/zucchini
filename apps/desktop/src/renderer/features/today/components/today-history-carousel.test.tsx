@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import type { HistorySummaryDay } from "@/shared/domain/history";
@@ -48,6 +48,8 @@ describe("today history carousel", () => {
       <TodayHistoryCarousel
         hasLoadedHistorySummary
         history={[historyDay("2026-03-11"), historyDay("2026-03-12")]}
+        onSelectDate={vi.fn()}
+        selectedDate={null}
       />
     );
 
@@ -57,9 +59,33 @@ describe("today history carousel", () => {
 
   it("renders nothing when no history is available", () => {
     const { container } = render(
-      <TodayHistoryCarousel hasLoadedHistorySummary history={[]} />
+      <TodayHistoryCarousel
+        hasLoadedHistorySummary
+        history={[]}
+        onSelectDate={vi.fn()}
+        selectedDate={null}
+      />
     );
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("selects dates and marks the selected date", () => {
+    const onSelectDate = vi.fn();
+
+    render(
+      <TodayHistoryCarousel
+        hasLoadedHistorySummary
+        history={[historyDay("2026-03-11"), historyDay("2026-03-12")]}
+        onSelectDate={onSelectDate}
+        selectedDate="2026-03-12"
+      />
+    );
+
+    const selectedButton = screen.getByRole("button", { name: /thu/i });
+    fireEvent.click(selectedButton);
+
+    expect(onSelectDate).toHaveBeenCalledWith("2026-03-12");
+    expect(selectedButton).toHaveAttribute("aria-pressed", "true");
   });
 });

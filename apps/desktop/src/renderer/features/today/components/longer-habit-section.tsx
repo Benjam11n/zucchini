@@ -21,8 +21,9 @@ interface LongerHabitSectionData {
 interface LongerHabitSectionProps {
   categoryPreferences: Parameters<typeof getHabitCategoryPresentation>[1];
   getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
-  onDecrementHabitProgress: (habitId: number) => void;
-  onIncrementHabitProgress: (habitId: number) => void;
+  onDecrementHabitProgress?: (habitId: number) => void;
+  onIncrementHabitProgress?: (habitId: number) => void;
+  readOnly?: boolean;
   section: LongerHabitSectionData;
 }
 
@@ -31,6 +32,7 @@ export function LongerHabitSection({
   getKeyboardRowProps,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
+  readOnly = false,
   section,
 }: LongerHabitSectionProps) {
   return (
@@ -55,15 +57,18 @@ export function LongerHabitSection({
           <LongerHabitListItem
             key={habit.id}
             habit={habit}
-            keyboardRowProps={getKeyboardRowProps?.(
-              getPeriodicHabitKeyboardRowId(habit.id)
-            )}
+            keyboardRowProps={
+              readOnly
+                ? undefined
+                : getKeyboardRowProps?.(getPeriodicHabitKeyboardRowId(habit.id))
+            }
             onDecrement={onDecrementHabitProgress}
             onIncrement={onIncrementHabitProgress}
             presentation={getHabitCategoryPresentation(
               habit.category,
               categoryPreferences
             )}
+            readOnly={readOnly}
           />
         ))}
       </div>

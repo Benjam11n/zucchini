@@ -16,9 +16,10 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 interface LongerHabitListItemProps {
   habit: HabitWithStatus;
   keyboardRowProps?: KeyboardRowProps;
-  onDecrement: (habitId: number) => void;
-  onIncrement: (habitId: number) => void;
+  onDecrement?: (habitId: number) => void;
+  onIncrement?: (habitId: number) => void;
   presentation: ReturnType<typeof getHabitCategoryPresentation>;
+  readOnly?: boolean;
 }
 
 function formatQuotaLabel(completed: number, target: number): React.ReactNode {
@@ -37,6 +38,7 @@ export function LongerHabitListItem({
   onDecrement,
   onIncrement,
   presentation,
+  readOnly = false,
 }: LongerHabitListItemProps) {
   const completedCount = habit.completedCount ?? 0;
   const targetCount = habit.targetCount ?? 1;
@@ -47,51 +49,54 @@ export function LongerHabitListItem({
       className={cn(
         "group flex flex-wrap items-center gap-2 rounded-lg px-2.5 py-2 transition-colors duration-150",
         "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        readOnly && "cursor-default",
         habit.completed
           ? "bg-muted/15 text-muted-foreground/65"
-          : "hover:bg-muted/25"
+          : !readOnly && "hover:bg-muted/25"
       )}
       initial={{ opacity: 0, scale: 0.98, x: -8 }}
       layout
       transition={microTransition}
-      {...keyboardRowProps}
+      {...(readOnly ? {} : keyboardRowProps)}
       whileTap={tapPress}
-      {...(habit.completed ? {} : { whileHover: hoverLift })}
+      {...(habit.completed || readOnly ? {} : { whileHover: hoverLift })}
     >
-      <div className="flex shrink-0 items-center gap-1.5">
-        <Button
-          aria-label={`Increase progress for ${habit.name}`}
-          onClick={() => onIncrement(habit.id)}
-          size="icon-xs"
-          style={
-            habit.completed
-              ? ({
-                  backgroundColor: presentation.color,
-                  borderColor: presentation.color,
-                  color: presentation.selectedTextColor,
-                } as CSSProperties)
-              : undefined
-          }
-          type="button"
-          variant={habit.completed ? "default" : "outline"}
-        >
-          <Plus className="size-3" />
-        </Button>
-        <Button
-          aria-label={`Decrease progress for ${habit.name}`}
-          className={cn(
-            "opacity-0 transition-all duration-200 group-hover:opacity-60 hover:opacity-100!",
-            completedCount > 0 && "opacity-20"
-          )}
-          disabled={completedCount === 0}
-          onClick={() => onDecrement(habit.id)}
-          size="icon-xs"
-          type="button"
-          variant="ghost"
-        >
-          <Minus className="size-3" />
-        </Button>
-      </div>
+      {readOnly ? null : (
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Button
+            aria-label={`Increase progress for ${habit.name}`}
+            onClick={() => onIncrement?.(habit.id)}
+            size="icon-xs"
+            style={
+              habit.completed
+                ? ({
+                    backgroundColor: presentation.color,
+                    borderColor: presentation.color,
+                    color: presentation.selectedTextColor,
+                  } as CSSProperties)
+                : undefined
+            }
+            type="button"
+            variant={habit.completed ? "default" : "outline"}
+          >
+            <Plus className="size-3" />
+          </Button>
+          <Button
+            aria-label={`Decrease progress for ${habit.name}`}
+            className={cn(
+              "opacity-0 transition-all duration-200 group-hover:opacity-60 hover:opacity-100!",
+              completedCount > 0 && "opacity-20"
+            )}
+            disabled={completedCount === 0}
+            onClick={() => onDecrement?.(habit.id)}
+            size="icon-xs"
+            type="button"
+            variant="ghost"
+          >
+            <Minus className="size-3" />
+          </Button>
+        </div>
+      )}
 
       <div className="flex min-w-0 flex-1 basis-0 flex-wrap items-center gap-2 overflow-hidden">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">

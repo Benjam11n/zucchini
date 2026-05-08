@@ -18,7 +18,7 @@ import type { HabitStreak } from "@/shared/domain/habit-streak";
 
 interface HabitChecklistProps {
   habits: HabitWithStatus[];
-  onToggleHabit: (habitId: number) => void;
+  onToggleHabit?: (habitId: number) => void;
   completedCount: number;
   emptyMessage?: string;
   emptyAction?: ReactNode;
@@ -26,6 +26,7 @@ interface HabitChecklistProps {
   habitStreaks?: Readonly<Record<number, HabitStreak>>;
   isPaused?: boolean;
   getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
+  readOnly?: boolean;
   title?: string;
   icon?: React.ElementType;
 }
@@ -45,6 +46,7 @@ function HabitChecklistComponent({
   habitStreaks,
   isPaused = false,
   getKeyboardRowProps,
+  readOnly = false,
   title = "Today",
   icon: Icon,
 }: HabitChecklistProps) {
@@ -149,10 +151,15 @@ function HabitChecklistComponent({
                     disabled={isPaused}
                     key={habit.id}
                     habit={habit}
-                    keyboardRowProps={getKeyboardRowProps?.(
-                      getDailyHabitKeyboardRowId(habit.id)
-                    )}
+                    keyboardRowProps={
+                      readOnly
+                        ? undefined
+                        : getKeyboardRowProps?.(
+                            getDailyHabitKeyboardRowId(habit.id)
+                          )
+                    }
                     onToggle={onToggleHabit}
+                    readOnly={readOnly}
                     {...streakProps}
                   />
                 );

@@ -24,7 +24,8 @@ interface HabitListItemProps {
   disabled?: boolean;
   habit: HabitWithStatus;
   keyboardRowProps?: KeyboardRowProps;
-  onToggle: (habitId: number) => void;
+  onToggle?: (habitId: number) => void;
+  readOnly?: boolean;
   showCategory?: boolean;
   streak?: HabitListItemStreak;
   trailingActions?: React.ReactNode;
@@ -53,11 +54,51 @@ function HabitStreakLabel({
   return null;
 }
 
+function HabitCategoryLabel({
+  accentTextColor,
+  label,
+  showCategory,
+}: {
+  accentTextColor: string;
+  label: string;
+  showCategory?: boolean;
+}) {
+  if (!showCategory) {
+    return null;
+  }
+
+  return (
+    <span
+      className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
+      style={{ color: accentTextColor }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function HabitTrailingActions({
+  trailingActions,
+}: {
+  trailingActions?: React.ReactNode;
+}) {
+  if (!trailingActions) {
+    return null;
+  }
+
+  return (
+    <div className="z-10 flex shrink-0 items-center gap-1">
+      {trailingActions}
+    </div>
+  );
+}
+
 function HabitListItemComponent({
   disabled = false,
   habit,
   keyboardRowProps,
   onToggle,
+  readOnly = false,
   showCategory,
   streak,
   trailingActions,
@@ -68,36 +109,46 @@ function HabitListItemComponent({
     categoryPreferences
   );
   const hoverProps =
-    habit.completed || disabled ? {} : { whileHover: hoverLift };
+    habit.completed || disabled || readOnly ? {} : { whileHover: hoverLift };
+  const isInteractive = !(disabled || readOnly);
+  const itemStateClassName = habit.completed
+    ? "text-muted-foreground/50"
+    : isInteractive && "hover:bg-muted/25";
+  const labelStateClassName = habit.completed
+    ? "line-through decoration-muted-foreground/30"
+    : isInteractive &&
+      "group-hover:brightness-125 dark:group-hover:brightness-150";
 
   return (
     <m.label
       animate={HABIT_ITEM_ANIMATE}
-      htmlFor={`habit-${habit.id}`}
+      htmlFor={isInteractive ? `habit-${habit.id}` : undefined}
       initial={HABIT_ITEM_INITIAL}
       className={cn(
         "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
         "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        disabled ? "cursor-default opacity-55" : "cursor-pointer",
-        habit.completed
-          ? "text-muted-foreground/50"
-          : !disabled && "hover:bg-muted/25"
+        disabled && "cursor-default opacity-55",
+        readOnly && "cursor-default",
+        isInteractive && "cursor-pointer",
+        itemStateClassName
       )}
       transition={microTransition}
       {...hoverProps}
-      {...keyboardRowProps}
+      {...(readOnly ? {} : keyboardRowProps)}
       whileTap={tapPress}
     >
       <Checkbox
+        aria-disabled={readOnly ? true : undefined}
         checked={habit.completed}
         className="size-4 shrink-0 rounded-full border-2 transition-all duration-200 group-hover:scale-110 group-active:scale-90"
         disabled={disabled}
         id={`habit-${habit.id}`}
         onCheckedChange={() => {
-          if (!disabled) {
-            onToggle(habit.id);
+          if (isInteractive) {
+            onToggle?.(habit.id);
           }
         }}
+        tabIndex={readOnly ? -1 : undefined}
         style={
           {
             backgroundColor: habit.completed ? presentation.color : undefined,
@@ -110,29 +161,19 @@ function HabitListItemComponent({
         <span
           className={cn(
             "min-w-0 break-words text-sm leading-snug transition-all duration-150",
-            habit.completed
-              ? "line-through decoration-muted-foreground/30"
-              : !disabled &&
-                  "group-hover:brightness-125 dark:group-hover:brightness-150"
+            labelStateClassName
           )}
         >
           {habit.name}
         </span>
-        {showCategory && (
-          <span
-            className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
-            style={{ color: presentation.accentTextColor }}
-          >
-            {presentation.label}
-          </span>
-        )}
+        <HabitCategoryLabel
+          accentTextColor={presentation.accentTextColor}
+          label={presentation.label}
+          showCategory={showCategory}
+        />
       </div>
       <HabitStreakLabel streak={streak} />
-      {trailingActions ? (
-        <div className="z-10 flex shrink-0 items-center gap-1">
-          {trailingActions}
-        </div>
-      ) : null}
+      <HabitTrailingActions trailingActions={trailingActions} />
     </m.label>
   );
 }

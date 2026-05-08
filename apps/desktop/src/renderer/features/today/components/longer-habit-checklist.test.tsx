@@ -186,6 +186,42 @@ describe("longer habit checklist", () => {
     expect(onDecrementHabitProgress).toHaveBeenCalledWith(2);
   });
 
+  it("hides progress controls in read-only mode", () => {
+    const onDecrementHabitProgress = vi.fn();
+    const onIncrementHabitProgress = vi.fn();
+
+    render(
+      <LongerHabitChecklist
+        dateKey="2026-03-13"
+        focusQuotaGoals={[]}
+        habits={[
+          createHabit(1, {
+            completedCount: 1,
+            name: "Read-only weekly habit",
+            targetCount: 3,
+          }),
+        ]}
+        onDecrementHabitProgress={onDecrementHabitProgress}
+        onIncrementHabitProgress={onIncrementHabitProgress}
+        readOnly
+      />
+    );
+
+    expect(screen.getByText("Read-only weekly habit")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: "Increase progress for Read-only weekly habit",
+      })
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", {
+        name: "Decrease progress for Read-only weekly habit",
+      })
+    ).toBeNull();
+    expect(onIncrementHabitProgress).not.toHaveBeenCalled();
+    expect(onDecrementHabitProgress).not.toHaveBeenCalled();
+  });
+
   it("caps aggregate progress when longer habits exceed their targets", () => {
     render(
       <LongerHabitChecklist

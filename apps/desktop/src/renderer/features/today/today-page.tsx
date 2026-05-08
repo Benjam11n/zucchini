@@ -10,11 +10,13 @@ import { memo, useMemo } from "react";
 
 import { CarryoverChecklist } from "@/renderer/features/today/components/carryover-checklist";
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
+import { HistoricalTodayView } from "@/renderer/features/today/components/historical-today-view";
 import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
 import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { TodayKeyboardHint } from "@/renderer/features/today/components/today-keyboard-hint";
+import { useHistoricalTodaySelection } from "@/renderer/features/today/hooks/use-historical-today-selection";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
@@ -82,6 +84,9 @@ function TodayPageComponent({
     () => historySummary.filter((day) => day.date < state.date),
     [historySummary, state.date]
   );
+  const historicalTodaySelection = useHistoricalTodaySelection(
+    historicalHistorySummary
+  );
   useTodayPopups({ completedCount, dailyHabits, state });
 
   const celebration = useTodayCelebration({
@@ -105,7 +110,6 @@ function TodayPageComponent({
     periodicHabits,
     state,
   });
-
   return (
     <>
       <TodayCelebrationOverlay celebration={celebration} />
@@ -116,8 +120,26 @@ function TodayPageComponent({
           <TodayHistoryCarousel
             hasLoadedHistorySummary={hasLoadedHistorySummary}
             history={historicalHistorySummary}
+            onSelectDate={historicalTodaySelection.handleSelectDate}
+            selectedDate={historicalTodaySelection.selectedDate}
           />
         </section>
+
+        {historicalTodaySelection.selectedDate ? (
+          <section>
+            {historicalTodaySelection.isLoading ||
+            !historicalTodaySelection.selectedDay ? (
+              <div className="rounded-md border border-dashed border-border/60 bg-card/60 px-4 py-6 text-sm text-muted-foreground">
+                Loading history...
+              </div>
+            ) : (
+              <HistoricalTodayView
+                day={historicalTodaySelection.selectedDay}
+                onReturnToToday={historicalTodaySelection.handleClearSelection}
+              />
+            )}
+          </section>
+        ) : null}
 
         <section>
           <HabitChecklist

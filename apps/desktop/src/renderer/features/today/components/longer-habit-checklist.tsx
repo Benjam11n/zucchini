@@ -16,8 +16,10 @@ interface LongerHabitChecklistProps {
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   habits: HabitWithStatus[];
-  onDecrementHabitProgress: (habitId: number) => void;
-  onIncrementHabitProgress: (habitId: number) => void;
+  onDecrementHabitProgress?: (habitId: number) => void;
+  onIncrementHabitProgress?: (habitId: number) => void;
+  readOnly?: boolean;
+  title?: string;
 }
 
 const PERIOD_SECTIONS: { title: string; value: HabitFrequency }[] = [
@@ -46,6 +48,8 @@ export function LongerHabitChecklist({
   habits,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
+  readOnly = false,
+  title = "Beyond Today",
 }: LongerHabitChecklistProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   let trackedGoalCount = 0;
@@ -138,11 +142,7 @@ export function LongerHabitChecklist({
 
   return (
     <LazyMotion features={domAnimation}>
-      <HabitListCard
-        title="Beyond Today"
-        icon={CalendarRange}
-        {...progressProps}
-      >
+      <HabitListCard title={title} icon={CalendarRange} {...progressProps}>
         {sections.map((section) => (
           <LongerHabitSection
             key={section.value}
@@ -150,6 +150,7 @@ export function LongerHabitChecklist({
             getKeyboardRowProps={getKeyboardRowProps}
             onDecrementHabitProgress={onDecrementHabitProgress}
             onIncrementHabitProgress={onIncrementHabitProgress}
+            readOnly={readOnly}
             section={section}
           />
         ))}
