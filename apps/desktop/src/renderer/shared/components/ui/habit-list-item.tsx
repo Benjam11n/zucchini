@@ -12,6 +12,7 @@ import {
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface HabitListItemStreak {
@@ -22,6 +23,7 @@ interface HabitListItemStreak {
 interface HabitListItemProps {
   disabled?: boolean;
   habit: HabitWithStatus;
+  keyboardRowProps?: KeyboardRowProps;
   onToggle: (habitId: number) => void;
   showCategory?: boolean;
   streak?: HabitListItemStreak;
@@ -54,6 +56,7 @@ function HabitStreakLabel({
 function HabitListItemComponent({
   disabled = false,
   habit,
+  keyboardRowProps,
   onToggle,
   showCategory,
   streak,
@@ -74,6 +77,7 @@ function HabitListItemComponent({
       initial={HABIT_ITEM_INITIAL}
       className={cn(
         "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
+        "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         disabled ? "cursor-default opacity-55" : "cursor-pointer",
         habit.completed
           ? "text-muted-foreground/50"
@@ -81,6 +85,7 @@ function HabitListItemComponent({
       )}
       transition={microTransition}
       {...hoverProps}
+      {...keyboardRowProps}
       whileTap={tapPress}
     >
       <Checkbox

@@ -15,6 +15,7 @@ import { TodayCelebrationOverlay } from "@/renderer/features/today/components/to
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
+import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
 import { Button } from "@/renderer/shared/components/ui/button";
 import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
@@ -84,6 +85,20 @@ function TodayPageComponent({
     date: state.date,
     streak: state.streak,
   });
+  const {
+    getRowProps,
+    handleIncrementPeriodicHabit,
+    handleToggleCarryover,
+    handleToggleDailyHabit,
+  } = useTodayKeyboardRows({
+    dailyHabits,
+    onDecrementHabitProgress,
+    onIncrementHabitProgress,
+    onToggleHabit,
+    onToggleHabitCarryover,
+    periodicHabits,
+    state,
+  });
 
   return (
     <>
@@ -139,7 +154,8 @@ function TodayPageComponent({
             }
             habits={dailyHabits}
             isPaused={state.dayStatus !== null}
-            onToggleHabit={onToggleHabit}
+            getKeyboardRowProps={getRowProps}
+            onToggleHabit={handleToggleDailyHabit}
             {...(state.habitStreaks
               ? { habitStreaks: state.habitStreaks }
               : {})}
@@ -150,7 +166,8 @@ function TodayPageComponent({
           <section>
             <CarryoverChecklist
               carryovers={state.habitCarryovers}
-              onToggleCarryover={onToggleHabitCarryover}
+              getKeyboardRowProps={getRowProps}
+              onToggleCarryover={handleToggleCarryover}
             />
           </section>
         ) : null}
@@ -162,8 +179,9 @@ function TodayPageComponent({
               dateKey={state.date}
               focusQuotaGoals={state.focusQuotaGoals ?? []}
               habits={periodicHabits}
+              getKeyboardRowProps={getRowProps}
               onDecrementHabitProgress={onDecrementHabitProgress}
-              onIncrementHabitProgress={onIncrementHabitProgress}
+              onIncrementHabitProgress={handleIncrementPeriodicHabit}
             />
           </section>
         ) : null}

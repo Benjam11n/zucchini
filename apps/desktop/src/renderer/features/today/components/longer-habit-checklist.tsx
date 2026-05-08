@@ -3,6 +3,7 @@ import { CalendarRange } from "lucide-react";
 
 import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
@@ -13,6 +14,7 @@ import { LongerHabitSection } from "./longer-habit-section";
 interface LongerHabitChecklistProps {
   dateKey: string;
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
+  getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   habits: HabitWithStatus[];
   onDecrementHabitProgress: (habitId: number) => void;
   onIncrementHabitProgress: (habitId: number) => void;
@@ -40,6 +42,7 @@ function formatResetLabel(periodEnd: string): string {
 export function LongerHabitChecklist({
   dateKey,
   focusQuotaGoals,
+  getKeyboardRowProps,
   habits,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
@@ -144,6 +147,7 @@ export function LongerHabitChecklist({
           <LongerHabitSection
             key={section.value}
             categoryPreferences={categoryPreferences}
+            getKeyboardRowProps={getKeyboardRowProps}
             onDecrementHabitProgress={onDecrementHabitProgress}
             onIncrementHabitProgress={onIncrementHabitProgress}
             section={section}

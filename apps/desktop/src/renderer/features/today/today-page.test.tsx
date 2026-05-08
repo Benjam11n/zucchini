@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type * as LongerHabitChecklistModule from "@/renderer/features/today/components/longer-habit-checklist";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
@@ -16,13 +15,6 @@ vi.mock<typeof TodayHistoryCarouselModule>(
   import("@/renderer/features/today/components/today-history-carousel"),
   () => ({
     TodayHistoryCarousel: () => <div>history carousel</div>,
-  })
-);
-
-vi.mock<typeof LongerHabitChecklistModule>(
-  import("@/renderer/features/today/components/longer-habit-checklist"),
-  () => ({
-    LongerHabitChecklist: () => <div>longer habits</div>,
   })
 );
 
@@ -82,7 +74,14 @@ const state: TodayState = {
 
 describe("today page", () => {
   function renderTodayPage(todayState: TodayState = state) {
-    return render(
+    const handlers = {
+      handleDecrementHabitProgress: vi.fn(),
+      handleIncrementHabitProgress: vi.fn(),
+      handleToggleHabit: vi.fn(),
+      handleToggleHabitCarryover: vi.fn(),
+    };
+
+    render(
       <TodayPage
         hasLoadedHistorySummary
         historySummary={history}
@@ -93,16 +92,24 @@ describe("today page", () => {
         onReorderHabits={vi.fn(() => Promise.resolve())}
         onUnarchiveHabit={vi.fn(() => Promise.resolve())}
         state={todayState}
-        onDecrementHabitProgress={vi.fn()}
-        onIncrementHabitProgress={vi.fn()}
-        onToggleHabit={vi.fn()}
-        onToggleHabitCarryover={vi.fn()}
+        onDecrementHabitProgress={handlers.handleDecrementHabitProgress}
+        onIncrementHabitProgress={handlers.handleIncrementHabitProgress}
+        onToggleHabit={handlers.handleToggleHabit}
+        onToggleHabitCarryover={handlers.handleToggleHabitCarryover}
         onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
         onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
         onUpdateHabitTargetCount={vi.fn(() => Promise.resolve())}
         onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
       />
     );
+
+    return handlers;
+  }
+
+  function getKeyboardRow(label: string): HTMLElement {
+    const row = screen.getByText(label).closest("[data-keyboard-row]");
+    expect(row).not.toBeNull();
+    return row as HTMLElement;
   }
 
   it("opens in-flow habit management from the daily checklist", () => {
@@ -147,5 +154,325 @@ describe("today page", () => {
     });
 
     expect(screen.queryByLabelText(/Current streak/u)).toBeNull();
+  });
+
+  it("auto-focuses the first actionable daily habit row", async () => {
+    renderTodayPage();
+
+    await waitFor(() => {
+      expect(getKeyboardRow("Plan top task")).toHaveFocus();
+    });
+  });
+
+  it("moves keyboard focus through daily, carryover, and periodic rows", async () => {
+    renderTodayPage({
+      ...state,
+      habitCarryovers: [
+        {
+          category: "fitness",
+          completed: false,
+          completedCount: 0,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Stretch",
+          sortOrder: 1,
+          sourceDate: "2026-03-12",
+          targetCount: 1,
+          targetDate: "2026-03-13",
+        },
+      ],
+      habits: [
+        ...state.habits,
+        {
+          category: "productivity",
+          completed: false,
+          completedCount: 1,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "weekly",
+          id: 3,
+          isArchived: false,
+          name: "Read deeply",
+          sortOrder: 2,
+          targetCount: 3,
+        },
+      ],
+    });
+
+    const dailyRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(dailyRow).toHaveFocus());
+
+    fireEvent.keyDown(dailyRow, { key: "ArrowDown" });
+    expect(getKeyboardRow("Stretch")).toHaveFocus();
+
+    fireEvent.keyDown(getKeyboardRow("Stretch"), { key: "ArrowDown" });
+    expect(getKeyboardRow("Read deeply")).toHaveFocus();
+
+    fireEvent.keyDown(getKeyboardRow("Read deeply"), { key: "ArrowDown" });
+    expect(dailyRow).toHaveFocus();
+
+    fireEvent.keyDown(dailyRow, { key: "ArrowUp" });
+    expect(getKeyboardRow("Read deeply")).toHaveFocus();
+  });
+
+  it("toggles daily habits with Space and Enter", async () => {
+    const handlers = renderTodayPage();
+    const row = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(row).toHaveFocus());
+
+    fireEvent.keyDown(row, { key: " " });
+    fireEvent.keyDown(row, { key: "Enter" });
+
+    expect(handlers.handleToggleHabit).toHaveBeenCalledTimes(2);
+    expect(handlers.handleToggleHabit).toHaveBeenCalledWith(1);
+  });
+
+  it("toggles carryovers with Space and Enter", async () => {
+    const handlers = renderTodayPage({
+      ...state,
+      habitCarryovers: [
+        {
+          category: "fitness",
+          completed: false,
+          completedCount: 0,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Stretch",
+          sortOrder: 1,
+          sourceDate: "2026-03-12",
+          targetCount: 1,
+          targetDate: "2026-03-13",
+        },
+      ],
+    });
+    const dailyRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(dailyRow).toHaveFocus());
+    fireEvent.keyDown(dailyRow, { key: "ArrowDown" });
+    const carryoverRow = getKeyboardRow("Stretch");
+
+    fireEvent.keyDown(carryoverRow, { key: " " });
+    fireEvent.keyDown(carryoverRow, { key: "Enter" });
+
+    expect(handlers.handleToggleHabitCarryover).toHaveBeenCalledTimes(2);
+    expect(handlers.handleToggleHabitCarryover).toHaveBeenCalledWith(
+      "2026-03-12",
+      2
+    );
+  });
+
+  it("adjusts periodic habit progress with keyboard actions", async () => {
+    const handlers = renderTodayPage({
+      ...state,
+      habits: [
+        ...state.habits,
+        {
+          category: "productivity",
+          completed: false,
+          completedCount: 1,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "weekly",
+          id: 3,
+          isArchived: false,
+          name: "Read deeply",
+          sortOrder: 2,
+          targetCount: 3,
+        },
+      ],
+    });
+    const dailyRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(dailyRow).toHaveFocus());
+    fireEvent.keyDown(dailyRow, { key: "ArrowDown" });
+    const periodicRow = getKeyboardRow("Read deeply");
+
+    fireEvent.keyDown(periodicRow, { key: " " });
+    fireEvent.keyDown(periodicRow, { key: "Enter" });
+    fireEvent.keyDown(periodicRow, { key: "ArrowRight" });
+    fireEvent.keyDown(periodicRow, { key: "ArrowLeft" });
+
+    expect(handlers.handleIncrementHabitProgress).toHaveBeenCalledTimes(3);
+    expect(handlers.handleIncrementHabitProgress).toHaveBeenCalledWith(3);
+    expect(handlers.handleDecrementHabitProgress).toHaveBeenCalledTimes(1);
+    expect(handlers.handleDecrementHabitProgress).toHaveBeenCalledWith(3);
+  });
+
+  it("skips disabled daily rows when the day is paused", async () => {
+    renderTodayPage({
+      ...state,
+      dayStatus: "rest",
+      habits: [
+        ...state.habits,
+        {
+          category: "productivity",
+          completed: false,
+          completedCount: 1,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "weekly",
+          id: 3,
+          isArchived: false,
+          name: "Read deeply",
+          sortOrder: 2,
+          targetCount: 3,
+        },
+      ],
+    });
+
+    await waitFor(() => {
+      expect(getKeyboardRow("Read deeply")).toHaveFocus();
+    });
+  });
+
+  it("ignores row shortcuts when a nested control has focus", async () => {
+    const handlers = renderTodayPage();
+    const row = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(row).toHaveFocus());
+    const checkbox = screen.getByRole("checkbox", { name: /plan top task/i });
+
+    fireEvent.keyDown(checkbox, { key: " " });
+
+    expect(handlers.handleToggleHabit).not.toHaveBeenCalled();
+  });
+
+  it("focuses the next incomplete row with N", async () => {
+    renderTodayPage({
+      ...state,
+      habits: [
+        {
+          category: "productivity",
+          completed: true,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 1,
+          isArchived: false,
+          name: "Plan top task",
+          sortOrder: 0,
+        },
+        {
+          category: "fitness",
+          completed: false,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Move",
+          sortOrder: 1,
+        },
+        {
+          category: "productivity",
+          completed: false,
+          completedCount: 1,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "weekly",
+          id: 3,
+          isArchived: false,
+          name: "Read deeply",
+          sortOrder: 2,
+          targetCount: 3,
+        },
+      ],
+    });
+    const firstRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(firstRow).toHaveFocus());
+
+    fireEvent.keyDown(window, { key: "n" });
+    expect(getKeyboardRow("Move")).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "n" });
+    expect(getKeyboardRow("Read deeply")).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "n" });
+    expect(getKeyboardRow("Move")).toHaveFocus();
+  });
+
+  it("focuses the next incomplete row after completing the current row by click", async () => {
+    renderTodayPage({
+      ...state,
+      habits: [
+        ...state.habits,
+        {
+          category: "fitness",
+          completed: false,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Move",
+          sortOrder: 1,
+        },
+      ],
+    });
+    const firstRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(firstRow).toHaveFocus());
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /plan top task/i }));
+    fireEvent.keyDown(window, { key: "n" });
+
+    expect(getKeyboardRow("Move")).toHaveFocus();
+  });
+
+  it("focuses the previous incomplete row with Shift+N", async () => {
+    renderTodayPage({
+      ...state,
+      habits: [
+        ...state.habits,
+        {
+          category: "fitness",
+          completed: false,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Move",
+          sortOrder: 1,
+        },
+        {
+          category: "productivity",
+          completed: false,
+          completedCount: 1,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "weekly",
+          id: 3,
+          isArchived: false,
+          name: "Read deeply",
+          sortOrder: 2,
+          targetCount: 3,
+        },
+      ],
+    });
+    const firstRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(firstRow).toHaveFocus());
+
+    fireEvent.keyDown(window, { key: "N", shiftKey: true });
+    expect(getKeyboardRow("Read deeply")).toHaveFocus();
+  });
+
+  it("does not use N as a Today hotkey from inputs", async () => {
+    renderTodayPage({
+      ...state,
+      habits: [
+        ...state.habits,
+        {
+          category: "fitness",
+          completed: false,
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Move",
+          sortOrder: 1,
+        },
+      ],
+    });
+    const firstRow = getKeyboardRow("Plan top task");
+    await waitFor(() => expect(firstRow).toHaveFocus());
+    fireEvent.click(screen.getByRole("button", { name: "Manage" }));
+    const input = screen.getAllByLabelText("Name")[0] as HTMLElement;
+    input.focus();
+
+    fireEvent.keyDown(input, { key: "n" });
+
+    expect(input).toHaveFocus();
   });
 });

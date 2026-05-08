@@ -1,7 +1,9 @@
 import { m } from "framer-motion";
 
+import { getPeriodicHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
 import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
@@ -18,6 +20,7 @@ interface LongerHabitSectionData {
 
 interface LongerHabitSectionProps {
   categoryPreferences: Parameters<typeof getHabitCategoryPresentation>[1];
+  getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   onDecrementHabitProgress: (habitId: number) => void;
   onIncrementHabitProgress: (habitId: number) => void;
   section: LongerHabitSectionData;
@@ -25,6 +28,7 @@ interface LongerHabitSectionProps {
 
 export function LongerHabitSection({
   categoryPreferences,
+  getKeyboardRowProps,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
   section,
@@ -51,6 +55,9 @@ export function LongerHabitSection({
           <LongerHabitListItem
             key={habit.id}
             habit={habit}
+            keyboardRowProps={getKeyboardRowProps?.(
+              getPeriodicHabitKeyboardRowId(habit.id)
+            )}
             onDecrement={onDecrementHabitProgress}
             onIncrement={onIncrementHabitProgress}
             presentation={getHabitCategoryPresentation(

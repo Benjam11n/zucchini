@@ -10,10 +10,12 @@ import {
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface LongerHabitListItemProps {
   habit: HabitWithStatus;
+  keyboardRowProps?: KeyboardRowProps;
   onDecrement: (habitId: number) => void;
   onIncrement: (habitId: number) => void;
   presentation: ReturnType<typeof getHabitCategoryPresentation>;
@@ -31,6 +33,7 @@ function formatQuotaLabel(completed: number, target: number): React.ReactNode {
 
 export function LongerHabitListItem({
   habit,
+  keyboardRowProps,
   onDecrement,
   onIncrement,
   presentation,
@@ -43,6 +46,7 @@ export function LongerHabitListItem({
       animate={{ opacity: 1, scale: 1, x: 0 }}
       className={cn(
         "group flex flex-wrap items-center gap-2 rounded-lg px-2.5 py-2 transition-colors duration-150",
+        "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         habit.completed
           ? "bg-muted/15 text-muted-foreground/65"
           : "hover:bg-muted/25"
@@ -50,6 +54,7 @@ export function LongerHabitListItem({
       initial={{ opacity: 0, scale: 0.98, x: -8 }}
       layout
       transition={microTransition}
+      {...keyboardRowProps}
       whileTap={tapPress}
       {...(habit.completed ? {} : { whileHover: hoverLift })}
     >

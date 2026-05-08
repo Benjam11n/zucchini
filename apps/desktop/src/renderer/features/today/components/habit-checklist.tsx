@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
+import { getDailyHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
 import {
   HabitListCard,
   HabitListItem,
@@ -10,6 +11,7 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
@@ -23,6 +25,7 @@ interface HabitChecklistProps {
   headerActions?: ReactNode;
   habitStreaks?: Readonly<Record<number, HabitStreak>>;
   isPaused?: boolean;
+  getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   title?: string;
   icon?: React.ElementType;
 }
@@ -41,6 +44,7 @@ function HabitChecklistComponent({
   headerActions,
   habitStreaks,
   isPaused = false,
+  getKeyboardRowProps,
   title = "Today",
   icon: Icon,
 }: HabitChecklistProps) {
@@ -145,6 +149,9 @@ function HabitChecklistComponent({
                     disabled={isPaused}
                     key={habit.id}
                     habit={habit}
+                    keyboardRowProps={getKeyboardRowProps?.(
+                      getDailyHabitKeyboardRowId(habit.id)
+                    )}
                     onToggle={onToggleHabit}
                     {...streakProps}
                   />

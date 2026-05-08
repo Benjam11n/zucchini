@@ -1,5 +1,6 @@
 import { CalendarPlus } from "lucide-react";
 
+import { getCarryoverKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
 import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -7,15 +8,18 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 
 interface CarryoverChecklistProps {
   carryovers: HabitCarryover[];
+  getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   onToggleCarryover: (sourceDate: string, habitId: number) => void;
 }
 
 export function CarryoverChecklist({
   carryovers,
+  getKeyboardRowProps,
   onToggleCarryover,
 }: CarryoverChecklistProps) {
   const categoryPreferences = useHabitCategoryPreferences();
@@ -42,17 +46,23 @@ export function CarryoverChecklist({
             categoryPreferences
           );
           const CarryoverIcon = presentation.icon;
+          const keyboardRowId = getCarryoverKeyboardRowId(
+            carryover.sourceDate,
+            carryover.id
+          );
 
           return (
             <label
               className={cn(
                 "group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
+                "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                 carryover.completed
                   ? "text-muted-foreground/50"
                   : "hover:bg-muted/25"
               )}
               htmlFor={`carryover-${carryover.sourceDate}-${carryover.id}`}
               key={`${carryover.sourceDate}-${carryover.id}`}
+              {...getKeyboardRowProps?.(keyboardRowId)}
             >
               <Checkbox
                 checked={carryover.completed}
