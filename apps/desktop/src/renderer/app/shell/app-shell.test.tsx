@@ -80,6 +80,24 @@ describe("app shell", () => {
     expect(screen.getByTestId("content")).toHaveTextContent("page content");
   });
 
+  it("renders an optional top banner above route content", () => {
+    setupUpdaterMock();
+    render(
+      <AppShell
+        onTabChange={vi.fn()}
+        tab="today"
+        topBanner={<div data-testid="top-banner">weekly review ready</div>}
+      >
+        <div data-testid="content">page content</div>
+      </AppShell>
+    );
+
+    expect(screen.getByTestId("top-banner")).toHaveTextContent(
+      "weekly review ready"
+    );
+    expect(screen.getByTestId("content")).toHaveTextContent("page content");
+  });
+
   it("renders an optional right sidebar", () => {
     setupUpdaterMock();
     const { container } = render(

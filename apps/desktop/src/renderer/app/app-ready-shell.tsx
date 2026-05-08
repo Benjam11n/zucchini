@@ -1,7 +1,7 @@
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
 import { AppShell } from "@/renderer/app/shell/app-shell";
-import { WeeklyReviewSpotlightMount } from "@/renderer/app/weekly-review-spotlight-mount";
+import { WeeklyReviewSpotlightBanner } from "@/renderer/features/history/weekly-review/components/weekly-review-spotlight-banner";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 
@@ -22,6 +22,15 @@ export function AppReadyShell({
         onSetDayStatus={actions.handleSetDayStatus}
       />
     ) : undefined;
+  const weeklyReviewBanner =
+    state.isWeeklyReviewSpotlightOpen &&
+    state.weeklyReviewOverview?.latestReview ? (
+      <WeeklyReviewSpotlightBanner
+        onDismiss={actions.handleDismissWeeklyReviewSpotlight}
+        onOpenReview={actions.handleWeeklyReviewOpen}
+        review={state.weeklyReviewOverview.latestReview}
+      />
+    ) : null;
 
   return (
     <HabitCategoryPreferencesProvider
@@ -32,11 +41,11 @@ export function AppReadyShell({
       <AppShell
         rightSidebar={rightSidebar}
         tab={tab}
+        topBanner={weeklyReviewBanner}
         onTabChange={actions.handleTabChange}
       >
         <CurrentRoute {...controller} />
       </AppShell>
-      <WeeklyReviewSpotlightMount {...controller} />
     </HabitCategoryPreferencesProvider>
   );
 }

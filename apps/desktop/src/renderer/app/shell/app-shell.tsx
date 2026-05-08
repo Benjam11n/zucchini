@@ -23,6 +23,7 @@ interface AppShellProps {
   children: ReactNode;
   rightSidebar?: ReactNode;
   tab: AppTab;
+  topBanner?: ReactNode;
   onTabChange: (tab: AppTab) => void;
 }
 
@@ -30,6 +31,7 @@ export function AppShell({
   children,
   rightSidebar,
   tab,
+  topBanner,
   onTabChange,
 }: AppShellProps) {
   const contentGridClassName = rightSidebar
@@ -53,6 +55,7 @@ export function AppShell({
 
               <section className="min-w-0 max-w-full overflow-x-hidden px-4 py-6 sm:px-6 lg:px-4 lg:py-8 xl:px-8">
                 <div className="mx-auto min-w-0 w-full max-w-2xl xl:max-w-3xl">
+                  {topBanner ? <div className="mb-4">{topBanner}</div> : null}
                   <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
                     <AnimatePresence initial={false} mode="wait">
                       <m.div
