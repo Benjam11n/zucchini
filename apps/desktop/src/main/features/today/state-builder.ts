@@ -1,5 +1,6 @@
 import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
 import type { TodayState } from "@/shared/contracts/today-state";
+import type { CategoryStreak } from "@/shared/domain/category-streak";
 /**
  * Today state builder — assembles the read-model the renderer consumes.
  *
@@ -10,8 +11,12 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import type { Clock } from "@/shared/domain/clock";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
-import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import {
+  HABIT_CATEGORY_SLOTS,
+  getHabitCategoryProgress,
+  isDailyHabit,
+} from "@/shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -124,6 +129,42 @@ function buildTodayHabitStreaksFromHabits(
   return habitStreaks;
 }
 
+function buildTodayCategoryStreaksFromHabits(
+  repository: TodayReadModelRepositoryPort,
+  habits: HabitWithStatus[],
+  dayStatus: DayStatusKind | null
+): Record<HabitCategory, CategoryStreak> {
+  const persistedStateByCategory = new Map(
+    repository
+      .getPersistedCategoryStreakStates()
+      .map((state) => [state.category, state])
+  );
+  const dailyHabits = habits.filter(isDailyHabit);
+  const streaks = {} as Record<HabitCategory, CategoryStreak>;
+
+  for (const { value } of HABIT_CATEGORY_SLOTS) {
+    const persistedState = persistedStateByCategory.get(value);
+    const categoryHabits = dailyHabits.filter(
+      (habit) => habit.category === value
+    );
+    const settledCurrentStreak = persistedState?.currentStreak ?? 0;
+    const currentStreak =
+      !dayStatus &&
+      categoryHabits.length > 0 &&
+      categoryHabits.every((habit) => habit.completed)
+        ? settledCurrentStreak + 1
+        : settledCurrentStreak;
+
+    streaks[value] = {
+      bestStreak: Math.max(persistedState?.bestStreak ?? 0, currentStreak),
+      category: value,
+      currentStreak,
+    };
+  }
+
+  return streaks;
+}
+
 export function buildTodayState(
   repository: TodayReadModelRepositoryPort,
   clock: Clock
@@ -148,6 +189,11 @@ export function buildTodayState(
   repository.ensureWindDownStatusRowsForDate(today);
   const windDownActions = repository.getWindDownActionsWithStatus(today);
   return {
+    categoryStreaks: buildTodayCategoryStreaksFromHabits(
+      repository,
+      habits,
+      currentDayStatus?.kind ?? null
+    ),
     date: today,
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,

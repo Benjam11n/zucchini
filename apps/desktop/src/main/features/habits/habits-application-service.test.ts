@@ -3,6 +3,7 @@ import type {
   AppRepository,
   SettledHistoryOptions,
 } from "@/main/ports/app-repository";
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -85,6 +86,7 @@ class FakeRepository implements AppRepository {
     lastEvaluatedDate: "2026-03-05",
   };
   habitStreakStates = new Map<number, PersistedHabitStreakState>();
+  categoryStreakStates = new Map<string, PersistedCategoryStreakState>();
   settings: AppSettings = {
     ...createDefaultAppSettings("Asia/Singapore"),
     launchAtLogin: false,
@@ -445,6 +447,20 @@ class FakeRepository implements AppRepository {
   ): void {
     for (const state of states) {
       this.habitStreakStates.set(state.habitId, { ...state });
+    }
+  }
+
+  getPersistedCategoryStreakStates(): PersistedCategoryStreakState[] {
+    return [...this.categoryStreakStates.values()].map((state) => ({
+      ...state,
+    }));
+  }
+
+  savePersistedCategoryStreakStates(
+    states: readonly PersistedCategoryStreakState[]
+  ): void {
+    for (const state of states) {
+      this.categoryStreakStates.set(state.category, { ...state });
     }
   }
 
@@ -907,6 +923,110 @@ describe("habitService rollover", () => {
       currentStreak: 0,
       habitId: 1,
       lastEvaluatedDate: "2026-03-07",
+    });
+  });
+
+  it("increments category streaks only when all daily habits in the category complete", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-05",
+    };
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Run",
+      selectedWeekdays: null,
+      sortOrder: 1,
+      targetCount: 1,
+    });
+    repository.categoryStreakStates.set("productivity", {
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.categoryStreakStates.set("fitness", {
+      bestStreak: 2,
+      category: "fitness",
+      currentStreak: 2,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.setStatusForDate(
+      "2026-03-06",
+      new Map([
+        [1, true],
+        [2, true],
+      ])
+    );
+    repository.setStatusForDate(
+      "2026-03-07",
+      new Map([
+        [1, false],
+        [2, true],
+      ])
+    );
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 0,
+      lastEvaluatedDate: "2026-03-07",
+    });
+    expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
+      bestStreak: 4,
+      category: "fitness",
+      currentStreak: 4,
+      lastEvaluatedDate: "2026-03-07",
+    });
+  });
+
+  it("keeps category streaks neutral for empty and frozen category days", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 1,
+      bestStreak: 3,
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-05",
+    };
+    repository.categoryStreakStates.set("fitness", {
+      bestStreak: 4,
+      category: "fitness",
+      currentStreak: 4,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
+    const [habit] = repository.habits;
+    if (!habit) {
+      throw new Error("Expected default habit.");
+    }
+    repository.habits[0] = { ...habit, category: "productivity" };
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.dailySummaries.get("2026-03-06")?.freezeUsed).toBe(true);
+    expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
+      bestStreak: 4,
+      category: "fitness",
+      currentStreak: 4,
+      lastEvaluatedDate: "2026-03-06",
     });
   });
 });

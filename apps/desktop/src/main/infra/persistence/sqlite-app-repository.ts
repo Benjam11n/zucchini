@@ -14,6 +14,7 @@ import type {
   AppRepository,
   SettledHistoryOptions,
 } from "@/main/ports/app-repository";
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -284,6 +285,16 @@ export class SqliteAppRepository implements AppRepository {
     states: readonly PersistedHabitStreakState[]
   ): void {
     this.streakRepository.savePersistedHabitStreakStates(states);
+  }
+
+  getPersistedCategoryStreakStates(): PersistedCategoryStreakState[] {
+    return this.streakRepository.getPersistedCategoryStreakStates();
+  }
+
+  savePersistedCategoryStreakStates(
+    states: readonly PersistedCategoryStreakState[]
+  ): void {
+    this.streakRepository.savePersistedCategoryStreakStates(states);
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {

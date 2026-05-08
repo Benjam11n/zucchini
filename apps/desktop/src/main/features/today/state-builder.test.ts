@@ -18,6 +18,7 @@ function createRepository(
     getHistoricalHabitPeriodStatusesOverlappingRange?: ReturnType<typeof vi.fn>;
     getHabitsWithStatus?: ReturnType<typeof vi.fn>;
     getHabitWithStatus?: ReturnType<typeof vi.fn>;
+    getPersistedCategoryStreakStates?: ReturnType<typeof vi.fn>;
     getPersistedHabitStreakStates?: ReturnType<typeof vi.fn>;
     getPersistedStreakState?: ReturnType<typeof vi.fn>;
     getSettledHistory?: ReturnType<typeof vi.fn>;
@@ -41,6 +42,8 @@ function createRepository(
     getHistoricalHabitPeriodStatusesOverlappingRange:
       overrides.getHistoricalHabitPeriodStatusesOverlappingRange ??
       vi.fn(() => []),
+    getPersistedCategoryStreakStates:
+      overrides.getPersistedCategoryStreakStates ?? vi.fn(() => []),
     getPersistedHabitStreakStates:
       overrides.getPersistedHabitStreakStates ?? vi.fn(() => []),
     getPersistedStreakState:
@@ -238,6 +241,67 @@ describe("state builder", () => {
         bestStreak: 4,
         currentStreak: 1,
       });
+    });
+
+    it("builds category streaks from persisted state plus today's preview", () => {
+      const habits = [
+        {
+          category: "fitness" as const,
+          completed: true,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 1,
+          isArchived: false,
+          name: "Run",
+          selectedWeekdays: null,
+          sortOrder: 0,
+          targetCount: 1,
+        },
+        {
+          category: "nutrition" as const,
+          completed: false,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 2,
+          isArchived: false,
+          name: "Water",
+          selectedWeekdays: null,
+          sortOrder: 1,
+          targetCount: 1,
+        },
+      ];
+      const repository = createRepository({
+        getHabitsWithStatus: vi.fn(() => habits),
+        getPersistedCategoryStreakStates: vi.fn(() => [
+          {
+            bestStreak: 5,
+            category: "fitness",
+            currentStreak: 2,
+            lastEvaluatedDate: "2025-12-31",
+          },
+          {
+            bestStreak: 3,
+            category: "nutrition",
+            currentStreak: 1,
+            lastEvaluatedDate: "2025-12-31",
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.categoryStreaks?.fitness).toStrictEqual({
+        bestStreak: 5,
+        category: "fitness",
+        currentStreak: 3,
+      });
+      expect(todayState.categoryStreaks?.nutrition).toStrictEqual({
+        bestStreak: 3,
+        category: "nutrition",
+        currentStreak: 1,
+      });
+      expect(todayState.categoryStreaks?.productivity.currentStreak).toBe(0);
     });
   });
 

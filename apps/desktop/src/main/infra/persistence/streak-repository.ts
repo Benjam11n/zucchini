@@ -1,11 +1,20 @@
 import { eq, inArray, sql } from "drizzle-orm";
 
-import { habitStreakState, streakState } from "@/main/infra/db/schema";
+import {
+  categoryStreakState,
+  habitStreakState,
+  streakState,
+} from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { StreakState } from "@/shared/domain/streak";
 
-import { mapHabitStreakState, mapStreakState } from "./mappers";
+import {
+  mapCategoryStreakState,
+  mapHabitStreakState,
+  mapStreakState,
+} from "./mappers";
 
 export class SqliteStreakRepository {
   private readonly client: SqliteDatabaseClient;
@@ -111,6 +120,48 @@ export class SqliteStreakRepository {
             lastEvaluatedDate: sql.raw("excluded.last_evaluated_date"),
           },
           target: habitStreakState.habitId,
+        })
+        .run();
+    });
+  }
+
+  getPersistedCategoryStreakStates(): PersistedCategoryStreakState[] {
+    return this.client.run("getPersistedCategoryStreakStates", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(categoryStreakState)
+        .all()
+        .map((row) => mapCategoryStreakState(row))
+    );
+  }
+
+  savePersistedCategoryStreakStates(
+    states: readonly PersistedCategoryStreakState[]
+  ): void {
+    if (states.length === 0) {
+      return;
+    }
+
+    this.client.run("savePersistedCategoryStreakStates", () => {
+      this.client
+        .getDrizzle()
+        .insert(categoryStreakState)
+        .values(
+          states.map((state) => ({
+            bestStreak: state.bestStreak,
+            category: state.category,
+            currentStreak: state.currentStreak,
+            lastEvaluatedDate: state.lastEvaluatedDate,
+          }))
+        )
+        .onConflictDoUpdate({
+          set: {
+            bestStreak: sql.raw("excluded.best_streak"),
+            currentStreak: sql.raw("excluded.current_streak"),
+            lastEvaluatedDate: sql.raw("excluded.last_evaluated_date"),
+          },
+          target: categoryStreakState.category,
         })
         .run();
     });

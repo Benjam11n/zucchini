@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
@@ -12,6 +13,7 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
+import type { CategoryStreak } from "@/shared/domain/category-streak";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
@@ -24,6 +26,7 @@ interface HabitChecklistProps {
   emptyAction?: ReactNode;
   headerActions?: ReactNode;
   habitStreaks?: Readonly<Record<number, HabitStreak>>;
+  categoryStreaks?: Readonly<Partial<Record<HabitCategory, CategoryStreak>>>;
   isPaused?: boolean;
   getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
   readOnly?: boolean;
@@ -44,6 +47,7 @@ function HabitChecklistComponent({
   emptyAction: _emptyAction,
   headerActions,
   habitStreaks,
+  categoryStreaks,
   isPaused = false,
   getKeyboardRowProps,
   readOnly = false,
@@ -120,6 +124,7 @@ function HabitChecklistComponent({
           categoryPreferences
         );
         const CategoryIcon = presentation.icon;
+        const categoryStreak = categoryStreaks?.[category.value];
 
         return (
           <div key={category.value} className="grid gap-1">
@@ -135,6 +140,19 @@ function HabitChecklistComponent({
               >
                 {presentation.label}
               </span>
+              {categoryStreak && categoryStreak.currentStreak > 0 ? (
+                <span
+                  className="inline-flex h-4 items-center gap-1 rounded-sm px-1 text-[0.65rem] tabular-nums"
+                  style={{
+                    backgroundColor: `${presentation.color}18`,
+                    color: presentation.accentTextColor,
+                  }}
+                  title={`${presentation.label} streak`}
+                >
+                  <Flame className="size-2.5" />
+                  {categoryStreak.currentStreak}d
+                </span>
+              ) : null}
               <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
                 {category.completedCount}/{category.habits.length}
               </span>

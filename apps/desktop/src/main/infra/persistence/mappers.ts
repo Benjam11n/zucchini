@@ -1,3 +1,4 @@
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 /**
  * Persistence layer data mappers.
@@ -24,6 +25,7 @@ import type { WindDownAction } from "@/shared/domain/wind-down";
 
 import type {
   DailySummaryRow,
+  CategoryStreakStateRow,
   DayStatusRow,
   FocusSessionRow,
   HabitPeriodStatusRow,
@@ -144,6 +146,17 @@ export function mapHabitStreakState(
     bestStreak: row.bestStreak,
     currentStreak: row.currentStreak,
     habitId: row.habitId,
+    lastEvaluatedDate: row.lastEvaluatedDate,
+  };
+}
+
+export function mapCategoryStreakState(
+  row: CategoryStreakStateRow
+): PersistedCategoryStreakState {
+  return {
+    bestStreak: row.bestStreak,
+    category: normalizeHabitCategory(row.category),
+    currentStreak: row.currentStreak,
     lastEvaluatedDate: row.lastEvaluatedDate,
   };
 }

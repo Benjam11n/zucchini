@@ -168,6 +168,9 @@ function TodayPageComponent({
             {...(state.habitStreaks
               ? { habitStreaks: state.habitStreaks }
               : {})}
+            {...(state.categoryStreaks
+              ? { categoryStreaks: state.categoryStreaks }
+              : {})}
           />
         </section>
 

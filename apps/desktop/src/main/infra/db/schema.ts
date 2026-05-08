@@ -159,6 +159,13 @@ export const habitStreakState = sqliteTable("habit_streak_state", {
   lastEvaluatedDate: text("last_evaluated_date"),
 });
 
+export const categoryStreakState = sqliteTable("category_streak_state", {
+  bestStreak: integer("best_streak").notNull(),
+  category: text().primaryKey(),
+  currentStreak: integer("current_streak").notNull(),
+  lastEvaluatedDate: text("last_evaluated_date"),
+});
+
 export const reminderRuntimeState = sqliteTable("reminder_runtime_state", {
   id: integer().primaryKey(),
   lastMidnightWarningSentAt: text("last_midnight_warning_sent_at"),
@@ -220,6 +227,7 @@ export const settings = sqliteTable("settings", {
 });
 
 export const schema = {
+  categoryStreakState,
   dailySummary,
   dayStatus,
   focusQuotaGoals,

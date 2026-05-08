@@ -4,6 +4,7 @@
  * Re-exports Drizzle inferred row types for each table.
  */
 import type {
+  categoryStreakState,
   dailySummary,
   dayStatus,
   focusSessions,
@@ -15,6 +16,7 @@ import type {
   windDownActions,
 } from "@/main/infra/db/schema";
 
+export type CategoryStreakStateRow = typeof categoryStreakState.$inferSelect;
 export type HabitRow = typeof habits.$inferSelect;
 export type HabitPeriodStatusRow = typeof habitPeriodStatus.$inferSelect;
 export type DailySummaryRow = typeof dailySummary.$inferSelect;

@@ -1,3 +1,4 @@
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 /**
  * Repository data-access contract.
  *
@@ -164,6 +165,10 @@ export interface StreakRepositoryPort {
   savePersistedHabitStreakStates(
     states: readonly PersistedHabitStreakState[]
   ): void;
+  getPersistedCategoryStreakStates(): PersistedCategoryStreakState[];
+  savePersistedCategoryStreakStates(
+    states: readonly PersistedCategoryStreakState[]
+  ): void;
 }
 
 export interface SettingsRepositoryPort {
@@ -218,6 +223,7 @@ export type TodayReadModelRepositoryPort = Pick<
   | "getHabitsWithStatus"
   | "getHistoricalHabitPeriodStatusesOverlappingRange"
   | "getPersistedHabitStreakStates"
+  | "getPersistedCategoryStreakStates"
   | "getPersistedStreakState"
   | "getSettings"
   | "getSettledHistory"

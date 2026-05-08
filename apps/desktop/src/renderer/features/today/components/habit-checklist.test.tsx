@@ -50,4 +50,38 @@ describe("habit checklist", () => {
     expect(screen.getByText("Incomplete historical row")).toBeInTheDocument();
     expect(onToggleHabit).not.toHaveBeenCalled();
   });
+
+  it("shows category streak chips only when the current streak is positive", () => {
+    render(
+      <HabitChecklist
+        categoryStreaks={{
+          fitness: {
+            bestStreak: 5,
+            category: "fitness",
+            currentStreak: 3,
+          },
+          productivity: {
+            bestStreak: 2,
+            category: "productivity",
+            currentStreak: 0,
+          },
+        }}
+        completedCount={1}
+        habits={[
+          createHabit(1, {
+            category: "fitness",
+            completed: true,
+            name: "Run",
+          }),
+          createHabit(2, { name: "Plan" }),
+        ]}
+        icon={ListChecks}
+      />
+    );
+
+    expect(screen.getByTitle("Fitness streak")).toHaveTextContent("3d");
+    expect(screen.queryByTitle("Productivity streak")).toBeNull();
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+    expect(screen.getByText("0/1")).toBeInTheDocument();
+  });
 });

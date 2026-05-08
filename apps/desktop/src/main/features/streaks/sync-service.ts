@@ -1,5 +1,6 @@
 import { createRollingStreakState } from "@/main/features/today/state-builder";
 import type { AppRepository } from "@/main/ports/app-repository";
+import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 /**
  * Rolling streak synchronization service.
  *
@@ -10,8 +11,8 @@ import type { AppRepository } from "@/main/ports/app-repository";
  */
 import type { Clock } from "@/shared/domain/clock";
 import type { DayStatusKind } from "@/shared/domain/day-status";
-import { isDailyHabit } from "@/shared/domain/habit";
-import type { HabitWithStatus } from "@/shared/domain/habit";
+import { HABIT_CATEGORY_SLOTS, isDailyHabit } from "@/shared/domain/habit";
+import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
 
@@ -22,6 +23,17 @@ function createEmptyHabitStreakState(
     bestStreak: 0,
     currentStreak: 0,
     habitId,
+    lastEvaluatedDate: null,
+  };
+}
+
+function createEmptyCategoryStreakState(
+  category: HabitCategory
+): PersistedCategoryStreakState {
+  return {
+    bestStreak: 0,
+    category,
+    currentStreak: 0,
     lastEvaluatedDate: null,
   };
 }
@@ -156,6 +168,134 @@ function syncHabitStreakStates(
   repository.savePersistedHabitStreakStates([...stateByHabitId.values()]);
 }
 
+function getNextCategoryStreakState({
+  categoryHabits,
+  cursor,
+  dayStatus,
+  freezeUsed,
+  state,
+}: {
+  categoryHabits: Pick<HabitWithStatus, "category" | "completed">[];
+  cursor: string;
+  dayStatus: DayStatusKind | null;
+  freezeUsed: boolean;
+  state: PersistedCategoryStreakState;
+}): PersistedCategoryStreakState {
+  if (dayStatus || freezeUsed || categoryHabits.length === 0) {
+    return {
+      ...state,
+      lastEvaluatedDate: cursor,
+    };
+  }
+
+  if (!categoryHabits.every((habit) => habit.completed)) {
+    return {
+      ...state,
+      currentStreak: 0,
+      lastEvaluatedDate: cursor,
+    };
+  }
+
+  const currentStreak = state.currentStreak + 1;
+
+  return {
+    ...state,
+    bestStreak: Math.max(state.bestStreak, currentStreak),
+    currentStreak,
+    lastEvaluatedDate: cursor,
+  };
+}
+
+function syncCategoryStreakStates(
+  repository: AppRepository,
+  clock: Clock,
+  firstTrackedDate: string,
+  yesterday: string
+): void {
+  const stateByCategory = new Map(
+    repository
+      .getPersistedCategoryStreakStates()
+      .map((state) => [state.category, state])
+  );
+  let addedMissingState = false;
+
+  for (const { value } of HABIT_CATEGORY_SLOTS) {
+    if (stateByCategory.has(value)) {
+      continue;
+    }
+
+    stateByCategory.set(value, createEmptyCategoryStreakState(value));
+    addedMissingState = true;
+  }
+
+  const firstUnevaluatedDates = [...stateByCategory.values()]
+    .map((state) =>
+      state.lastEvaluatedDate
+        ? clock.addDays(state.lastEvaluatedDate, 1)
+        : firstTrackedDate
+    )
+    .filter((date) => clock.compareDateKeys(date, yesterday) <= 0);
+
+  const [firstUnevaluatedDate] = firstUnevaluatedDates.toSorted((left, right) =>
+    left.localeCompare(right)
+  );
+  if (!firstUnevaluatedDate) {
+    if (addedMissingState) {
+      repository.savePersistedCategoryStreakStates([
+        ...stateByCategory.values(),
+      ]);
+    }
+    return;
+  }
+
+  let cursor = firstUnevaluatedDate;
+
+  while (clock.compareDateKeys(cursor, yesterday) <= 0) {
+    repository.ensureStatusRowsForDate(cursor);
+    const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
+    const [summary] = repository.getDailySummariesInRange(cursor, cursor);
+    const habitsByCategory = new Map<
+      HabitCategory,
+      Pick<HabitWithStatus, "category" | "completed">[]
+    >();
+
+    for (const habit of repository
+      .getHistoricalHabitPeriodStatusesOverlappingRange(cursor, cursor)
+      .filter(isDailyHabit)) {
+      const categoryHabits = habitsByCategory.get(habit.category) ?? [];
+      categoryHabits.push(habit);
+      habitsByCategory.set(habit.category, categoryHabits);
+    }
+
+    for (const { value } of HABIT_CATEGORY_SLOTS) {
+      const currentState =
+        stateByCategory.get(value) ?? createEmptyCategoryStreakState(value);
+      const nextDate = currentState.lastEvaluatedDate
+        ? clock.addDays(currentState.lastEvaluatedDate, 1)
+        : firstTrackedDate;
+
+      if (clock.compareDateKeys(nextDate, cursor) > 0) {
+        continue;
+      }
+
+      stateByCategory.set(
+        value,
+        getNextCategoryStreakState({
+          categoryHabits: habitsByCategory.get(value) ?? [],
+          cursor,
+          dayStatus,
+          freezeUsed: summary?.freezeUsed ?? false,
+          state: currentState,
+        })
+      );
+    }
+
+    cursor = clock.addDays(cursor, 1);
+  }
+
+  repository.savePersistedCategoryStreakStates([...stateByCategory.values()]);
+}
+
 export function syncRollingState(
   repository: AppRepository,
   clock: Clock
@@ -177,6 +317,7 @@ export function syncRollingState(
 
   if (clock.compareDateKeys(cursor, yesterday) > 0) {
     syncHabitStreakStates(repository, clock, firstTrackedDate, yesterday);
+    syncCategoryStreakStates(repository, clock, firstTrackedDate, yesterday);
     return;
   }
 
@@ -225,4 +366,5 @@ export function syncRollingState(
 
   repository.savePersistedStreakState(rollingState);
   syncHabitStreakStates(repository, clock, firstTrackedDate, yesterday);
+  syncCategoryStreakStates(repository, clock, firstTrackedDate, yesterday);
 }
