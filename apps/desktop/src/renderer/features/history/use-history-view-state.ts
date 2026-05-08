@@ -1,20 +1,21 @@
 /**
  * History page view state hook.
  *
- * Manages calendar navigation (selected date, year), computes history stats
- * (total days, completion rate), builds the day lookup map, and provides
- * callbacks for selecting dates and navigating between years.
+ * Manages selected year/date state and derives the year timeline plus the
+ * selected month's sidebar metrics.
  */
 import { useEffect, useMemo, useState } from "react";
 
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
+import { getHistoryDayLookup } from "@/renderer/features/history/lib/history-summary";
 import {
-  getHistoryDayLookup,
-  getHistoryStats,
-} from "@/renderer/features/history/lib/history-summary";
+  getHistoryMonthDays,
+  getHistoryMonthStats,
+  getHistoryTrendPoints,
+} from "@/renderer/features/history/lib/history-timeline";
 import { parseDateKey } from "@/shared/utils/date";
 
-export interface HistoryViewState {
+interface HistoryViewState {
   selectedDateKey: string | null;
   selectedYear: number;
   visibleMonth: Date | undefined;
@@ -57,15 +58,28 @@ export function useHistoryViewState({
     [historyYears, selectedHistoryYear, todayDate]
   );
 
-  const filteredHistory = history;
-
-  const stats = useMemo(
-    () => getHistoryStats(filteredHistory),
-    [filteredHistory]
+  const filteredHistory = useMemo(
+    () =>
+      history.filter((day) =>
+        day.date.startsWith(`${viewState.selectedYear}-`)
+      ),
+    [history, viewState.selectedYear]
   );
   const historyByDate = useMemo(
     () => getHistoryDayLookup(filteredHistory),
     [filteredHistory]
+  );
+  const selectedMonthDays = useMemo(
+    () => getHistoryMonthDays(filteredHistory, viewState.selectedDateKey),
+    [filteredHistory, viewState.selectedDateKey]
+  );
+  const monthStats = useMemo(
+    () => getHistoryMonthStats(selectedMonthDays),
+    [selectedMonthDays]
+  );
+  const trendPoints = useMemo(
+    () => getHistoryTrendPoints(selectedMonthDays),
+    [selectedMonthDays]
   );
   const selectedDay =
     (viewState.selectedDateKey
@@ -73,6 +87,31 @@ export function useHistoryViewState({
       : null) ??
     filteredHistory[0] ??
     null;
+  const sortedDates = useMemo(
+    () => filteredHistory.map((day) => day.date).toSorted(),
+    [filteredHistory]
+  );
+  const selectedDateIndex = viewState.selectedDateKey
+    ? sortedDates.indexOf(viewState.selectedDateKey)
+    : -1;
+  const previousDateKey =
+    selectedDateIndex > 0 ? (sortedDates[selectedDateIndex - 1] ?? null) : null;
+  const nextDateKey =
+    selectedDateIndex >= 0 && selectedDateIndex < sortedDates.length - 1
+      ? (sortedDates[selectedDateIndex + 1] ?? null)
+      : null;
+  const selectDateKey = (dateKey: string) => {
+    if (!historyByDate.has(dateKey)) {
+      return;
+    }
+
+    setViewState((current) => ({
+      ...current,
+      selectedDateKey: dateKey,
+      selectedYear: Number.parseInt(dateKey.slice(0, 4), 10),
+      visibleMonth: parseDateKey(dateKey),
+    }));
+  };
 
   useEffect(() => {
     const desiredSelectedYear = selectedHistoryYear ?? viewState.selectedYear;
@@ -81,7 +120,10 @@ export function useHistoryViewState({
     const nextSelectedYear = selectedYearStillExists
       ? desiredSelectedYear
       : (availableYears[0] ?? Number.parseInt(todayDate.slice(0, 4), 10));
-    const fallbackDate = history[0]?.date ?? null;
+    const nextYearHistory = history.filter((day) =>
+      day.date.startsWith(`${nextSelectedYear}-`)
+    );
+    const fallbackDate = nextYearHistory[0]?.date ?? null;
 
     if (!fallbackDate) {
       setViewState({
@@ -95,7 +137,7 @@ export function useHistoryViewState({
     setViewState((current) => ({
       selectedDateKey:
         current.selectedDateKey &&
-        history.some((day) => day.date === current.selectedDateKey)
+        nextYearHistory.some((day) => day.date === current.selectedDateKey)
           ? current.selectedDateKey
           : fallbackDate,
       selectedYear: nextSelectedYear,
@@ -116,10 +158,15 @@ export function useHistoryViewState({
   return {
     availableYears,
     filteredHistory,
-    historyByDate,
+    monthStats,
+    nextDateKey,
+    previousDateKey,
+    selectDateKey,
     selectedDay,
     setViewState,
-    stats,
+    trendPoints,
     viewState,
   };
 }
+
+export type HistoryViewModel = ReturnType<typeof useHistoryViewState>;

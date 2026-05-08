@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
+import type { HistoryViewModel } from "@/renderer/features/history/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 
@@ -57,7 +58,11 @@ function WindDownRoute({ actions, state }: ReadyAppController) {
   );
 }
 
-function HistoryRoute({ actions, state }: ReadyAppController) {
+function HistoryRoute({
+  actions,
+  historyViewModel,
+  state,
+}: ReadyAppController & { historyViewModel?: HistoryViewModel }) {
   return (
     <Suspense
       fallback={
@@ -82,6 +87,7 @@ function HistoryRoute({ actions, state }: ReadyAppController) {
         weeklyReviewError={state.weeklyReviewError}
         weeklyReviewOverview={state.weeklyReviewOverview}
         weeklyReviewPhase={state.weeklyReviewPhase}
+        {...(historyViewModel ? { viewModel: historyViewModel } : {})}
       />
     </Suspense>
   );
@@ -154,7 +160,9 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
   );
 }
 
-export function CurrentRoute(controller: ReadyAppController) {
+export function CurrentRoute(
+  controller: ReadyAppController & { historyViewModel?: HistoryViewModel }
+) {
   switch (controller.tab) {
     case "focus": {
       return <FocusRoute {...controller} />;

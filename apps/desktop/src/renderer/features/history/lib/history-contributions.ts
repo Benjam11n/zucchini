@@ -92,17 +92,21 @@ function getContributionStatus(
 }
 
 export function buildContributionWeeks(
-  history: HistoryDay[]
+  history: HistoryDay[],
+  range?: {
+    endDate: string;
+    startDate: string;
+  }
 ): ContributionWeek[] {
-  if (history.length === 0) {
+  if (history.length === 0 && !range) {
     return [];
   }
 
   const sortedHistory = [...history].toSorted((left, right) =>
     left.date.localeCompare(right.date)
   );
-  const firstDate = sortedHistory[0]?.date;
-  const lastDate = sortedHistory.at(-1)?.date;
+  const firstDate = range?.startDate ?? sortedHistory[0]?.date;
+  const lastDate = range?.endDate ?? sortedHistory.at(-1)?.date;
 
   if (!firstDate || !lastDate) {
     return [];

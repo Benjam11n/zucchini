@@ -3,10 +3,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as HistoryCalendarCardModule from "@/renderer/features/history/components/history-calendar-card";
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
-import type * as GitHubCalendarModule from "@/renderer/shared/components/github-calendar";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
@@ -17,13 +15,6 @@ import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import { HistoryPage } from "./history-page";
 
-interface GitHubCalendarWeek {
-  cells: {
-    date: string;
-  }[];
-  key: string;
-}
-
 vi.mock(import("framer-motion"), (importOriginal) =>
   createFramerMotionMock(importOriginal)
 );
@@ -32,62 +23,59 @@ vi.mock<typeof TabsModule>(
   import("@/renderer/shared/components/ui/tabs"),
   async (importOriginal) => {
     const actual = await importOriginal();
+    const { createContext, useContext, useMemo } = await import("react");
+    const TabsContext = createContext<{
+      onValueChange?: ((value: string) => void) | undefined;
+      value?: string | undefined;
+    }>({});
 
     return {
       ...actual,
-      Tabs: ({ children }: ComponentProps<typeof actual.Tabs>) => (
-        <div>{children}</div>
-      ),
+      Tabs: ({
+        children,
+        defaultValue,
+        onValueChange,
+        value,
+      }: ComponentProps<typeof actual.Tabs>) => {
+        const contextValue = useMemo(
+          () => ({ onValueChange, value: value ?? defaultValue }),
+          [defaultValue, onValueChange, value]
+        );
+
+        return (
+          <TabsContext.Provider value={contextValue}>
+            <div>{children}</div>
+          </TabsContext.Provider>
+        );
+      },
       TabsContent: ({
         children,
-      }: ComponentProps<typeof actual.TabsContent>) => <div>{children}</div>,
+        value,
+      }: ComponentProps<typeof actual.TabsContent>) => {
+        const tabs = useContext(TabsContext);
+
+        return tabs.value === value ? <div>{children}</div> : <span hidden />;
+      },
       TabsList: ({ children }: ComponentProps<typeof actual.TabsList>) => (
         <div>{children}</div>
       ),
       TabsTrigger: ({
         children,
-      }: ComponentProps<typeof actual.TabsTrigger>) => (
-        <button type="button">{children}</button>
-      ),
-    };
-  }
-);
+        value,
+      }: ComponentProps<typeof actual.TabsTrigger>) => {
+        const tabs = useContext(TabsContext);
 
-vi.mock<typeof GitHubCalendarModule>(
-  import("@/renderer/shared/components/github-calendar"),
-  () => ({
-    GitHubCalendar: ({ weeks }: { weeks: GitHubCalendarWeek[] }) => (
-      <div data-testid="github-calendar">{weeks.length}</div>
-    ),
-  })
-);
-
-vi.mock<typeof HistoryCalendarCardModule>(
-  import("@/renderer/features/history/components/history-calendar-card"),
-  () => ({
-    HistoryCalendarCard: ({
-      historyByDate,
-      onSelectDateKey,
-      selectedDay,
-    }: {
-      historyByDate: Map<string, HistoryDay>;
-      onSelectDateKey: (dateKey: string) => void;
-      selectedDay: HistoryDay | null;
-    }) => (
-      <div>
-        <p data-testid="calendar-selected">{selectedDay?.date ?? "none"}</p>
-        {[...historyByDate.keys()].map((dateKey) => (
+        return (
           <button
-            key={dateKey}
-            onClick={() => onSelectDateKey(dateKey)}
+            onClick={() => tabs.onValueChange?.(String(value))}
             type="button"
           >
-            Select {dateKey}
+            {children}
           </button>
-        ))}
-      </div>
-    ),
-  })
+        );
+      },
+    };
+  }
 );
 
 vi.mock<typeof HistoryDayPanelModule>(
@@ -146,7 +134,18 @@ function createHistoryDay(
     categoryProgress: [],
     date,
     focusMinutes: 0,
-    habits: [],
+    habits: [
+      {
+        category: "productivity",
+        completed: summary.allCompleted ?? false,
+        createdAt: date,
+        frequency: "daily",
+        id: 1,
+        isArchived: false,
+        name: "Read",
+        sortOrder: 0,
+      },
+    ],
     summary: {
       allCompleted: false,
       completedAt: null,
@@ -223,7 +222,7 @@ function renderHistoryPage(
 }
 
 describe("history page", () => {
-  it("shows summary badges for completion, freeze, and missed history", () => {
+  it("shows the selected year timeline", () => {
     const history = [
       createHistoryDay("2026-03-10", { allCompleted: true }),
       createHistoryDay("2026-03-09"),
@@ -232,10 +231,91 @@ describe("history page", () => {
 
     renderHistoryPage({ history });
 
-    expect(screen.getByText("33% completion")).toBeInTheDocument();
-    expect(screen.getByText("1 complete")).toBeInTheDocument();
-    expect(screen.getByText("1 freeze saves")).toBeInTheDocument();
-    expect(screen.getByText("1 missed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "History" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "2026" })
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("3 tracked days")).toBeInTheDocument();
+    expect(screen.getByText("Day")).toBeInTheDocument();
+    expect(screen.getByText("Complete")).toBeInTheDocument();
+    expect(screen.getByText("Misses")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Today Mar 10/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+    ).toBeInTheDocument();
+  });
+
+  it("uses explicit day status labels in the timeline", () => {
+    renderHistoryPage({
+      history: [
+        createHistoryDay("2026-03-10", { allCompleted: true }),
+        createHistoryDay("2026-03-09", { dayStatus: "sick" }),
+        createHistoryDay("2026-03-08", { dayStatus: "rest" }),
+      ],
+    });
+
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText("Sick")).toBeInTheDocument();
+    expect(screen.getByText("Rest")).toBeInTheDocument();
+  });
+
+  it("only shows the contribution graph in timeline mode", () => {
+    renderHistoryPage();
+
+    expect(
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+
+    expect(
+      screen.queryByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("moves the timeline list between months without filtering the contribution graph", () => {
+    renderHistoryPage({
+      history: [
+        createHistoryDay("2026-03-10", { allCompleted: true }),
+        createHistoryDay("2026-02-14", { allCompleted: true }),
+      ],
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "March 2026" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("March")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Today Mar 10/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show previous month" })
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "February 2026" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("February")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Sat Feb 14/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Today Mar 10/ })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Select Saturday, Feb 14, 2026/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+    ).toBeInTheDocument();
   });
 
   it("falls back to the first available history day when the selected day disappears", () => {
@@ -251,10 +331,8 @@ describe("history page", () => {
       onSelectWeeklyReview,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Select 2026-03-09" }));
-    expect(screen.getByTestId("day-panel")).toHaveTextContent(
-      "2026-03-09:false"
-    );
+    fireEvent.click(screen.getByRole("button", { name: /Mon Mar 9/ }));
+    expect(screen.getByText("Mar 9")).toBeInTheDocument();
     const [latestHistoryDay] = history;
 
     if (!latestHistoryDay) {
@@ -280,13 +358,13 @@ describe("history page", () => {
       />
     );
 
-    expect(screen.getByTestId("day-panel")).toHaveTextContent(
-      "2026-03-10:true"
-    );
+    expect(screen.getByText("Mar 10")).toBeInTheDocument();
   });
 
   it("shows the weekly review loading state before a review is available", () => {
     renderHistoryPage({ weeklyReviewPhase: "loading" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
     expect(screen.getByText("Building weekly review...")).toBeInTheDocument();
   });
@@ -297,6 +375,8 @@ describe("history page", () => {
       weeklyReviewOverview: createWeeklyReviewOverview(),
       weeklyReviewPhase: "ready",
     });
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
     expect(screen.getByText("Weekly review is stale")).toBeInTheDocument();
     expect(screen.getByTestId("weekly-review-hero")).toHaveTextContent(
@@ -310,9 +390,7 @@ describe("history page", () => {
     renderHistoryPage({ onLoadHistoryYears });
 
     expect(onLoadHistoryYears.mock.calls).toHaveLength(1);
-    expect(
-      screen.getByRole("combobox", { name: "Select history year" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^2026$/ })).toBeInTheDocument();
   });
 
   it("requests the selected year when the year changes", () => {
@@ -324,12 +402,8 @@ describe("history page", () => {
       onSelectHistoryYear,
     });
 
-    fireEvent.change(
-      screen.getByRole("combobox", { name: "Select history year" }),
-      {
-        target: { value: "2025" },
-      }
-    );
+    fireEvent.pointerDown(screen.getByRole("button", { name: /^2026$/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "2025" }));
 
     expect(onSelectHistoryYear).toHaveBeenCalledWith(2025);
   });

@@ -48,13 +48,3 @@ export const HISTORY_STATUS_UI: Record<
     squareClassName: "border-amber-500/85 bg-amber-400/85",
   },
 };
-
-export const HISTORY_METRIC_BADGE_CLASS_NAMES = {
-  completedDays: HISTORY_STATUS_UI.complete.badgeClassName,
-  completionRate: HISTORY_STATUS_UI.complete.badgeClassName,
-  freezeDays: HISTORY_STATUS_UI.freeze.badgeClassName,
-  missedDays: HISTORY_STATUS_UI.missed.badgeClassName,
-  rescheduledDays: HISTORY_STATUS_UI.rescheduled.badgeClassName,
-  restDays: HISTORY_STATUS_UI.rest.badgeClassName,
-  sickDays: HISTORY_STATUS_UI.sick.badgeClassName,
-} as const;

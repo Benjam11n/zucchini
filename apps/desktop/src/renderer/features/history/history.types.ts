@@ -16,6 +16,8 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
+import type { HistoryViewModel } from "./use-history-view-state";
+
 export type WeeklyReviewPhase = AsyncPhase;
 
 export interface HistoryPageProps {
@@ -33,6 +35,7 @@ export interface HistoryPageProps {
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
   onSelectWeeklyReview: (weekStart: string) => void;
+  viewModel?: HistoryViewModel;
 }
 
 export type { ContributionIntensity };
