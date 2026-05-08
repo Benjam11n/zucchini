@@ -87,7 +87,8 @@ export function useTodayKeyboardRows({
       state.habitCarryovers,
     ]
   );
-  const { getRowProps, markRowCompleted } = useTodayKeyboardFlow(keyboardRows);
+  const { getRowProps, keyboardHint, markRowCompleted } =
+    useTodayKeyboardFlow(keyboardRows);
   const handleToggleDailyHabit = useCallback(
     (habitId: number) => {
       const habit = orderedDailyHabits.find(
@@ -139,5 +140,6 @@ export function useTodayKeyboardRows({
     handleIncrementPeriodicHabit,
     handleToggleCarryover,
     handleToggleDailyHabit,
+    keyboardHint,
   };
 }

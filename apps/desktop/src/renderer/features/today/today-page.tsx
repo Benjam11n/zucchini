@@ -14,6 +14,7 @@ import { LongerHabitChecklist } from "@/renderer/features/today/components/longe
 import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
+import { TodayKeyboardHint } from "@/renderer/features/today/components/today-keyboard-hint";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
@@ -90,6 +91,7 @@ function TodayPageComponent({
     handleIncrementPeriodicHabit,
     handleToggleCarryover,
     handleToggleDailyHabit,
+    keyboardHint,
   } = useTodayKeyboardRows({
     dailyHabits,
     onDecrementHabitProgress,
@@ -103,6 +105,7 @@ function TodayPageComponent({
   return (
     <>
       <TodayCelebrationOverlay celebration={celebration} />
+      <TodayKeyboardHint hint={keyboardHint} />
 
       <div className="grid w-full min-w-0 max-w-full gap-6">
         <section className="min-w-0">

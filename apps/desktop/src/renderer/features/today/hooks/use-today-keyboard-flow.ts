@@ -15,6 +15,11 @@ export interface TodayKeyboardRow {
   onToggle?: () => void;
 }
 
+export interface TodayKeyboardHint {
+  kind: TodayKeyboardRowKind;
+  rowId: string;
+}
+
 function isEditableElement(element: Element | null): boolean {
   if (!(element instanceof HTMLElement)) {
     return false;
@@ -70,9 +75,11 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
   );
   const rowElements = useRef(new Map<string, HTMLElement>());
   const hasAutoFocused = useRef(false);
+  const [hintRowId, setHintRowId] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(
     enabledRowIds[0] ?? null
   );
+  const hint = hintRowId ? rowsById.get(hintRowId) : null;
 
   useEffect(() => {
     setOptimisticallyCompletedRowIds((currentRowIds) => {
@@ -100,10 +107,14 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
         ? currentRowId
         : enabledRowIds[0]
     );
+    setHintRowId((currentRowId) =>
+      currentRowId && enabledRowIds.includes(currentRowId) ? currentRowId : null
+    );
   }, [enabledRowIds]);
 
   const focusRow = useCallback((rowId: string) => {
     setActiveRowId(rowId);
+    setHintRowId(rowId);
     rowElements.current.get(rowId)?.focus();
   }, []);
 
@@ -204,7 +215,23 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
 
       return {
         "data-keyboard-row": rowId,
-        onFocus: () => setActiveRowId(rowId),
+        onBlur: (event) => {
+          const nextFocusedElement = event.relatedTarget;
+          if (
+            nextFocusedElement instanceof HTMLElement &&
+            nextFocusedElement.closest("[data-keyboard-row]")
+          ) {
+            return;
+          }
+
+          setHintRowId((currentRowId) =>
+            currentRowId === rowId ? null : currentRowId
+          );
+        },
+        onFocus: () => {
+          setActiveRowId(rowId);
+          setHintRowId(rowId);
+        },
         onKeyDown: (event) => {
           if (
             event.key.toLowerCase() === "n" ||
@@ -256,6 +283,14 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
             row.onDecrement?.();
           }
         },
+        onMouseEnter: () => setHintRowId(rowId),
+        onMouseLeave: () => {
+          setHintRowId((currentRowId) =>
+            currentRowId === rowId && activeRowId !== rowId
+              ? null
+              : currentRowId
+          );
+        },
         ref: (node) => {
           if (node) {
             rowElements.current.set(rowId, node);
@@ -269,5 +304,10 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
     [activeRowId, markRowCompleted, moveFocus, rowsById]
   );
 
-  return { getRowProps, markRowCompleted };
+  return {
+    getRowProps,
+    keyboardHint:
+      hint && hintRowId ? { kind: hint.kind, rowId: hintRowId } : null,
+    markRowCompleted,
+  };
 }
