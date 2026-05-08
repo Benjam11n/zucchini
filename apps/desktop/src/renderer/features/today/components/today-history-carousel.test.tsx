@@ -88,4 +88,35 @@ describe("today history carousel", () => {
     expect(onSelectDate).toHaveBeenCalledWith("2026-03-12");
     expect(selectedButton).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("shows status labels for non-complete historical days", () => {
+    render(
+      <TodayHistoryCarousel
+        hasLoadedHistorySummary
+        history={[
+          {
+            ...historyDay("2026-03-11"),
+            summary: {
+              ...historyDay("2026-03-11").summary,
+              allCompleted: false,
+              dayStatus: "sick",
+            },
+          },
+          {
+            ...historyDay("2026-03-12"),
+            summary: {
+              ...historyDay("2026-03-12").summary,
+              allCompleted: false,
+              dayStatus: "rescheduled",
+            },
+          },
+        ]}
+        onSelectDate={vi.fn()}
+        selectedDate={null}
+      />
+    );
+
+    expect(screen.getByText("Sick Day")).toBeInTheDocument();
+    expect(screen.getByText("Moved")).toBeInTheDocument();
+  });
 });

@@ -15,9 +15,9 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface LongerHabitListItemProps {
   habit: HabitWithStatus;
-  keyboardRowProps?: KeyboardRowProps;
-  onDecrement?: (habitId: number) => void;
-  onIncrement?: (habitId: number) => void;
+  keyboardRowProps?: KeyboardRowProps | undefined;
+  onDecrement?: ((habitId: number) => void) | undefined;
+  onIncrement?: ((habitId: number) => void) | undefined;
   presentation: ReturnType<typeof getHabitCategoryPresentation>;
   readOnly?: boolean;
 }

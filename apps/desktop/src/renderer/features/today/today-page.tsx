@@ -20,11 +20,11 @@ import { useHistoricalTodaySelection } from "@/renderer/features/today/hooks/use
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
+import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
 import type { TodayState } from "@/shared/contracts/today-state";
-import { isDailyHabit } from "@/shared/domain/habit";
-import type { Habit, HabitWithStatus } from "@/shared/domain/habit";
+import type { Habit } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface TodayPageProps extends HabitMutationActions {
@@ -57,29 +57,10 @@ function TodayPageComponent({
   onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: TodayPageProps) {
-  const { completedCount, dailyHabits, periodicHabits } = useMemo(() => {
-    const nextDailyHabits: HabitWithStatus[] = [];
-    const nextPeriodicHabits: HabitWithStatus[] = [];
-    let nextCompletedCount = 0;
-
-    for (const habit of state.habits) {
-      if (isDailyHabit(habit)) {
-        nextDailyHabits.push(habit);
-        if (habit.completed) {
-          nextCompletedCount += 1;
-        }
-        continue;
-      }
-
-      nextPeriodicHabits.push(habit);
-    }
-
-    return {
-      completedCount: nextCompletedCount,
-      dailyHabits: nextDailyHabits,
-      periodicHabits: nextPeriodicHabits,
-    };
-  }, [state.habits]);
+  const { completedCount, dailyHabits, periodicHabits } = useMemo(
+    () => splitTodayHabits(state.habits),
+    [state.habits]
+  );
   const historicalHistorySummary = useMemo(
     () => historySummary.filter((day) => day.date < state.date),
     [historySummary, state.date]

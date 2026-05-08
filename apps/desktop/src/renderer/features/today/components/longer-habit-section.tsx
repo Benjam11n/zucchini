@@ -20,9 +20,11 @@ interface LongerHabitSectionData {
 
 interface LongerHabitSectionProps {
   categoryPreferences: Parameters<typeof getHabitCategoryPresentation>[1];
-  getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
-  onDecrementHabitProgress?: (habitId: number) => void;
-  onIncrementHabitProgress?: (habitId: number) => void;
+  getKeyboardRowProps?:
+    | ((rowId: string) => KeyboardRowProps | undefined)
+    | undefined;
+  onDecrementHabitProgress?: ((habitId: number) => void) | undefined;
+  onIncrementHabitProgress?: ((habitId: number) => void) | undefined;
   readOnly?: boolean;
   section: LongerHabitSectionData;
 }

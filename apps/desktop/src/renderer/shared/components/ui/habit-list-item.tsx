@@ -23,10 +23,10 @@ interface HabitListItemStreak {
 interface HabitListItemProps {
   disabled?: boolean;
   habit: HabitWithStatus;
-  keyboardRowProps?: KeyboardRowProps;
-  onToggle?: (habitId: number) => void;
+  keyboardRowProps?: KeyboardRowProps | undefined;
+  onToggle?: ((habitId: number) => void) | undefined;
   readOnly?: boolean;
-  showCategory?: boolean;
+  showCategory?: boolean | undefined;
   streak?: HabitListItemStreak;
   trailingActions?: React.ReactNode;
 }
@@ -61,7 +61,7 @@ function HabitCategoryLabel({
 }: {
   accentTextColor: string;
   label: string;
-  showCategory?: boolean;
+  showCategory?: boolean | undefined;
 }) {
   if (!showCategory) {
     return null;

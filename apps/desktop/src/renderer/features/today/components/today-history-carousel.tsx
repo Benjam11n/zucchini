@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
+import {
+  getActivityBadgeLabel,
+  getActivityStatus,
+} from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/renderer/shared/components/ui/carousel";
 import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
+import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -105,6 +112,9 @@ export function TodayHistoryCarousel({
           {days.map((day) => {
             const dayOfWeek = formatDateKey(day.date, { weekday: "short" });
             const isSelected = day.date === selectedDate;
+            const activityStatus = getActivityStatus(day.summary, false);
+            const activityLabel = getActivityBadgeLabel(day.summary, false);
+            const showStatusLabel = activityStatus !== "complete";
 
             return (
               <CarouselItem key={day.date} className="basis-auto pl-2 sm:pl-4">
@@ -123,6 +133,17 @@ export function TodayHistoryCarousel({
                   <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase">
                     {dayOfWeek}
                   </span>
+                  {showStatusLabel ? (
+                    <Badge
+                      className={cn(
+                        "px-1.5 py-0 text-[0.58rem] leading-none",
+                        HISTORY_STATUS_UI[activityStatus].badgeClassName
+                      )}
+                      variant="outline"
+                    >
+                      {activityLabel}
+                    </Badge>
+                  ) : null}
                 </button>
               </CarouselItem>
             );

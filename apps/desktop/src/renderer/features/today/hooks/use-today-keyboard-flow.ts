@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 
-export type TodayKeyboardRowKind = "carryover" | "daily" | "periodic";
+type TodayKeyboardRowKind = "carryover" | "daily" | "periodic";
 
 export interface TodayKeyboardRow {
   completesOnIncrement?: boolean;
@@ -10,9 +10,9 @@ export interface TodayKeyboardRow {
   id: string;
   incomplete?: boolean;
   kind: TodayKeyboardRowKind;
-  onDecrement?: () => void;
-  onIncrement?: () => void;
-  onToggle?: () => void;
+  onDecrement?: (() => void) | undefined;
+  onIncrement?: (() => void) | undefined;
+  onToggle?: (() => void) | undefined;
 }
 
 export interface TodayKeyboardHint {
@@ -102,10 +102,11 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
       return;
     }
 
+    const firstEnabledRowId = enabledRowIds[0] ?? null;
     setActiveRowId((currentRowId) =>
       currentRowId && enabledRowIds.includes(currentRowId)
         ? currentRowId
-        : enabledRowIds[0]
+        : firstEnabledRowId
     );
     setHintRowId((currentRowId) =>
       currentRowId && enabledRowIds.includes(currentRowId) ? currentRowId : null
@@ -133,7 +134,10 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
 
       const nextIndex =
         (currentIndex + offset + enabledRowIds.length) % enabledRowIds.length;
-      focusRow(enabledRowIds[nextIndex]);
+      const nextRowId = enabledRowIds[nextIndex];
+      if (nextRowId) {
+        focusRow(nextRowId);
+      }
     },
     [enabledRowIds, focusRow]
   );
@@ -155,7 +159,7 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
           enabledRowIds.length;
         const nextRowId = enabledRowIds[nextIndex];
 
-        if (incompleteRowIdSet.has(nextRowId)) {
+        if (nextRowId && incompleteRowIdSet.has(nextRowId)) {
           focusRow(nextRowId);
           return;
         }

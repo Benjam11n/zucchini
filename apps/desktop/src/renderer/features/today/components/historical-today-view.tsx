@@ -1,9 +1,14 @@
 import { ArrowRight, ListChecks } from "lucide-react";
 import { useMemo } from "react";
 
+import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
+import {
+  getActivityBadgeLabel,
+  getActivityStatus,
+} from "@/renderer/features/history/lib/history-summary";
+import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
+import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
-import { isDailyHabit } from "@/shared/domain/habit";
-import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -19,38 +24,27 @@ export function HistoricalTodayView({
   day,
   onReturnToToday,
 }: HistoricalTodayViewProps) {
-  const { completedCount, dailyHabits, periodicHabits } = useMemo(() => {
-    const nextDailyHabits: HabitWithStatus[] = [];
-    const nextPeriodicHabits: HabitWithStatus[] = [];
-    let nextCompletedCount = 0;
-
-    for (const habit of day.habits) {
-      if (isDailyHabit(habit)) {
-        nextDailyHabits.push(habit);
-        if (habit.completed) {
-          nextCompletedCount += 1;
-        }
-        continue;
-      }
-
-      nextPeriodicHabits.push(habit);
-    }
-
-    return {
-      completedCount: nextCompletedCount,
-      dailyHabits: nextDailyHabits,
-      periodicHabits: nextPeriodicHabits,
-    };
-  }, [day.habits]);
+  const { completedCount, dailyHabits, periodicHabits } = useMemo(
+    () => splitTodayHabits(day.habits),
+    [day.habits]
+  );
   const title = formatDateKey(day.date, {
     day: "numeric",
     month: "short",
     weekday: "short",
   });
+  const activityStatus = getActivityStatus(day.summary, false);
+  const activityLabel = getActivityBadgeLabel(day.summary, false);
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <Badge
+          className={HISTORY_STATUS_UI[activityStatus].badgeClassName}
+          variant="outline"
+        >
+          {activityLabel}
+        </Badge>
         <Button
           onClick={onReturnToToday}
           size="sm"

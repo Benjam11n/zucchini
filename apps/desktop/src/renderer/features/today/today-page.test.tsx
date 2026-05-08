@@ -29,11 +29,19 @@ vi.mock<typeof TodayHistoryCarouselModule>(
   })
 );
 
-vi.mock(import("@/renderer/shared/lib/habits-client"), () => ({
-  habitsClient: {
-    getHistoryDay: getHistoryDayMock,
-  },
-}));
+vi.mock(
+  import("@/renderer/shared/lib/habits-client"),
+  async (importOriginal) => {
+    const actual = await importOriginal();
+
+    return {
+      habitsClient: {
+        ...actual.habitsClient,
+        getHistoryDay: getHistoryDayMock,
+      },
+    };
+  }
+);
 
 vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
   useTodayPopups: vi.fn(),
