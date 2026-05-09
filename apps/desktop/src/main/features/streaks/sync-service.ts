@@ -38,6 +38,35 @@ function createEmptyCategoryStreakState(
   };
 }
 
+function getFirstUnevaluatedDate(
+  dates: string[],
+  clock: Clock,
+  yesterday: string
+): string | null {
+  const [firstUnevaluatedDate] = dates
+    .filter((date) => clock.compareDateKeys(date, yesterday) <= 0)
+    .toSorted((left, right) => left.localeCompare(right));
+
+  return firstUnevaluatedDate ?? null;
+}
+
+function getClosedDayStreakInputs(
+  repository: AppRepository,
+  cursor: string
+): {
+  dayStatus: DayStatusKind | null;
+  freezeUsed: boolean;
+} {
+  repository.ensureStatusRowsForDate(cursor);
+  const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
+  const [summary] = repository.getDailySummariesInRange(cursor, cursor);
+
+  return {
+    dayStatus,
+    freezeUsed: summary?.freezeUsed ?? false,
+  };
+}
+
 function getNextHabitStreakState({
   cursor,
   dayStatus,
@@ -107,18 +136,17 @@ function syncHabitStreakStates(
     addedMissingState = true;
   }
 
-  const firstUnevaluatedDates = dailyHabits
-    .map((habit) => {
+  const firstUnevaluatedDate = getFirstUnevaluatedDate(
+    dailyHabits.map((habit) => {
       const state = stateByHabitId.get(habit.id);
       return state?.lastEvaluatedDate
         ? clock.addDays(state.lastEvaluatedDate, 1)
         : firstTrackedDate;
-    })
-    .filter((date) => clock.compareDateKeys(date, yesterday) <= 0);
-
-  const [firstUnevaluatedDate] = firstUnevaluatedDates.toSorted((left, right) =>
-    left.localeCompare(right)
+    }),
+    clock,
+    yesterday
   );
+
   if (!firstUnevaluatedDate) {
     if (addedMissingState) {
       repository.savePersistedHabitStreakStates([...stateByHabitId.values()]);
@@ -129,9 +157,10 @@ function syncHabitStreakStates(
   let cursor = firstUnevaluatedDate;
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
-    repository.ensureStatusRowsForDate(cursor);
-    const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
-    const [summary] = repository.getDailySummariesInRange(cursor, cursor);
+    const { dayStatus, freezeUsed } = getClosedDayStreakInputs(
+      repository,
+      cursor
+    );
     const habitById = new Map(
       repository
         .getHabitsWithStatus(cursor)
@@ -155,7 +184,7 @@ function syncHabitStreakStates(
         getNextHabitStreakState({
           cursor,
           dayStatus,
-          freezeUsed: summary?.freezeUsed ?? false,
+          freezeUsed,
           habit: habitById.get(habit.id) ?? null,
           state: currentState,
         })
@@ -228,17 +257,16 @@ function syncCategoryStreakStates(
     addedMissingState = true;
   }
 
-  const firstUnevaluatedDates = [...stateByCategory.values()]
-    .map((state) =>
+  const firstUnevaluatedDate = getFirstUnevaluatedDate(
+    [...stateByCategory.values()].map((state) =>
       state.lastEvaluatedDate
         ? clock.addDays(state.lastEvaluatedDate, 1)
         : firstTrackedDate
-    )
-    .filter((date) => clock.compareDateKeys(date, yesterday) <= 0);
-
-  const [firstUnevaluatedDate] = firstUnevaluatedDates.toSorted((left, right) =>
-    left.localeCompare(right)
+    ),
+    clock,
+    yesterday
   );
+
   if (!firstUnevaluatedDate) {
     if (addedMissingState) {
       repository.savePersistedCategoryStreakStates([
@@ -251,9 +279,10 @@ function syncCategoryStreakStates(
   let cursor = firstUnevaluatedDate;
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
-    repository.ensureStatusRowsForDate(cursor);
-    const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
-    const [summary] = repository.getDailySummariesInRange(cursor, cursor);
+    const { dayStatus, freezeUsed } = getClosedDayStreakInputs(
+      repository,
+      cursor
+    );
     const habitsByCategory = new Map<
       HabitCategory,
       Pick<HabitWithStatus, "category" | "completed">[]
@@ -284,7 +313,7 @@ function syncCategoryStreakStates(
           categoryHabits: habitsByCategory.get(value) ?? [],
           cursor,
           dayStatus,
-          freezeUsed: summary?.freezeUsed ?? false,
+          freezeUsed,
           state: currentState,
         })
       );
