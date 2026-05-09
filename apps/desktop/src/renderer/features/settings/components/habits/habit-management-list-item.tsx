@@ -1,7 +1,6 @@
 import type { HabitManagementListProps } from "./habit-management-list";
 import { HabitRowEditor } from "./habit-row-editor";
-
-const HABIT_DRAG_DATA_TYPE = "text/plain";
+import { HABIT_DRAG_DATA_TYPE } from "./habit-row-editor.types";
 
 function getDropPosition(bounds: DOMRect, clientY: number): "after" | "before" {
   const midpoint = bounds.top + bounds.height / 2;

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 
@@ -23,26 +23,27 @@ export function ConfirmIconButton({
   size = "icon-sm",
   variant = "destructive",
 }: ConfirmIconButtonProps) {
-  const [isConfirming, setIsConfirming] = useState(false);
-
-  useEffect(() => {
-    setIsConfirming(false);
-  }, [resetKey]);
+  const [confirmationState, setConfirmationState] = useState({
+    isConfirming: false,
+    resetKey,
+  });
+  const isConfirming =
+    confirmationState.resetKey === resetKey && confirmationState.isConfirming;
 
   return (
     <Button
       aria-label={isConfirming ? confirmLabel : idleLabel}
       onBlur={() => {
-        setIsConfirming(false);
+        setConfirmationState({ isConfirming: false, resetKey });
       }}
       onClick={async () => {
         if (!isConfirming) {
-          setIsConfirming(true);
+          setConfirmationState({ isConfirming: true, resetKey });
           return;
         }
 
         await onConfirm();
-        setIsConfirming(false);
+        setConfirmationState({ isConfirming: false, resetKey });
       }}
       size={size}
       type="button"
