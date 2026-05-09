@@ -345,6 +345,24 @@ describe("today page", () => {
     expect(screen.getByText("4")).toBeInTheDocument();
   });
 
+  it("shows a record badge instead of streak progress when current matches best", () => {
+    renderTodayPage({
+      ...state,
+      habitStreaks: {
+        1: {
+          bestStreak: 55,
+          currentStreak: 55,
+        },
+      },
+    });
+
+    expect(
+      screen.getByLabelText("Current streak 55 days. Best streak 55 days.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("55d")).toBeInTheDocument();
+    expect(screen.getByText("Best")).toBeInTheDocument();
+  });
+
   it("removes the placeholder when loaded streak data has no current streak", () => {
     renderTodayPage({
       ...state,

@@ -1,4 +1,5 @@
 import { m } from "framer-motion";
+import { Trophy } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
@@ -49,11 +50,10 @@ function HabitStreakLabel({
     const currentUnit = streak.currentStreak === 1 ? "day" : "days";
     const bestUnit = streak.bestStreak === 1 ? "day" : "days";
     const bestStreak = Math.max(streak.bestStreak, streak.currentStreak);
-    const progress = Math.min(
-      100,
-      Math.max(8, (streak.currentStreak / bestStreak) * 100)
-    );
     const isBestStreak = streak.currentStreak >= bestStreak;
+    const progress = isBestStreak
+      ? 100
+      : Math.min(100, Math.max(8, (streak.currentStreak / bestStreak) * 100));
 
     return (
       <TooltipProvider>
@@ -69,34 +69,44 @@ function HabitStreakLabel({
               )}
             >
               <span>{streak.currentStreak}d</span>
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "relative h-1 w-5 overflow-hidden rounded-full",
-                  isBestStreak ? "bg-secondary/20" : "bg-primary/15"
-                )}
-              >
+              {isBestStreak ? (
                 <span
-                  className={cn(
-                    "absolute inset-y-0 left-0 rounded-full bg-current",
-                    isBestStreak && "shadow-[0_0_8px_var(--secondary)]"
-                  )}
-                  style={{ width: `${progress}%` }}
-                />
-              </span>
-              <span
-                className={cn(
-                  "min-w-3 text-[0.68rem]",
-                  isBestStreak ? "text-secondary" : "text-muted-foreground/55"
-                )}
-              >
-                {bestStreak}
-              </span>
+                  aria-hidden="true"
+                  className="inline-flex h-4 items-center gap-0.5 rounded-full bg-secondary/15 px-1.5 text-[0.62rem] font-semibold text-secondary uppercase"
+                >
+                  <Trophy className="size-2.5" />
+                  Best
+                </span>
+              ) : (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="relative h-1 w-5 overflow-hidden rounded-full bg-primary/15"
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 rounded-full bg-current"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </span>
+                  <span className="min-w-3 text-[0.68rem] text-muted-foreground/55">
+                    {bestStreak}
+                  </span>
+                </>
+              )}
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" sideOffset={8}>
-            Current streak: {streak.currentStreak} {currentUnit}. Best streak:{" "}
-            {bestStreak} {bestUnit}.
+            {isBestStreak ? (
+              <>
+                Best streak: {bestStreak} {bestUnit}. This is your current
+                record.
+              </>
+            ) : (
+              <>
+                Current streak: {streak.currentStreak} {currentUnit}. Best
+                streak: {bestStreak} {bestUnit}.
+              </>
+            )}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
