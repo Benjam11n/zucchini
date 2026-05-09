@@ -5,8 +5,8 @@
  * interface consumed by the focus page component. Also includes the
  * `FocusTodaySummary` type for daily completion stats.
  */
-import type { SettingsSavePhase } from "@/renderer/features/settings/settings.types";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
+import type { SettingsSavePhase } from "@/renderer/shared/types/settings";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type {
   FocusBreakVariant,

@@ -12,12 +12,12 @@ import {
 } from "lucide-react";
 
 import { HistoryLongTermGoalChip } from "@/renderer/features/history/components/history-long-term-goal-chip";
-import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
-import { getActivityStatus } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
+import { HistoryStatusBadge } from "@/renderer/shared/components/history-status/history-status-badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { StatCard } from "@/renderer/shared/components/ui/stat-card";
+import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
 import type { HistoryDay } from "@/shared/domain/history";

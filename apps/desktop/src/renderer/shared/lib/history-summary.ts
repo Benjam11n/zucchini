@@ -1,7 +1,16 @@
-import type { HistoryStats } from "@/renderer/features/history/history.types";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
+
+export interface HistoryStats {
+  completedDays: number;
+  completionRate: number;
+  freezeDays: number;
+  missedDays: number;
+  rescheduledDays: number;
+  restDays: number;
+  sickDays: number;
+}
 
 export function getActivityStatus(
   summary: DailySummary,

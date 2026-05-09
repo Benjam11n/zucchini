@@ -18,7 +18,7 @@ import {
   setFocusTimerDuration,
   skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import { PomodoroSettingsFields } from "@/renderer/features/settings/components/general/pomodoro-settings-fields";
+import { PomodoroSettingsFields } from "@/renderer/shared/components/pomodoro-settings/pomodoro-settings-fields";
 import {
   Dialog,
   DialogContent,

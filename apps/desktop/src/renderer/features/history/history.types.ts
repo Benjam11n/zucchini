@@ -1,3 +1,4 @@
+import type { HistoryStats } from "@/renderer/shared/lib/history-summary";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 /**
  * History page type definitions.
@@ -56,12 +57,4 @@ export interface ContributionWeek {
   key: string;
 }
 
-export interface HistoryStats {
-  completedDays: number;
-  completionRate: number;
-  freezeDays: number;
-  missedDays: number;
-  rescheduledDays: number;
-  restDays: number;
-  sickDays: number;
-}
+export type { HistoryStats };

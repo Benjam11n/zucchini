@@ -1,5 +1,9 @@
 import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
 import type {
+  SettingsFieldErrors,
+  SettingsSavePhase,
+} from "@/renderer/shared/types/settings";
+import type {
   FocusQuotaGoalWithStatus,
   GoalFrequency,
 } from "@/shared/domain/goal";
@@ -13,14 +17,7 @@ import type {
 import type { Habit } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
-export type SettingsSavePhase =
-  | "idle"
-  | "pending"
-  | "invalid"
-  | "saving"
-  | "saved"
-  | "error";
-export type SettingsFieldErrors = Partial<Record<keyof AppSettings, string>>;
+export type { SettingsFieldErrors, SettingsSavePhase };
 
 export interface SettingsPageProps extends HabitMutationActions {
   fieldErrors: SettingsFieldErrors;

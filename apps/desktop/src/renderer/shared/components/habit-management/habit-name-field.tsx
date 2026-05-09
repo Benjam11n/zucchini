@@ -1,6 +1,6 @@
-import { getHabitNameError } from "@/renderer/features/settings/lib/habit-name-validation";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
+import { getHabitNameError } from "@/renderer/shared/lib/habit-name-validation";
 
 import type { HabitNameFieldProps } from "./habit-row-editor.types";
 

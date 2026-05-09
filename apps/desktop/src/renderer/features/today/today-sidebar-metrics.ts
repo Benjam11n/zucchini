@@ -1,5 +1,5 @@
-import { getHistoryDailyCounts } from "@/renderer/features/history/lib/history-daily-counts";
-import type { HistoryDailyCountDay } from "@/renderer/features/history/lib/history-daily-counts";
+import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
+import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
 import type { TodayState } from "@/shared/contracts/today-state";
 import { addDays, startOfWeek } from "@/shared/utils/date";
 

@@ -29,6 +29,14 @@
 - Keep business logic in `src/main` or `src/shared`.
 - Keep renderer code focused on presentation, interaction flow, and local UI
   state.
+- Keep renderer feature dependencies one-way and explicit: a file in
+  `src/renderer/features/<feature>` may import its own feature folder,
+  `src/renderer/shared`, and `src/shared`. Cross-feature imports require review
+  before they land.
+- When multiple renderer features need the same UI or pure helper, move only the
+  neutral reusable piece into `src/renderer/shared`. Do not move
+  feature-specific workflow, state, copy, or side effects into shared just to
+  avoid an import.
 - Classify new state as `canonical`, `cache`, or `ephemeral` before adding
   persistence.
 - Store canonical state in SQLite through the main process and preload/IPC

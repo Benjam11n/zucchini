@@ -1,14 +1,14 @@
 import { ArrowRight, ListChecks } from "lucide-react";
 import { useMemo } from "react";
 
-import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
+import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
+import { Badge } from "@/renderer/shared/components/ui/badge";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   getActivityBadgeLabel,
   getActivityStatus,
-} from "@/renderer/features/history/lib/history-summary";
-import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
-import { Badge } from "@/renderer/shared/components/ui/badge";
-import { Button } from "@/renderer/shared/components/ui/button";
+} from "@/renderer/shared/lib/history-summary";
 import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 

@@ -3,8 +3,8 @@ import { VisuallyHidden } from "radix-ui";
 import { useState } from "react";
 import type { ReactElement } from "react";
 
-import { HabitManagementContent } from "@/renderer/features/settings/components/habits/habit-management-content";
-import type { HabitManagementCardProps } from "@/renderer/features/settings/components/habits/habit-management.types";
+import { HabitManagementContent } from "@/renderer/shared/components/habit-management/habit-management-content";
+import type { HabitManagementCardProps } from "@/renderer/shared/components/habit-management/habit-management.types";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Dialog,

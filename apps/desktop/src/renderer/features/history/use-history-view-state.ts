@@ -7,12 +7,12 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
-import { getHistoryDayLookup } from "@/renderer/features/history/lib/history-summary";
 import {
   getHistoryMonthDays,
   getHistoryMonthStats,
   getHistoryTrendPoints,
 } from "@/renderer/features/history/lib/history-timeline";
+import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
 import { parseDateKey } from "@/shared/utils/date";
 
 interface HistoryViewState {

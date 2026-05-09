@@ -75,6 +75,34 @@
         ]
       },
       {
+        "name": "desktop-renderer-app",
+        "patterns": [
+          "apps/desktop/src/renderer/main.tsx",
+          "apps/desktop/src/renderer/globals.css",
+          "apps/desktop/src/renderer/app/**"
+        ]
+      },
+      {
+        "name": "desktop-renderer-feature-focus",
+        "patterns": ["apps/desktop/src/renderer/features/focus/**"]
+      },
+      {
+        "name": "desktop-renderer-feature-history",
+        "patterns": ["apps/desktop/src/renderer/features/history/**"]
+      },
+      {
+        "name": "desktop-renderer-feature-settings",
+        "patterns": ["apps/desktop/src/renderer/features/settings/**"]
+      },
+      {
+        "name": "desktop-renderer-feature-today",
+        "patterns": ["apps/desktop/src/renderer/features/today/**"]
+      },
+      {
+        "name": "desktop-renderer-feature-wind-down",
+        "patterns": ["apps/desktop/src/renderer/features/wind-down/**"]
+      },
+      {
         "name": "desktop-renderer",
         "patterns": ["apps/desktop/src/renderer/**"]
       },
@@ -112,6 +140,12 @@
           "desktop-main-ports",
           "desktop-preload",
           "desktop-renderer",
+          "desktop-renderer-app",
+          "desktop-renderer-feature-focus",
+          "desktop-renderer-feature-history",
+          "desktop-renderer-feature-settings",
+          "desktop-renderer-feature-today",
+          "desktop-renderer-feature-wind-down",
           "desktop-renderer-shared",
           "desktop-shared-contracts",
           "desktop-shared-domain",
@@ -176,6 +210,66 @@
       },
       {
         "from": "desktop-renderer",
+        "allow": [
+          "desktop-renderer-app",
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-app",
+        "allow": [
+          "desktop-renderer-feature-focus",
+          "desktop-renderer-feature-history",
+          "desktop-renderer-feature-settings",
+          "desktop-renderer-feature-today",
+          "desktop-renderer-feature-wind-down",
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-focus",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-history",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-settings",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-today",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-wind-down",
         "allow": [
           "desktop-renderer-shared",
           "desktop-shared-contracts",

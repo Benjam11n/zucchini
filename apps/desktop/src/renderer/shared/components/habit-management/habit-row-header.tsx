@@ -1,13 +1,13 @@
 import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
 
-import { reorderHabitList } from "@/renderer/features/settings/lib/reorder-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { CollapsibleTrigger } from "@/renderer/shared/components/ui/collapsible";
 import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
+import { reorderHabitList } from "@/renderer/shared/lib/reorder-habits";
 
 import { getHabitCadenceSummary } from "./habit-cadence-summary";
-import { HABIT_DRAG_DATA_TYPE } from './habit-row-editor.types';
-import type { HabitRowHeaderProps } from './habit-row-editor.types';
+import { HABIT_DRAG_DATA_TYPE } from "./habit-row-editor.types";
+import type { HabitRowHeaderProps } from "./habit-row-editor.types";
 
 export function HabitRowHeader({
   categoryPresentation,

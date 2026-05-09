@@ -1,7 +1,6 @@
 import { m } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-import { getHabitNameError } from "@/renderer/features/settings/lib/habit-name-validation";
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,6 +11,7 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import { getHabitNameError } from "@/renderer/shared/lib/habit-name-validation";
 import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
 
 import { DropIndicator } from "./drop-indicator";

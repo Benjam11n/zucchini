@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import {
   reorderHabitListByDropPosition,
   sortHabitListByCategory,
-} from "@/renderer/features/settings/lib/reorder-habits";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+} from "@/renderer/shared/lib/reorder-habits";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type {
   Habit,

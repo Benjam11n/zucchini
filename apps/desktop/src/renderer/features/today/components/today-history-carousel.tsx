@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
-import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
-import { getActivityStatus } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { HistoryStatusBadge } from "@/renderer/shared/components/history-status/history-status-badge";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/renderer/shared/components/ui/carousel";
 import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
+import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 

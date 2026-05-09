@@ -99,6 +99,12 @@ Shared renderer components, hooks, types, and utilities must stay generic. If a
 shared module needs feature-specific types or behavior, either move it into the
 feature or move the neutral type down into `renderer/shared`.
 
+Renderer features should not import other renderer features by default. A
+feature may depend on its own folder, `renderer/shared`, and `shared`. If a
+cross-feature import looks useful, first decide whether the imported code is
+neutral enough to live in `renderer/shared`; otherwise keep the dependency
+feature-local and review it as an intentional coupling.
+
 ## Practical Examples
 
 - A client component should never import repository functions. It should use

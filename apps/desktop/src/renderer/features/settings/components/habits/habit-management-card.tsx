@@ -1,14 +1,13 @@
 import { ListTodo } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { FocusQuotaGoalsCard } from "@/renderer/features/focus/components/focus-quota-goals-card";
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { FocusQuotaGoalsCard } from "@/renderer/shared/components/focus-quota-goals/focus-quota-goals-card";
+import { HabitManagementContent } from "@/renderer/shared/components/habit-management/habit-management-content";
+import type { HabitManagementCardProps } from "@/renderer/shared/components/habit-management/habit-management.types";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { cn } from "@/renderer/shared/lib/class-names";
-
-import { HabitManagementContent } from "./habit-management-content";
-import type { HabitManagementCardProps } from "./habit-management.types";
 
 const EMPTY_FOCUS_QUOTA_GOALS: NonNullable<
   HabitManagementCardProps["focusQuotaGoals"]
