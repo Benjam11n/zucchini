@@ -20,7 +20,7 @@ import { cn } from "@/renderer/shared/lib/class-names";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistorySummaryDay } from "@/shared/domain/history";
 
 import {
   getRecentConsistencySummary,
@@ -29,7 +29,7 @@ import {
 } from "../today-sidebar-metrics";
 
 interface TodaySidebarProps {
-  history: HistoryDay[];
+  history: HistorySummaryDay[];
   state: TodayState;
   onMoveUnfinishedHabitsToTomorrow: () => void;
   onSetDayStatus: (kind: DayStatusKind | null) => void;

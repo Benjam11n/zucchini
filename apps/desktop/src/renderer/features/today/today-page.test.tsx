@@ -2,6 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
@@ -196,6 +197,12 @@ describe("today page", () => {
   beforeEach(() => {
     todayHistoryCarouselSpy.mockClear();
     getHistoryDayMock.mockReset();
+    useHistoryStore.setState({
+      historyDayByDate: {},
+      historyLoadError: null,
+      isHistoryDayLoading: false,
+      loadingHistoryDayKey: null,
+    });
   });
 
   function renderTodayPage(
@@ -280,7 +287,9 @@ describe("today page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /history carousel/i }));
 
-    expect(getHistoryDayMock).toHaveBeenCalledWith("2026-03-12");
+    await waitFor(() => {
+      expect(getHistoryDayMock).toHaveBeenCalledWith("2026-03-12");
+    });
     expect(await screen.findByText("Historical planning")).toBeInTheDocument();
     expect(screen.getByText("Historical stretch")).toBeInTheDocument();
     expect(screen.getByText("Historical weekly review")).toBeInTheDocument();

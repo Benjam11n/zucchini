@@ -100,8 +100,8 @@ export function getHistoryStats(history: HistoryDay[]): HistoryStats {
   };
 }
 
-export function getHistoryDayLookup(
-  history: HistoryDay[]
-): Map<string, HistoryDay> {
+export function getHistoryDayLookup<T extends { date: string }>(
+  history: T[]
+): Map<string, T> {
   return new Map(history.map((day) => [day.date, day]));
 }

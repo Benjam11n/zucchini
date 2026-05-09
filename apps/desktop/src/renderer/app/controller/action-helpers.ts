@@ -145,7 +145,9 @@ export function refreshWeeklyReviewIfLoaded(): void {
     return;
   }
 
-  void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+  void useWeeklyReviewStore
+    .getState()
+    .loadWeeklyReviewOverview({ force: true });
 }
 
 export function applyBootFailureState(bootError: HabitsIpcError): void {
@@ -155,11 +157,17 @@ export function applyBootFailureState(bootError: HabitsIpcError): void {
       bootPhase: "error",
     });
     useHistoryStore.setState({
+      contributionHistory: [],
       history: [],
-      historyByYear: {},
+      historyDayByDate: {},
       historyLoadError: null,
+      historySummaryByMonth: {},
+      historySummaryByYear: {},
       historyYears: [],
+      isHistoryContributionLoading: false,
+      isHistoryDayLoading: false,
       isHistoryLoading: false,
+      loadingHistoryDayKey: null,
       selectedHistoryYear: null,
     });
     useSettingsStore.setState({

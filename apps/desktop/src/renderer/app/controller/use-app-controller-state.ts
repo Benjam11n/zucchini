@@ -61,12 +61,16 @@ export function useNonSettingsHistoryState() {
       tab === "settings"
         ? null
         : {
+            contributionHistory: state.contributionHistory,
             hasLoadedHistorySummary: state.hasLoadedHistorySummary,
             history: state.history,
+            historyDayByDate: state.historyDayByDate,
             historyLoadError: state.historyLoadError,
             historySummary: state.historySummary,
             historyYears: state.historyYears,
+            isHistoryDayLoading: state.isHistoryDayLoading,
             isHistoryLoading: state.isHistoryLoading,
+            loadingHistoryDayKey: state.loadingHistoryDayKey,
             selectedHistoryYear: state.selectedHistoryYear,
           }
     )

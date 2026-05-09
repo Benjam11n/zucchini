@@ -37,6 +37,7 @@ const isoTimestampSchema = z.string().datetime({
 });
 const historyLimitSchema = z.number().int().min(1).max(366).optional();
 const historyYearSchema = z.number().int().min(1970).max(9999);
+const historyMonthSchema = z.number().int().min(1).max(12);
 export const focusSessionLimitSchema = z
   .number()
   .int()
@@ -536,6 +537,20 @@ export const habitQuerySchema = z.discriminatedUnion("type", [
     .object({
       payload: z.object({ year: historyYearSchema }).strict(),
       type: z.literal("history.getYear"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z.object({ year: historyYearSchema }).strict(),
+      type: z.literal("history.summaryYear"),
+    })
+    .strict(),
+  z
+    .object({
+      payload: z
+        .object({ month: historyMonthSchema, year: historyYearSchema })
+        .strict(),
+      type: z.literal("history.summaryMonth"),
     })
     .strict(),
   z

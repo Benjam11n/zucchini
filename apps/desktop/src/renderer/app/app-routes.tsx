@@ -2,15 +2,11 @@ import { lazy, Suspense } from "react";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
+import { HistoryPage } from "@/renderer/features/history/history-page";
 import type { HistoryViewModel } from "@/renderer/features/history/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 
-const HistoryPage = lazy(async () => {
-  const module = await import("@/renderer/features/history/history-page");
-
-  return { default: module.HistoryPage };
-});
 const FocusPage = lazy(async () => {
   const module = await import("@/renderer/features/focus/focus-page");
 
@@ -74,12 +70,13 @@ function HistoryRoute({
     >
       <HistoryPage
         history={state.history}
+        contributionHistory={state.contributionHistory}
         historyYears={state.historyYears}
         historyLoadError={state.historyLoadError}
-        isHistoryLoading={state.isHistoryLoading}
+        onLoadWeeklyReviewOverview={actions.handleLoadWeeklyReviewOverview}
         onLoadHistoryYears={actions.handleLoadHistoryYears}
         onNavigateToToday={() => actions.handleTabChange("today")}
-        onSelectHistoryYear={actions.handleSelectHistoryYear}
+        onSelectHistoryMonth={actions.handleSelectHistoryMonth}
         todayDate={state.todayState.date}
         selectedHistoryYear={state.selectedHistoryYear}
         onSelectWeeklyReview={actions.handleWeeklyReviewSelect}

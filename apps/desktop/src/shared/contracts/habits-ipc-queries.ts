@@ -24,6 +24,14 @@ export type HabitQuery =
       payload: { year: number };
       type: "history.getYear";
     }
+  | {
+      payload: { year: number };
+      type: "history.summaryYear";
+    }
+  | {
+      payload: { month: number; year: number };
+      type: "history.summaryMonth";
+    }
   | { type: "history.years" }
   | {
       payload: { date: string };
@@ -58,6 +66,8 @@ interface HabitQueryResultByType {
   "history.getYear": HistoryDay[];
   "history.getDay": HistoryDay;
   "history.summary": HistorySummaryDay[];
+  "history.summaryMonth": HistorySummaryDay[];
+  "history.summaryYear": HistorySummaryDay[];
   "history.years": number[];
   "today.get": TodayState;
   "weeklyReview.get": WeeklyReview;

@@ -39,6 +39,7 @@ function TodayHistoryCarouselSkeleton() {
           >
             <div className="size-12 animate-pulse rounded-full bg-muted" />
             <div className="h-2 w-8 animate-pulse rounded-full bg-muted" />
+            <div className="size-4 animate-pulse rounded-full bg-muted" />
           </div>
         ))}
       </div>

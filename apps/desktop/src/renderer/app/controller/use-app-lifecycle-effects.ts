@@ -30,6 +30,7 @@ export function useAppLifecycleEffects({
   bootApp,
   bootPhase,
   loadHistorySummary,
+  loadHistoryYears,
   openWindDown,
   openWeeklyReviewSpotlight,
   refreshForNewDay,
@@ -43,6 +44,7 @@ export function useAppLifecycleEffects({
   bootApp: ReturnType<typeof createAppActions>["bootApp"];
   bootPhase: AppControllerState["bootPhase"];
   loadHistorySummary: ReturnType<typeof createAppActions>["loadHistorySummary"];
+  loadHistoryYears: ReturnType<typeof createAppActions>["loadHistoryYears"];
   openWindDown: ReturnType<typeof createAppActions>["handleOpenWindDown"];
   openWeeklyReviewSpotlight: ReturnType<
     typeof createAppActions
@@ -81,14 +83,18 @@ export function useAppLifecycleEffects({
       return;
     }
 
+    const cancelHistoryYearsPreload = scheduleDeferredTask(() => {
+      void loadHistoryYears();
+    }, 1200);
     const cancelHistorySummary = scheduleDeferredTask(() => {
       void loadHistorySummary();
     }, 1800);
 
     return () => {
+      cancelHistoryYearsPreload();
       cancelHistorySummary();
     };
-  }, [bootPhase, loadHistorySummary]);
+  }, [bootPhase, loadHistorySummary, loadHistoryYears]);
 
   useEffect(() => {
     const latestReview = weeklyReviewOverview?.latestReview ?? null;

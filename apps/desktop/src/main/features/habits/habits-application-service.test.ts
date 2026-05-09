@@ -1606,6 +1606,65 @@ describe("history retrieval", () => {
     expect(history.at(-1)?.date).toBe("2025-01-01");
   });
 
+  it("builds year summaries with today preview and no duplicate today row", () => {
+    const repository = new FakeRepository();
+    repository.streak.lastEvaluatedDate = "2026-03-09";
+    repository.dailySummaries.set("2026-03-10", {
+      allCompleted: true,
+      completedAt: "2026-03-10T21:00:00.000Z",
+      date: "2026-03-10",
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 8,
+    });
+    repository.dailySummaries.set("2026-03-09", {
+      allCompleted: false,
+      completedAt: null,
+      date: "2026-03-09",
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 7,
+    });
+    repository.dailySummaries.set("2025-12-31", {
+      allCompleted: true,
+      completedAt: "2025-12-31T21:00:00.000Z",
+      date: "2025-12-31",
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 4,
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
+    repository.focusSessions.push({
+      completedAt: "2026-03-09T09:30:00.000Z",
+      completedDate: "2026-03-09",
+      durationSeconds: 25 * 60,
+      entryKind: "completed",
+      id: 1,
+      startedAt: "2026-03-09T09:05:00.000Z",
+      timerSessionId: "summary-year-focus",
+    });
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const summary = service.getHistorySummaryForYear(2026);
+
+    expect(summary.map((day) => day.date)).toStrictEqual([
+      "2026-03-10",
+      "2026-03-09",
+    ]);
+    expect(summary[1]?.focusMinutes).toBe(25);
+    expect(summary[1]?.categoryProgress).toContainEqual({
+      category: "productivity",
+      completed: 1,
+      progress: 100,
+      total: 1,
+    });
+    expect(service.getHistorySummaryForYear(2024)).toStrictEqual([]);
+  });
+
   it("builds a weekly review overview for completed weeks", () => {
     const repository = new FakeRepository();
     repository.streak.lastEvaluatedDate = "2026-03-08";

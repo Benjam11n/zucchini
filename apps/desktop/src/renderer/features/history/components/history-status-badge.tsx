@@ -10,7 +10,7 @@ interface HistoryStatusBadgeProps {
   status: HistoryStatus;
 }
 
-export function getHistoryStatusBadgeLabel(
+function getHistoryStatusBadgeLabel(
   status: HistoryStatus,
   isToday?: boolean
 ): string {

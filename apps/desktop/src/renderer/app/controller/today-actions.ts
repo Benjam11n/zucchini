@@ -56,6 +56,12 @@ function isLatestHabitStatusMutation(
   return habitStatusMutationVersions.get(habitId) === mutationVersion;
 }
 
+function preloadWeeklyReviewAfterHistoryPaint(): void {
+  window.setTimeout(() => {
+    void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+  }, 350);
+}
+
 function toggleHabitStatus(habit: HabitWithStatus): HabitWithStatus {
   const targetCount = habit.targetCount ?? 1;
 
@@ -146,7 +152,9 @@ export function createTodayActions({
       return;
     }
 
-    await useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+    await useWeeklyReviewStore
+      .getState()
+      .loadWeeklyReviewOverview({ force: true });
   }
 
   const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
@@ -159,7 +167,10 @@ export function createTodayActions({
     });
 
     if (options.refreshHistoryYears) {
-      await useHistoryStore.getState().loadHistoryYears({ force: true });
+      await useHistoryStore.getState().loadHistoryYears({
+        force: true,
+        initialMonth: Number.parseInt(todayState.date.slice(5, 7), 10),
+      });
     }
   };
 
@@ -319,8 +330,14 @@ export function createTodayActions({
       }
 
       if (nextTab === "history") {
-        void useHistoryStore.getState().loadHistoryYears();
-        void useWeeklyReviewStore.getState().loadWeeklyReviewOverview();
+        const todayDate = useTodayStore.getState().todayState?.date;
+        const initialMonth = todayDate
+          ? Number.parseInt(todayDate.slice(5, 7), 10)
+          : undefined;
+        void useHistoryStore
+          .getState()
+          .loadHistoryYears(initialMonth ? { initialMonth } : {});
+        preloadWeeklyReviewAfterHistoryPaint();
       }
     },
     handleOpenWindDown() {

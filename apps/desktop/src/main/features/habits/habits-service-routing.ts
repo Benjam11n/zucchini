@@ -211,6 +211,15 @@ export function readHabitServiceQuery(
     case "history.summary": {
       return service.getHistorySummary(query.payload?.limit);
     }
+    case "history.summaryYear": {
+      return service.getHistorySummaryForYear(query.payload.year);
+    }
+    case "history.summaryMonth": {
+      return service.getHistorySummaryForMonth(
+        query.payload.year,
+        query.payload.month
+      );
+    }
     case "history.years": {
       return service.getHistoryYears();
     }

@@ -429,7 +429,7 @@ describe("use app controller", () => {
     });
   });
 
-  it("loads the weekly review from History before opening the Monday spotlight", async () => {
+  it("defers weekly review data when opening History", async () => {
     cleanup();
     (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
     document.documentElement.className = "";
@@ -456,31 +456,20 @@ describe("use app controller", () => {
     });
 
     await waitFor(() => {
-      expect(habits.getWeeklyReviewOverview).toHaveBeenCalledWith();
-      expect(
-        hook.result.current.state.isWeeklyReviewSpotlightOpen
-      ).toBeTruthy();
+      expect(hook.result.current.tab).toBe("history");
     });
+    expect(habits.getWeeklyReviewOverview).not.toHaveBeenCalled();
+    expect(habits.getWeeklyReview).not.toHaveBeenCalled();
+    expect(hook.result.current.state.isWeeklyReviewSpotlightOpen).toBeFalsy();
+    expect(localStorage.getItem("zucchini_weekly_review")).toBeNull();
 
     await act(async () => {
-      await hook.result.current.actions.handleWeeklyReviewOpen();
+      await vi.advanceTimersByTimeAsync(350);
     });
 
     await waitFor(() => {
-      expect(hook.result.current.tab).toBe("history");
-      expect(hook.result.current.state.selectedWeeklyReview?.weekStart).toBe(
-        "2026-03-02"
-      );
-      expect(hook.result.current.state.isWeeklyReviewSpotlightOpen).toBeFalsy();
+      expect(habits.getWeeklyReviewOverview).toHaveBeenCalledTimes(1);
     });
-
-    expect(habits.getWeeklyReview).not.toHaveBeenCalled();
-
-    expect(localStorage.getItem("zucchini_weekly_review")).toBe(
-      JSON.stringify({
-        lastSeenWeeklyReviewStart: "2026-03-02",
-      })
-    );
 
     vi.useRealTimers();
   });

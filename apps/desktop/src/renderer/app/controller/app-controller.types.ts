@@ -29,17 +29,21 @@ import type {
 export interface AppControllerState {
   bootError: HabitsIpcError | null;
   bootPhase: "error" | "loading" | "ready";
+  contributionHistory: HistorySummaryDay[];
   focusSaveErrorMessage: string | null;
   focusSessions: FocusSession[];
   focusSessionsLoadError: HabitsIpcError | null;
   focusSessionsPhase: FocusSessionsPhase;
   hasLoadedFocusSessions: boolean;
-  history: HistoryDay[];
+  history: HistorySummaryDay[];
+  historyDayByDate: Record<string, HistoryDay | undefined>;
   historyYears: number[];
   historyLoadError: HabitsIpcError | null;
   historySummary: HistorySummaryDay[];
   hasLoadedHistorySummary: boolean;
   isHistoryLoading: boolean;
+  isHistoryDayLoading: boolean;
+  loadingHistoryDayKey: string | null;
   isWeeklyReviewSpotlightOpen: boolean;
   managedHabits: Habit[];
   selectedWeeklyReview: WeeklyReview | null;

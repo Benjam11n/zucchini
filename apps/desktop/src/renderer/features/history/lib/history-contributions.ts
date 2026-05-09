@@ -3,9 +3,9 @@ import type {
   ContributionIntensity,
   ContributionWeek,
 } from "@/renderer/features/history/history.types";
+import { getHistoryDailyCounts } from "@/renderer/features/history/lib/history-daily-counts";
+import type { HistoryDailyCountDay } from "@/renderer/features/history/lib/history-daily-counts";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
-import type { HabitWithStatus } from "@/shared/domain/habit";
-import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import {
   addDays,
@@ -17,17 +17,7 @@ import {
 const DAY_IN_WEEK = 7;
 const MAX_CONTRIBUTION_INTENSITY = 4;
 
-function getUniqueDailyHabits(habits: HabitWithStatus[]): HabitWithStatus[] {
-  return [
-    ...new Map(
-      habits
-        .filter((habit) => habit.frequency === "daily")
-        .map((habit) => [habit.id, habit])
-    ).values(),
-  ];
-}
-
-function getCompletionCounts(day: HistoryDay | null): {
+function getCompletionCounts(day: HistoryDailyCountDay | null): {
   completedCount: number;
   totalCount: number;
 } {
@@ -38,12 +28,9 @@ function getCompletionCounts(day: HistoryDay | null): {
     };
   }
 
-  const dailyHabits = getUniqueDailyHabits(day.habits);
+  const { completed, total } = getHistoryDailyCounts(day);
 
-  return {
-    completedCount: dailyHabits.filter((habit) => habit.completed).length,
-    totalCount: dailyHabits.length,
-  };
+  return { completedCount: completed, totalCount: total };
 }
 
 function getContributionIntensity(
@@ -92,7 +79,7 @@ function getContributionStatus(
 }
 
 export function buildContributionWeeks(
-  history: HistoryDay[],
+  history: HistoryDailyCountDay[],
   range?: {
     endDate: string;
     startDate: string;

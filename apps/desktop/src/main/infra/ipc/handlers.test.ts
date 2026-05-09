@@ -89,6 +89,8 @@ function createService() {
     getHistoryDay: vi.fn(),
     getHistoryForYear: vi.fn(() => []),
     getHistorySummary: vi.fn(() => []),
+    getHistorySummaryForMonth: vi.fn(() => []),
+    getHistorySummaryForYear: vi.fn(() => []),
     getHistoryYears: vi.fn(() => []),
     getPersistedFocusTimerState: vi.fn(() => focusTimerState),
     getReminderRuntimeState: vi.fn(),
@@ -289,6 +291,30 @@ describe("registerIpcHandlers()", () => {
     expect(service.read).toHaveBeenCalledWith({
       payload: { limit: 14 },
       type: "history.get",
+    });
+  });
+
+  it("validates and routes year summary history queries", async () => {
+    resetHandlers();
+    const service = createService();
+    service.read.mockReturnValue([]);
+
+    registerIpcHandlers(createRegisterOptions({ service }));
+
+    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+
+    await expect(
+      handler?.({} as IpcMainInvokeEvent, {
+        payload: { year: 2026 },
+        type: "history.summaryYear",
+      })
+    ).resolves.toStrictEqual({
+      data: [],
+      ok: true,
+    });
+    expect(service.read).toHaveBeenCalledWith({
+      payload: { year: 2026 },
+      type: "history.summaryYear",
     });
   });
 

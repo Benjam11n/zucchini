@@ -19,14 +19,14 @@ import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ri
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
 interface HistorySidebarProps {
   monthStats: HistoryMonthStats;
   nextDateKey: string | null;
   previousDateKey: string | null;
-  selectedDay: HistoryDay | null;
+  selectedDay: HistorySummaryDay | null;
   todayDate: string;
   trendPoints: HistoryTrendPoint[];
   onSelectDate: (dateKey: string) => void;
@@ -129,6 +129,16 @@ export function HistorySidebar({
   todayDate,
   trendPoints,
 }: HistorySidebarProps) {
+  let selectedDayDailyCompleted = 0;
+  let selectedDayDailyTotal = 0;
+
+  if (selectedDay) {
+    for (const category of selectedDay.categoryProgress) {
+      selectedDayDailyCompleted += category.completed;
+      selectedDayDailyTotal += category.total;
+    }
+  }
+
   return (
     <div className="grid min-w-0 gap-6">
       <section className="grid gap-4">
@@ -197,7 +207,7 @@ export function HistorySidebar({
             <SidebarMetric
               icon={Target}
               label="Daily habits"
-              value={`${selectedDay.habits.filter((habit) => habit.frequency === "daily" && habit.completed).length}/${selectedDay.habits.filter((habit) => habit.frequency === "daily").length}`}
+              value={`${selectedDayDailyCompleted}/${selectedDayDailyTotal}`}
             />
             <SidebarMetric
               icon={Timer}

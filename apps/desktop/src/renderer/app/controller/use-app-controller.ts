@@ -26,12 +26,16 @@ const EMPTY_MANAGED_HABITS: AppControllerState["managedHabits"] = [];
 const EMPTY_SETTINGS_FIELD_ERRORS: SettingsFieldErrors = {};
 
 const DEFAULT_HISTORY_STATE = {
+  contributionHistory: EMPTY_HISTORY,
   hasLoadedHistorySummary: false,
   history: EMPTY_HISTORY,
+  historyDayByDate: {},
   historyLoadError: null,
   historySummary: EMPTY_HISTORY_SUMMARY,
   historyYears: [],
+  isHistoryDayLoading: false,
   isHistoryLoading: false,
+  loadingHistoryDayKey: null,
   selectedHistoryYear: null,
 } satisfies NonNullable<ReturnType<typeof useNonSettingsHistoryState>>;
 
@@ -72,6 +76,7 @@ function buildControllerActions({
     },
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadHistoryYears: actions.loadHistoryYears,
+    handleLoadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     handleMoveUnfinishedHabitsToTomorrow:
       actions.handleMoveUnfinishedHabitsToTomorrow,
     handleOpenWindDown: actions.handleOpenWindDown,
@@ -83,7 +88,7 @@ function buildControllerActions({
       await actions.loadFocusSessions(true);
     },
     handleRetryHistoryLoad: actions.loadHistoryYears,
-    handleSelectHistoryYear: actions.selectHistoryYear,
+    handleSelectHistoryMonth: actions.selectHistoryMonth,
     handleSetDayStatus: actions.handleSetDayStatus,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,
@@ -189,6 +194,7 @@ export function useAppController() {
     bootApp: actions.bootApp,
     bootPhase: coreState.bootPhase,
     loadHistorySummary: actions.loadHistorySummary,
+    loadHistoryYears: actions.loadHistoryYears,
     openWeeklyReviewSpotlight: actions.openWeeklyReviewSpotlight,
     openWindDown: actions.handleOpenWindDown,
     refreshForNewDay: actions.refreshForNewDay,

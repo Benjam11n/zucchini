@@ -26,7 +26,7 @@ interface WeeklyReviewStoreState {
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
   dismissWeeklyReviewSpotlight: () => void;
-  loadWeeklyReviewOverview: () => Promise<void>;
+  loadWeeklyReviewOverview: (options?: { force?: boolean }) => Promise<void>;
   openWeeklyReviewSpotlight: () => void;
   selectWeeklyReview: (weekStart: string) => Promise<void>;
 }
@@ -55,7 +55,19 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
       set({
         isWeeklyReviewSpotlightOpen: false,
       }),
-    loadWeeklyReviewOverview: async () => {
+    loadWeeklyReviewOverview: async (options = {}) => {
+      const { weeklyReviewOverview, weeklyReviewPhase } = get();
+      if (weeklyReviewPhase === "loading") {
+        return;
+      }
+      if (
+        !options.force &&
+        weeklyReviewPhase === "ready" &&
+        weeklyReviewOverview
+      ) {
+        return;
+      }
+
       await runAsyncTask(
         () => loadWeeklyReviewState(habitsClient, get().selectedWeeklyReview),
         {

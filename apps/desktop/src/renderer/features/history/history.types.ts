@@ -9,7 +9,7 @@ import type {
   ContributionStatus as HistoryStatus,
 } from "@/renderer/shared/types/contribution";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {
   WeeklyReview,
@@ -21,13 +21,14 @@ import type { HistoryViewModel } from "./use-history-view-state";
 export type WeeklyReviewPhase = AsyncPhase;
 
 export interface HistoryPageProps {
-  history: HistoryDay[];
+  contributionHistory: HistorySummaryDay[];
+  history: HistorySummaryDay[];
   historyYears: number[];
   historyLoadError: HabitsIpcError | null;
-  isHistoryLoading: boolean;
   onLoadHistoryYears: () => void;
   onNavigateToToday: () => void;
-  onSelectHistoryYear: (year: number) => void;
+  onSelectHistoryMonth: (year: number, month: number) => void;
+  onLoadWeeklyReviewOverview: () => void;
   todayDate: string;
   selectedHistoryYear: number | null;
   selectedWeeklyReview: WeeklyReview | null;

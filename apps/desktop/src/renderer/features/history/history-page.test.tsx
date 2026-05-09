@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
 import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
+import type * as HistoryDayDetailModule from "@/renderer/features/history/hooks/use-history-day-detail";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -22,8 +23,11 @@ vi.mock(import("framer-motion"), (importOriginal) =>
 vi.mock<typeof TabsModule>(
   import("@/renderer/shared/components/ui/tabs"),
   async (importOriginal) => {
-    const actual = await importOriginal();
-    const { createContext, useContext, useMemo } = await import("react");
+    const [actual, react] = await Promise.all([
+      importOriginal(),
+      import("react"),
+    ]);
+    const { createContext, useContext, useMemo } = react;
     const TabsContext = createContext<{
       onValueChange?: ((value: string) => void) | undefined;
       value?: string | undefined;
@@ -96,6 +100,22 @@ vi.mock<typeof HistoryDayPanelModule>(
   })
 );
 
+vi.mock<typeof HistoryDayDetailModule>(
+  import("@/renderer/features/history/hooks/use-history-day-detail"),
+  () => ({
+    useHistoryDayDetail: (selectedDate, history) => ({
+      isLoading: false,
+      selectedDay:
+        (selectedDate
+          ? ({
+              ...history.find((day) => day.date === selectedDate),
+              habits: [],
+            } as HistoryDay)
+          : null) ?? null,
+    }),
+  })
+);
+
 vi.mock(
   import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart"),
   () => ({
@@ -123,6 +143,17 @@ vi.mock<typeof WeeklyReviewHeroCardModule>(
     ),
   })
 );
+
+beforeEach(() => {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn().mockReturnValue({
+      addEventListener: vi.fn(),
+      matches: false,
+      removeEventListener: vi.fn(),
+    }),
+  });
+});
 
 function createHistoryDay(
   date: string,
@@ -202,13 +233,14 @@ function renderHistoryPage(
 ) {
   return render(
     <HistoryPage
+      contributionHistory={[createHistoryDay("2026-03-10")]}
       history={[createHistoryDay("2026-03-10")]}
       historyLoadError={null}
       historyYears={[2026]}
-      isHistoryLoading={false}
       onLoadHistoryYears={vi.fn()}
+      onLoadWeeklyReviewOverview={vi.fn()}
       onNavigateToToday={vi.fn()}
-      onSelectHistoryYear={vi.fn()}
+      onSelectHistoryMonth={vi.fn()}
       onSelectWeeklyReview={vi.fn()}
       selectedHistoryYear={2026}
       selectedWeeklyReview={null}
@@ -341,13 +373,14 @@ describe("history page", () => {
 
     rerender(
       <HistoryPage
+        contributionHistory={[latestHistoryDay]}
         history={[latestHistoryDay]}
         historyLoadError={null}
         historyYears={[2026]}
-        isHistoryLoading={false}
         onLoadHistoryYears={vi.fn()}
+        onLoadWeeklyReviewOverview={vi.fn()}
         onNavigateToToday={vi.fn()}
-        onSelectHistoryYear={vi.fn()}
+        onSelectHistoryMonth={vi.fn()}
         onSelectWeeklyReview={onSelectWeeklyReview}
         selectedHistoryYear={2026}
         selectedWeeklyReview={null}
@@ -393,18 +426,30 @@ describe("history page", () => {
     expect(screen.getByRole("button", { name: /^2026$/ })).toBeInTheDocument();
   });
 
-  it("requests the selected year when the year changes", () => {
-    const onSelectHistoryYear = vi.fn();
+  it("loads weekly review data only after switching to review mode", () => {
+    const onLoadWeeklyReviewOverview = vi.fn();
+
+    renderHistoryPage({ onLoadWeeklyReviewOverview });
+
+    expect(onLoadWeeklyReviewOverview).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+
+    expect(onLoadWeeklyReviewOverview).toHaveBeenCalledTimes(1);
+  });
+
+  it("requests the selected month when the year changes", () => {
+    const onSelectHistoryMonth = vi.fn();
 
     renderHistoryPage({
       history: [createHistoryDay("2026-03-10", { allCompleted: true })],
       historyYears: [2026, 2025],
-      onSelectHistoryYear,
+      onSelectHistoryMonth,
     });
 
     fireEvent.pointerDown(screen.getByRole("button", { name: /^2026$/ }));
     fireEvent.click(screen.getByRole("menuitem", { name: "2025" }));
 
-    expect(onSelectHistoryYear).toHaveBeenCalledWith(2025);
+    expect(onSelectHistoryMonth).toHaveBeenCalledWith(2025, 3);
   });
 });

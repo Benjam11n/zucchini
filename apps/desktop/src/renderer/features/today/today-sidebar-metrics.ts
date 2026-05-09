@@ -1,5 +1,6 @@
+import { getHistoryDailyCounts } from "@/renderer/features/history/lib/history-daily-counts";
+import type { HistoryDailyCountDay } from "@/renderer/features/history/lib/history-daily-counts";
 import type { TodayState } from "@/shared/contracts/today-state";
-import type { HistoryDay } from "@/shared/domain/history";
 import { addDays, startOfWeek } from "@/shared/utils/date";
 
 type TodayMetricsState = Pick<TodayState, "date" | "habits">;
@@ -44,12 +45,10 @@ export function getTodayCompletion(
   };
 }
 
-function getHistoryCompletion(historyDay: HistoryDay): TodaySidebarCompletion {
-  const dailyHabits = historyDay.habits.filter(
-    (habit) => habit.frequency === "daily"
-  );
-  const completed = dailyHabits.filter((habit) => habit.completed).length;
-  const total = dailyHabits.length;
+function getHistoryCompletion(
+  historyDay: HistoryDailyCountDay
+): TodaySidebarCompletion {
+  const { completed, total } = getHistoryDailyCounts(historyDay);
 
   return {
     completed,
@@ -60,7 +59,7 @@ function getHistoryCompletion(historyDay: HistoryDay): TodaySidebarCompletion {
 
 function getCompletionForDate(
   date: string,
-  historyByDate: ReadonlyMap<string, HistoryDay>,
+  historyByDate: ReadonlyMap<string, HistoryDailyCountDay>,
   state: TodayMetricsState
 ): TodaySidebarCompletion | null {
   if (date === state.date) {
@@ -76,7 +75,7 @@ function getCompletionForDate(
 }
 
 export function getWeekCompletionSeries(
-  history: readonly HistoryDay[],
+  history: readonly HistoryDailyCountDay[],
   state: TodayMetricsState
 ): TodaySidebarWeekDay[] {
   const historyByDate = new Map(history.map((day) => [day.date, day]));
@@ -99,7 +98,7 @@ export function getWeekCompletionSeries(
 }
 
 export function getRecentConsistencySummary(
-  history: readonly HistoryDay[],
+  history: readonly HistoryDailyCountDay[],
   state: TodayMetricsState,
   days = 30
 ): TodaySidebarConsistencySummary {

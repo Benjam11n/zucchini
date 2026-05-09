@@ -12,6 +12,7 @@ import { HistoryDayPanel } from "@/renderer/features/history/components/history-
 import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
+import { useHistoryDayDetail } from "@/renderer/features/history/hooks/use-history-day-detail";
 import {
   buildContributionWeeks,
   formatContributionLabel,
@@ -20,6 +21,7 @@ import { getActivityStatus } from "@/renderer/features/history/lib/history-summa
 import {
   formatFocusMinutes,
   getDailyCompletionPercent,
+  getDailyMissCount,
 } from "@/renderer/features/history/lib/history-timeline";
 import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { ContributionSquare } from "@/renderer/shared/components/github-contribution-square";
@@ -37,12 +39,13 @@ import {
   TabsTrigger,
 } from "@/renderer/shared/components/ui/tabs";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
+import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { HistoryDay } from "@/shared/domain/history";
+import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey, parseDateKey, toDateKey } from "@/shared/utils/date";
 
 type HistoryViewMode = "review" | "timeline";
@@ -54,27 +57,31 @@ function ContributionGraph({
   rangeStart,
   selectedDateKey,
 }: {
-  history: HistoryDay[];
+  history: HistorySummaryDay[];
   rangeEnd: string;
   rangeStart: string;
   selectedDateKey: string | null;
   onSelectDate: (dateKey: string) => void;
 }) {
-  const weeks = buildContributionWeeks(history, {
-    endDate: rangeEnd,
-    startDate: rangeStart,
-  }).map((week) => ({
-    ...week,
-    cells: week.cells.map((cell) => ({
-      completedCount: cell.completedCount,
-      date: cell.date,
-      intensity: cell.intensity,
-      isToday: cell.isToday,
-      label: formatContributionLabel(cell),
-      status: cell.status,
-      totalCount: cell.totalCount,
-    })),
-  }));
+  const weeks = useMemo(
+    () =>
+      buildContributionWeeks(history, {
+        endDate: rangeEnd,
+        startDate: rangeStart,
+      }).map((week) => ({
+        ...week,
+        cells: week.cells.map((cell) => ({
+          completedCount: cell.completedCount,
+          date: cell.date,
+          intensity: cell.intensity,
+          isToday: cell.isToday,
+          label: formatContributionLabel(cell),
+          status: cell.status,
+          totalCount: cell.totalCount,
+        })),
+      })),
+    [history, rangeEnd, rangeStart]
+  );
 
   if (weeks.length === 0) {
     return null;
@@ -137,20 +144,14 @@ function TimelineDayRow({
   isToday,
   onSelect,
 }: {
-  day: HistoryDay;
+  day: HistorySummaryDay;
   isSelected: boolean;
   isToday: boolean;
   onSelect: () => void;
 }) {
   const percent = getDailyCompletionPercent(day);
   const status = getActivityStatus(day.summary, isToday);
-  const missedHabits: string[] = [];
-
-  for (const habit of day.habits) {
-    if (habit.frequency === "daily" && !habit.completed) {
-      missedHabits.push(habit.name);
-    }
-  }
+  const missedCount = getDailyMissCount(day);
 
   return (
     <button
@@ -180,7 +181,7 @@ function TimelineDayRow({
       />
       <div className="flex justify-end">
         <span className="min-w-5 rounded-md bg-muted px-1.5 py-0.5 text-center text-xs font-medium text-muted-foreground">
-          {missedHabits.length}
+          {missedCount}
         </span>
       </div>
     </button>
@@ -200,14 +201,67 @@ function TimelineHeaderRow() {
   );
 }
 
+function ContributionGraphSkeleton() {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border/70 bg-card/45 px-4 py-3">
+      <div className="flex min-w-max gap-1.5">
+        {Array.from({ length: 53 }, (_week, weekIndex) => (
+          <div className="grid gap-1" key={weekIndex}>
+            {Array.from({ length: 7 }, (_day, dayIndex) => (
+              <div
+                className="size-3 rounded-[3px] bg-muted/70"
+                key={`${weekIndex}-${dayIndex}`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HistoryContributionGraph({
+  contributionHistory,
+  fallbackHistory,
+  onSelectDate,
+  rangeEnd,
+  rangeStart,
+  selectedDateKey,
+}: {
+  fallbackHistory: HistorySummaryDay[];
+  contributionHistory: HistorySummaryDay[];
+  rangeEnd: string;
+  rangeStart: string;
+  selectedDateKey: string | null;
+  onSelectDate: (dateKey: string) => void;
+}) {
+  const graphHistory =
+    contributionHistory.length > 0 ? contributionHistory : fallbackHistory;
+
+  if (graphHistory.length > 0) {
+    return (
+      <ContributionGraph
+        history={graphHistory}
+        rangeEnd={rangeEnd}
+        rangeStart={rangeStart}
+        selectedDateKey={selectedDateKey}
+        onSelectDate={onSelectDate}
+      />
+    );
+  }
+
+  return <ContributionGraphSkeleton />;
+}
+
 export function HistoryPage({
+  contributionHistory,
   history,
   historyYears,
   historyLoadError,
-  isHistoryLoading,
   onLoadHistoryYears,
+  onLoadWeeklyReviewOverview,
   onNavigateToToday,
-  onSelectHistoryYear,
+  onSelectHistoryMonth,
   todayDate,
   selectedHistoryYear,
   onSelectWeeklyReview,
@@ -228,12 +282,25 @@ export function HistoryPage({
     availableYears,
     filteredHistory,
     selectDateKey,
-    selectedDay,
+    selectedDay: selectedSummaryDay,
     setViewState,
     viewState,
   } = viewModel ?? localViewModel;
+  const selectedDateKey = selectedSummaryDay?.date ?? viewState.selectedDateKey;
+  const isMobileDayPanelVisible = useMediaQuery("(max-width: 1023px)");
+  const shouldLoadMobileDayDetail =
+    historyMode === "timeline" && isMobileDayPanelVisible;
+  const selectedDayDetail = useHistoryDayDetail(
+    shouldLoadMobileDayDetail ? selectedDateKey : null,
+    filteredHistory
+  );
   const visibleMonth =
     viewState.visibleMonth ?? parseDateKey(`${viewState.selectedYear}-01-01`);
+
+  useEffect(() => {
+    onLoadHistoryYears();
+  }, [onLoadHistoryYears]);
+
   const visibleMonthRange = useMemo(
     () => getMonthRange(visibleMonth),
     [visibleMonth]
@@ -268,6 +335,21 @@ export function HistoryPage({
   const canShowNextMonth =
     visibleMonth.getMonth() < 11 ||
     availableYears.includes(visibleMonth.getFullYear() + 1);
+  const selectHistoryDate = (dateKey: string) => {
+    if (filteredHistory.some((day) => day.date === dateKey)) {
+      selectDateKey(dateKey);
+      return;
+    }
+
+    const nextMonth = parseDateKey(dateKey);
+    setViewState((current) => ({
+      ...current,
+      selectedDateKey: dateKey,
+      selectedYear: nextMonth.getFullYear(),
+      visibleMonth: nextMonth,
+    }));
+    onSelectHistoryMonth(nextMonth.getFullYear(), nextMonth.getMonth() + 1);
+  };
   const showMonth = (offset: number) => {
     const nextMonth = getMonthOffset(visibleMonth, offset);
     const nextYear = nextMonth.getFullYear();
@@ -281,25 +363,26 @@ export function HistoryPage({
 
     setViewState((current) => ({
       ...current,
-      selectedDateKey: nextMonthDate ?? current.selectedDateKey,
+      selectedDateKey: nextMonthDate,
       selectedYear: nextYear,
       visibleMonth: nextMonth,
     }));
 
-    if (nextYear !== viewState.selectedYear) {
-      onSelectHistoryYear(nextYear);
-    }
+    onSelectHistoryMonth(nextYear, nextMonth.getMonth() + 1);
   };
-
-  useEffect(() => {
-    onLoadHistoryYears();
-  }, [onLoadHistoryYears]);
 
   return (
     <LazyMotion features={domAnimation}>
       <Tabs
         className="w-full"
-        onValueChange={(value) => setHistoryMode(value as HistoryViewMode)}
+        onValueChange={(value) => {
+          const nextMode = value as HistoryViewMode;
+          setHistoryMode(nextMode);
+
+          if (nextMode === "review") {
+            onLoadWeeklyReviewOverview();
+          }
+        }}
         value={historyMode}
       >
         <m.div
@@ -348,7 +431,12 @@ export function HistoryPage({
                               ? parseDateKey(fallbackDate)
                               : undefined,
                           });
-                          onSelectHistoryYear(year);
+                          onSelectHistoryMonth(
+                            year,
+                            fallbackDate
+                              ? Number.parseInt(fallbackDate.slice(5, 7), 10)
+                              : visibleMonth.getMonth() + 1
+                          );
                         }}
                       >
                         {year}
@@ -364,19 +452,14 @@ export function HistoryPage({
                 {historyLoadError.message}
               </div>
             ) : null}
-            {isHistoryLoading ? (
-              <div className="rounded-md border border-border/60 bg-muted/25 px-4 py-3 text-sm text-muted-foreground">
-                Loading history…
-              </div>
-            ) : null}
-
             {historyMode === "timeline" ? (
-              <ContributionGraph
-                history={filteredHistory}
+              <HistoryContributionGraph
+                contributionHistory={contributionHistory}
+                fallbackHistory={filteredHistory}
                 rangeEnd={yearRange.endDate}
                 rangeStart={yearRange.startDate}
                 selectedDateKey={viewState.selectedDateKey}
-                onSelectDate={selectDateKey}
+                onSelectDate={selectHistoryDate}
               />
             ) : null}
           </m.section>
@@ -431,7 +514,7 @@ export function HistoryPage({
                         isSelected={viewState.selectedDateKey === day.date}
                         isToday={day.date === todayDate}
                         key={day.date}
-                        onSelect={() => selectDateKey(day.date)}
+                        onSelect={() => selectHistoryDate(day.date)}
                       />
                     ))}
                   </div>
@@ -443,11 +526,17 @@ export function HistoryPage({
               </div>
 
               <div className="lg:hidden">
-                <HistoryDayPanel
-                  isToday={selectedDay?.date === todayDate}
-                  onNavigateToToday={onNavigateToToday}
-                  selectedDay={selectedDay}
-                />
+                {selectedDayDetail.isLoading ? (
+                  <div className="rounded-md border border-dashed border-border/60 bg-card/60 px-4 py-6 text-sm text-muted-foreground">
+                    Loading history…
+                  </div>
+                ) : (
+                  <HistoryDayPanel
+                    isToday={selectedDayDetail.selectedDay?.date === todayDate}
+                    onNavigateToToday={onNavigateToToday}
+                    selectedDay={selectedDayDetail.selectedDay}
+                  />
+                )}
               </div>
             </m.section>
           </TabsContent>

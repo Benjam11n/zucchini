@@ -109,6 +109,16 @@ export const habitsClient = {
             type: "history.summary",
           }
     ),
+  getHistorySummaryForMonth: (year: number, month: number) =>
+    query({
+      payload: { month, year },
+      type: "history.summaryMonth",
+    }),
+  getHistorySummaryForYear: (year: number) =>
+    query({
+      payload: { year },
+      type: "history.summaryYear",
+    }),
   getHistoryYears: () =>
     query({
       type: "history.years",

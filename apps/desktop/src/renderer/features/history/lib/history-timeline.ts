@@ -1,8 +1,9 @@
-import type { HistoryDay } from "@/shared/domain/history";
+import { getHistoryDailyCounts } from "@/renderer/features/history/lib/history-daily-counts";
+import type { HistoryDailyCountDay } from "@/renderer/features/history/lib/history-daily-counts";
 
 export interface HistoryMonthStats {
   averageCompletion: number;
-  bestDay: HistoryDay | null;
+  bestDay: HistoryDailyCountDay | null;
   perfectDays: number;
   totalFocusMinutes: number;
   trackedDays: number;
@@ -13,28 +14,20 @@ export interface HistoryTrendPoint {
   percent: number;
 }
 
-function getUniqueDailyHabits(day: HistoryDay) {
-  return [
-    ...new Map(
-      day.habits
-        .filter((habit) => habit.frequency === "daily")
-        .map((habit) => [habit.id, habit])
-    ).values(),
-  ];
-}
+export function getDailyCompletionPercent(day: HistoryDailyCountDay): number {
+  const { completed, total } = getHistoryDailyCounts(day);
 
-export function getDailyCompletionPercent(day: HistoryDay): number {
-  const uniqueDailyHabits = getUniqueDailyHabits(day);
-
-  if (uniqueDailyHabits.length === 0) {
+  if (total === 0) {
     return day.summary.allCompleted ? 100 : 0;
   }
 
-  return Math.round(
-    (uniqueDailyHabits.filter((habit) => habit.completed).length /
-      uniqueDailyHabits.length) *
-      100
-  );
+  return Math.round((completed / total) * 100);
+}
+
+export function getDailyMissCount(day: HistoryDailyCountDay): number {
+  const { completed, total } = getHistoryDailyCounts(day);
+
+  return Math.max(total - completed, 0);
 }
 
 export function formatFocusMinutes(minutes: number): string {
@@ -49,9 +42,9 @@ export function formatFocusMinutes(minutes: number): string {
 }
 
 export function getHistoryMonthDays(
-  history: HistoryDay[],
+  history: HistoryDailyCountDay[],
   selectedDateKey: string | null
-): HistoryDay[] {
+): HistoryDailyCountDay[] {
   const fallbackMonth = history[0]?.date.slice(0, 7) ?? null;
   const selectedMonth = selectedDateKey?.slice(0, 7) ?? fallbackMonth;
 
@@ -62,7 +55,9 @@ export function getHistoryMonthDays(
   return history.filter((day) => day.date.startsWith(selectedMonth));
 }
 
-export function getHistoryMonthStats(days: HistoryDay[]): HistoryMonthStats {
+export function getHistoryMonthStats(
+  days: HistoryDailyCountDay[]
+): HistoryMonthStats {
   if (days.length === 0) {
     return {
       averageCompletion: 0,
@@ -97,7 +92,9 @@ export function getHistoryMonthStats(days: HistoryDay[]): HistoryMonthStats {
   };
 }
 
-export function getHistoryTrendPoints(days: HistoryDay[]): HistoryTrendPoint[] {
+export function getHistoryTrendPoints(
+  days: HistoryDailyCountDay[]
+): HistoryTrendPoint[] {
   return days
     .toSorted((left, right) => left.date.localeCompare(right.date))
     .map((day) => ({
