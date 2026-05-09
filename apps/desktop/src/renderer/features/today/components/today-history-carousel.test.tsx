@@ -116,7 +116,20 @@ describe("today history carousel", () => {
       />
     );
 
-    expect(screen.getByText("Sick Day")).toBeInTheDocument();
+    expect(screen.getByText("Sick")).toBeInTheDocument();
     expect(screen.getByText("Moved")).toBeInTheDocument();
+  });
+
+  it("shows complete status labels for complete historical days", () => {
+    render(
+      <TodayHistoryCarousel
+        hasLoadedHistorySummary
+        history={[historyDay("2026-03-11")]}
+        onSelectDate={vi.fn()}
+        selectedDate={null}
+      />
+    );
+
+    expect(screen.getByText("Completed")).toBeInTheDocument();
   });
 });

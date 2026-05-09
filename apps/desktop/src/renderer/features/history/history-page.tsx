@@ -9,8 +9,8 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
+import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
-import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import {
   buildContributionWeeks,
@@ -23,7 +23,6 @@ import {
 } from "@/renderer/features/history/lib/history-timeline";
 import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { ContributionSquare } from "@/renderer/shared/components/github-contribution-square";
-import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   DropdownMenu,
@@ -132,36 +131,6 @@ function getMonthOffset(month: Date, offset: number): Date {
   return new Date(month.getFullYear(), month.getMonth() + offset, 1);
 }
 
-function getDayStatusLabel(day: HistoryDay, isToday: boolean): string {
-  const status = getActivityStatus(day.summary, isToday);
-
-  if (status === "sick") {
-    return "Sick";
-  }
-
-  if (status === "rest") {
-    return "Rest";
-  }
-
-  if (status === "rescheduled") {
-    return "Moved";
-  }
-
-  if (status === "freeze") {
-    return "Freeze";
-  }
-
-  if (status === "complete") {
-    return "Completed";
-  }
-
-  if (status === "in-progress") {
-    return "Today";
-  }
-
-  return "Missed";
-}
-
 function TimelineDayRow({
   day,
   isSelected,
@@ -175,9 +144,13 @@ function TimelineDayRow({
 }) {
   const percent = getDailyCompletionPercent(day);
   const status = getActivityStatus(day.summary, isToday);
-  const missedHabits = day.habits
-    .filter((habit) => habit.frequency === "daily" && !habit.completed)
-    .map((habit) => habit.name);
+  const missedHabits: string[] = [];
+
+  for (const habit of day.habits) {
+    if (habit.frequency === "daily" && !habit.completed) {
+      missedHabits.push(habit.name);
+    }
+  }
 
   return (
     <button
@@ -200,15 +173,11 @@ function TimelineDayRow({
       <div className="text-muted-foreground">
         {formatFocusMinutes(day.focusMinutes)}
       </div>
-      <Badge
-        className={cn(
-          "justify-self-start",
-          HISTORY_STATUS_UI[status].badgeClassName
-        )}
-        variant="outline"
-      >
-        {getDayStatusLabel(day, isToday)}
-      </Badge>
+      <HistoryStatusBadge
+        className="justify-self-start"
+        isToday={isToday}
+        status={status}
+      />
       <div className="flex justify-end">
         <span className="min-w-5 rounded-md bg-muted px-1.5 py-0.5 text-center text-xs font-medium text-muted-foreground">
           {missedHabits.length}
@@ -397,7 +366,7 @@ export function HistoryPage({
             ) : null}
             {isHistoryLoading ? (
               <div className="rounded-md border border-border/60 bg-muted/25 px-4 py-3 text-sm text-muted-foreground">
-                Loading history...
+                Loading history…
               </div>
             ) : null}
 

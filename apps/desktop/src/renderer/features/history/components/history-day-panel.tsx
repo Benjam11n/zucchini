@@ -12,13 +12,9 @@ import {
 } from "lucide-react";
 
 import { HistoryLongTermGoalChip } from "@/renderer/features/history/components/history-long-term-goal-chip";
-import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
-import {
-  getActivityBadgeLabel,
-  getActivityStatus,
-} from "@/renderer/features/history/lib/history-summary";
+import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
+import { getActivityStatus } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
-import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { StatCard } from "@/renderer/shared/components/ui/stat-card";
@@ -92,16 +88,10 @@ export function HistoryDayPanel({
               </h3>
             </div>
 
-            <Badge
-              className={
-                HISTORY_STATUS_UI[
-                  getActivityStatus(selectedDay.summary, isToday)
-                ].badgeClassName
-              }
-              variant="outline"
-            >
-              {getActivityBadgeLabel(selectedDay.summary, isToday)}
-            </Badge>
+            <HistoryStatusBadge
+              isToday={isToday}
+              status={getActivityStatus(selectedDay.summary, isToday)}
+            />
           </div>
 
           <div className="grid gap-3">

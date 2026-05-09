@@ -1,19 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { HISTORY_STATUS_UI } from "@/renderer/features/history/history-status-ui";
-import {
-  getActivityBadgeLabel,
-  getActivityStatus,
-} from "@/renderer/features/history/lib/history-summary";
+import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
+import { getActivityStatus } from "@/renderer/features/history/lib/history-summary";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
-import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/renderer/shared/components/ui/carousel";
 import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
-import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -61,21 +56,17 @@ export function TodayHistoryCarousel({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  const updateScrollState = useCallback((api: CarouselApi) => {
-    if (!api) {
-      return;
-    }
-
-    setCanScrollPrev(api.canScrollPrev());
-    setCanScrollNext(api.canScrollNext());
-  }, []);
-
   useEffect(() => {
     if (!carouselApi) {
       return;
     }
 
-    updateScrollState(carouselApi);
+    const updateScrollState = () => {
+      setCanScrollPrev(carouselApi.canScrollPrev());
+      setCanScrollNext(carouselApi.canScrollNext());
+    };
+
+    updateScrollState();
     carouselApi.on("reInit", updateScrollState);
     carouselApi.on("select", updateScrollState);
     carouselApi.on("settle", updateScrollState);
@@ -85,7 +76,7 @@ export function TodayHistoryCarousel({
       carouselApi.off("select", updateScrollState);
       carouselApi.off("settle", updateScrollState);
     };
-  }, [carouselApi, updateScrollState]);
+  }, [carouselApi]);
 
   if (!hasLoadedHistorySummary && history.length === 0) {
     return <TodayHistoryCarouselSkeleton />;
@@ -113,8 +104,6 @@ export function TodayHistoryCarousel({
             const dayOfWeek = formatDateKey(day.date, { weekday: "short" });
             const isSelected = day.date === selectedDate;
             const activityStatus = getActivityStatus(day.summary, false);
-            const activityLabel = getActivityBadgeLabel(day.summary, false);
-            const showStatusLabel = activityStatus !== "complete";
 
             return (
               <CarouselItem key={day.date} className="basis-auto pl-2 sm:pl-4">
@@ -133,17 +122,7 @@ export function TodayHistoryCarousel({
                   <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase">
                     {dayOfWeek}
                   </span>
-                  {showStatusLabel ? (
-                    <Badge
-                      className={cn(
-                        "px-1.5 py-0 text-[0.58rem] leading-none",
-                        HISTORY_STATUS_UI[activityStatus].badgeClassName
-                      )}
-                      variant="outline"
-                    >
-                      {activityLabel}
-                    </Badge>
-                  ) : null}
+                  <HistoryStatusBadge compact status={activityStatus} />
                 </button>
               </CarouselItem>
             );
