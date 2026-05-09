@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 
 import { getDailyHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
 import {
+  HabitListEmptyState,
   HabitListCard,
   HabitListItem,
+  HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
 import {
   getHabitCategoryPresentation,
@@ -112,10 +114,9 @@ function HabitChecklistComponent({
       {...progressProps}
     >
       {totalHabits === 0 ? (
-        <div className="rounded-md border border-dashed border-border py-10 text-center">
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-          {_emptyAction ? <div className="mt-4">{_emptyAction}</div> : null}
-        </div>
+        <HabitListEmptyState action={_emptyAction}>
+          {emptyMessage}
+        </HabitListEmptyState>
       ) : null}
 
       {habitsByCategory.map((category) => {
@@ -159,7 +160,7 @@ function HabitChecklistComponent({
             </div>
 
             {/* Habit items */}
-            <div className="grid gap-px">
+            <HabitListRows>
               {category.habits.map((habit) => {
                 const streak = habitStreaks?.[habit.id];
                 const streakProps = streak ? { streak } : {};
@@ -182,7 +183,7 @@ function HabitChecklistComponent({
                   />
                 );
               })}
-            </div>
+            </HabitListRows>
           </div>
         );
       })}

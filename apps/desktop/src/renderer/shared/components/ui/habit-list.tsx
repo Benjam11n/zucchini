@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { Progress } from "@/renderer/shared/components/ui/progress";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 interface HabitListCardProps {
   title: string;
@@ -76,6 +77,35 @@ export function HabitListCard({
       </Card>
     </LazyMotion>
   );
+}
+
+export function HabitListRows({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <div className={cn("grid gap-px", className)}>{children}</div>;
+}
+
+export function HabitListEmptyState({
+  action,
+  children,
+}: {
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-md border border-dashed border-border py-10 text-center">
+      <p className="text-sm text-muted-foreground">{children}</p>
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  );
+}
+
+export function HabitListItemActions({ children }: { children: ReactNode }) {
+  return <div className="flex items-center gap-1">{children}</div>;
 }
 
 export { HabitListItem } from "./habit-list-item";

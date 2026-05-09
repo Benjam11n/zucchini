@@ -7,8 +7,11 @@ import { z } from "zod";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
 import {
+  HabitListEmptyState,
   HabitListCard,
+  HabitListItemActions,
   HabitListItem,
+  HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
 import { Input } from "@/renderer/shared/components/ui/input";
 import {
@@ -162,11 +165,11 @@ export function WindDownPage({
               </form>
 
               {windDownChecklistHabits.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 px-3 py-2.5 text-sm text-muted-foreground">
+                <HabitListEmptyState>
                   No wind down actions yet.
-                </div>
+                </HabitListEmptyState>
               ) : (
-                <div className="grid gap-px">
+                <HabitListRows>
                   {windDownChecklistHabits.map((action) => {
                     const isEditing = editingActionId === action.id;
 
@@ -207,7 +210,7 @@ export function WindDownPage({
                         habit={action}
                         onToggle={onToggleAction}
                         trailingActions={
-                          <>
+                          <HabitListItemActions>
                             <Button
                               onClick={(event) => {
                                 event.preventDefault();
@@ -215,18 +218,18 @@ export function WindDownPage({
                                 setEditingActionId(action.id);
                                 setEditingName(action.name);
                               }}
-                              size="icon"
+                              size="icon-xs"
                               type="button"
                               variant="ghost"
                             >
-                              <Pencil className="size-4" />
+                              <Pencil className="size-3.5" />
                               <span className="sr-only">
                                 Edit {action.name}
                               </span>
                             </Button>
                             <ConfirmIconButton
                               confirmLabel={`Confirm delete ${action.name}`}
-                              icon={<Archive className="size-4" />}
+                              icon={<Archive className="size-3.5" />}
                               idleLabel={`Delete ${action.name}`}
                               onConfirm={async () => {
                                 await runAction(() =>
@@ -234,15 +237,15 @@ export function WindDownPage({
                                 );
                               }}
                               resetKey={action.id}
-                              size="icon"
+                              size="icon-xs"
                               variant="destructive"
                             />
-                          </>
+                          </HabitListItemActions>
                         }
                       />
                     );
                   })}
-                </div>
+                </HabitListRows>
               )}
             </div>
           </HabitListCard>
