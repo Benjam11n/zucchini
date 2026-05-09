@@ -6,6 +6,7 @@ import {
   streakState,
 } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import { APP_CONFIG } from "@/shared/config/app-config";
 import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import type { StreakState } from "@/shared/domain/streak";
@@ -29,7 +30,7 @@ export class SqliteStreakRepository {
         .getDrizzle()
         .insert(streakState)
         .values({
-          availableFreezes: 1,
+          availableFreezes: APP_CONFIG.streaks.initialAvailableFreezes,
           bestStreak: 0,
           currentStreak: 0,
           id: 1,

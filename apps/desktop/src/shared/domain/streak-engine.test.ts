@@ -76,16 +76,16 @@ describe("settleClosedDay behavior", () => {
     });
   });
 
-  it("awards a new freeze on 15-streak milestones", () => {
+  it("awards a new freeze on 7-day streak milestones", () => {
     const result = settleClosedDay(
       {
         availableFreezes: 0,
-        bestStreak: 14,
-        currentStreak: 14,
+        bestStreak: 6,
+        currentStreak: 6,
       },
       {
         allCompleted: true,
-        completedAt: "2026-03-15T22:00:00.000",
+        completedAt: "2026-03-07T22:00:00.000",
         dayStatus: null,
       }
     );
@@ -93,9 +93,59 @@ describe("settleClosedDay behavior", () => {
     expect(result).toStrictEqual({
       allCompleted: true,
       availableFreezes: 1,
-      bestStreak: 15,
-      completedAt: "2026-03-15T22:00:00.000",
-      currentStreak: 15,
+      bestStreak: 7,
+      completedAt: "2026-03-07T22:00:00.000",
+      currentStreak: 7,
+      dayStatus: null,
+      freezeUsed: false,
+    });
+  });
+
+  it("awards an extra freeze on 30-day streak milestones", () => {
+    const result = settleClosedDay(
+      {
+        availableFreezes: 1,
+        bestStreak: 29,
+        currentStreak: 29,
+      },
+      {
+        allCompleted: true,
+        completedAt: "2026-03-30T22:00:00.000",
+        dayStatus: null,
+      }
+    );
+
+    expect(result).toStrictEqual({
+      allCompleted: true,
+      availableFreezes: 2,
+      bestStreak: 30,
+      completedAt: "2026-03-30T22:00:00.000",
+      currentStreak: 30,
+      dayStatus: null,
+      freezeUsed: false,
+    });
+  });
+
+  it("stacks weekly and monthly freeze awards on shared milestones", () => {
+    const result = settleClosedDay(
+      {
+        availableFreezes: 0,
+        bestStreak: 209,
+        currentStreak: 209,
+      },
+      {
+        allCompleted: true,
+        completedAt: "2026-07-29T22:00:00.000",
+        dayStatus: null,
+      }
+    );
+
+    expect(result).toStrictEqual({
+      allCompleted: true,
+      availableFreezes: 2,
+      bestStreak: 210,
+      completedAt: "2026-07-29T22:00:00.000",
+      currentStreak: 210,
       dayStatus: null,
       freezeUsed: false,
     });
@@ -114,7 +164,7 @@ describe("previewOpenDay behavior", () => {
     );
 
     expect(result).toStrictEqual({
-      availableFreezes: 1,
+      availableFreezes: 2,
       bestStreak: 8,
       currentStreak: 7,
     });

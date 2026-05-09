@@ -6,7 +6,7 @@ import type { DayStatusKind } from "./day-status";
  * completed, missed, or saved by a freeze?" without depending on UI or
  * persistence code.
  */
-import { awardedFreezeForStreak } from "./freeze";
+import { awardedFreezeCountForStreak } from "./freeze";
 
 interface RollingStreakState {
   currentStreak: number;
@@ -49,7 +49,7 @@ export function settleClosedDay(
     const currentStreak = state.currentStreak + 1;
     const bestStreak = Math.max(state.bestStreak, currentStreak);
     const availableFreezes =
-      state.availableFreezes + Number(awardedFreezeForStreak(currentStreak));
+      state.availableFreezes + awardedFreezeCountForStreak(currentStreak);
 
     return {
       allCompleted: true,
@@ -102,7 +102,7 @@ export function previewOpenDay(
 
   return {
     availableFreezes:
-      state.availableFreezes + Number(awardedFreezeForStreak(currentStreak)),
+      state.availableFreezes + awardedFreezeCountForStreak(currentStreak),
     bestStreak: Math.max(state.bestStreak, currentStreak),
     currentStreak,
   };

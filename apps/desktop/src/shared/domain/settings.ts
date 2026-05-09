@@ -1,3 +1,4 @@
+import { APP_CONFIG } from "@/shared/config/app-config";
 import type { HabitCategory } from "@/shared/domain/habit";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
@@ -59,21 +60,8 @@ export type HabitCategoryPreferences = Record<
   HabitCategoryMetadata
 >;
 
-const DEFAULT_REMINDER_TIME = "20:30";
-const DEFAULT_WIND_DOWN_TIME = "21:30";
-export const DEFAULT_REMINDER_SNOOZE_MINUTES = 15;
-export const DEFAULT_FOCUS_DURATION_SECONDS = 45 * 60;
-const DEFAULT_FOCUS_SHORT_BREAK_SECONDS = 10 * 60;
-const DEFAULT_FOCUS_LONG_BREAK_SECONDS = 30 * 60;
-const DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK = 2;
-const MIN_REMINDER_SNOOZE_MINUTES = 1;
-const MAX_REMINDER_SNOOZE_MINUTES = 240;
-const MIN_FOCUS_DURATION_SECONDS = 1;
-const MAX_FOCUS_DURATION_SECONDS = 60 * 60;
-const MIN_FOCUS_BREAK_SECONDS = 1;
-const MAX_FOCUS_BREAK_SECONDS = 60 * 60;
-const MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK = 1;
-const MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK = 12;
+export const DEFAULT_REMINDER_SNOOZE_MINUTES =
+  APP_CONFIG.reminders.defaultSnoozeMinutes;
 const MAX_GLOBAL_SHORTCUT_LENGTH = 100;
 const GLOBAL_SHORTCUT_MODIFIERS = new Set([
   "alt",
@@ -176,10 +164,10 @@ export function createDefaultFocusTimerShortcutSettings(
 
 export function createDefaultPomodoroTimerSettings(): PomodoroTimerSettings {
   return {
-    focusCyclesBeforeLongBreak: DEFAULT_FOCUS_CYCLES_BEFORE_LONG_BREAK,
-    focusDefaultDurationSeconds: DEFAULT_FOCUS_DURATION_SECONDS,
-    focusLongBreakSeconds: DEFAULT_FOCUS_LONG_BREAK_SECONDS,
-    focusShortBreakSeconds: DEFAULT_FOCUS_SHORT_BREAK_SECONDS,
+    focusCyclesBeforeLongBreak: APP_CONFIG.focus.defaultCyclesBeforeLongBreak,
+    focusDefaultDurationSeconds: APP_CONFIG.focus.defaultDurations.focusSeconds,
+    focusLongBreakSeconds: APP_CONFIG.focus.defaultDurations.longBreakSeconds,
+    focusShortBreakSeconds: APP_CONFIG.focus.defaultDurations.shortBreakSeconds,
   };
 }
 
@@ -204,11 +192,11 @@ export function createDefaultAppSettings(timezone: string): AppSettings {
     launchAtLogin: false,
     minimizeToTray: false,
     reminderEnabled: true,
-    reminderSnoozeMinutes: DEFAULT_REMINDER_SNOOZE_MINUTES,
-    reminderTime: DEFAULT_REMINDER_TIME,
+    reminderSnoozeMinutes: APP_CONFIG.reminders.defaultSnoozeMinutes,
+    reminderTime: APP_CONFIG.reminders.defaultTime,
     themeMode: "system",
     timezone,
-    windDownTime: DEFAULT_WIND_DOWN_TIME,
+    windDownTime: APP_CONFIG.windDown.defaultTime,
   };
 }
 
@@ -346,32 +334,32 @@ export function isValidReminderTime(value: string): boolean {
 export function isValidReminderSnoozeMinutes(value: number): boolean {
   return (
     Number.isInteger(value) &&
-    value >= MIN_REMINDER_SNOOZE_MINUTES &&
-    value <= MAX_REMINDER_SNOOZE_MINUTES
+    value >= APP_CONFIG.reminders.snoozeRange.min &&
+    value <= APP_CONFIG.reminders.snoozeRange.max
   );
 }
 
 export function isValidFocusDurationSeconds(value: number): boolean {
   return (
     Number.isInteger(value) &&
-    value >= MIN_FOCUS_DURATION_SECONDS &&
-    value <= MAX_FOCUS_DURATION_SECONDS
+    value >= APP_CONFIG.focus.durationRanges.focusSeconds.min &&
+    value <= APP_CONFIG.focus.durationRanges.focusSeconds.max
   );
 }
 
 export function isValidFocusBreakDurationSeconds(value: number): boolean {
   return (
     Number.isInteger(value) &&
-    value >= MIN_FOCUS_BREAK_SECONDS &&
-    value <= MAX_FOCUS_BREAK_SECONDS
+    value >= APP_CONFIG.focus.durationRanges.breakSeconds.min &&
+    value <= APP_CONFIG.focus.durationRanges.breakSeconds.max
   );
 }
 
 export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
   return (
     Number.isInteger(value) &&
-    value >= MIN_FOCUS_CYCLES_BEFORE_LONG_BREAK &&
-    value <= MAX_FOCUS_CYCLES_BEFORE_LONG_BREAK
+    value >= APP_CONFIG.focus.cyclesRange.min &&
+    value <= APP_CONFIG.focus.cyclesRange.max
   );
 }
 
