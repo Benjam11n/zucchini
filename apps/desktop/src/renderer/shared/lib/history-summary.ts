@@ -1,16 +1,5 @@
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
-import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
-
-interface HistoryStats {
-  completedDays: number;
-  completionRate: number;
-  freezeDays: number;
-  missedDays: number;
-  rescheduledDays: number;
-  restDays: number;
-  sickDays: number;
-}
 
 export function getActivityStatus(
   summary: DailySummary,
@@ -70,43 +59,6 @@ export function getActivityBadgeLabel(
   }
 
   return "Missed";
-}
-
-export function getHistoryStats(history: HistoryDay[]): HistoryStats {
-  const completedDays = history.filter(
-    (day) => day.summary.allCompleted
-  ).length;
-  const freezeDays = history.filter((day) => day.summary.freezeUsed).length;
-  const sickDays = history.filter(
-    (day) => day.summary.dayStatus === "sick"
-  ).length;
-  const restDays = history.filter(
-    (day) => day.summary.dayStatus === "rest"
-  ).length;
-  const rescheduledDays = history.filter(
-    (day) => day.summary.dayStatus === "rescheduled"
-  ).length;
-  const missedDays =
-    history.length -
-    completedDays -
-    freezeDays -
-    sickDays -
-    restDays -
-    rescheduledDays;
-  const completionRate =
-    history.length === 0
-      ? 0
-      : Math.round((completedDays / history.length) * 100);
-
-  return {
-    completedDays,
-    completionRate,
-    freezeDays,
-    missedDays,
-    rescheduledDays,
-    restDays,
-    sickDays,
-  };
 }
 
 export function getHistoryDayLookup<T extends { date: string }>(

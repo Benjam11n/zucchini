@@ -5,7 +5,6 @@ import {
   getActivityBadgeLabel,
   getActivityStatus,
   getHistoryDayLookup,
-  getHistoryStats,
 } from "./history-summary";
 
 function createHistoryDay(
@@ -30,36 +29,6 @@ function createHistoryDay(
 }
 
 describe("history summary", () => {
-  it("counts complete, freeze, and missed days separately", () => {
-    const history = [
-      createHistoryDay("2026-03-02", { allCompleted: true }),
-      createHistoryDay("2026-03-03", { freezeUsed: true }),
-      createHistoryDay("2026-03-04"),
-    ];
-
-    expect(getHistoryStats(history)).toStrictEqual({
-      completedDays: 1,
-      completionRate: 33,
-      freezeDays: 1,
-      missedDays: 1,
-      rescheduledDays: 0,
-      restDays: 0,
-      sickDays: 0,
-    });
-  });
-
-  it("returns zero stats for empty history", () => {
-    expect(getHistoryStats([])).toStrictEqual({
-      completedDays: 0,
-      completionRate: 0,
-      freezeDays: 0,
-      missedDays: 0,
-      rescheduledDays: 0,
-      restDays: 0,
-      sickDays: 0,
-    });
-  });
-
   it("creates a date lookup and preserves the date key", () => {
     const history = [createHistoryDay("2026-03-08")];
     const lookup = getHistoryDayLookup(history);

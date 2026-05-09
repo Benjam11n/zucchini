@@ -82,7 +82,7 @@ export function addDays(dateKey: string, days: number): string {
   return toDateKey(next);
 }
 
-export function addMonths(dateKey: string, months: number): string {
+function addMonths(dateKey: string, months: number): string {
   const next = parseDateKey(dateKey);
   next.setMonth(next.getMonth() + months, 1);
   return toDateKey(next);
