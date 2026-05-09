@@ -198,14 +198,25 @@ export function HabitManagementList({
     autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
   }
 
-  const habitSections = HABIT_FREQUENCY_SECTIONS.map((section) => ({
-    ...section,
-    habits: habits.filter((habit) => habit.frequency === section.frequency),
-  })).filter(
-    (section) =>
-      section.habits.length > 0 ||
+  const habitSections: ((typeof HABIT_FREQUENCY_SECTIONS)[number] & {
+    habits: typeof habits;
+  })[] = [];
+
+  for (const section of HABIT_FREQUENCY_SECTIONS) {
+    const sectionHabits = habits.filter(
+      (habit) => habit.frequency === section.frequency
+    );
+
+    if (
+      sectionHabits.length > 0 ||
       recentArchivedHabit?.frequency === section.frequency
-  );
+    ) {
+      habitSections.push({
+        ...section,
+        habits: sectionHabits,
+      });
+    }
+  }
 
   return (
     <div

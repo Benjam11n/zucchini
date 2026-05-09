@@ -7,12 +7,12 @@ import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
 interface FocusTimerActionsProps {
   durationDraft: { minutesInput: string; secondsInput: string };
   focusDurationMs: number;
-  isBreak: boolean;
-  isIdle: boolean;
-  isPaused: boolean;
-  isRunning: boolean;
   primaryActionLabel: string;
-  skipBreakLabel: string;
+  secondaryAction: {
+    kind: "reset" | "skip-break";
+    label: string;
+  } | null;
+  status: "idle" | "paused" | "running";
   commitDuration: (durationSeconds: number) => number;
   onPause: () => void;
   onReset: () => void;
@@ -24,12 +24,9 @@ interface FocusTimerActionsProps {
 export function FocusTimerActions({
   durationDraft,
   focusDurationMs,
-  isBreak,
-  isIdle,
-  isPaused,
-  isRunning,
   primaryActionLabel,
-  skipBreakLabel,
+  secondaryAction,
+  status,
   commitDuration,
   onPause,
   onReset,
@@ -37,6 +34,10 @@ export function FocusTimerActions({
   onSkipBreak,
   onStart,
 }: FocusTimerActionsProps) {
+  const isIdle = status === "idle";
+  const isPaused = status === "paused";
+  const isRunning = status === "running";
+
   function handlePrimaryAction() {
     if (isPaused) {
       onResume();
@@ -82,25 +83,27 @@ export function FocusTimerActions({
         </Button>
       ) : null}
 
-      {isIdle ? null : (
+      {secondaryAction ? (
         <Button
           className="h-11 min-w-36 px-6 text-base"
-          onClick={isBreak ? onSkipBreak : onReset}
+          onClick={
+            secondaryAction.kind === "skip-break" ? onSkipBreak : onReset
+          }
           variant="outline"
         >
-          {isBreak ? (
+          {secondaryAction.kind === "skip-break" ? (
             <>
               <SkipForward className="size-4" />
-              {skipBreakLabel}
+              {secondaryAction.label}
             </>
           ) : (
             <>
               <RotateCcw className="size-4" />
-              Reset
+              {secondaryAction.label}
             </>
           )}
         </Button>
-      )}
+      ) : null}
     </div>
   );
 }

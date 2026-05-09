@@ -87,6 +87,18 @@
         "electron-builder.config.ts",
         "scripts/generate-changelog.mjs",
         "scripts/generate-test-data.ts"
+      ],
+      "overrides": [
+        {
+          "files": [
+            "src/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart-impl.tsx",
+            "src/renderer/features/history/weekly-review/components/weekly-review-habit-chart-impl.tsx",
+            "src/renderer/features/history/weekly-review/components/weekly-review-trend-chart-impl.tsx"
+          ],
+          "rules": [
+            "react-doctor/prefer-dynamic-import"
+          ]
+        }
       ]
     }
   }

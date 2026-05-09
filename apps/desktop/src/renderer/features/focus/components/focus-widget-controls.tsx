@@ -9,16 +9,17 @@ const NO_DRAG_REGION_STYLE = {
 } as CSSProperties;
 
 interface FocusWidgetControlsProps {
-  canReset: boolean;
-  canSkipBreak: boolean;
-  canStart: boolean;
   categoryProgress: Parameters<
     typeof HabitActivityRingGlyph
   >[0]["categoryProgress"];
-  isBreak: boolean;
-  isPaused: boolean;
-  isRunning: boolean;
+  controls: {
+    canReset: boolean;
+    canSkipBreak: boolean;
+    canStart: boolean;
+  };
+  phase: "break" | "focus";
   skipBreakLabel: string;
+  status: "idle" | "paused" | "running";
   timerLabel: string;
   timerLabelColorClass: string;
   onClose: () => void;
@@ -29,14 +30,11 @@ interface FocusWidgetControlsProps {
 }
 
 export function FocusWidgetControls({
-  canReset,
-  canSkipBreak,
-  canStart,
   categoryProgress,
-  isBreak,
-  isPaused,
-  isRunning,
+  controls,
+  phase,
   skipBreakLabel,
+  status,
   timerLabel,
   timerLabelColorClass,
   onClose,
@@ -45,6 +43,10 @@ export function FocusWidgetControls({
   onSkipBreak,
   onStartOrResume,
 }: FocusWidgetControlsProps) {
+  const isBreak = phase === "break";
+  const isPaused = status === "paused";
+  const isRunning = status === "running";
+
   return (
     <>
       <div className="flex items-center">
@@ -68,7 +70,7 @@ export function FocusWidgetControls({
         className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1"
         style={NO_DRAG_REGION_STYLE}
       >
-        {canStart ? (
+        {controls.canStart ? (
           <Button
             aria-label={isPaused ? "Resume timer" : "Start timer"}
             onClick={onStartOrResume}
@@ -89,7 +91,7 @@ export function FocusWidgetControls({
           </Button>
         ) : null}
 
-        {canReset ? (
+        {controls.canReset ? (
           <Button
             aria-label="Reset timer"
             onClick={onReset}
@@ -100,7 +102,7 @@ export function FocusWidgetControls({
           </Button>
         ) : null}
 
-        {canSkipBreak ? (
+        {controls.canSkipBreak ? (
           <Button
             aria-label={skipBreakLabel}
             onClick={onSkipBreak}

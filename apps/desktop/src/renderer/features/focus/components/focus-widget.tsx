@@ -55,6 +55,24 @@ function getTimerLabelColorClass({
   return "text-foreground";
 }
 
+function getWidgetControlStatus({
+  isPaused,
+  isRunning,
+}: {
+  isPaused: boolean;
+  isRunning: boolean;
+}): "idle" | "paused" | "running" {
+  if (isPaused) {
+    return "paused";
+  }
+
+  if (isRunning) {
+    return "running";
+  }
+
+  return "idle";
+}
+
 function handleClose() {
   window.close();
 }
@@ -73,12 +91,10 @@ export function FocusWidget() {
 
   useEffect(() => {
     const previousBodyView = document.body.dataset["view"];
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousRootOverflow = document.documentElement.style.overflow;
+    const previousRootView = document.documentElement.dataset["view"];
 
     document.body.dataset["view"] = "widget";
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
+    document.documentElement.dataset["view"] = "widget";
 
     return () => {
       if (previousBodyView) {
@@ -86,8 +102,12 @@ export function FocusWidget() {
       } else {
         delete document.body.dataset["view"];
       }
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousRootOverflow;
+
+      if (previousRootView) {
+        document.documentElement.dataset["view"] = previousRootView;
+      } else {
+        delete document.documentElement.dataset["view"];
+      }
     };
   }, []);
 
@@ -108,6 +128,10 @@ export function FocusWidget() {
   const timerLabelColorClass = getTimerLabelColorClass({
     isBreak,
     isLastMinute,
+  });
+  const widgetControlStatus = getWidgetControlStatus({
+    isPaused,
+    isRunning,
   });
 
   function handleStartOrResume() {
@@ -194,19 +218,20 @@ export function FocusWidget() {
           style={DRAG_REGION_STYLE}
         >
           <FocusWidgetControls
-            canReset={canReset}
-            canSkipBreak={canSkipBreak}
-            canStart={canStart}
             categoryProgress={categoryProgress}
-            isBreak={isBreak}
-            isPaused={isPaused}
-            isRunning={isRunning}
+            controls={{
+              canReset,
+              canSkipBreak,
+              canStart,
+            }}
             onClose={handleClose}
             onPause={handlePause}
             onReset={handleReset}
             onSkipBreak={handleSkipBreak}
             onStartOrResume={handleStartOrResume}
+            phase={isBreak ? "break" : "focus"}
             skipBreakLabel={skipBreakLabel}
+            status={widgetControlStatus}
             timerLabel={formatTimerLabel(timerState.remainingMs)}
             timerLabelColorClass={timerLabelColorClass}
           />

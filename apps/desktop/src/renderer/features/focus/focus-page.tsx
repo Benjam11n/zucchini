@@ -72,6 +72,22 @@ function FocusPageComponent({
       timerState,
     });
   };
+  const handleSkipBreak = () => {
+    clearFocusSaveError();
+    setTimerState(
+      skipBreakFocusTimerState(timerState, defaultFocusDurationMs, new Date())
+    );
+  };
+  const handleStart = (focusDurationMs: number) => {
+    clearFocusSaveError();
+    setTimerState(
+      createRunningFocusTimerState(
+        new Date(),
+        focusDurationMs,
+        timerState.completedFocusCycles
+      )
+    );
+  };
 
   return (
     <div className="grid gap-6">
@@ -107,26 +123,8 @@ function FocusPageComponent({
           onReset={handleReset}
           onResume={() => setTimerState(resumeFocusTimerState(timerState))}
           onShowWidget={onShowWidget}
-          onSkipBreak={() => {
-            clearFocusSaveError();
-            setTimerState(
-              skipBreakFocusTimerState(
-                timerState,
-                defaultFocusDurationMs,
-                new Date()
-              )
-            );
-          }}
-          onStart={(focusDurationMs) => {
-            clearFocusSaveError();
-            setTimerState(
-              createRunningFocusTimerState(
-                new Date(),
-                focusDurationMs,
-                timerState.completedFocusCycles
-              )
-            );
-          }}
+          onSkipBreak={handleSkipBreak}
+          onStart={handleStart}
         />
       </div>
       <FocusSessionList

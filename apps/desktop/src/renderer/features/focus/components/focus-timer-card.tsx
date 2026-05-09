@@ -39,6 +39,7 @@ interface FocusTimerCardProps {
 
 const MAX_CYCLES = 12;
 const MIN_CYCLES = 1;
+type FocusTimerActionStatus = "idle" | "paused" | "running";
 
 function createDurationDraft(focusDurationMs: number): {
   minutesInput: string;
@@ -51,6 +52,24 @@ function createDurationDraft(focusDurationMs: number): {
     minutesInput,
     secondsInput,
   };
+}
+
+function getTimerActionStatus({
+  isPaused,
+  isRunning,
+}: {
+  isPaused: boolean;
+  isRunning: boolean;
+}): FocusTimerActionStatus {
+  if (isPaused) {
+    return "paused";
+  }
+
+  if (isRunning) {
+    return "running";
+  }
+
+  return "idle";
 }
 
 export function FocusTimerCard({
@@ -89,6 +108,13 @@ export function FocusTimerCard({
   const canEditDuration = isIdle && !isBreak;
   const skipBreakLabel = getSkipBreakLabel(timerState);
   const primaryActionLabel = isPaused ? "Resume" : "Start";
+  const timerActionStatus = getTimerActionStatus({ isPaused, isRunning });
+  const secondaryAction = isIdle
+    ? null
+    : ({
+        kind: isBreak ? "skip-break" : "reset",
+        label: isBreak ? skipBreakLabel : "Reset",
+      } as const);
   const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
   const [durationDraft, setDurationDraft] = useState(() =>
     createDurationDraft(timerState.focusDurationMs)
@@ -193,17 +219,14 @@ export function FocusTimerCard({
           commitDuration={commitDuration}
           durationDraft={durationDraft}
           focusDurationMs={timerState.focusDurationMs}
-          isBreak={isBreak}
-          isIdle={isIdle}
-          isPaused={isPaused}
-          isRunning={isRunning}
           onPause={onPause}
           onReset={onReset}
           onResume={onResume}
           onSkipBreak={onSkipBreak}
           onStart={onStart}
           primaryActionLabel={primaryActionLabel}
-          skipBreakLabel={skipBreakLabel}
+          secondaryAction={secondaryAction}
+          status={timerActionStatus}
         />
       </CardContent>
     </Card>
