@@ -4,6 +4,7 @@
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
+    "assets:process": "tsx scripts/process-mascots.ts",
     "db:generate": "drizzle-kit generate",
     "rebuild:native": "node scripts/install-native-deps.mjs",
     "dev": "concurrently -k \"pnpm run dev:renderer\" \"pnpm run dev:bundle\" \"pnpm run dev:electron\"",
@@ -79,5 +80,14 @@
   },
   "engines": {
     "node": "24.x"
+  },
+  "reactDoctor": {
+    "ignore": {
+      "files": [
+        "electron-builder.config.ts",
+        "scripts/generate-changelog.mjs",
+        "scripts/generate-test-data.ts"
+      ]
+    }
   }
 }

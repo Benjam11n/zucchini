@@ -6,7 +6,7 @@ export function ChartSectionFallback() {
     <Card>
       <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
         <Spinner className="size-4 text-primary/70" />
-        Loading chart...
+        Loading chart…
       </CardContent>
     </Card>
   );

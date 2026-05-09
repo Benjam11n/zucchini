@@ -68,7 +68,7 @@ function FocusRunBadges({ session }: { session: FocusHistorySessionView }) {
       {session.hasPausedTime ? (
         <Badge
           variant="outline"
-          className="rounded-full border-slate-400/50 text-slate-600"
+          className="rounded-full border-border text-muted-foreground"
         >
           Paused
         </Badge>
@@ -150,7 +150,7 @@ export function FocusRunCard({ session }: FocusRunCardProps) {
 
   return (
     <div
-      className="space-y-4 rounded-md border border-border/60 bg-muted/20 px-4 py-4"
+      className="space-y-4 rounded-md border border-border/60 bg-muted/20 p-4"
       data-session-date={session.date}
       data-testid="focus-session-card"
     >

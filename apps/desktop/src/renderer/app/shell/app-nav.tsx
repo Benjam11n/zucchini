@@ -97,7 +97,7 @@ export function AppNav() {
           </TabsList>
 
           <Card>
-            <CardHeader className="px-0 py-0 text-right">
+            <CardHeader className="p-0 text-right">
               <CardTitle className="text-base font-black tracking-tight text-foreground">
                 Zucchini
               </CardTitle>

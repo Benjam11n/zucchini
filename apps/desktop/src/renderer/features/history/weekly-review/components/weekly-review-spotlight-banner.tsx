@@ -15,7 +15,7 @@ export function WeeklyReviewSpotlightBanner({
   review,
 }: WeeklyReviewSpotlightBannerProps) {
   return (
-    <div className="rounded-md border border-primary/20 bg-primary/8 px-3 py-3 text-sm shadow-xs">
+    <div className="rounded-md border border-primary/20 bg-primary/8 p-3 text-sm shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div className="mt-0.5 rounded-md bg-primary/12 p-1.5 text-primary">

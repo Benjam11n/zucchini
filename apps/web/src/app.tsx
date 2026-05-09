@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 
 import { latestReleaseUrl } from "./constants";
+import { formatPreviewDate, getCopyrightYear } from "./date";
 import PixelBlast from "./pixel-blast";
+
+const previewDateLabel = formatPreviewDate(new Date());
+const copyrightYear = getCopyrightYear(new Date());
 
 export default function App() {
   return (
@@ -321,13 +325,7 @@ export default function App() {
                         <CalendarDays size={16} />
                       </span>
                       <div>
-                        <strong>
-                          {new Date().toLocaleDateString("en-US", {
-                            day: "numeric",
-                            month: "short",
-                            weekday: "short",
-                          })}
-                        </strong>
+                        <strong>{previewDateLabel}</strong>
                         <small>DATE</small>
                       </div>
                     </div>
@@ -413,9 +411,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <p>
-          &copy; {new Date().getFullYear()} Zucchini. Built for individuals.
-        </p>
+        <p>&copy; {copyrightYear} Zucchini. Built for individuals.</p>
       </footer>
     </div>
   );

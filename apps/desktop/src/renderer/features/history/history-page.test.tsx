@@ -399,7 +399,7 @@ describe("history page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
-    expect(screen.getByText("Building weekly review...")).toBeInTheDocument();
+    expect(screen.getByText("Building weekly review…")).toBeInTheDocument();
   });
 
   it("renders the latest weekly review and any non-blocking weekly review error", () => {

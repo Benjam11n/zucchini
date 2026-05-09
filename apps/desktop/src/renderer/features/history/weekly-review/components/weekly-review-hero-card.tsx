@@ -80,7 +80,7 @@ export function WeeklyReviewHeroCard({
             </div>
 
             <div className="flex items-baseline gap-3">
-              <h2 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
+              <h2 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
                 {review.completionRate}%
               </h2>
               <p className="text-sm text-muted-foreground">completion rate</p>

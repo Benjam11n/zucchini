@@ -139,8 +139,12 @@ export function registerAppUpdater({
   let isCheckingForUpdates = false;
   let state = createInitialState(currentVersion, supportMode);
 
-  function setState(nextState: AppUpdateState): void {
-    state = nextState;
+  function setState(
+    nextState:
+      | AppUpdateState
+      | ((currentState: AppUpdateState) => AppUpdateState)
+  ): void {
+    state = typeof nextState === "function" ? nextState(state) : nextState;
     broadcastState(state);
   }
 
@@ -164,19 +168,19 @@ export function registerAppUpdater({
       log.error("Failed to check for updates.", error);
 
       if (state.availableVersion === null) {
-        setState({
-          ...state,
+        setState((currentState) => ({
+          ...currentState,
           errorMessage: null,
           progressPercent: null,
           status: "idle",
-        });
+        }));
       } else {
-        setState({
-          ...state,
+        setState((currentState) => ({
+          ...currentState,
           errorMessage: toErrorMessage(),
           progressPercent: null,
           status: "error",
-        });
+        }));
       }
     } finally {
       isCheckingForUpdates = false;
@@ -240,12 +244,12 @@ export function registerAppUpdater({
   updater.logger = log;
 
   updater.on("checking-for-update", () => {
-    setState({
-      ...state,
+    setState((currentState) => ({
+      ...currentState,
       errorMessage: null,
       progressPercent: null,
       status: "checking",
-    });
+    }));
   });
   updater.on("update-available", (info) => {
     const nextInfo = info as UpdateInfo;
@@ -261,12 +265,12 @@ export function registerAppUpdater({
   updater.on("download-progress", (progress) => {
     const nextProgress = progress as ProgressInfo;
 
-    setState({
-      ...state,
+    setState((currentState) => ({
+      ...currentState,
       errorMessage: null,
       progressPercent: toRoundedProgress(nextProgress.percent),
       status: "downloading",
-    });
+    }));
   });
   updater.on("update-downloaded", (info) => {
     const nextInfo = info as UpdateInfo;
@@ -292,12 +296,12 @@ export function registerAppUpdater({
     log.error("Auto-updater emitted an error.", error);
 
     if (state.availableVersion === null) {
-      setState({
-        ...state,
+      setState((currentState) => ({
+        ...currentState,
         errorMessage: null,
         progressPercent: null,
         status: "idle",
-      });
+      }));
       return;
     }
 
@@ -306,12 +310,12 @@ export function registerAppUpdater({
       return;
     }
 
-    setState({
-      ...state,
+    setState((currentState) => ({
+      ...currentState,
       errorMessage: toErrorMessage(),
       progressPercent: null,
       status: "error",
-    });
+    }));
   });
 
   return {

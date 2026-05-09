@@ -63,7 +63,7 @@ export function FocusSessionList({
         {phase === "loading" && sessions.length === 0 ? (
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Spinner className="size-4 text-primary/70" />
-            Loading recent focus sessions...
+            Loading recent focus sessions…
           </div>
         ) : null}
 

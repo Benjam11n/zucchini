@@ -214,7 +214,7 @@ describe("focus session list", () => {
     );
 
     expect(
-      screen.getByText("Loading recent focus sessions...")
+      screen.getByText("Loading recent focus sessions…")
     ).toBeInTheDocument();
 
     rerender(

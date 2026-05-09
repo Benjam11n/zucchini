@@ -46,7 +46,7 @@ export function TodayHabitManagerDialog({
           </VisuallyHidden.Root>
         </DialogHeader>
 
-        <div className="min-h-0 overflow-y-auto px-6 py-6">
+        <div className="min-h-0 overflow-y-auto p-6">
           <div className="grid gap-3">
             <HabitManagementContent {...props} />
           </div>

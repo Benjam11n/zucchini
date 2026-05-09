@@ -176,8 +176,10 @@ export function createTodayActions({
 
   async function refreshToday(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
-    await reloadAll(nextTodayState);
-    await refreshWeeklyReviewOverview();
+    await Promise.all([
+      reloadAll(nextTodayState),
+      refreshWeeklyReviewOverview(),
+    ]);
   }
 
   async function refreshForNewDay() {

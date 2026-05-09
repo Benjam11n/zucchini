@@ -62,7 +62,7 @@ export function WeeklyReviewSection({
       <Card>
         <CardContent className="flex items-center gap-3 px-6 py-8 text-sm text-muted-foreground">
           <Spinner className="size-4 text-primary/70" />
-          Building weekly review...
+          Building weekly review…
         </CardContent>
       </Card>
     );

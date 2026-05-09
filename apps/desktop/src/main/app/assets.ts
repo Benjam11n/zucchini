@@ -2,7 +2,7 @@ import path from "node:path";
 
 import { app } from "electron";
 
-export function resolveMainAssetPath(...segments: string[]): string {
+function resolveMainAssetPath(...segments: string[]): string {
   return path.join(app.getAppPath(), ...segments);
 }
 

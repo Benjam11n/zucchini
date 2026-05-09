@@ -60,7 +60,7 @@ export function PomodoroSettingsFields({
 
   return (
     <ItemGroup className="gap-3">
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label
             htmlFor={`${idPrefix}-focus-minutes`}
@@ -96,7 +96,7 @@ export function PomodoroSettingsFields({
         </p>
       ) : null}
 
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label
             htmlFor={`${idPrefix}-short-break-minutes`}
@@ -132,7 +132,7 @@ export function PomodoroSettingsFields({
         </p>
       ) : null}
 
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label
             htmlFor={`${idPrefix}-long-break-minutes`}
@@ -168,7 +168,7 @@ export function PomodoroSettingsFields({
         </p>
       ) : null}
 
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label htmlFor={`${idPrefix}-cycles`} className="text-sm font-medium">
             Long break after
@@ -209,7 +209,7 @@ export function PomodoroSettingsFields({
         </p>
       ) : null}
 
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label
             htmlFor={`${idPrefix}-toggle-shortcut`}
@@ -258,7 +258,7 @@ export function PomodoroSettingsFields({
         </p>
       ) : null}
 
-      <Item className="px-0 py-0">
+      <Item className="p-0">
         <ItemContent>
           <Label
             htmlFor={`${idPrefix}-reset-shortcut`}
