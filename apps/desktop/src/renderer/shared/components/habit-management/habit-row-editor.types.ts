@@ -7,7 +7,7 @@ import type { HabitManagementCardProps } from "./habit-management.types";
 
 export const HABIT_DRAG_DATA_TYPE = "text/plain";
 
-export type HabitRowDragState = {
+type HabitRowDragState = {
   draggedHabitId: number;
   overHabitId: number;
   position: "after" | "before";

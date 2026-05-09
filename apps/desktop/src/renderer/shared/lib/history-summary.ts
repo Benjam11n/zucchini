@@ -2,7 +2,7 @@ import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { HistoryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 
-export interface HistoryStats {
+interface HistoryStats {
   completedDays: number;
   completionRate: number;
   freezeDays: number;

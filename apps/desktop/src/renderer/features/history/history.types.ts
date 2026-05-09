@@ -1,4 +1,3 @@
-import type { HistoryStats } from "@/renderer/shared/lib/history-summary";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 /**
  * History page type definitions.
@@ -56,5 +55,3 @@ export interface ContributionWeek {
   cells: ContributionCell[];
   key: string;
 }
-
-export type { HistoryStats };
