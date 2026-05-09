@@ -216,6 +216,11 @@ describe("createDataManagementActions()", () => {
 
   it("returns the CSV export folder path on successful export", async () => {
     const mocks = createMocks();
+    const exportFolderPath = path.join(
+      "/tmp",
+      "exports",
+      "zucchini-csv-export-20260330"
+    );
     mocks.dialog.showOpenDialog.mockResolvedValue({
       canceled: false,
       filePaths: ["/tmp/exports"],
@@ -223,9 +228,9 @@ describe("createDataManagementActions()", () => {
 
     const result = await mocks.actions.exportCsvData();
 
-    expect(result).toBe("/tmp/exports/zucchini-csv-export-20260330");
+    expect(result).toBe(exportFolderPath);
     expect(mocks.repository.exportCsvData).toHaveBeenCalledWith(
-      "/tmp/exports/zucchini-csv-export-20260330"
+      exportFolderPath
     );
   });
 
