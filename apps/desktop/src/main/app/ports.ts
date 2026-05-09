@@ -35,6 +35,7 @@ export type DataManagementDialogPort = Pick<
 
 export interface DataManagementRepositoryPort {
   exportBackup(destinationPath: string): Promise<void>;
+  exportCsvData(destinationPath: string): void;
   getDatabasePath(): string;
   replaceDatabase(sourcePath: string): void;
   resetDatabase(): void;

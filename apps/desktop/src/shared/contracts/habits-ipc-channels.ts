@@ -5,6 +5,7 @@ export const HABITS_IPC_CHANNELS = {
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
   claimFocusTimerLeadership: "habits:claimFocusTimerLeadership",
   exportBackup: "habits:exportBackup",
+  exportCsvData: "habits:exportCsvData",
   focusSessionRecorded: "habits:focusSessionRecorded",
   focusTimerActionRequested: "habits:focusTimerActionRequested",
   focusTimerShortcutStatusChanged: "habits:focusTimerShortcutStatusChanged",

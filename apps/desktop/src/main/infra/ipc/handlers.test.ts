@@ -163,6 +163,7 @@ function createRegisterOptions(
     })),
     onClearData: vi.fn(() => Promise.resolve(true)),
     onExportBackup: vi.fn(() => Promise.resolve(null)),
+    onExportCsvData: vi.fn(() => Promise.resolve(null)),
     onImportBackup: vi.fn(() => Promise.resolve(false)),
     onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
     onResizeFocusWidget: vi.fn(),
@@ -632,6 +633,29 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(onExportBackup.mock.calls).toHaveLength(1);
+  });
+
+  it("routes the CSV export action to the provided callback", async () => {
+    resetHandlers();
+    const onExportCsvData = vi.fn(() =>
+      Promise.resolve("/tmp/zucchini-csv-export")
+    );
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onExportCsvData,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.exportCsvData)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: "/tmp/zucchini-csv-export",
+      ok: true,
+    });
+    expect(onExportCsvData.mock.calls).toHaveLength(1);
   });
 
   it("routes the import backup action to the provided callback", async () => {

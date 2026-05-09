@@ -56,6 +56,7 @@ export interface HabitsApi {
     ttlMs: number
   ) => Promise<boolean>;
   exportBackup: () => Promise<string | null>;
+  exportCsvData: () => Promise<string | null>;
   getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
   getFocusTimerShortcutStatus: () => Promise<FocusTimerShortcutStatus>;
   importBackup: () => Promise<boolean>;

@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   Download,
+  FileSpreadsheet,
   FolderOpen,
   HardDriveDownload,
   Trash2,
@@ -28,7 +29,7 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
 
-type DataAction = "clear" | "export" | "import" | "open" | null;
+type DataAction = "clear" | "export" | "exportCsv" | "import" | "open" | null;
 
 function getPathLabel(filePath: string): string {
   return filePath.split(/[/\\]/).at(-1) ?? filePath;
@@ -201,6 +202,26 @@ export function DataManagementSettingsCard() {
 
                   setFeedbackMessage(
                     `Backup exported as ${getPathLabel(exportedPath)}.`
+                  );
+                });
+              }}
+            />
+
+            <DataActionItem
+              description="Save readable CSV files for every Zucchini data table."
+              disabled={activeAction !== null}
+              icon={FileSpreadsheet}
+              label="Export CSV"
+              onClick={async () => {
+                await runAction("exportCsv", async () => {
+                  const exportedPath = await window.habits.exportCsvData();
+
+                  if (exportedPath === null) {
+                    return;
+                  }
+
+                  setFeedbackMessage(
+                    `CSV export saved in ${getPathLabel(exportedPath)}.`
                   );
                 });
               }}

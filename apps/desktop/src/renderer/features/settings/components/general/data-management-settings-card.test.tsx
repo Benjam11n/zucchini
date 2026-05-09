@@ -23,6 +23,9 @@ function setHabitsApi() {
   return installMockHabitsApi({
     clearData: vi.fn(() => Promise.resolve(true)),
     exportBackup: vi.fn(() => Promise.resolve("/tmp/zucchini-backup.db")),
+    exportCsvData: vi.fn(() =>
+      Promise.resolve("/tmp/zucchini-csv-export-20260330")
+    ),
     importBackup: vi.fn(() => Promise.resolve(true)),
     openDataFolder: vi.fn(() =>
       Promise.resolve("/Users/test/Library/Application Support/Zucchini")
@@ -67,6 +70,23 @@ describe("data management settings card", () => {
     await waitFor(() => {
       expect(
         screen.getByText(/backup exported as zucchini-backup\.db/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("exports CSV data from settings", async () => {
+    const habits = setHabitsApi();
+
+    render(<DataManagementSettingsCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: /export csv/i }));
+
+    await waitFor(() => {
+      expect(habits.exportCsvData.mock.calls).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByText(/csv export saved in zucchini-csv-export-20260330/i)
       ).toBeInTheDocument();
     });
   });

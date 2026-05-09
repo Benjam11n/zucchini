@@ -81,6 +81,31 @@ export function createDataManagementActions({
     return filePath;
   }
 
+  async function exportCsvData(): Promise<string | null> {
+    service.initialize();
+
+    const exportFolderName = `zucchini-csv-export-${clock.todayKey().replaceAll("-", "")}`;
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      buttonLabel: "Export CSV",
+      defaultPath: exportFolderName,
+      properties: ["openDirectory", "createDirectory"],
+      title: "Export Zucchini CSV data",
+    });
+
+    const [parentFolderPath] = filePaths;
+
+    if (canceled || !parentFolderPath) {
+      return null;
+    }
+
+    const exportFolderPath =
+      path.basename(parentFolderPath) === exportFolderName
+        ? parentFolderPath
+        : path.join(parentFolderPath, exportFolderName);
+    repository.exportCsvData(exportFolderPath);
+    return exportFolderPath;
+  }
+
   async function importBackup(onBeforeQuit: () => void): Promise<boolean> {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [
@@ -127,6 +152,7 @@ export function createDataManagementActions({
   return {
     clearData,
     exportBackup,
+    exportCsvData,
     importBackup,
     openDataFolder,
   };

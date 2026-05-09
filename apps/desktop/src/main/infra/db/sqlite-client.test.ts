@@ -1,3 +1,7 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
 const DEFAULT_TABLE_ROWS = [
   "daily_summary",
   "day_status",
@@ -92,11 +96,13 @@ function createMockDatabaseConstructor({
   close = vi.fn(),
   columnRowsByTable = {},
   pragma = vi.fn(() => "ok"),
+  rowsByTable = {},
   tableRows = DEFAULT_TABLE_ROWS,
 }: {
   close?: ReturnType<typeof vi.fn>;
   columnRowsByTable?: Record<string, { name: string }[]>;
   pragma?: ReturnType<typeof vi.fn>;
+  rowsByTable?: Record<string, Record<string, unknown>[]>;
   tableRows?: { name: string }[];
 }) {
   const all = vi.fn((..._args: unknown[]) => []);
@@ -110,8 +116,16 @@ function createMockDatabaseConstructor({
             const tableName = statement.match(
               /pragma table_info\("([^"]+)"\)/
             )?.[1];
-            return tableName
-              ? (columnRowsByTable[tableName] ?? DEFAULT_COLUMN_ROWS)
+            if (tableName) {
+              return columnRowsByTable[tableName] ?? DEFAULT_COLUMN_ROWS;
+            }
+
+            const selectedTableName = statement.match(
+              /select \* from "([^"]+)"/
+            )?.[1];
+
+            return selectedTableName
+              ? (rowsByTable[selectedTableName] ?? [])
               : all();
           }),
     })),
@@ -217,6 +231,66 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
 
     expect(() => client.validateDatabase("/tmp/backup.db")).toThrow(
       "Backup is missing the Zucchini settings.timezone column"
+    );
+  });
+});
+
+describe("SqliteDatabaseClient.exportCsvData()", () => {
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "zucchini-csv-test-"));
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  });
+
+  it("exports every user table as stable CSV files", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        columnRowsByTable: {
+          a_empty: [{ name: "name" }, { name: "count" }],
+          z_notes: [{ name: "id" }, { name: "note" }, { name: "optional" }],
+        },
+        rowsByTable: {
+          z_notes: [
+            {
+              id: 1,
+              note: "plain",
+              optional: null,
+            },
+            {
+              id: 2,
+              note: 'comma, quote " and\nnewline',
+              optional: "value",
+            },
+          ],
+        },
+        tableRows: [{ name: "a_empty" }, { name: "z_notes" }],
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: path.join(tempDir, "live.db"),
+    });
+
+    const exportPath = path.join(tempDir, "csv");
+    client.exportCsvData(exportPath);
+    client.close();
+
+    expect(fs.readdirSync(exportPath)).toStrictEqual([
+      "a_empty.csv",
+      "z_notes.csv",
+    ]);
+    expect(fs.readFileSync(path.join(exportPath, "a_empty.csv"), "utf-8")).toBe(
+      "name,count\n"
+    );
+    expect(fs.readFileSync(path.join(exportPath, "z_notes.csv"), "utf-8")).toBe(
+      'id,note,optional\n1,plain,\n2,"comma, quote "" and\nnewline",value\n'
     );
   });
 });

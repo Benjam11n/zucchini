@@ -406,6 +406,7 @@ async function bootstrapApp(): Promise<void> {
           context.markQuitting();
         }),
       onExportBackup: dataManagement.exportBackup,
+      onExportCsvData: dataManagement.exportCsvData,
       onImportBackup: () =>
         dataManagement.importBackup(() => {
           context.markQuitting();

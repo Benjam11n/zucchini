@@ -104,6 +104,7 @@ const habitsApi: HabitsApi = {
   command: <C extends HabitCommand>(command: C) =>
     invokeHabits<ResultForCommand<C>>(HABITS_IPC_CHANNELS.command, command),
   exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
+  exportCsvData: () => invokeHabits(HABITS_IPC_CHANNELS.exportCsvData),
   getDesktopNotificationStatus: () =>
     invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
   getFocusTimerShortcutStatus: () =>

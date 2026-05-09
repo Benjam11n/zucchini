@@ -351,6 +351,19 @@ describe("preload habits API", () => {
     expect(invoke).toHaveBeenCalledWith("habits:exportBackup");
   });
 
+  it("invokes CSV export through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: "/tmp/zucchini-csv-export",
+      ok: true,
+    });
+
+    await expect(getHabitsApi().exportCsvData()).resolves.toBe(
+      "/tmp/zucchini-csv-export"
+    );
+    expect(invoke).toHaveBeenCalledWith("habits:exportCsvData");
+  });
+
   it("invokes clear data through the preload bridge", async () => {
     await loadPreloadModule();
     invoke.mockResolvedValue({

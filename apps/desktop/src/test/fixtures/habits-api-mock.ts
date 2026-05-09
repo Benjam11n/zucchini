@@ -234,6 +234,7 @@ function createMockHabitsApi(
     decrementHabitProgress: vi.fn().mockResolvedValue(EMPTY_HABIT_STATUS_PATCH),
     deleteWindDownAction: vi.fn().mockResolvedValue(null),
     exportBackup: vi.fn().mockResolvedValue(null),
+    exportCsvData: vi.fn().mockResolvedValue(null),
     getDesktopNotificationStatus: vi.fn().mockResolvedValue({
       availability: "available" as const,
       reason: null,

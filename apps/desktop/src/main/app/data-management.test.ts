@@ -10,12 +10,14 @@ const preImportBackupPath = path.join(
 // oxlint-disable-next-line eslint/sort-keys
 function createMocks() {
   const exportBackup = vi.fn(() => Promise.resolve());
+  const exportCsvData = vi.fn();
   const getDatabasePath = vi.fn(() => "/tmp/zucchini.db");
   const replaceDatabase = vi.fn();
   const resetDatabase = vi.fn();
   const validateDatabase = vi.fn();
   const repository = {
     exportBackup,
+    exportCsvData,
     getDatabasePath,
     replaceDatabase,
     resetDatabase,
@@ -210,6 +212,49 @@ describe("createDataManagementActions()", () => {
     expect(repository.exportBackup).toHaveBeenCalledWith(
       "/tmp/zucchini-backup-20260330.db"
     );
+  });
+
+  it("returns the CSV export folder path on successful export", async () => {
+    const mocks = createMocks();
+    mocks.dialog.showOpenDialog.mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/exports"],
+    });
+
+    const result = await mocks.actions.exportCsvData();
+
+    expect(result).toBe("/tmp/exports/zucchini-csv-export-20260330");
+    expect(mocks.repository.exportCsvData).toHaveBeenCalledWith(
+      "/tmp/exports/zucchini-csv-export-20260330"
+    );
+  });
+
+  it("does not nest CSV exports when the selected folder already uses the default name", async () => {
+    const mocks = createMocks();
+    mocks.dialog.showOpenDialog.mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/exports/zucchini-csv-export-20260330"],
+    });
+
+    const result = await mocks.actions.exportCsvData();
+
+    expect(result).toBe("/tmp/exports/zucchini-csv-export-20260330");
+    expect(mocks.repository.exportCsvData).toHaveBeenCalledWith(
+      "/tmp/exports/zucchini-csv-export-20260330"
+    );
+  });
+
+  it("returns null when the user cancels the CSV export dialog", async () => {
+    const mocks = createMocks();
+    mocks.dialog.showOpenDialog.mockResolvedValue({
+      canceled: true,
+      filePaths: [],
+    });
+
+    const result = await mocks.actions.exportCsvData();
+
+    expect(result).toBeNull();
+    expect(mocks.repository.exportCsvData).not.toHaveBeenCalled();
   });
 
   it("returns null when the user cancels the save dialog", async () => {

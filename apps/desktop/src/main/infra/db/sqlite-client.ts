@@ -141,8 +141,31 @@ interface TableInfoRow {
   name: string;
 }
 
+type CsvCellValue = bigint | Buffer | null | number | string;
+type CsvRow = Record<string, CsvCellValue>;
+
 function quoteSqlIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
+}
+
+function serializeCsvCell(value: CsvCellValue): string {
+  if (value === null) {
+    return "";
+  }
+
+  const text = Buffer.isBuffer(value)
+    ? value.toString("base64")
+    : String(value);
+
+  if (!/[",\r\n]/.test(text)) {
+    return text;
+  }
+
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function serializeCsvRow(values: CsvCellValue[]): string {
+  return values.map(serializeCsvCell).join(",");
 }
 
 function runWithDatabaseError<A>(label: string, execute: () => A): A {
@@ -217,6 +240,43 @@ export class SqliteDatabaseClient {
 
   async exportBackup(destinationPath: string): Promise<void> {
     await this.getSqlite().backup(destinationPath);
+  }
+
+  exportCsvData(destinationPath: string): void {
+    this.runWithDatabaseError("exportCsvData", () => {
+      fs.mkdirSync(destinationPath, { recursive: true });
+
+      const database = this.getSqlite();
+      const tableRows = database
+        .prepare(
+          "select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name"
+        )
+        .all() as TableInfoRow[];
+
+      for (const tableRow of tableRows) {
+        const tableName = tableRow.name;
+        const columnRows = database
+          .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
+          .all() as TableInfoRow[];
+        const columnNames = columnRows.map((row) => row.name);
+        const rows = database
+          .prepare(`select * from ${quoteSqlIdentifier(tableName)}`)
+          .all() as CsvRow[];
+        const csvRows = [
+          serializeCsvRow(columnNames),
+          ...rows.map((row) =>
+            serializeCsvRow(
+              columnNames.map((columnName) => row[columnName] ?? null)
+            )
+          ),
+        ];
+
+        fs.writeFileSync(
+          path.join(destinationPath, `${tableName}.csv`),
+          `${csvRows.join("\n")}\n`
+        );
+      }
+    });
   }
 
   validateDatabase(sourcePath: string): void {
