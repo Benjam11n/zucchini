@@ -3,8 +3,13 @@ import {
   formatDateKey,
   formatIsoDateTime,
   formatIsoTime,
+  getDateKeyMonth,
+  getMonthOffset,
+  getMonthRange,
   getPreviousCompletedIsoWeek,
+  getYearRange,
   isMonday,
+  startOfMonth,
   startOfIsoWeek,
   toDateKeyInTimeZone,
 } from "./date";
@@ -54,5 +59,21 @@ describe("iSO week helpers", () => {
 
     expect(toDateKeyInTimeZone(instant, "UTC")).toBe("2026-03-08");
     expect(toDateKeyInTimeZone(instant, "Asia/Singapore")).toBe("2026-03-09");
+  });
+
+  it("computes shared month and year helpers", () => {
+    expect(startOfMonth("2026-03-13")).toBe("2026-03-01");
+    expect(getMonthRange(new Date(2026, 2, 13))).toStrictEqual({
+      endDate: "2026-03-31",
+      startDate: "2026-03-01",
+    });
+    expect(getYearRange(2026)).toStrictEqual({
+      endDate: "2026-12-31",
+      startDate: "2026-01-01",
+    });
+    expect(getMonthOffset(new Date(2026, 2, 13), -1)).toStrictEqual(
+      new Date(2026, 1, 1)
+    );
+    expect(getDateKeyMonth("2026-03-13")).toBe(3);
   });
 });

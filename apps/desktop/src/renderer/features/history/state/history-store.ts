@@ -11,6 +11,7 @@ import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
+import { getDateKeyMonth } from "@/shared/utils/date";
 
 type HistorySummaryByYear = Record<number, HistorySummaryDay[] | undefined>;
 type HistoryDayByDate = Record<string, HistoryDay | undefined>;
@@ -22,10 +23,6 @@ const historyMonthRequests = new Map<string, Promise<unknown>>();
 
 function getHistoryMonthKey(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, "0")}`;
-}
-
-function getMonthFromDateKey(dateKey: string): number {
-  return Number.parseInt(dateKey.slice(5, 7), 10);
 }
 
 interface HistoryStoreState {
@@ -312,9 +309,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       if (selectedYear !== undefined) {
         const [currentHistoryDay] = get().history;
         const selectedMonth = currentHistoryDay
-          ? getMonthFromDateKey(currentHistoryDay.date)
+          ? getDateKeyMonth(currentHistoryDay.date)
           : (options.initialMonth ??
-            getMonthFromDateKey(new Date().toISOString().slice(0, 10)));
+            getDateKeyMonth(new Date().toISOString().slice(0, 10)));
         void get().loadHistoryYear(selectedYear);
         await get().loadHistoryMonth(selectedYear, selectedMonth);
       }
@@ -355,7 +352,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
             void get().loadHistoryYear(selectedHistoryYear, options);
             const todayMonth =
               options.initialMonth ??
-              getMonthFromDateKey(
+              getDateKeyMonth(
                 get().historySummary[0]?.date ??
                   new Date().toISOString().slice(0, 10)
               );

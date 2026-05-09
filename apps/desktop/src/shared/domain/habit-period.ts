@@ -6,10 +6,10 @@
  * can check whether habits are closing or already settled.
  */
 import {
+  endOfMonth,
   endOfWeek,
-  parseDateKey,
+  startOfMonth,
   startOfWeek,
-  toDateKey,
 } from "@/shared/utils/date";
 
 import type { HabitFrequency } from "./habit";
@@ -18,18 +18,6 @@ interface HabitPeriod {
   end: string;
   frequency: HabitFrequency;
   start: string;
-}
-
-function getMonthStart(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(1);
-  return toDateKey(date);
-}
-
-function getMonthEnd(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setMonth(date.getMonth() + 1, 0);
-  return toDateKey(date);
 }
 
 export function getHabitPeriod(
@@ -46,9 +34,9 @@ export function getHabitPeriod(
 
   if (frequency === "monthly") {
     return {
-      end: getMonthEnd(dateKey),
+      end: endOfMonth(dateKey),
       frequency,
-      start: getMonthStart(dateKey),
+      start: startOfMonth(dateKey),
     };
   }
 

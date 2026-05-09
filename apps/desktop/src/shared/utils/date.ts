@@ -82,6 +82,52 @@ export function addDays(dateKey: string, days: number): string {
   return toDateKey(next);
 }
 
+export function addMonths(dateKey: string, months: number): string {
+  const next = parseDateKey(dateKey);
+  next.setMonth(next.getMonth() + months, 1);
+  return toDateKey(next);
+}
+
+export function startOfMonth(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+  date.setDate(1);
+  return toDateKey(date);
+}
+
+export function endOfMonth(dateKey: string): string {
+  const date = parseDateKey(dateKey);
+  date.setMonth(date.getMonth() + 1, 0);
+  return toDateKey(date);
+}
+
+export function getMonthRange(month: Date): {
+  endDate: string;
+  startDate: string;
+} {
+  return {
+    endDate: endOfMonth(toDateKey(month)),
+    startDate: startOfMonth(toDateKey(month)),
+  };
+}
+
+export function getYearRange(year: number): {
+  endDate: string;
+  startDate: string;
+} {
+  return {
+    endDate: `${year}-12-31`,
+    startDate: `${year}-01-01`,
+  };
+}
+
+export function getMonthOffset(month: Date, offset: number): Date {
+  return parseDateKey(addMonths(toDateKey(month), offset));
+}
+
+export function getDateKeyMonth(dateKey: string): number {
+  return Number.parseInt(dateKey.slice(5, 7), 10);
+}
+
 /**
  * Gets the date key for the start of the week (Sunday) containing the given date key.
  */
@@ -135,7 +181,7 @@ export function getPreviousCompletedIsoWeek(todayKey: string): {
 /**
  * Formats a given date key using the Intl API options
  */
-function formatDate(
+export function formatDate(
   date: Date,
   options: Intl.DateTimeFormatOptions,
   locale?: string

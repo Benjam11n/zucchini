@@ -1,10 +1,11 @@
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { getDateKeyMonth } from "@/shared/utils/date";
 
 function getTodayMonth(): number | undefined {
   const todayDate = useTodayStore.getState().todayState?.date;
-  return todayDate ? Number.parseInt(todayDate.slice(5, 7), 10) : undefined;
+  return todayDate ? getDateKeyMonth(todayDate) : undefined;
 }
 
 export function createHistoryActions() {

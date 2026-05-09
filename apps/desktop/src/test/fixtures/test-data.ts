@@ -23,7 +23,9 @@ import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
 import {
   addDays,
+  addMonths,
   parseDateKey,
+  startOfMonth,
   startOfWeek,
   toDateKey,
 } from "@/shared/utils/date";
@@ -210,18 +212,6 @@ function toIsoAt(dateKey: string, hour: number, minute: number): string {
   const date = parseDateKey(dateKey);
   date.setHours(hour, minute, 0, 0);
   return date.toISOString();
-}
-
-function startOfMonth(dateKey: string): string {
-  const date = parseDateKey(dateKey);
-  date.setDate(1);
-  return toDateKey(date);
-}
-
-function addMonths(dateKey: string, amount: number): string {
-  const date = parseDateKey(dateKey);
-  date.setMonth(date.getMonth() + amount, 1);
-  return toDateKey(date);
 }
 
 function isScheduledOnDate(habit: GeneratedHabit, dateKey: string): boolean {

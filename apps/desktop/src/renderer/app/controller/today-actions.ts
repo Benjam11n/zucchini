@@ -24,6 +24,7 @@ import type {
   HabitWithStatus,
   HabitWeekday,
 } from "@/shared/domain/habit";
+import { getDateKeyMonth } from "@/shared/utils/date";
 
 import {
   applyTodayReloadResult,
@@ -169,7 +170,7 @@ export function createTodayActions({
     if (options.refreshHistoryYears) {
       await useHistoryStore.getState().loadHistoryYears({
         force: true,
-        initialMonth: Number.parseInt(todayState.date.slice(5, 7), 10),
+        initialMonth: getDateKeyMonth(todayState.date),
       });
     }
   };
@@ -333,9 +334,7 @@ export function createTodayActions({
 
       if (nextTab === "history") {
         const todayDate = useTodayStore.getState().todayState?.date;
-        const initialMonth = todayDate
-          ? Number.parseInt(todayDate.slice(5, 7), 10)
-          : undefined;
+        const initialMonth = todayDate ? getDateKeyMonth(todayDate) : undefined;
         void useHistoryStore
           .getState()
           .loadHistoryYears(initialMonth ? { initialMonth } : {});

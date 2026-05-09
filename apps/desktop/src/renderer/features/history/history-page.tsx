@@ -5,26 +5,15 @@
  * pairs with the shell right sidebar.
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
-import { HistoryStatusBadge } from "@/renderer/features/history/components/history-status-badge";
+import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph";
+import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import { useHistoryDayDetail } from "@/renderer/features/history/hooks/use-history-day-detail";
-import {
-  buildContributionWeeks,
-  formatContributionLabel,
-} from "@/renderer/features/history/lib/history-contributions";
-import { getActivityStatus } from "@/renderer/features/history/lib/history-summary";
-import {
-  formatFocusMinutes,
-  getDailyCompletionPercent,
-  getDailyMissCount,
-} from "@/renderer/features/history/lib/history-timeline";
 import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
-import { ContributionSquare } from "@/renderer/shared/components/github-contribution-square";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   DropdownMenu,
@@ -38,220 +27,21 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/renderer/shared/components/ui/tabs";
-import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
 import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { HistorySummaryDay } from "@/shared/domain/history";
-import { formatDateKey, parseDateKey, toDateKey } from "@/shared/utils/date";
+import {
+  formatDate,
+  getDateKeyMonth,
+  getMonthOffset,
+  getMonthRange,
+  getYearRange,
+  parseDateKey,
+} from "@/shared/utils/date";
 
 type HistoryViewMode = "review" | "timeline";
-
-function ContributionGraph({
-  history,
-  onSelectDate,
-  rangeEnd,
-  rangeStart,
-  selectedDateKey,
-}: {
-  history: HistorySummaryDay[];
-  rangeEnd: string;
-  rangeStart: string;
-  selectedDateKey: string | null;
-  onSelectDate: (dateKey: string) => void;
-}) {
-  const weeks = useMemo(
-    () =>
-      buildContributionWeeks(history, {
-        endDate: rangeEnd,
-        startDate: rangeStart,
-      }).map((week) => ({
-        ...week,
-        cells: week.cells.map((cell) => ({
-          completedCount: cell.completedCount,
-          date: cell.date,
-          intensity: cell.intensity,
-          isToday: cell.isToday,
-          label: formatContributionLabel(cell),
-          status: cell.status,
-          totalCount: cell.totalCount,
-        })),
-      })),
-    [history, rangeEnd, rangeStart]
-  );
-
-  if (weeks.length === 0) {
-    return null;
-  }
-
-  return (
-    <TooltipProvider>
-      <div className="overflow-x-auto rounded-lg border border-border/70 bg-card/45 px-4 py-3">
-        <div className="flex min-w-max gap-1.5">
-          {weeks.map((week) => (
-            <div className="grid gap-1" key={week.key}>
-              {week.cells.map((cell) => (
-                <button
-                  aria-label={`Select ${cell.label}`}
-                  className={cn(
-                    "rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-                    selectedDateKey === cell.date &&
-                      "ring-1 ring-primary ring-offset-1"
-                  )}
-                  disabled={cell.totalCount === 0 && cell.status === "empty"}
-                  key={cell.date}
-                  onClick={() => onSelectDate(cell.date)}
-                  type="button"
-                >
-                  <ContributionSquare cell={cell} />
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </TooltipProvider>
-  );
-}
-
-function getMonthRange(month: Date): { endDate: string; startDate: string } {
-  const start = new Date(month.getFullYear(), month.getMonth(), 1);
-  const end = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-
-  return {
-    endDate: toDateKey(end),
-    startDate: toDateKey(start),
-  };
-}
-
-function getYearRange(year: number): { endDate: string; startDate: string } {
-  return {
-    endDate: `${year}-12-31`,
-    startDate: `${year}-01-01`,
-  };
-}
-
-function getMonthOffset(month: Date, offset: number): Date {
-  return new Date(month.getFullYear(), month.getMonth() + offset, 1);
-}
-
-function TimelineDayRow({
-  day,
-  isSelected,
-  isToday,
-  onSelect,
-}: {
-  day: HistorySummaryDay;
-  isSelected: boolean;
-  isToday: boolean;
-  onSelect: () => void;
-}) {
-  const percent = getDailyCompletionPercent(day);
-  const status = getActivityStatus(day.summary, isToday);
-  const missedCount = getDailyMissCount(day);
-
-  return (
-    <button
-      className={cn(
-        "grid w-full grid-cols-[72px_1fr_72px_88px_72px_24px] items-center gap-3 border-b border-l-2 border-b-border/55 border-l-transparent px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset",
-        isSelected && "border-l-primary bg-primary/5"
-      )}
-      onClick={onSelect}
-      type="button"
-    >
-      <div className="font-medium text-foreground">
-        {isToday ? "Today" : formatDateKey(day.date, { weekday: "short" })}
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-muted-foreground">
-          {formatDateKey(day.date, { day: "numeric", month: "short" })}
-        </p>
-      </div>
-      <div className="font-medium text-foreground">{percent}%</div>
-      <div className="text-muted-foreground">
-        {formatFocusMinutes(day.focusMinutes)}
-      </div>
-      <HistoryStatusBadge
-        className="justify-self-start"
-        isToday={isToday}
-        status={status}
-      />
-      <div className="flex justify-end">
-        <span className="min-w-5 rounded-md bg-muted px-1.5 py-0.5 text-center text-xs font-medium text-muted-foreground">
-          {missedCount}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function TimelineHeaderRow() {
-  return (
-    <div className="grid grid-cols-[72px_1fr_72px_88px_72px_24px] items-center gap-3 border-b border-border/60 bg-muted/25 px-3 py-2 text-xs font-medium text-muted-foreground">
-      <span>Day</span>
-      <span>Date</span>
-      <span>Complete</span>
-      <span>Focus</span>
-      <span>Status</span>
-      <span className="text-right">Misses</span>
-    </div>
-  );
-}
-
-function ContributionGraphSkeleton() {
-  return (
-    <div className="overflow-x-auto rounded-lg border border-border/70 bg-card/45 px-4 py-3">
-      <div className="flex min-w-max gap-1.5">
-        {Array.from({ length: 53 }, (_week, weekIndex) => (
-          <div className="grid gap-1" key={weekIndex}>
-            {Array.from({ length: 7 }, (_day, dayIndex) => (
-              <div
-                className="size-3 rounded-[3px] bg-muted/70"
-                key={`${weekIndex}-${dayIndex}`}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HistoryContributionGraph({
-  contributionHistory,
-  fallbackHistory,
-  onSelectDate,
-  rangeEnd,
-  rangeStart,
-  selectedDateKey,
-}: {
-  fallbackHistory: HistorySummaryDay[];
-  contributionHistory: HistorySummaryDay[];
-  rangeEnd: string;
-  rangeStart: string;
-  selectedDateKey: string | null;
-  onSelectDate: (dateKey: string) => void;
-}) {
-  const graphHistory =
-    contributionHistory.length > 0 ? contributionHistory : fallbackHistory;
-
-  if (graphHistory.length > 0) {
-    return (
-      <ContributionGraph
-        history={graphHistory}
-        rangeEnd={rangeEnd}
-        rangeStart={rangeStart}
-        selectedDateKey={selectedDateKey}
-        onSelectDate={onSelectDate}
-      />
-    );
-  }
-
-  return <ContributionGraphSkeleton />;
-}
 
 export function HistoryPage({
   contributionHistory,
@@ -325,7 +115,7 @@ export function HistoryPage({
     () => getYearRange(viewState.selectedYear),
     [viewState.selectedYear]
   );
-  const visibleMonthLabel = visibleMonth.toLocaleDateString(undefined, {
+  const visibleMonthLabel = formatDate(visibleMonth, {
     month: "long",
     year: "numeric",
   });
@@ -434,7 +224,7 @@ export function HistoryPage({
                           onSelectHistoryMonth(
                             year,
                             fallbackDate
-                              ? Number.parseInt(fallbackDate.slice(5, 7), 10)
+                              ? getDateKeyMonth(fallbackDate)
                               : visibleMonth.getMonth() + 1
                           );
                         }}
@@ -465,80 +255,19 @@ export function HistoryPage({
           </m.section>
 
           <TabsContent value={"timeline" satisfies HistoryViewMode}>
-            <m.section className="grid gap-5" variants={staggerItemVariants}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-baseline gap-3">
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                    {visibleMonthLabel}
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
-                    {visibleMonthDays.length} tracked days
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    aria-label="Show previous month"
-                    disabled={!canShowPreviousMonth}
-                    onClick={() => showMonth(-1)}
-                    size="icon"
-                    type="button"
-                    variant="ghost"
-                  >
-                    <ChevronLeft className="size-4" />
-                  </Button>
-                  <span className="min-w-20 text-center text-sm font-medium text-muted-foreground">
-                    {visibleMonth.toLocaleDateString(undefined, {
-                      month: "long",
-                    })}
-                  </span>
-                  <Button
-                    aria-label="Show next month"
-                    disabled={!canShowNextMonth}
-                    onClick={() => showMonth(1)}
-                    size="icon"
-                    type="button"
-                    variant="ghost"
-                  >
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid gap-3">
-                {visibleMonthDays.length > 0 ? (
-                  <div className="overflow-hidden rounded-xl border border-border/70 bg-card/55 px-2">
-                    <TimelineHeaderRow />
-                    {visibleMonthDays.map((day) => (
-                      <TimelineDayRow
-                        day={day}
-                        isSelected={viewState.selectedDateKey === day.date}
-                        isToday={day.date === todayDate}
-                        key={day.date}
-                        onSelect={() => selectHistoryDate(day.date)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-md border border-dashed border-border/60 bg-card/45 px-4 py-8 text-center text-sm text-muted-foreground">
-                    No history for this month.
-                  </div>
-                )}
-              </div>
-
-              <div className="lg:hidden">
-                {selectedDayDetail.isLoading ? (
-                  <div className="rounded-md border border-dashed border-border/60 bg-card/60 px-4 py-6 text-sm text-muted-foreground">
-                    Loading history…
-                  </div>
-                ) : (
-                  <HistoryDayPanel
-                    isToday={selectedDayDetail.selectedDay?.date === todayDate}
-                    onNavigateToToday={onNavigateToToday}
-                    selectedDay={selectedDayDetail.selectedDay}
-                  />
-                )}
-              </div>
-            </m.section>
+            <HistoryTimelineContent
+              canShowNextMonth={canShowNextMonth}
+              canShowPreviousMonth={canShowPreviousMonth}
+              onNavigateToToday={onNavigateToToday}
+              selectedDateKey={viewState.selectedDateKey}
+              selectedDayDetail={selectedDayDetail}
+              selectHistoryDate={selectHistoryDate}
+              showMonth={showMonth}
+              todayDate={todayDate}
+              visibleMonth={visibleMonth}
+              visibleMonthDays={visibleMonthDays}
+              visibleMonthLabel={visibleMonthLabel}
+            />
           </TabsContent>
 
           <TabsContent value={"review" satisfies HistoryViewMode}>
