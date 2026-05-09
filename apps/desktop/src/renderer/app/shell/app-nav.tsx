@@ -1,12 +1,15 @@
 import {
   BarChart3,
   CalendarDays,
+  CircleHelp,
   MoonStar,
   Settings2,
   Timer,
 } from "lucide-react";
 
+import { FeaturesCarouselDialog } from "@/renderer/app/shell/feature-highlights-dialog";
 import { MASCOTS } from "@/renderer/assets/mascots";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -16,7 +19,7 @@ import { TabsList, TabsTrigger } from "@/renderer/shared/components/ui/tabs";
 
 export function AppNav() {
   return (
-    <aside className="border-b border-border/70 bg-card px-4 py-4 lg:border-r lg:border-b-0 lg:px-2 lg:py-6 xl:px-3">
+    <aside className="flex border-b border-border/70 bg-card px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:border-r lg:border-b-0 lg:px-2 lg:py-6 xl:px-3">
       <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-1 lg:text-center">
           <img
@@ -104,6 +107,22 @@ export function AppNav() {
             </CardHeader>
           </Card>
         </div>
+      </div>
+
+      <div className="mt-auto hidden justify-center pt-6 lg:flex">
+        <FeaturesCarouselDialog
+          trigger={
+            <Button
+              aria-label="Open feature highlights"
+              className="size-10 rounded-full border-border/70 bg-transparent text-muted-foreground hover:text-foreground"
+              size="icon"
+              type="button"
+              variant="outline"
+            >
+              <CircleHelp className="size-5" />
+            </Button>
+          }
+        />
       </div>
     </aside>
   );
