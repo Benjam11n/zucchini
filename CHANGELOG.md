@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.8 - 2026-05-09
+
+Changes since `v0.1.2-beta.7`.
+
+### Features
+
+- Add CSV data export
+- Speed up history loading
+- Refactor history timeline UI
+- Add category streaks
+- Show visual habit streak progress
+- Clarify historical day status
+- Show weekly review spotlight inline
+- Show historical today inline
+- Show historical today carousel days
+- Add today keyboard hints
+- Add today keyboard navigation
+- Add habit carryovers
+- Add day status options
+
+### Fixes
+
+- Normalize csv export path test
+- Remove unused type exports
+- Address react doctor focus findings
+- Standardize history status badges
+- Align wind down list styling
+
+### Refactors
+
+- Enforce renderer feature boundaries
+- Split habit row editor
+- Split history page components
+- Standardize spacing utilities, optimize concurrent data refreshes, and introduce centralized date formatting helpers
+
+### Maintenance
+
+- Add dead-code checks to validation
+- Bump @typescript/native-preview (#49)
+
+### Other
+
+- Compress application image assets
+- [ImgBot] Optimize images (#44)
+- Bump the minor-patch-updates group across 1 directory with 22 updates (#55)
+
 ## 0.1.2-beta.7 - 2026-05-05
 
 Changes since `v0.1.2-beta.6`.

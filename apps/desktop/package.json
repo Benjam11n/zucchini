@@ -1,6 +1,6 @@
 {
   "name": "zucchini",
-  "version": "0.1.2-beta.7",
+  "version": "0.1.2-beta.8",
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
