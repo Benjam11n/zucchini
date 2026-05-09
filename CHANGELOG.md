@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.9 - 2026-05-09
+
+Changes since `v0.1.2-beta.8`.
+
+### Features
+
+- Add feature highlights dialog
+- Centralize product defaults
+- Highlight record habit streaks
+
+### Fixes
+
+- Remove unused production exports
+
+### Refactors
+
+- Share streak sync helpers
+
 ## 0.1.2-beta.8 - 2026-05-09
 
 Changes since `v0.1.2-beta.7`.
