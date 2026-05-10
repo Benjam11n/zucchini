@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.10 - 2026-05-10
+
+Changes since `v0.1.2-beta.9`.
+
+### Features
+
+- Add weekday rhythm insights
+- Add insights dashboard mvp
+- Unify habit status interactions
+
+### Fixes
+
+- Replace narrow history detail with dialog
+- Refine today history selection
+- Distinguish insights nav icon
+- Debounce today keyboard hint
+- Stabilize today carousel skeleton height
+- Refine responsive insights layout
+- Label destructive confirmations
+
+### Refactors
+
+- Rename contribution square module
+- Clarify periodic habit wording
+- Clarify habit patch reader
+- Rename ipc dispatch module
+- Rename activity ring card
+- Rename periodic habit UI
+
+### Maintenance
+
+- Enforce release pre-push checks
+- Rename legacy migration files
+
 ## 0.1.2-beta.9 - 2026-05-09
 
 Changes since `v0.1.2-beta.8`.
