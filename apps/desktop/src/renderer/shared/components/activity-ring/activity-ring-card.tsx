@@ -6,17 +6,17 @@ import { CircleProgress } from "./circle-progress";
 import { DetailedActivityInfo } from "./detailed-activity-info";
 import type { ActivityData } from "./types";
 
-interface AppleActivityCardProps {
+interface ActivityRingCardProps {
   activities: ActivityData[];
   className?: string;
   showDetails?: boolean;
 }
 
-export function AppleActivityCard({
+export function ActivityRingCard({
   activities,
   className,
   showDetails = true,
-}: AppleActivityCardProps) {
+}: ActivityRingCardProps) {
   const containerSize = activities[0]?.size ?? 280;
 
   return (

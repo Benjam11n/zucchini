@@ -4,7 +4,7 @@ import { memo, useMemo } from "react";
 
 import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
 
-import { AppleActivityCard } from "./apple-activity-card";
+import { ActivityRingCard } from "./activity-ring-card";
 import { buildHabitActivityData } from "./build-habit-activity-data";
 import type { HabitActivityRingProps } from "./types";
 
@@ -25,7 +25,7 @@ function HabitActivityCardComponent({
   );
 
   return (
-    <AppleActivityCard
+    <ActivityRingCard
       activities={activities}
       showDetails={showDetails}
       {...(className ? { className } : {})}
