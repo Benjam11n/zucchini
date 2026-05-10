@@ -1,7 +1,7 @@
 import {
   executeHabitServiceCommand,
   readHabitServiceQuery,
-} from "@/main/features/habits/habits-service-routing";
+} from "@/main/features/habits/habits-ipc-dispatch";
 import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
