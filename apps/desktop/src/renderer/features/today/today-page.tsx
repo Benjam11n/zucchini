@@ -11,7 +11,7 @@ import { memo, useMemo } from "react";
 import { CarryoverChecklist } from "@/renderer/features/today/components/carryover-checklist";
 import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
 import { HistoricalTodayView } from "@/renderer/features/today/components/historical-today-view";
-import { LongerHabitChecklist } from "@/renderer/features/today/components/longer-habit-checklist";
+import { PeriodicHabitChecklist } from "@/renderer/features/today/components/periodic-habit-checklist";
 import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
 import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
 import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
@@ -57,7 +57,7 @@ function TodayPageComponent({
   onUpdateHabitTargetCount,
   onUpdateHabitWeekdays,
 }: TodayPageProps) {
-  const { completedCount, dailyHabits, periodicHabits } = useMemo(
+  const { completedDailyHabitCount, dailyHabits, periodicHabits } = useMemo(
     () => splitTodayHabits(state.habits),
     [state.habits]
   );
@@ -68,10 +68,14 @@ function TodayPageComponent({
   const historicalTodaySelection = useHistoricalTodaySelection(
     historicalHistorySummary
   );
-  useTodayPopups({ completedCount, dailyHabits, state });
+  useTodayPopups({
+    completedCount: completedDailyHabitCount,
+    dailyHabits,
+    state,
+  });
 
   const celebration = useTodayCelebration({
-    completedCount,
+    completedCount: completedDailyHabitCount,
     dailyHabitCount: dailyHabits.length,
     date: state.date,
     streak: state.streak,
@@ -125,7 +129,7 @@ function TodayPageComponent({
         <section>
           <HabitChecklist
             icon={ListChecks}
-            completedCount={completedCount}
+            completedCount={completedDailyHabitCount}
             emptyMessage="No daily habits yet. Create one to start building momentum."
             emptyAction={
               <TodayHabitManagerDialog
@@ -187,7 +191,7 @@ function TodayPageComponent({
         {periodicHabits.length > 0 ||
         (state.focusQuotaGoals ?? []).length > 0 ? (
           <section>
-            <LongerHabitChecklist
+            <PeriodicHabitChecklist
               dateKey={state.date}
               focusQuotaGoals={state.focusQuotaGoals ?? []}
               habits={periodicHabits}

@@ -2,7 +2,7 @@ import { isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface SplitTodayHabits {
-  completedCount: number;
+  completedDailyHabitCount: number;
   dailyHabits: HabitWithStatus[];
   periodicHabits: HabitWithStatus[];
 }
@@ -10,13 +10,13 @@ interface SplitTodayHabits {
 export function splitTodayHabits(habits: HabitWithStatus[]): SplitTodayHabits {
   const dailyHabits: HabitWithStatus[] = [];
   const periodicHabits: HabitWithStatus[] = [];
-  let completedCount = 0;
+  let completedDailyHabitCount = 0;
 
   for (const habit of habits) {
     if (isDailyHabit(habit)) {
       dailyHabits.push(habit);
       if (habit.completed) {
-        completedCount += 1;
+        completedDailyHabitCount += 1;
       }
       continue;
     }
@@ -25,7 +25,7 @@ export function splitTodayHabits(habits: HabitWithStatus[]): SplitTodayHabits {
   }
 
   return {
-    completedCount,
+    completedDailyHabitCount,
     dailyHabits,
     periodicHabits,
   };

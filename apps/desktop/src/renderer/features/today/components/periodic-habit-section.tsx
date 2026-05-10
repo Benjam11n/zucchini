@@ -7,9 +7,9 @@ import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-import { FocusQuotaRow, LongerHabitListItem } from "./longer-habit-rows";
+import { FocusQuotaRow, PeriodicHabitListItem } from "./periodic-habit-rows";
 
-interface LongerHabitSectionData {
+interface PeriodicHabitSectionData {
   completedHabitGoalCount: number;
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   habits: HabitWithStatus[];
@@ -18,7 +18,7 @@ interface LongerHabitSectionData {
   value: string;
 }
 
-interface LongerHabitSectionProps {
+interface PeriodicHabitSectionProps {
   categoryPreferences: Parameters<typeof getHabitCategoryPresentation>[1];
   getKeyboardRowProps?:
     | ((rowId: string) => KeyboardRowProps | undefined)
@@ -26,17 +26,17 @@ interface LongerHabitSectionProps {
   onDecrementHabitProgress?: ((habitId: number) => void) | undefined;
   onIncrementHabitProgress?: ((habitId: number) => void) | undefined;
   readOnly?: boolean;
-  section: LongerHabitSectionData;
+  section: PeriodicHabitSectionData;
 }
 
-export function LongerHabitSection({
+export function PeriodicHabitSection({
   categoryPreferences,
   getKeyboardRowProps,
   onDecrementHabitProgress,
   onIncrementHabitProgress,
   readOnly = false,
   section,
-}: LongerHabitSectionProps) {
+}: PeriodicHabitSectionProps) {
   return (
     <m.div className="grid gap-2.5" variants={staggerItemVariants}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -56,7 +56,7 @@ export function LongerHabitSection({
           <FocusQuotaRow key={`${goal.kind}-${goal.id}`} goal={goal} />
         ))}
         {section.habits.map((habit) => (
-          <LongerHabitListItem
+          <PeriodicHabitListItem
             key={habit.id}
             habit={habit}
             keyboardRowProps={

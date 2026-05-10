@@ -18,7 +18,7 @@ import {
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-interface LongerHabitListItemProps {
+interface PeriodicHabitListItemProps {
   habit: HabitWithStatus;
   keyboardRowProps?: KeyboardRowProps | undefined;
   onDecrement?: ((habitId: number) => void) | undefined;
@@ -37,7 +37,7 @@ function formatQuotaLabel(completed: number, target: number): React.ReactNode {
   );
 }
 
-function LongerHabitControls({
+function PeriodicHabitControls({
   completedCount,
   habit,
   isComplete,
@@ -91,14 +91,14 @@ function LongerHabitControls({
   );
 }
 
-export function LongerHabitListItem({
+export function PeriodicHabitListItem({
   habit,
   keyboardRowProps,
   onDecrement,
   onIncrement,
   presentation,
   readOnly = false,
-}: LongerHabitListItemProps) {
+}: PeriodicHabitListItemProps) {
   const completedCount = habit.completedCount ?? 0;
   const targetCount = habit.targetCount ?? 1;
   const isComplete = habit.completed;
@@ -123,7 +123,7 @@ export function LongerHabitListItem({
       {...(isInteractive ? { whileHover: hoverLift } : {})}
     >
       {readOnly ? null : (
-        <LongerHabitControls
+        <PeriodicHabitControls
           completedCount={completedCount}
           habit={habit}
           isComplete={isComplete}

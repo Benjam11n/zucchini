@@ -9,9 +9,9 @@ import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { formatDateKey } from "@/shared/utils/date";
 
-import { LongerHabitSection } from "./longer-habit-section";
+import { PeriodicHabitSection } from "./periodic-habit-section";
 
-interface LongerHabitChecklistProps {
+interface PeriodicHabitChecklistProps {
   dateKey: string;
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   getKeyboardRowProps?: (rowId: string) => KeyboardRowProps | undefined;
@@ -41,7 +41,7 @@ function formatResetLabel(periodEnd: string): string {
   })}`;
 }
 
-export function LongerHabitChecklist({
+export function PeriodicHabitChecklist({
   dateKey,
   focusQuotaGoals,
   getKeyboardRowProps,
@@ -50,7 +50,7 @@ export function LongerHabitChecklist({
   onIncrementHabitProgress,
   readOnly = false,
   title = "Beyond Today",
-}: LongerHabitChecklistProps) {
+}: PeriodicHabitChecklistProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   let trackedGoalCount = 0;
   let completedGoalCount = 0;
@@ -144,7 +144,7 @@ export function LongerHabitChecklist({
     <LazyMotion features={domAnimation}>
       <HabitListCard title={title} icon={CalendarRange} {...progressProps}>
         {sections.map((section) => (
-          <LongerHabitSection
+          <PeriodicHabitSection
             key={section.value}
             categoryPreferences={categoryPreferences}
             getKeyboardRowProps={getKeyboardRowProps}

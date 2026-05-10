@@ -7,7 +7,7 @@ import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import { formatDateKey } from "@/shared/utils/date";
 
-import { LongerHabitChecklist } from "./longer-habit-checklist";
+import { PeriodicHabitChecklist } from "./periodic-habit-checklist";
 
 function formatResetLabel(
   dateKey: string,
@@ -64,7 +64,7 @@ function createFocusQuotaGoal(
 describe("longer habit checklist", () => {
   it("renders nothing without longer habits or focus quota goals", () => {
     const { container } = render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[]}
         habits={[]}
@@ -78,7 +78,7 @@ describe("longer habit checklist", () => {
 
   it("renders a compact header and period groups without helper copy", () => {
     render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[
           createFocusQuotaGoal(1),
@@ -139,7 +139,7 @@ describe("longer habit checklist", () => {
     const onIncrementHabitProgress = vi.fn();
 
     render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[]}
         habits={[
@@ -191,7 +191,7 @@ describe("longer habit checklist", () => {
     const onIncrementHabitProgress = vi.fn();
 
     render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[]}
         habits={[
@@ -224,7 +224,7 @@ describe("longer habit checklist", () => {
 
   it("caps aggregate progress when longer habits exceed their targets", () => {
     render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[]}
         habits={[
@@ -248,7 +248,7 @@ describe("longer habit checklist", () => {
 
   it("caps aggregate progress when focus quota exceeds the target", () => {
     render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[
           createFocusQuotaGoal(1, {
@@ -271,7 +271,7 @@ describe("longer habit checklist", () => {
 
   it("uses wrapping row layouts so longer-goal content can shrink with the window", () => {
     const { container } = render(
-      <LongerHabitChecklist
+      <PeriodicHabitChecklist
         dateKey="2026-03-13"
         focusQuotaGoals={[createFocusQuotaGoal(1)]}
         habits={[

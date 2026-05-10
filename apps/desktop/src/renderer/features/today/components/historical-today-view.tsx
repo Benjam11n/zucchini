@@ -13,7 +13,7 @@ import type { HistoryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
 import { HabitChecklist } from "./habit-checklist";
-import { LongerHabitChecklist } from "./longer-habit-checklist";
+import { PeriodicHabitChecklist } from "./periodic-habit-checklist";
 
 interface HistoricalTodayViewProps {
   day: HistoryDay;
@@ -24,7 +24,7 @@ export function HistoricalTodayView({
   day,
   onReturnToToday,
 }: HistoricalTodayViewProps) {
-  const { completedCount, dailyHabits, periodicHabits } = useMemo(
+  const { completedDailyHabitCount, dailyHabits, periodicHabits } = useMemo(
     () => splitTodayHabits(day.habits),
     [day.habits]
   );
@@ -56,7 +56,7 @@ export function HistoricalTodayView({
         </Button>
       </div>
       <HabitChecklist
-        completedCount={completedCount}
+        completedCount={completedDailyHabitCount}
         emptyMessage="No daily habits were tracked on this day."
         habits={dailyHabits}
         icon={ListChecks}
@@ -65,7 +65,7 @@ export function HistoricalTodayView({
       />
 
       {periodicHabits.length > 0 || (day.focusQuotaGoals ?? []).length > 0 ? (
-        <LongerHabitChecklist
+        <PeriodicHabitChecklist
           dateKey={day.date}
           focusQuotaGoals={day.focusQuotaGoals ?? []}
           habits={periodicHabits}
