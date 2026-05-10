@@ -46,6 +46,7 @@ try {
   writeDesktopVersion(nextVersion);
   runChangelogScript(nextVersion, tag);
   runFormatScript();
+  runCheckScript();
 
   runGit(["add", "apps/desktop/package.json", "CHANGELOG.md"]);
   runGit(["commit", "-m", `chore: release ${nextVersion}`]);
@@ -276,6 +277,13 @@ function runChangelogScript(version, tag, outputPath = null) {
 
 function runFormatScript() {
   execFileSync("pnpm", ["run", "format"], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
+}
+
+function runCheckScript() {
+  execFileSync("pnpm", ["run", "check"], {
     cwd: repoRoot,
     stdio: "inherit",
   });
