@@ -312,14 +312,16 @@ function HabitLeaderboard({
             Complete habits for a few days to build a leaderboard.
           </p>
         ) : (
-          <Table className="min-w-[840px] table-fixed">
+          <Table className="table-fixed">
             <TableHeader className="text-xs">
               <TableRow className="border-border/70 hover:bg-transparent">
-                <TableHead className="w-12 px-0 pr-4">#</TableHead>
+                <TableHead className="w-8 px-0 pr-2">#</TableHead>
                 <TableHead className="px-4">Habit</TableHead>
-                <TableHead className="w-40 px-3">Category</TableHead>
-                <TableHead className="w-52 px-3">Completion</TableHead>
-                <TableHead className="w-52 px-0 pl-4">Trend</TableHead>
+                <TableHead className="w-32 px-2">Category</TableHead>
+                <TableHead className="w-32 px-2">Completion</TableHead>
+                <TableHead className="hidden w-36 px-0 pl-3 sm:table-cell">
+                  Trend
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -328,28 +330,28 @@ function HabitLeaderboard({
                   key={habit.habitId}
                   className="border-border/50 hover:bg-muted/20"
                 >
-                  <TableCell className="px-0 py-4 pr-4 text-muted-foreground tabular-nums">
+                  <TableCell className="px-0 py-4 pr-2 text-muted-foreground tabular-nums">
                     {habit.rank}
                   </TableCell>
                   <TableCell className="min-w-0 px-4 py-4 font-medium text-foreground">
                     <TextWithTooltip content={habit.name} />
                   </TableCell>
-                  <TableCell className="px-3 py-4">
+                  <TableCell className="px-2 py-4">
                     <HabitCategoryBadge habit={habit} />
                   </TableCell>
-                  <TableCell className="px-3 py-4">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="w-12 shrink-0 tabular-nums">
+                  <TableCell className="px-2 py-4">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="w-10 shrink-0 tabular-nums">
                         {habit.completionRate}%
                       </span>
                       <Progress
-                        className="h-2 min-w-28 flex-1"
+                        className="h-2 min-w-10 flex-1"
                         value={habit.completionRate}
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="px-0 py-4 pl-4 text-primary">
-                    <Sparkline className="h-10" points={habit.trend} />
+                  <TableCell className="hidden px-0 py-4 pl-3 text-primary sm:table-cell">
+                    <Sparkline className="h-8" points={habit.trend} />
                   </TableCell>
                 </TableRow>
               ))}

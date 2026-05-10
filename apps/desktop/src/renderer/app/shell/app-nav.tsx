@@ -81,29 +81,29 @@ export function AppNav() {
 
         <div className="flex flex-1 justify-center lg:hidden">
           <TabsList className="grid w-full max-w-5xl grid-cols-6 bg-muted/80 p-1">
-            <TabsTrigger className="px-4" value="today">
-              <CalendarDays className="size-4" />
-              Today
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="today">
+              <CalendarDays className="size-4 shrink-0" />
+              <span className="hidden md:inline">Today</span>
             </TabsTrigger>
-            <TabsTrigger className="px-4" value="focus">
-              <Timer className="size-4" />
-              Focus
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="focus">
+              <Timer className="size-4 shrink-0" />
+              <span className="hidden md:inline">Focus</span>
             </TabsTrigger>
-            <TabsTrigger className="px-4" value="windDown">
-              <MoonStar className="size-4" />
-              Wind Down
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="windDown">
+              <MoonStar className="size-4 shrink-0" />
+              <span className="hidden md:inline">Wind Down</span>
             </TabsTrigger>
-            <TabsTrigger className="px-4" value="insights">
-              <LineChart className="size-4" />
-              Insights
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="insights">
+              <LineChart className="size-4 shrink-0" />
+              <span className="hidden md:inline">Insights</span>
             </TabsTrigger>
-            <TabsTrigger className="px-4" value="history">
-              <BarChart3 className="size-4" />
-              History
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="history">
+              <BarChart3 className="size-4 shrink-0" />
+              <span className="hidden md:inline">History</span>
             </TabsTrigger>
-            <TabsTrigger className="px-4" value="settings">
-              <Settings2 className="size-4" />
-              Settings
+            <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="settings">
+              <Settings2 className="size-4 shrink-0" />
+              <span className="hidden md:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
         </div>
