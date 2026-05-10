@@ -40,7 +40,15 @@ describe("readHabitServiceQuery()", () => {
           value: "0",
         },
       },
-      weekdayRhythmPlaceholder: { body: "Later", title: "Weekday rhythm" },
+      weekdayRhythm: {
+        cells: [],
+        hasData: false,
+        maxCompletionCount: 0,
+        subtitle: "Completion timing",
+        timeOfDayLabels: [],
+        title: "Weekday rhythm",
+        weekdayLabels: [],
+      },
       weeklyCompletion: [],
     };
     const service = {

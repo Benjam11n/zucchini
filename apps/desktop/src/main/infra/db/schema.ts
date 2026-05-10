@@ -38,6 +38,7 @@ export const habitPeriodStatus = sqliteTable(
   "habit_period_status",
   {
     completed: integer({ mode: "boolean" }).notNull().default(false),
+    completedAt: text("completed_at"),
     completedCount: integer("completed_count").notNull().default(0),
     frequency: text().notNull().default(DEFAULT_HABIT_FREQUENCY),
     habitCategory: text("habit_category")

@@ -216,12 +216,22 @@ export class SqliteAppRepository implements AppRepository {
     this.historyRepository.setHabitProgress(date, habitId, completedCount);
   }
 
-  toggleHabit(date: string, habitId: number): void {
-    this.historyRepository.toggleHabit(date, habitId);
+  toggleHabit(date: string, habitId: number, completedAt: string): void {
+    this.historyRepository.toggleHabit(date, habitId, completedAt);
   }
 
-  adjustHabitProgress(date: string, habitId: number, delta: number): void {
-    this.historyRepository.adjustHabitProgress(date, habitId, delta);
+  adjustHabitProgress(
+    date: string,
+    habitId: number,
+    delta: number,
+    completedAt: string
+  ): void {
+    this.historyRepository.adjustHabitProgress(
+      date,
+      habitId,
+      delta,
+      completedAt
+    );
   }
 
   getFocusSessions(limit?: number): FocusSession[] {

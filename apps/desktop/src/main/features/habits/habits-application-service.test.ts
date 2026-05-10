@@ -277,7 +277,7 @@ class FakeRepository implements AppRepository {
     }
   }
 
-  toggleHabit(date: string, habitId: number): void {
+  toggleHabit(date: string, habitId: number, _completedAt?: string): void {
     const habit = this.habits.find((item) => item.id === habitId);
     if (!habit) {
       return;
@@ -304,7 +304,12 @@ class FakeRepository implements AppRepository {
     );
   }
 
-  adjustHabitProgress(date: string, habitId: number, delta: number): void {
+  adjustHabitProgress(
+    date: string,
+    habitId: number,
+    delta: number,
+    _completedAt?: string
+  ): void {
     const habit = this.habits.find((item) => item.id === habitId);
     if (!habit) {
       return;

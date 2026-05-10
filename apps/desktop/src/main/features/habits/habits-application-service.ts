@@ -266,6 +266,20 @@ export class HabitsApplicationService implements HabitsService {
     return this.clock.timezone();
   }
 
+  private preserveTodayHabitProgress(
+    today: string,
+    habitId: number,
+    previousProgress: number,
+    targetCount: number
+  ): void {
+    this.repository.ensureStatusRow(today, habitId);
+    this.repository.setHabitProgress(
+      today,
+      habitId,
+      Math.min(previousProgress, targetCount)
+    );
+  }
+
   private rebuildCurrentTodayState(): TodayState {
     this.todayReadModel.invalidate();
     return this.buildCurrentTodayState();
@@ -426,7 +440,11 @@ export class HabitsApplicationService implements HabitsService {
 
   toggleHabit(habitId: number): HabitStatusPatch {
     return this.mutateHabitStatusPatch("toggleHabit", habitId, (today) => {
-      this.repository.toggleHabit(today, habitId);
+      this.repository.toggleHabit(
+        today,
+        habitId,
+        this.clock.now().toISOString()
+      );
     });
   }
 
@@ -435,7 +453,12 @@ export class HabitsApplicationService implements HabitsService {
       "incrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.adjustHabitProgress(today, habitId, 1);
+        this.repository.adjustHabitProgress(
+          today,
+          habitId,
+          1,
+          this.clock.now().toISOString()
+        );
       }
     );
   }
@@ -445,7 +468,12 @@ export class HabitsApplicationService implements HabitsService {
       "decrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.adjustHabitProgress(today, habitId, -1);
+        this.repository.adjustHabitProgress(
+          today,
+          habitId,
+          -1,
+          this.clock.now().toISOString()
+        );
       }
     );
   }
@@ -892,6 +920,7 @@ export class HabitsApplicationService implements HabitsService {
         ),
         nowDate: today,
         streak: this.repository.getPersistedStreakState(),
+        timezone: this.getTimezone(),
       });
     });
   }
@@ -1012,11 +1041,11 @@ export class HabitsApplicationService implements HabitsService {
         normalizedFrequency,
         normalizedTargetCount
       );
-      this.repository.ensureStatusRow(today, habitId);
-      this.repository.setHabitProgress(
+      this.preserveTodayHabitProgress(
         today,
         habitId,
-        Math.min(previousProgress, normalizedTargetCount)
+        previousProgress,
+        normalizedTargetCount
       );
       return this.rebuildCurrentTodayState();
     });
@@ -1039,11 +1068,11 @@ export class HabitsApplicationService implements HabitsService {
         targetCount
       );
       this.repository.updateHabitTargetCount(habitId, normalizedTargetCount);
-      this.repository.ensureStatusRow(today, habitId);
-      this.repository.setHabitProgress(
+      this.preserveTodayHabitProgress(
         today,
         habitId,
-        Math.min(previousProgress, normalizedTargetCount)
+        previousProgress,
+        normalizedTargetCount
       );
       return this.rebuildCurrentTodayState();
     });

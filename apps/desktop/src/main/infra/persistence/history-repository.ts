@@ -450,7 +450,7 @@ export class SqliteHistoryRepository {
     });
   }
 
-  toggleHabit(date: string, habitId: number): void {
+  toggleHabit(date: string, habitId: number, completedAt: string): void {
     this.client.run("toggleHabit", () => {
       const habit = this.habitsRepository.getHabitById(habitId);
       if (!habit || !isHabitScheduledForDate(habit, date)) {
@@ -462,6 +462,9 @@ export class SqliteHistoryRepository {
         .update(habitPeriodStatus)
         .set({
           completed: sql<boolean>`case when ${habitPeriodStatus.completed} = 1 then 0 else 1 end`,
+          completedAt: sql<
+            string | null
+          >`case when ${habitPeriodStatus.completed} = 1 then null else ${completedAt} end`,
           completedCount: sql<number>`case when ${habitPeriodStatus.completed} = 1 then 0 else ${habit.targetCount} end`,
         })
         .where(getStatusPeriodWhere(habit, habitId, date))
@@ -481,12 +484,13 @@ export class SqliteHistoryRepository {
       }
 
       const safeCompletedCount = Math.max(0, Math.round(completedCount));
+      const targetCount = habit.targetCount ?? 1;
 
       this.client
         .getDrizzle()
         .update(habitPeriodStatus)
         .set({
-          completed: safeCompletedCount >= (habit.targetCount ?? 1),
+          completed: safeCompletedCount >= targetCount,
           completedCount: safeCompletedCount,
           habitCategory: habit.category,
           habitName: habit.name,
@@ -501,7 +505,12 @@ export class SqliteHistoryRepository {
     });
   }
 
-  adjustHabitProgress(date: string, habitId: number, delta: number): void {
+  adjustHabitProgress(
+    date: string,
+    habitId: number,
+    delta: number,
+    completedAt: string
+  ): void {
     this.client.run("adjustHabitProgress", () => {
       const habit = this.habitsRepository.getHabitById(habitId);
       if (
@@ -520,6 +529,9 @@ export class SqliteHistoryRepository {
         .update(habitPeriodStatus)
         .set({
           completed: sql<boolean>`case when max(0, ${habitPeriodStatus.completedCount} + ${safeDelta}) >= ${habit.targetCount} then 1 else 0 end`,
+          completedAt: sql<
+            string | null
+          >`case when max(0, ${habitPeriodStatus.completedCount} + ${safeDelta}) < ${habit.targetCount} then null when ${habitPeriodStatus.completedAt} is not null then ${habitPeriodStatus.completedAt} else ${completedAt} end`,
           completedCount: sql<number>`max(0, ${habitPeriodStatus.completedCount} + ${safeDelta})`,
         })
         .where(getStatusPeriodWhere(habit, habitId, date))

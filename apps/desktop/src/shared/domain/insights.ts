@@ -39,9 +39,22 @@ export interface InsightsSmartInsight {
   title: string;
 }
 
-interface InsightsWeekdayRhythmPlaceholder {
-  body: string;
+interface InsightsWeekdayRhythmCell {
+  completionCount: number;
+  intensity: number;
+  label: string;
+  timeOfDay: string;
+  weekday: string;
+}
+
+export interface InsightsWeekdayRhythm {
+  cells: InsightsWeekdayRhythmCell[];
+  hasData: boolean;
+  maxCompletionCount: number;
+  subtitle: string;
+  timeOfDayLabels: string[];
   title: string;
+  weekdayLabels: string[];
 }
 
 export interface InsightsDashboard {
@@ -61,6 +74,6 @@ export interface InsightsDashboard {
     perfectDays: InsightsSummaryMetric;
     savedStreaks: InsightsSummaryMetric;
   };
-  weekdayRhythmPlaceholder: InsightsWeekdayRhythmPlaceholder;
+  weekdayRhythm: InsightsWeekdayRhythm;
   weeklyCompletion: InsightsWeeklyCompletion[];
 }

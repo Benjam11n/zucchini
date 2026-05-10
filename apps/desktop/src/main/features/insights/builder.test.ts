@@ -75,6 +75,7 @@ describe("buildInsightsDashboard()", () => {
       habitStatuses: [],
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
 
     expect(dashboard.isEmpty).toBe(true);
@@ -102,6 +103,7 @@ describe("buildInsightsDashboard()", () => {
       ],
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
 
     expect(dashboard.summary.completed.value).toBe("3");
@@ -124,6 +126,7 @@ describe("buildInsightsDashboard()", () => {
       habitStatuses: lowStatuses,
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
     const high = buildInsightsDashboard({
       dailySummaries: [],
@@ -131,6 +134,7 @@ describe("buildInsightsDashboard()", () => {
       habitStatuses: highStatuses,
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
 
     expect(high.momentum.score).toBeGreaterThan(low.momentum.score);
@@ -148,6 +152,7 @@ describe("buildInsightsDashboard()", () => {
       ],
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
 
     expect(dashboard.habitLeaderboard.map((habit) => habit.name)).toStrictEqual(
@@ -167,6 +172,7 @@ describe("buildInsightsDashboard()", () => {
       ],
       nowDate: "2026-03-31",
       streak,
+      timezone: "UTC",
     });
 
     expect(
@@ -174,5 +180,36 @@ describe("buildInsightsDashboard()", () => {
         insight.title.includes("Thursday")
       )
     ).toBe(true);
+  });
+
+  it("builds weekday rhythm from habit completion timestamps", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", 1, {
+          completedAt: "2026-03-03T01:30:00.000Z",
+        }),
+        createStatus(2, "2026-03-03", 1, {
+          completedAt: "2026-03-03T02:15:00.000Z",
+        }),
+        createStatus(3, "2026-03-03", 0, {
+          completedAt: "2026-03-03T09:30:00.000Z",
+        }),
+      ],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "Asia/Singapore",
+    });
+
+    expect(dashboard.weekdayRhythm.hasData).toBe(true);
+    expect(
+      dashboard.weekdayRhythm.cells.find(
+        (cell) => cell.weekday === "Tue" && cell.timeOfDay === "Morning"
+      )
+    ).toMatchObject({
+      completionCount: 2,
+      intensity: 100,
+    });
   });
 });

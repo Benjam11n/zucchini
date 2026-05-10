@@ -91,8 +91,13 @@ export interface HabitStatusRepositoryPort {
   ensureStatusRow(date: string, habitId: number): void;
   removeStatusRowsForDate(date: string, habitId: number): void;
   setHabitProgress(date: string, habitId: number, completedCount: number): void;
-  toggleHabit(date: string, habitId: number): void;
-  adjustHabitProgress(date: string, habitId: number, delta: number): void;
+  toggleHabit(date: string, habitId: number, completedAt: string): void;
+  adjustHabitProgress(
+    date: string,
+    habitId: number,
+    delta: number,
+    completedAt: string
+  ): void;
 }
 
 export interface FocusQuotaGoalRepositoryPort {

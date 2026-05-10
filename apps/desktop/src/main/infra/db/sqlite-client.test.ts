@@ -179,6 +179,25 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
     expect(close).toHaveBeenCalledOnce();
   });
 
+  it("accepts legacy backups without habit completion timestamps", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        columnRowsByTable: {
+          habit_period_status: DEFAULT_COLUMN_ROWS.filter(
+            ({ name }) => name !== "completed_at"
+          ),
+        },
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: "/tmp/live.db",
+    });
+
+    expect(() => client.validateDatabase("/tmp/backup.db")).not.toThrow();
+  });
+
   it("rejects files that fail the sqlite integrity check", async () => {
     vi.doMock("better-sqlite3", () =>
       createMockDatabaseConstructor({

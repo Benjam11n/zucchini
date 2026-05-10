@@ -65,9 +65,27 @@ function createDashboard(
         value: "4",
       },
     },
-    weekdayRhythmPlaceholder: {
-      body: "Time-of-day rhythm needs per-habit completion timestamps.",
+    weekdayRhythm: {
+      cells: ["Morning", "Afternoon", "Evening", "Night"].flatMap((timeOfDay) =>
+        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((weekday) => ({
+          completionCount: timeOfDay === "Morning" && weekday === "Mon" ? 3 : 0,
+          intensity: timeOfDay === "Morning" && weekday === "Mon" ? 100 : 0,
+          label: `${weekday} ${timeOfDay}`,
+          timeOfDay,
+          weekday,
+        }))
+      ),
+      hasData: true,
+      maxCompletionCount: 3,
+      subtitle: "Completion timing from recorded habit completions",
+      timeOfDayLabels: [
+        "Morning\n5am - 11am",
+        "Afternoon\n11am - 5pm",
+        "Evening\n5pm - 11pm",
+        "Night\n11pm - 5am",
+      ],
       title: "Weekday rhythm by time of day",
+      weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     },
     weeklyCompletion: [
       {
@@ -103,7 +121,7 @@ describe("InsightsPage", () => {
     expect(screen.getByText("Consistency is improving.")).toBeInTheDocument();
   });
 
-  it("renders the weekday rhythm placeholder", () => {
+  it("renders the weekday rhythm chart", () => {
     render(
       <InsightsPage
         dashboard={createDashboard()}
@@ -117,10 +135,9 @@ describe("InsightsPage", () => {
       screen.getByText("Weekday rhythm by time of day")
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Time-of-day rhythm needs per-habit completion timestamps."
-      )
+      screen.getByText("Completion timing from recorded habit completions")
     ).toBeInTheDocument();
+    expect(screen.getByText("Peak: 3")).toBeInTheDocument();
   });
 
   it("renders an empty state when no insights exist", () => {

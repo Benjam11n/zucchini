@@ -7,6 +7,7 @@ import type {
 export interface HabitPeriodStatusSnapshot {
   category: HabitCategory;
   completed: boolean;
+  completedAt?: string | null;
   completedCount?: number;
   createdAt?: string;
   frequency: HabitFrequency;

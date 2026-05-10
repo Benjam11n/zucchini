@@ -7,6 +7,7 @@ import type {
   InsightsHabitLeaderboardItem,
   InsightsMomentum,
   InsightsSmartInsight,
+  InsightsWeekdayRhythm,
   InsightsWeeklyCompletion,
 } from "@/shared/domain/insights";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -24,6 +25,7 @@ interface BuildInsightsDashboardOptions {
   habitStatuses: HabitPeriodStatusSnapshot[];
   nowDate: string;
   streak: StreakState;
+  timezone: string;
 }
 
 interface OpportunityTotals {
@@ -50,6 +52,13 @@ const WEEKDAY_LABELS = [
   "Saturday",
   "Sunday",
 ];
+const WEEKDAY_SHORT_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TIME_OF_DAY_BUCKETS = [
+  { endHour: 11, label: "Morning", startHour: 5, subtitle: "5am - 11am" },
+  { endHour: 17, label: "Afternoon", startHour: 11, subtitle: "11am - 5pm" },
+  { endHour: 23, label: "Evening", startHour: 17, subtitle: "5pm - 11pm" },
+  { endHour: 5, label: "Night", startHour: 23, subtitle: "11pm - 5am" },
+] as const;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -213,6 +222,123 @@ function buildWeeklyCompletion(
       weekStart,
     };
   });
+}
+
+function getLocalCompletionParts(
+  completedAt: string,
+  timezone: string
+): { hour: number; weekdayIndex: number } | null {
+  const date = new Date(completedAt);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hourCycle: "h23",
+    timeZone: timezone,
+    weekday: "short",
+  }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value);
+  const weekday = parts.find((part) => part.type === "weekday")?.value;
+  const weekdayIndex = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ].indexOf(weekday ?? "");
+
+  if (!Number.isFinite(hour) || weekdayIndex === -1) {
+    return null;
+  }
+
+  return { hour, weekdayIndex };
+}
+
+function getTimeOfDayIndex(hour: number): number {
+  return TIME_OF_DAY_BUCKETS.findIndex((bucket) => {
+    if (bucket.startHour < bucket.endHour) {
+      return hour >= bucket.startHour && hour < bucket.endHour;
+    }
+
+    return hour >= bucket.startHour || hour < bucket.endHour;
+  });
+}
+
+function buildWeekdayRhythm(
+  statuses: HabitPeriodStatusSnapshot[],
+  currentStart: string,
+  nowDate: string,
+  timezone: string
+): InsightsWeekdayRhythm {
+  const counts = Array.from({ length: TIME_OF_DAY_BUCKETS.length }, () =>
+    Array.from({ length: WEEKDAY_SHORT_LABELS.length }, () => 0)
+  );
+
+  for (const status of statuses) {
+    if (
+      !status.completed ||
+      !status.completedAt ||
+      status.periodEnd < currentStart ||
+      status.periodEnd > nowDate
+    ) {
+      continue;
+    }
+
+    const parts = getLocalCompletionParts(status.completedAt, timezone);
+    if (!parts) {
+      continue;
+    }
+
+    const timeOfDayIndex = getTimeOfDayIndex(parts.hour);
+    if (timeOfDayIndex < 0) {
+      continue;
+    }
+
+    const row = counts[timeOfDayIndex];
+    if (!row) {
+      continue;
+    }
+
+    row[parts.weekdayIndex] = (row[parts.weekdayIndex] ?? 0) + 1;
+  }
+
+  const maxCompletionCount = Math.max(0, ...counts.flat());
+
+  return {
+    cells: counts.flatMap((row, timeOfDayIndex) =>
+      row.map((completionCount, weekdayIndex) => {
+        const bucket = TIME_OF_DAY_BUCKETS[timeOfDayIndex] ?? {
+          label: "Time",
+        };
+        const weekday = WEEKDAY_SHORT_LABELS[weekdayIndex] ?? "Day";
+        return {
+          completionCount,
+          intensity:
+            maxCompletionCount === 0
+              ? 0
+              : Math.round((completionCount / maxCompletionCount) * 100),
+          label:
+            completionCount === 1
+              ? `${weekday} ${bucket.label}: 1 completion`
+              : `${weekday} ${bucket.label}: ${completionCount} completions`,
+          timeOfDay: bucket.label,
+          weekday,
+        };
+      })
+    ),
+    hasData: maxCompletionCount > 0,
+    maxCompletionCount,
+    subtitle: "Completion timing from recorded habit completions",
+    timeOfDayLabels: TIME_OF_DAY_BUCKETS.map(
+      (bucket) => `${bucket.label}\n${bucket.subtitle}`
+    ),
+    title: "Weekday rhythm by time of day",
+    weekdayLabels: WEEKDAY_SHORT_LABELS,
+  };
 }
 
 function buildSparkline(
@@ -466,6 +592,7 @@ export function buildInsightsDashboard({
   habitStatuses,
   nowDate,
   streak,
+  timezone,
 }: BuildInsightsDashboardOptions): InsightsDashboard {
   const currentStart = addDays(nowDate, -(CURRENT_PERIOD_DAYS - 1));
   const previousStart = addDays(currentStart, -PREVIOUS_PERIOD_DAYS);
@@ -624,10 +751,12 @@ export function buildInsightsDashboard({
         value: savedStreaks.toLocaleString(),
       },
     },
-    weekdayRhythmPlaceholder: {
-      body: "Time-of-day rhythm needs per-habit completion timestamps. This will unlock morning, afternoon, evening, and night patterns.",
-      title: "Weekday rhythm by time of day",
-    },
+    weekdayRhythm: buildWeekdayRhythm(
+      currentStatuses,
+      currentStart,
+      nowDate,
+      timezone
+    ),
     weeklyCompletion: buildWeeklyCompletion(currentStatuses, nowDate),
   };
 }
