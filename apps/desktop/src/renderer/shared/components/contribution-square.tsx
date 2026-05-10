@@ -14,7 +14,7 @@ import type {
 } from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/utils/date";
 
-interface GitHubCalendarCell {
+interface ContributionCalendarCell {
   completedCount: number;
   date: string;
   intensity: ContributionIntensity;
@@ -33,7 +33,9 @@ const CONTRIBUTION_INTENSITY_CLASSNAMES: Record<ContributionIntensity, string> =
     4: "border-primary/70 bg-primary/85",
   };
 
-function getContributionSquareClassName(cell: GitHubCalendarCell): string {
+function getContributionSquareClassName(
+  cell: ContributionCalendarCell
+): string {
   if (cell.status === "complete") {
     return HISTORY_STATUS_UI.complete.squareClassName;
   }
@@ -45,7 +47,11 @@ function getContributionSquareClassName(cell: GitHubCalendarCell): string {
   return CONTRIBUTION_INTENSITY_CLASSNAMES[cell.intensity];
 }
 
-export function ContributionSquare({ cell }: { cell: GitHubCalendarCell }) {
+export function ContributionSquare({
+  cell,
+}: {
+  cell: ContributionCalendarCell;
+}) {
   const completionLabel =
     cell.totalCount === 0
       ? "No daily habits tracked"

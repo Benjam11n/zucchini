@@ -4,7 +4,7 @@ import {
   buildContributionWeeks,
   formatContributionLabel,
 } from "@/renderer/features/history/lib/history-contributions";
-import { ContributionSquare } from "@/renderer/shared/components/github-contribution-square";
+import { ContributionSquare } from "@/renderer/shared/components/contribution-square";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistorySummaryDay } from "@/shared/domain/history";
