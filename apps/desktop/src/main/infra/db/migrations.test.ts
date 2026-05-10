@@ -85,6 +85,22 @@ describeWithSqlite("runMigrations", () => {
         "timer_session_id" text
       );
 
+      CREATE TABLE "habit_period_status" (
+        "completed" integer DEFAULT false NOT NULL,
+        "completed_count" integer DEFAULT 0 NOT NULL,
+        "frequency" text DEFAULT 'daily' NOT NULL,
+        "habit_category" text DEFAULT 'productivity' NOT NULL,
+        "habit_created_at" text NOT NULL,
+        "habit_id" integer NOT NULL,
+        "habit_name" text NOT NULL,
+        "habit_selected_weekdays" text,
+        "habit_sort_order" integer DEFAULT 0 NOT NULL,
+        "habit_target_count" integer DEFAULT 1 NOT NULL,
+        "period_end" text NOT NULL,
+        "period_start" text NOT NULL,
+        PRIMARY KEY("frequency", "period_start", "habit_id")
+      );
+
       CREATE TABLE "__drizzle_migrations" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
         "hash" text NOT NULL,

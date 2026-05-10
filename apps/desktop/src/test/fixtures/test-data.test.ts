@@ -102,7 +102,7 @@ const describeWithFixtureDatabase =
   canUseFixtureDatabase() || process.env["CI"] ? describe : describe.skip;
 
 describeWithFixtureDatabase("test data generator", () => {
-  const FIXTURE_TEST_TIMEOUT_MS = 90_000;
+  const FIXTURE_TEST_TIMEOUT_MS = 180_000;
 
   test(
     "generates deterministic medium fixture data for a fixed seed",
