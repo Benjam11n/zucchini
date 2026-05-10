@@ -70,6 +70,19 @@ describe("today history carousel", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("uses the loaded carousel height for the loading skeleton", () => {
+    render(
+      <TodayHistoryCarousel
+        hasLoadedHistorySummary={false}
+        history={[]}
+        onSelectDate={vi.fn()}
+        selectedDate={null}
+      />
+    );
+
+    expect(screen.getByLabelText("Loading recent history")).toHaveClass("h-28");
+  });
+
   it("selects dates and marks the selected date", () => {
     const onSelectDate = vi.fn();
 

@@ -23,6 +23,7 @@ interface TodayHistoryCarouselProps {
 }
 
 const MAX_HISTORY_DAYS = 14;
+const HISTORY_CAROUSEL_HEIGHT_CLASS = "h-28";
 const HISTORY_SKELETON_ITEMS = Array.from(
   { length: MAX_HISTORY_DAYS },
   (_, index) => `history-skeleton-${index}`
@@ -32,7 +33,10 @@ function TodayHistoryCarouselSkeleton() {
   return (
     <div
       aria-label="Loading recent history"
-      className="relative flex h-[5.75rem] min-w-0 max-w-full justify-end overflow-hidden rounded-md bg-card px-1 ring-1 ring-foreground/10 sm:px-2"
+      className={cn(
+        "relative flex min-w-0 max-w-full justify-end overflow-hidden rounded-md bg-card px-1 ring-1 ring-foreground/10 sm:px-2",
+        HISTORY_CAROUSEL_HEIGHT_CLASS
+      )}
     >
       <div className="flex min-w-full justify-end gap-2 sm:gap-4">
         {HISTORY_SKELETON_ITEMS.map((skeletonItem) => (
@@ -93,7 +97,12 @@ export function TodayHistoryCarousel({
   const days = [...history].slice(0, MAX_HISTORY_DAYS).toReversed();
 
   return (
-    <div className="relative min-w-0 max-w-full overflow-hidden rounded-md bg-card px-1 text-card-foreground ring-1 ring-foreground/10 sm:px-2">
+    <div
+      className={cn(
+        "relative min-w-0 max-w-full overflow-hidden rounded-md bg-card px-1 text-card-foreground ring-1 ring-foreground/10 sm:px-2",
+        HISTORY_CAROUSEL_HEIGHT_CLASS
+      )}
+    >
       <Carousel
         setApi={setCarouselApi}
         opts={{
