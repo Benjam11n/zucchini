@@ -68,6 +68,7 @@ function TodayPageComponent({
   const historicalTodaySelection = useHistoricalTodaySelection(
     historicalHistorySummary
   );
+  const isViewingHistoricalDay = historicalTodaySelection.selectedDate !== null;
   useTodayPopups({
     completedCount: completedDailyHabitCount,
     dailyHabits,
@@ -110,7 +111,7 @@ function TodayPageComponent({
           />
         </section>
 
-        {historicalTodaySelection.selectedDate ? (
+        {isViewingHistoricalDay ? (
           <section>
             {historicalTodaySelection.isLoading ||
             !historicalTodaySelection.selectedDay ? (
@@ -126,81 +127,85 @@ function TodayPageComponent({
           </section>
         ) : null}
 
-        <section>
-          <HabitChecklist
-            icon={ListChecks}
-            completedCount={completedDailyHabitCount}
-            emptyMessage="No daily habits yet. Create one to start building momentum."
-            emptyAction={
-              <TodayHabitManagerDialog
-                habits={managedHabits}
-                onArchiveHabit={onArchiveHabit}
-                onCreateHabit={onCreateHabit}
-                onRenameHabit={onRenameHabit}
-                onReorderHabits={onReorderHabits}
-                onUnarchiveHabit={onUnarchiveHabit}
-                onUpdateHabitCategory={onUpdateHabitCategory}
-                onUpdateHabitFrequency={onUpdateHabitFrequency}
-                onUpdateHabitTargetCount={onUpdateHabitTargetCount}
-                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-                trigger={
-                  <Button size="sm" type="button" variant="outline">
-                    <Plus className="size-4" />
-                    Create your first habit
-                  </Button>
+        {isViewingHistoricalDay ? null : (
+          <>
+            <section>
+              <HabitChecklist
+                icon={ListChecks}
+                completedCount={completedDailyHabitCount}
+                emptyMessage="No daily habits yet. Create one to start building momentum."
+                emptyAction={
+                  <TodayHabitManagerDialog
+                    habits={managedHabits}
+                    onArchiveHabit={onArchiveHabit}
+                    onCreateHabit={onCreateHabit}
+                    onRenameHabit={onRenameHabit}
+                    onReorderHabits={onReorderHabits}
+                    onUnarchiveHabit={onUnarchiveHabit}
+                    onUpdateHabitCategory={onUpdateHabitCategory}
+                    onUpdateHabitFrequency={onUpdateHabitFrequency}
+                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                    trigger={
+                      <Button size="sm" type="button" variant="outline">
+                        <Plus className="size-4" />
+                        Create your first habit
+                      </Button>
+                    }
+                  />
                 }
+                headerActions={
+                  <TodayHabitManagerDialog
+                    habits={managedHabits}
+                    onArchiveHabit={onArchiveHabit}
+                    onCreateHabit={onCreateHabit}
+                    onRenameHabit={onRenameHabit}
+                    onReorderHabits={onReorderHabits}
+                    onUnarchiveHabit={onUnarchiveHabit}
+                    onUpdateHabitCategory={onUpdateHabitCategory}
+                    onUpdateHabitFrequency={onUpdateHabitFrequency}
+                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
+                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+                  />
+                }
+                habits={dailyHabits}
+                isPaused={state.dayStatus !== null}
+                getKeyboardRowProps={getRowProps}
+                onToggleHabit={handleToggleDailyHabit}
+                {...(state.habitStreaks
+                  ? { habitStreaks: state.habitStreaks }
+                  : {})}
+                {...(state.categoryStreaks
+                  ? { categoryStreaks: state.categoryStreaks }
+                  : {})}
               />
-            }
-            headerActions={
-              <TodayHabitManagerDialog
-                habits={managedHabits}
-                onArchiveHabit={onArchiveHabit}
-                onCreateHabit={onCreateHabit}
-                onRenameHabit={onRenameHabit}
-                onReorderHabits={onReorderHabits}
-                onUnarchiveHabit={onUnarchiveHabit}
-                onUpdateHabitCategory={onUpdateHabitCategory}
-                onUpdateHabitFrequency={onUpdateHabitFrequency}
-                onUpdateHabitTargetCount={onUpdateHabitTargetCount}
-                onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-              />
-            }
-            habits={dailyHabits}
-            isPaused={state.dayStatus !== null}
-            getKeyboardRowProps={getRowProps}
-            onToggleHabit={handleToggleDailyHabit}
-            {...(state.habitStreaks
-              ? { habitStreaks: state.habitStreaks }
-              : {})}
-            {...(state.categoryStreaks
-              ? { categoryStreaks: state.categoryStreaks }
-              : {})}
-          />
-        </section>
+            </section>
 
-        {state.habitCarryovers && state.habitCarryovers.length > 0 ? (
-          <section>
-            <CarryoverChecklist
-              carryovers={state.habitCarryovers}
-              getKeyboardRowProps={getRowProps}
-              onToggleCarryover={handleToggleCarryover}
-            />
-          </section>
-        ) : null}
+            {state.habitCarryovers && state.habitCarryovers.length > 0 ? (
+              <section>
+                <CarryoverChecklist
+                  carryovers={state.habitCarryovers}
+                  getKeyboardRowProps={getRowProps}
+                  onToggleCarryover={handleToggleCarryover}
+                />
+              </section>
+            ) : null}
 
-        {periodicHabits.length > 0 ||
-        (state.focusQuotaGoals ?? []).length > 0 ? (
-          <section>
-            <PeriodicHabitChecklist
-              dateKey={state.date}
-              focusQuotaGoals={state.focusQuotaGoals ?? []}
-              habits={periodicHabits}
-              getKeyboardRowProps={getRowProps}
-              onDecrementHabitProgress={onDecrementHabitProgress}
-              onIncrementHabitProgress={handleIncrementPeriodicHabit}
-            />
-          </section>
-        ) : null}
+            {periodicHabits.length > 0 ||
+            (state.focusQuotaGoals ?? []).length > 0 ? (
+              <section>
+                <PeriodicHabitChecklist
+                  dateKey={state.date}
+                  focusQuotaGoals={state.focusQuotaGoals ?? []}
+                  habits={periodicHabits}
+                  getKeyboardRowProps={getRowProps}
+                  onDecrementHabitProgress={onDecrementHabitProgress}
+                  onIncrementHabitProgress={handleIncrementPeriodicHabit}
+                />
+              </section>
+            ) : null}
+          </>
+        )}
       </div>
     </>
   );

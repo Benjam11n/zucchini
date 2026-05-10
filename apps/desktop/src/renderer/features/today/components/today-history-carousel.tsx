@@ -11,7 +11,7 @@ import {
 import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
-import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
+import { tapPress } from "@/renderer/shared/lib/motion";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -110,9 +110,9 @@ export function TodayHistoryCarousel({
           dragFree: true,
           startIndex: Math.max(days.length - 1, 0),
         }}
-        className="min-w-0 max-w-full overflow-hidden overscroll-x-contain"
+        className="flex h-full min-w-0 max-w-full items-center overflow-hidden overscroll-x-contain"
       >
-        <CarouselContent className="ml-0">
+        <CarouselContent className="ml-0 items-center">
           {days.map((day) => {
             const dayOfWeek = formatDateKey(day.date, { weekday: "short" });
             const isSelected = day.date === selectedDate;
@@ -124,24 +124,31 @@ export function TodayHistoryCarousel({
                   type="button"
                   aria-pressed={isSelected}
                   className={cn(
-                    "flex cursor-pointer flex-col items-center gap-2 rounded-md p-2 transition-all duration-150 hover:bg-background/45 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    isSelected &&
-                      "selected-day-pulse bg-primary/8 ring-2 ring-primary/35 shadow-sm"
+                    "flex cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-1 opacity-80 transition-opacity duration-150 hover:opacity-100 focus-visible:outline-none",
+                    isSelected && "opacity-100"
                   )}
                   onClick={() => {
                     onSelectDate(day.date);
                   }}
-                  whileHover={hoverLift}
                   whileTap={tapPress}
                 >
                   <HabitActivityRingGlyph
                     categoryProgress={day.categoryProgress}
                     size={48}
                   />
-                  <span className="text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase">
+                  <span
+                    className={cn(
+                      "text-[0.65rem] font-semibold tracking-widest text-muted-foreground uppercase",
+                      isSelected && "text-foreground"
+                    )}
+                  >
                     {dayOfWeek}
                   </span>
-                  <HistoryStatusBadge compact status={activityStatus} />
+                  <HistoryStatusBadge
+                    className={cn(isSelected && "border-primary/45")}
+                    compact
+                    status={activityStatus}
+                  />
                 </m.button>
               </CarouselItem>
             );

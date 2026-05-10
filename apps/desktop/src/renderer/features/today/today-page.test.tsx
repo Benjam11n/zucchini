@@ -293,6 +293,7 @@ describe("today page", () => {
     expect(await screen.findByText("Historical planning")).toBeInTheDocument();
     expect(screen.getByText("Historical stretch")).toBeInTheDocument();
     expect(screen.getByText("Historical weekly review")).toBeInTheDocument();
+    expect(screen.queryByText("Plan top task")).toBeNull();
     expect(screen.getByText("Beyond Today")).toBeInTheDocument();
     expect(screen.getByText("Focus quota")).toBeInTheDocument();
     expect(

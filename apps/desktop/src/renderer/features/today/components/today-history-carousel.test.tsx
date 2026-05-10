@@ -100,6 +100,8 @@ describe("today history carousel", () => {
 
     expect(onSelectDate).toHaveBeenCalledWith("2026-03-12");
     expect(selectedButton).toHaveAttribute("aria-pressed", "true");
+    expect(selectedButton).not.toHaveClass("focus-visible:ring-2");
+    expect(selectedButton).not.toHaveClass("selected-day-pulse");
   });
 
   it("shows status labels for non-complete historical days", () => {
