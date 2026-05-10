@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -12,6 +11,10 @@ interface ConfirmIconButtonProps {
   resetKey?: string | number;
   size?: "icon" | "icon-lg" | "icon-sm" | "icon-xs" | "sm";
   variant?: "destructive" | "ghost" | "outline" | "secondary";
+}
+
+function getConfirmSize(size: NonNullable<ConfirmIconButtonProps["size"]>) {
+  return size === "icon-xs" ? "xs" : "sm";
 }
 
 export function ConfirmIconButton({
@@ -45,11 +48,11 @@ export function ConfirmIconButton({
         await onConfirm();
         setConfirmationState({ isConfirming: false, resetKey });
       }}
-      size={size}
+      size={isConfirming ? getConfirmSize(size) : size}
       type="button"
       variant={variant}
     >
-      {isConfirming ? <X className="size-3.5" /> : icon}
+      {isConfirming ? "Confirm" : icon}
     </Button>
   );
 }
