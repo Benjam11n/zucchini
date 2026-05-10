@@ -9,12 +9,19 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph";
+import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar";
 import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
-import { useHistoryDayDetail } from "@/renderer/features/history/hooks/use-history-day-detail";
 import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
 import { Button } from "@/renderer/shared/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/renderer/shared/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +57,6 @@ export function HistoryPage({
   historyLoadError,
   onLoadHistoryYears,
   onLoadWeeklyReviewOverview,
-  onNavigateToToday,
   onSelectHistoryMonth,
   todayDate,
   selectedHistoryYear,
@@ -62,6 +68,7 @@ export function HistoryPage({
   viewModel,
 }: HistoryPageProps) {
   const [historyMode, setHistoryMode] = useState<HistoryViewMode>("timeline");
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   const localViewModel = useHistoryViewState({
     history,
     historyYears,
@@ -71,25 +78,28 @@ export function HistoryPage({
   const {
     availableYears,
     filteredHistory,
+    monthStats,
+    nextDateKey,
+    previousDateKey,
     selectDateKey,
     selectedDay: selectedSummaryDay,
     setViewState,
+    trendPoints,
     viewState,
   } = viewModel ?? localViewModel;
-  const selectedDateKey = selectedSummaryDay?.date ?? viewState.selectedDateKey;
-  const isMobileDayPanelVisible = useMediaQuery("(max-width: 1023px)");
-  const shouldLoadMobileDayDetail =
-    historyMode === "timeline" && isMobileDayPanelVisible;
-  const selectedDayDetail = useHistoryDayDetail(
-    shouldLoadMobileDayDetail ? selectedDateKey : null,
-    filteredHistory
-  );
+  const isNarrowHistoryLayout = useMediaQuery("(max-width: 1023px)");
   const visibleMonth =
     viewState.visibleMonth ?? parseDateKey(`${viewState.selectedYear}-01-01`);
 
   useEffect(() => {
     onLoadHistoryYears();
   }, [onLoadHistoryYears]);
+
+  useEffect(() => {
+    if (!(isNarrowHistoryLayout && historyMode === "timeline")) {
+      setIsMobileSummaryOpen(false);
+    }
+  }, [historyMode, isNarrowHistoryLayout]);
 
   const visibleMonthRange = useMemo(
     () => getMonthRange(visibleMonth),
@@ -128,6 +138,9 @@ export function HistoryPage({
   const selectHistoryDate = (dateKey: string) => {
     if (filteredHistory.some((day) => day.date === dateKey)) {
       selectDateKey(dateKey);
+      if (isNarrowHistoryLayout) {
+        setIsMobileSummaryOpen(true);
+      }
       return;
     }
 
@@ -139,6 +152,9 @@ export function HistoryPage({
       visibleMonth: nextMonth,
     }));
     onSelectHistoryMonth(nextMonth.getFullYear(), nextMonth.getMonth() + 1);
+    if (isNarrowHistoryLayout) {
+      setIsMobileSummaryOpen(true);
+    }
   };
   const showMonth = (offset: number) => {
     const nextMonth = getMonthOffset(visibleMonth, offset);
@@ -258,9 +274,7 @@ export function HistoryPage({
             <HistoryTimelineContent
               canShowNextMonth={canShowNextMonth}
               canShowPreviousMonth={canShowPreviousMonth}
-              onNavigateToToday={onNavigateToToday}
               selectedDateKey={viewState.selectedDateKey}
-              selectedDayDetail={selectedDayDetail}
               selectHistoryDate={selectHistoryDate}
               showMonth={showMonth}
               todayDate={todayDate}
@@ -283,6 +297,35 @@ export function HistoryPage({
           </TabsContent>
         </m.div>
       </Tabs>
+      <Dialog
+        open={
+          isNarrowHistoryLayout &&
+          historyMode === "timeline" &&
+          isMobileSummaryOpen &&
+          selectedSummaryDay !== null
+        }
+        onOpenChange={setIsMobileSummaryOpen}
+      >
+        <DialogContent className="max-h-[88vh] w-[min(92vw,24rem)] overflow-y-auto">
+          <DialogHeader className="sr-only">
+            <DialogTitle>History day summary</DialogTitle>
+            <DialogDescription>
+              Selected day metrics and month trend.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-5">
+            <HistorySidebar
+              monthStats={monthStats}
+              nextDateKey={nextDateKey}
+              previousDateKey={previousDateKey}
+              selectedDay={selectedSummaryDay}
+              todayDate={todayDate}
+              trendPoints={trendPoints}
+              onSelectDate={selectHistoryDate}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </LazyMotion>
   );
 }

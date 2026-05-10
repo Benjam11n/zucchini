@@ -142,13 +142,6 @@ export function getHabitCategoryPresentation(
   };
 }
 
-export function getHabitCategoryUi(
-  category: HabitCategory,
-  preferences = DEFAULT_CATEGORY_PREFERENCES
-) {
-  return getHabitCategoryPresentation(category, preferences);
-}
-
 export function getDefaultHabitCategoryPreferences() {
   return DEFAULT_CATEGORY_PREFERENCES;
 }

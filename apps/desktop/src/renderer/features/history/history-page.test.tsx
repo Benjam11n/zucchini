@@ -3,8 +3,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as HistoryDayPanelModule from "@/renderer/features/history/components/history-day-panel";
-import type * as HistoryDayDetailModule from "@/renderer/features/history/hooks/use-history-day-detail";
 import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
@@ -80,40 +78,6 @@ vi.mock<typeof TabsModule>(
       },
     };
   }
-);
-
-vi.mock<typeof HistoryDayPanelModule>(
-  import("@/renderer/features/history/components/history-day-panel"),
-  () => ({
-    HistoryDayPanel: ({
-      isToday,
-      selectedDay,
-    }: {
-      isToday?: boolean;
-      onNavigateToToday: () => void;
-      selectedDay: HistoryDay | null;
-    }) => (
-      <div data-testid="day-panel">
-        {selectedDay?.date ?? "none"}:{String(Boolean(isToday))}
-      </div>
-    ),
-  })
-);
-
-vi.mock<typeof HistoryDayDetailModule>(
-  import("@/renderer/features/history/hooks/use-history-day-detail"),
-  () => ({
-    useHistoryDayDetail: (selectedDate, history) => ({
-      isLoading: false,
-      selectedDay:
-        (selectedDate
-          ? ({
-              ...history.find((day) => day.date === selectedDate),
-              habits: [],
-            } as HistoryDay)
-          : null) ?? null,
-    }),
-  })
 );
 
 vi.mock(

@@ -1,10 +1,8 @@
 import { m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { HistoryDayPanel } from "@/renderer/features/history/components/history-day-panel";
 import { TimelineDayRow } from "@/renderer/features/history/components/timeline-day-row";
 import { TimelineHeaderRow } from "@/renderer/features/history/components/timeline-header-row";
-import type { useHistoryDayDetail } from "@/renderer/features/history/hooks/use-history-day-detail";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import type { HistorySummaryDay } from "@/shared/domain/history";
@@ -14,15 +12,10 @@ interface HistoryTimelineContentProps {
   canShowNextMonth: boolean;
   canShowPreviousMonth: boolean;
   selectedDateKey: string | null;
-  selectedDayDetail: {
-    isLoading: boolean;
-    selectedDay: ReturnType<typeof useHistoryDayDetail>["selectedDay"];
-  };
   todayDate: string;
   visibleMonth: Date;
   visibleMonthDays: HistorySummaryDay[];
   visibleMonthLabel: string;
-  onNavigateToToday: () => void;
   selectHistoryDate: (dateKey: string) => void;
   showMonth: (offset: number) => void;
 }
@@ -30,9 +23,7 @@ interface HistoryTimelineContentProps {
 export function HistoryTimelineContent({
   canShowNextMonth,
   canShowPreviousMonth,
-  onNavigateToToday,
   selectedDateKey,
-  selectedDayDetail,
   selectHistoryDate,
   showMonth,
   todayDate,
@@ -96,20 +87,6 @@ export function HistoryTimelineContent({
           <div className="rounded-md border border-dashed border-border/60 bg-card/45 px-4 py-8 text-center text-sm text-muted-foreground">
             No history for this month.
           </div>
-        )}
-      </div>
-
-      <div className="lg:hidden">
-        {selectedDayDetail.isLoading ? (
-          <div className="rounded-md border border-dashed border-border/60 bg-card/60 px-4 py-6 text-sm text-muted-foreground">
-            Loading history…
-          </div>
-        ) : (
-          <HistoryDayPanel
-            isToday={selectedDayDetail.selectedDay?.date === todayDate}
-            onNavigateToToday={onNavigateToToday}
-            selectedDay={selectedDayDetail.selectedDay}
-          />
         )}
       </div>
     </m.section>
