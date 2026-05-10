@@ -50,7 +50,7 @@ export class TodayReadModelService {
     this.cachedTodayState = null;
   }
 
-  patchHabit(habitId: number): HabitStatusPatch {
+  getFreshHabitStatusPatch(habitId: number): HabitStatusPatch {
     const today = this.clock.todayKey();
     const habit = this.repository.getHabitWithStatus(today, habitId);
 

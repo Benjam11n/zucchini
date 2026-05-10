@@ -313,7 +313,7 @@ export class HabitsApplicationService implements HabitsService {
       this.repository.ensureStatusRowsForDate(today);
       mutate(today);
 
-      return this.todayReadModel.patchHabit(habitId);
+      return this.todayReadModel.getFreshHabitStatusPatch(habitId);
     });
   }
 
