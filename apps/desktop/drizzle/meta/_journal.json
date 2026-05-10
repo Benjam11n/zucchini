@@ -6,35 +6,35 @@
       "idx": 0,
       "version": "6",
       "when": 1772897880970,
-      "tag": "0000_hard_snowbird",
+      "tag": "0000_initial_habits_daily_summary",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
       "when": 1772899605534,
-      "tag": "0001_tired_tempest",
+      "tag": "0001_habit_period_status",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "6",
       "when": 1772947036007,
-      "tag": "0002_secret_namorita",
+      "tag": "0002_reminder_runtime_state",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "6",
       "when": 1773239247542,
-      "tag": "0003_past_meggan",
+      "tag": "0003_habit_period_status_indexes",
       "breakpoints": true
     },
     {
       "idx": 4,
       "version": "6",
       "when": 1773259200000,
-      "tag": "0004_smart_pomodoro",
+      "tag": "0004_focus_sessions",
       "breakpoints": true
     },
     {
@@ -48,7 +48,7 @@
       "idx": 6,
       "version": "6",
       "when": 1773506400000,
-      "tag": "0006_kind_changeling",
+      "tag": "0006_habit_weekday_schedule",
       "breakpoints": true
     },
     {
