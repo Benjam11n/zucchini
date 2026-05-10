@@ -323,7 +323,7 @@ describeWithFixtureDatabase("test data generator", () => {
         hasTodayHabits: todayState.habits.length > 0,
         hasWeeklyReview: overview.latestReview !== null,
         hasWindDownActions: (todayState.windDown?.actions.length ?? 0) > 0,
-        includesLongerHabits: todayState.habits.some(
+        includesPeriodicHabits: todayState.habits.some(
           (habit) =>
             habit.frequency !== "daily" &&
             (habit.targetCount ?? 1) > 1 &&
@@ -340,7 +340,7 @@ describeWithFixtureDatabase("test data generator", () => {
         hasTodayHabits: true,
         hasWeeklyReview: true,
         hasWindDownActions: true,
-        includesLongerHabits: true,
+        includesPeriodicHabits: true,
         reviewDays: 7,
         reviewHabitMetrics: true,
         weekOptions: true,

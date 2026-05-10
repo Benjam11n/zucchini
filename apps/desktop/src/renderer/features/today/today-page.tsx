@@ -2,7 +2,7 @@
  * Today tab page.
  *
  * This screen turns today's habit state into the daily flow the user sees:
- * recent history, streak summary, daily checklist, longer-cycle habits, and
+ * recent history, streak summary, daily checklist, periodic habits, and
  * celebration toasts.
  */
 import { ListChecks, Plus } from "lucide-react";

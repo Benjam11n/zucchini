@@ -61,8 +61,8 @@ function createFocusQuotaGoal(
   };
 }
 
-describe("longer habit checklist", () => {
-  it("renders nothing without longer habits or focus quota goals", () => {
+describe("periodic habit checklist", () => {
+  it("renders nothing without periodic habits or focus quota goals", () => {
     const { container } = render(
       <PeriodicHabitChecklist
         dateKey="2026-03-13"
@@ -222,7 +222,7 @@ describe("longer habit checklist", () => {
     expect(onDecrementHabitProgress).not.toHaveBeenCalled();
   });
 
-  it("caps aggregate progress when longer habits exceed their targets", () => {
+  it("caps aggregate progress when periodic habits exceed their targets", () => {
     render(
       <PeriodicHabitChecklist
         dateKey="2026-03-13"
@@ -269,7 +269,7 @@ describe("longer habit checklist", () => {
     expect(progressBar).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("uses wrapping row layouts so longer-goal content can shrink with the window", () => {
+  it("uses wrapping row layouts so periodic-goal content can shrink with the window", () => {
     const { container } = render(
       <PeriodicHabitChecklist
         dateKey="2026-03-13"
