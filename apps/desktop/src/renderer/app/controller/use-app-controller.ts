@@ -12,6 +12,7 @@ import {
   useAppControllerCoreState,
   useFocusPageState,
   useHistoryPageState,
+  useInsightsPageState,
   useNonSettingsHistoryState,
   useSettingsPageState,
   useWeeklyReviewState,
@@ -43,6 +44,12 @@ const DEFAULT_HISTORY_PAGE_STATE = {
   selectedWeeklyReview: null,
   weeklyReviewError: null,
 } satisfies NonNullable<ReturnType<typeof useHistoryPageState>>;
+
+const DEFAULT_INSIGHTS_PAGE_STATE = {
+  insightsDashboard: null,
+  insightsError: null,
+  insightsPhase: "idle",
+} satisfies NonNullable<ReturnType<typeof useInsightsPageState>>;
 
 const DEFAULT_SETTINGS_PAGE_STATE = {
   settingsFieldErrors: EMPTY_SETTINGS_FIELD_ERRORS,
@@ -88,6 +95,9 @@ function buildControllerActions({
       await actions.loadFocusSessions(true);
     },
     handleRetryHistoryLoad: actions.loadHistoryYears,
+    handleRetryInsightsLoad: async () => {
+      await actions.loadInsightsDashboard(true);
+    },
     handleSelectHistoryMonth: actions.selectHistoryMonth,
     handleSetDayStatus: actions.handleSetDayStatus,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
@@ -126,6 +136,7 @@ function buildControllerState({
   focusPageState,
   historyPageState,
   historyState,
+  insightsPageState,
   settingsPageState,
   weeklyReviewState,
 }: {
@@ -133,6 +144,7 @@ function buildControllerState({
   focusPageState: ReturnType<typeof useFocusPageState>;
   historyPageState: ReturnType<typeof useHistoryPageState>;
   historyState: ReturnType<typeof useNonSettingsHistoryState>;
+  insightsPageState: ReturnType<typeof useInsightsPageState>;
   settingsPageState: ReturnType<typeof useSettingsPageState>;
   weeklyReviewState: ReturnType<typeof useWeeklyReviewState>;
 }) {
@@ -147,6 +159,8 @@ function buildControllerState({
   const historyStateWithDefaults = historyState ?? DEFAULT_HISTORY_STATE;
   const historyPageStateWithDefaults =
     historyPageState ?? DEFAULT_HISTORY_PAGE_STATE;
+  const insightsPageStateWithDefaults =
+    insightsPageState ?? DEFAULT_INSIGHTS_PAGE_STATE;
   const settingsPageStateWithDefaults = {
     settingsSavePhase: coreState.settingsSavePhase,
     ...DEFAULT_SETTINGS_PAGE_STATE,
@@ -159,6 +173,7 @@ function buildControllerState({
     ...focusState,
     ...historyStateWithDefaults,
     ...historyPageStateWithDefaults,
+    ...insightsPageStateWithDefaults,
     isWeeklyReviewSpotlightOpen: weeklyReviewState.isWeeklyReviewSpotlightOpen,
     managedHabits: coreState.managedHabits ?? EMPTY_MANAGED_HABITS,
     settingsDraft: coreState.settingsDraft,
@@ -175,6 +190,7 @@ export function useAppController() {
   const focusPageState = useFocusPageState();
   const historyPageState = useHistoryPageState();
   const historyState = useNonSettingsHistoryState();
+  const insightsPageState = useInsightsPageState();
   const settingsPageState = useSettingsPageState();
   const systemTheme = useSystemTheme();
   const tab = useUiStore((state) => state.tab);
@@ -225,6 +241,7 @@ export function useAppController() {
       focusPageState,
       historyPageState,
       historyState,
+      insightsPageState,
       settingsPageState,
       weeklyReviewState,
     }),

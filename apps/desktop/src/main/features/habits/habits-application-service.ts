@@ -2,6 +2,7 @@ import {
   executeHabitServiceCommand,
   readHabitServiceQuery,
 } from "@/main/features/habits/habits-ipc-dispatch";
+import { buildInsightsDashboard } from "@/main/features/insights/builder";
 import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import {
@@ -71,6 +72,7 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
+import type { InsightsDashboard } from "@/shared/domain/insights";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -130,6 +132,7 @@ export interface HabitsService {
   getHistoryYears(): number[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
+  getInsightsDashboard(): InsightsDashboard;
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
@@ -865,6 +868,30 @@ export class HabitsApplicationService implements HabitsService {
           weekEnd
         ),
         weekStart: normalizedWeekStart,
+      });
+    });
+  }
+
+  getInsightsDashboard(): InsightsDashboard {
+    return this.withSyncedRead("getInsightsDashboard", () => {
+      const today = this.getTodayKey();
+      const rangeStart = addDays(today, -179);
+
+      return buildInsightsDashboard({
+        dailySummaries: this.repository.getDailySummariesInRange(
+          rangeStart,
+          today
+        ),
+        focusSessions: this.repository.getFocusSessionsInRange(
+          rangeStart,
+          today
+        ),
+        habitStatuses: this.repository.getHabitPeriodStatusesEndingInRange(
+          rangeStart,
+          today
+        ),
+        nowDate: today,
+        streak: this.repository.getPersistedStreakState(),
       });
     });
   }

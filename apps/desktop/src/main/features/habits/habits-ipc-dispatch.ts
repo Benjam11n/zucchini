@@ -199,6 +199,9 @@ export function readHabitServiceQuery(
     case "habit.list": {
       return service.getHabits();
     }
+    case "insights.dashboard": {
+      return service.getInsightsDashboard();
+    }
     case "history.get": {
       return service.getHistory(query.payload?.limit);
     }

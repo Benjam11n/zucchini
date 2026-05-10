@@ -527,6 +527,7 @@ export const habitQuerySchema = z.discriminatedUnion("type", [
     .strict(),
   z.object({ type: z.literal("focusTimer.getState") }).strict(),
   z.object({ type: z.literal("habit.list") }).strict(),
+  z.object({ type: z.literal("insights.dashboard") }).strict(),
   z
     .object({
       payload: optionalLimitPayloadSchema,

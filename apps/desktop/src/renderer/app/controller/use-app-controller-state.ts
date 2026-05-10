@@ -12,6 +12,7 @@ import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
+import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 
@@ -81,6 +82,14 @@ export function useHistoryPageState() {
   return useTabStoreSelector("history", useWeeklyReviewStore, (state) => ({
     selectedWeeklyReview: state.selectedWeeklyReview,
     weeklyReviewError: state.weeklyReviewError,
+  }));
+}
+
+export function useInsightsPageState() {
+  return useTabStoreSelector("insights", useInsightsStore, (state) => ({
+    insightsDashboard: state.dashboard,
+    insightsError: state.error,
+    insightsPhase: state.phase,
   }));
 }
 

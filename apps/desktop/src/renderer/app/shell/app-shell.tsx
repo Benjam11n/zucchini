@@ -37,6 +37,8 @@ export function AppShell({
   const contentGridClassName = rightSidebar
     ? "lg:grid-cols-[72px_minmax(0,1fr)_280px] xl:grid-cols-[96px_minmax(0,1fr)_340px]"
     : "lg:grid-cols-[72px_minmax(0,1fr)] xl:grid-cols-[96px_minmax(0,1fr)]";
+  const contentWidthClassName =
+    tab === "insights" ? "max-w-6xl" : "max-w-2xl xl:max-w-3xl";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -54,7 +56,9 @@ export function AppShell({
               <AppNav />
 
               <section className="min-w-0 max-w-full overflow-x-hidden px-4 py-6 sm:px-6 lg:px-4 lg:py-8 xl:px-8">
-                <div className="mx-auto min-w-0 w-full max-w-2xl xl:max-w-3xl">
+                <div
+                  className={`mx-auto min-w-0 w-full ${contentWidthClassName}`}
+                >
                   {topBanner ? <div className="mb-4">{topBanner}</div> : null}
                   <TabsContent className="mt-0 min-w-0" forceMount value={tab}>
                     <AnimatePresence initial={false} mode="wait">

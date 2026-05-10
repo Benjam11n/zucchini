@@ -10,6 +10,7 @@ import {
   validateHabitFrequency,
   validateHabitId,
   validateHabitName,
+  validateHabitQuery,
   validateHabitTargetCount,
   validateHabitWeekdays,
   validateNotificationIconFilename,
@@ -154,6 +155,12 @@ describe("ipc validation", () => {
 
   it("rejects invalid focus session limits", () => {
     expect(() => validateFocusSessionLimit(0)).toThrow(IpcValidationError);
+  });
+
+  it("accepts the insights dashboard query", () => {
+    expect(validateHabitQuery({ type: "insights.dashboard" })).toStrictEqual({
+      type: "insights.dashboard",
+    });
   });
 
   it("rejects empty habit names", () => {

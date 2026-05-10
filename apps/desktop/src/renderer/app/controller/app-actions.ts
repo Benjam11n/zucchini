@@ -8,12 +8,14 @@
 import { createBootActions } from "./boot-actions";
 import { createFocusActions } from "./focus-actions";
 import { createHistoryActions } from "./history-actions";
+import { createInsightsActions } from "./insights-actions";
 import { createSettingsActions } from "./settings-actions";
 import { createTodayActions } from "./today-actions";
 
 export function createAppActions() {
   const focusActions = createFocusActions();
   const historyActions = createHistoryActions();
+  const insightsActions = createInsightsActions();
   const settingsActions = createSettingsActions();
   const todayActions = createTodayActions({
     loadFocusSessions: focusActions.loadFocusSessions,
@@ -26,6 +28,7 @@ export function createAppActions() {
     ...bootActions,
     ...focusActions,
     ...historyActions,
+    ...insightsActions,
     ...settingsActions,
     ...todayActions,
   };

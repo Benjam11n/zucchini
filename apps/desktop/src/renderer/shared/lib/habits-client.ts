@@ -123,6 +123,10 @@ export const habitsClient = {
     query({
       type: "history.years",
     }),
+  getInsightsDashboard: () =>
+    query({
+      type: "insights.dashboard",
+    }),
   getTodayState: () =>
     query({
       type: "today.get",

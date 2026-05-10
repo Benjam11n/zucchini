@@ -2,6 +2,7 @@ import {
   BarChart3,
   CalendarDays,
   CircleHelp,
+  LineChart,
   MoonStar,
   Settings2,
   Timer,
@@ -10,17 +11,12 @@ import {
 import { FeaturesCarouselDialog } from "@/renderer/app/shell/feature-highlights-dialog";
 import { MASCOTS } from "@/renderer/assets/mascots";
 import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/renderer/shared/components/ui/card";
 import { TabsList, TabsTrigger } from "@/renderer/shared/components/ui/tabs";
 
 export function AppNav() {
   return (
     <aside className="flex border-b border-border/70 bg-card px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:border-r lg:border-b-0 lg:px-2 lg:py-6 xl:px-3">
-      <div className="flex items-center gap-3 lg:flex-col lg:items-center lg:gap-6">
+      <div className="flex w-full items-center gap-3 lg:w-auto lg:flex-col lg:items-center lg:gap-6">
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-1 lg:text-center">
           <img
             alt="Zucchini logo"
@@ -58,6 +54,14 @@ export function AppNav() {
             <MoonStar className="size-5" />
           </TabsTrigger>
           <TabsTrigger
+            aria-label="Insights"
+            className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            value="insights"
+          >
+            <span className="sr-only">Insights</span>
+            <LineChart className="size-5" />
+          </TabsTrigger>
+          <TabsTrigger
             aria-label="History"
             className="size-14 border-border/70 bg-transparent p-0 data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             value="history"
@@ -75,8 +79,8 @@ export function AppNav() {
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex flex-1 items-center gap-3 lg:hidden">
-          <TabsList className="grid flex-1 grid-cols-5 bg-muted/80 p-1">
+        <div className="flex flex-1 justify-center lg:hidden">
+          <TabsList className="grid w-full max-w-5xl grid-cols-6 bg-muted/80 p-1">
             <TabsTrigger className="px-4" value="today">
               <CalendarDays className="size-4" />
               Today
@@ -89,6 +93,10 @@ export function AppNav() {
               <MoonStar className="size-4" />
               Wind Down
             </TabsTrigger>
+            <TabsTrigger className="px-4" value="insights">
+              <LineChart className="size-4" />
+              Insights
+            </TabsTrigger>
             <TabsTrigger className="px-4" value="history">
               <BarChart3 className="size-4" />
               History
@@ -98,14 +106,6 @@ export function AppNav() {
               Settings
             </TabsTrigger>
           </TabsList>
-
-          <Card>
-            <CardHeader className="p-0 text-right">
-              <CardTitle className="text-base font-black tracking-tight text-foreground">
-                Zucchini
-              </CardTitle>
-            </CardHeader>
-          </Card>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import type { AppTab } from "@/renderer/app/app.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
+import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
@@ -32,6 +33,7 @@ import {
   applyOptimisticHabitStreakPatch,
   applyTodayState,
   refreshWeeklyReviewIfLoaded,
+  resetInsightsIfLoaded,
   reorderVisibleTodayHabits,
 } from "./action-helpers";
 
@@ -166,6 +168,7 @@ export function createTodayActions({
       managedHabits,
       todayState,
     });
+    resetInsightsIfLoaded();
 
     if (options.refreshHistoryYears) {
       await useHistoryStore.getState().loadHistoryYears({
@@ -193,6 +196,7 @@ export function createTodayActions({
     const managedHabits = await habitsClient.getHabits();
     applyTodayState(nextTodayState, managedHabits);
     refreshWeeklyReviewIfLoaded();
+    resetInsightsIfLoaded();
     return nextTodayState;
   }
 
@@ -230,6 +234,7 @@ export function createTodayActions({
       const confirmedPatch = await run();
       if (isLatestHabitStatusMutation(habitId, mutationVersion)) {
         applyHabitStatusPatch(confirmedPatch);
+        resetInsightsIfLoaded();
       }
     } catch (error) {
       if (
@@ -339,6 +344,10 @@ export function createTodayActions({
           .getState()
           .loadHistoryYears(initialMonth ? { initialMonth } : {});
         preloadWeeklyReviewAfterHistoryPaint();
+      }
+
+      if (nextTab === "insights") {
+        void useInsightsStore.getState().loadDashboard();
       }
     },
     handleOpenWindDown() {

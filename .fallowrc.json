@@ -91,6 +91,10 @@
         "patterns": ["apps/desktop/src/renderer/features/history/**"]
       },
       {
+        "name": "desktop-renderer-feature-insights",
+        "patterns": ["apps/desktop/src/renderer/features/insights/**"]
+      },
+      {
         "name": "desktop-renderer-feature-settings",
         "patterns": ["apps/desktop/src/renderer/features/settings/**"]
       },
@@ -143,6 +147,7 @@
           "desktop-renderer-app",
           "desktop-renderer-feature-focus",
           "desktop-renderer-feature-history",
+          "desktop-renderer-feature-insights",
           "desktop-renderer-feature-settings",
           "desktop-renderer-feature-today",
           "desktop-renderer-feature-wind-down",
@@ -223,6 +228,7 @@
         "allow": [
           "desktop-renderer-feature-focus",
           "desktop-renderer-feature-history",
+          "desktop-renderer-feature-insights",
           "desktop-renderer-feature-settings",
           "desktop-renderer-feature-today",
           "desktop-renderer-feature-wind-down",
@@ -243,6 +249,15 @@
       },
       {
         "from": "desktop-renderer-feature-history",
+        "allow": [
+          "desktop-renderer-shared",
+          "desktop-shared-contracts",
+          "desktop-shared-domain",
+          "desktop-shared-utils"
+        ]
+      },
+      {
+        "from": "desktop-renderer-feature-insights",
         "allow": [
           "desktop-renderer-shared",
           "desktop-shared-contracts",

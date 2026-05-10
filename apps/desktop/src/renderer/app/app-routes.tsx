@@ -17,6 +17,11 @@ const SettingsPage = lazy(async () => {
 
   return { default: module.SettingsPage };
 });
+const InsightsPage = lazy(async () => {
+  const module = await import("@/renderer/features/insights/insights-page");
+
+  return { default: module.InsightsPage };
+});
 
 function TodayRoute({ actions, state }: ReadyAppController) {
   return (
@@ -157,6 +162,26 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
   );
 }
 
+function InsightsRoute({ actions, state }: ReadyAppController) {
+  return (
+    <Suspense
+      fallback={
+        <LoadingStateCard
+          description="Loading your habit and focus insights."
+          title="Loading insights"
+        />
+      }
+    >
+      <InsightsPage
+        dashboard={state.insightsDashboard}
+        error={state.insightsError}
+        phase={state.insightsPhase}
+        onRetryLoad={actions.handleRetryInsightsLoad}
+      />
+    </Suspense>
+  );
+}
+
 export function CurrentRoute(
   controller: ReadyAppController & { historyViewModel?: HistoryViewModel }
 ) {
@@ -166,6 +191,9 @@ export function CurrentRoute(
     }
     case "history": {
       return <HistoryRoute {...controller} />;
+    }
+    case "insights": {
+      return <InsightsRoute {...controller} />;
     }
     case "settings": {
       return <SettingsRoute {...controller} />;
