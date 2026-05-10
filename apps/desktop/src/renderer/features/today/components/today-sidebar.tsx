@@ -1,3 +1,4 @@
+import { AnimatePresence, m } from "framer-motion";
 import {
   CalendarPlus,
   HeartPulse,
@@ -8,6 +9,7 @@ import {
 import { useMemo } from "react";
 
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +18,14 @@ import {
   DropdownMenuTrigger,
 } from "@/renderer/shared/components/ui/dropdown-menu";
 import { Separator } from "@/renderer/shared/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { microTransition } from "@/renderer/shared/lib/motion";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
@@ -80,6 +89,17 @@ function formatDays(value: number): string {
   return value === 1 ? "1 day" : `${value} days`;
 }
 
+function formatWeekBarLabel(day: {
+  completed: number;
+  date: string;
+  percent: number;
+  total: number;
+}): string {
+  return day.total === 0
+    ? `${day.date}: no daily habits tracked`
+    : `${day.date}: ${day.completed} of ${day.total} daily habits complete`;
+}
+
 export function TodaySidebar({
   history,
   onMoveUnfinishedHabitsToTomorrow,
@@ -88,6 +108,7 @@ export function TodaySidebar({
 }: TodaySidebarProps) {
   const { dayStatus } = state;
   const dayStatusCopy = dayStatus ? DAY_STATUS_COPY[dayStatus] : null;
+  const dayStatusUi = dayStatus ? HISTORY_STATUS_UI[dayStatus] : null;
   const DayStatusIcon = dayStatusCopy?.icon;
   const canMoveUnfinishedHabits = state.habits.some(
     (habit) => habit.frequency === "daily" && !habit.completed
@@ -182,37 +203,49 @@ export function TodaySidebar({
           </DropdownMenu>
         </div>
 
-        {dayStatusCopy ? (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border/65 bg-muted/30 px-3 py-2">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="grid size-7 shrink-0 place-items-center rounded-full bg-background/80">
-                {DayStatusIcon ? (
-                  <DayStatusIcon
-                    className={cn("size-3.5", dayStatusCopy.iconClassName)}
-                  />
-                ) : null}
-              </div>
-              <div className="grid min-w-0 gap-0.5">
-                <p className="truncate text-xs font-semibold text-foreground">
-                  {dayStatusCopy.label}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {dayStatusCopy.message}
-                </p>
-              </div>
-            </div>
-            <Button
-              aria-label="Clear day status"
-              className="size-7 shrink-0"
-              onClick={() => onSetDayStatus(null)}
-              size="icon-xs"
-              type="button"
-              variant="ghost"
+        <AnimatePresence initial={false}>
+          {dayStatusCopy ? (
+            <m.div
+              animate={{ height: "auto", opacity: 1, x: 0 }}
+              className={cn(
+                "flex items-center justify-between gap-3 overflow-hidden rounded-lg px-3 py-2",
+                dayStatusUi?.badgeClassName
+              )}
+              exit={{ height: 0, opacity: 0, x: 8 }}
+              initial={{ height: 0, opacity: 0, x: -8 }}
+              key={dayStatus}
+              transition={microTransition}
             >
-              <X className="size-3.5" />
-            </Button>
-          </div>
-        ) : null}
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="grid size-7 shrink-0 place-items-center rounded-full bg-background/80">
+                  {DayStatusIcon ? (
+                    <DayStatusIcon
+                      className={cn("size-3.5", dayStatusCopy.iconClassName)}
+                    />
+                  ) : null}
+                </div>
+                <div className="grid min-w-0 gap-0.5">
+                  <p className="truncate text-xs font-semibold">
+                    {dayStatusCopy.label}
+                  </p>
+                  <p className="truncate text-xs opacity-80">
+                    {dayStatusCopy.message}
+                  </p>
+                </div>
+              </div>
+              <Button
+                aria-label="Clear day status"
+                className="size-7 shrink-0"
+                onClick={() => onSetDayStatus(null)}
+                size="icon-xs"
+                type="button"
+                variant="ghost"
+              >
+                <X className="size-3.5" />
+              </Button>
+            </m.div>
+          ) : null}
+        </AnimatePresence>
 
         <div className="flex justify-center py-1">
           <div
@@ -280,30 +313,44 @@ export function TodaySidebar({
         </div>
 
         <div className="mt-3 grid gap-2">
-          <div className="flex h-28 items-end gap-2">
-            {weekSeries.map((day) => (
-              <div
-                className="flex min-w-0 flex-1 flex-col items-center gap-2"
-                key={day.date}
-              >
-                <div className="flex h-20 w-full items-end">
-                  <div
-                    aria-label={`${day.label} ${day.percent}% complete`}
-                    className={cn(
-                      "w-full rounded-t-sm bg-muted transition-colors",
-                      getBarClassName(day.percent)
-                    )}
-                    style={{
-                      height: `${Math.max(day.total === 0 ? 4 : 10, day.percent)}%`,
-                    }}
-                  />
+          <TooltipProvider>
+            <div className="flex h-28 items-end gap-2">
+              {weekSeries.map((day) => (
+                <div
+                  className="flex min-w-0 flex-1 flex-col items-center gap-2"
+                  key={day.date}
+                >
+                  <div className="flex h-20 w-full items-end">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          aria-label={formatWeekBarLabel(day)}
+                          className="group/bar flex h-full w-full cursor-help items-end rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                          type="button"
+                        >
+                          <span
+                            className={cn(
+                              "w-full rounded-t-sm bg-muted transition-all duration-150 group-hover/bar:brightness-150 group-hover/bar:ring-2 group-hover/bar:ring-primary/25 group-focus-visible/bar:brightness-150",
+                              getBarClassName(day.percent)
+                            )}
+                            style={{
+                              height: `${Math.max(day.total === 0 ? 4 : 10, day.percent)}%`,
+                            }}
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={6}>
+                        {formatWeekBarLabel(day)}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    {day.label}
+                  </span>
                 </div>
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  {day.label}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </TooltipProvider>
           <p className="text-xs text-muted-foreground">This week</p>
         </div>
       </section>

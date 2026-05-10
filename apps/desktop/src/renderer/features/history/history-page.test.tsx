@@ -271,7 +271,7 @@ describe("history page", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("3 tracked days")).toBeInTheDocument();
     expect(screen.getByText("Day")).toBeInTheDocument();
-    expect(screen.getByText("Complete")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Misses")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Today Mar 10/ })
@@ -291,8 +291,8 @@ describe("history page", () => {
     });
 
     expect(screen.getByText("Completed")).toBeInTheDocument();
-    expect(screen.getByText("Sick")).toBeInTheDocument();
-    expect(screen.getByText("Rest")).toBeInTheDocument();
+    expect(screen.getByText("Sick day")).toBeInTheDocument();
+    expect(screen.getByText("Rest day")).toBeInTheDocument();
   });
 
   it("only shows the contribution graph in timeline mode", () => {

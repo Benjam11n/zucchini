@@ -61,9 +61,9 @@ describe("history summary", () => {
     }).summary;
     const incompleteSummary = createHistoryDay("2026-03-04").summary;
 
-    expect(getActivityBadgeLabel(completeSummary)).toBe("Complete");
+    expect(getActivityBadgeLabel(completeSummary)).toBe("Completed");
     expect(getActivityBadgeLabel(freezeSummary)).toBe("Freeze");
-    expect(getActivityBadgeLabel(incompleteSummary, true)).toBe("In Progress");
+    expect(getActivityBadgeLabel(incompleteSummary, true)).toBe("Today");
     expect(getActivityBadgeLabel(incompleteSummary, false)).toBe("Missed");
   });
 });

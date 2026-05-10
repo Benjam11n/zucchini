@@ -1,4 +1,7 @@
-import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
+import {
+  getHistoryStatusLabel,
+  HISTORY_STATUS_UI,
+} from "@/renderer/shared/components/history-status/history-status-ui";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
@@ -8,37 +11,6 @@ interface HistoryStatusBadgeProps {
   compact?: boolean;
   isToday?: boolean | undefined;
   status: HistoryStatus;
-}
-
-function getHistoryStatusBadgeLabel(
-  status: HistoryStatus,
-  isToday?: boolean
-): string {
-  if (status === "sick") {
-    return "Sick";
-  }
-
-  if (status === "rest") {
-    return "Rest";
-  }
-
-  if (status === "rescheduled") {
-    return "Moved";
-  }
-
-  if (status === "freeze") {
-    return "Freeze";
-  }
-
-  if (status === "complete") {
-    return "Completed";
-  }
-
-  if (status === "in-progress") {
-    return isToday ? "Today" : "In Progress";
-  }
-
-  return "Missed";
 }
 
 export function HistoryStatusBadge({
@@ -56,7 +28,7 @@ export function HistoryStatusBadge({
       )}
       variant="outline"
     >
-      {getHistoryStatusBadgeLabel(status, isToday)}
+      {getHistoryStatusLabel(status, isToday)}
     </Badge>
   );
 }

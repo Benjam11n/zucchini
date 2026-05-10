@@ -62,6 +62,10 @@ export function useAppLifecycleEffects({
   }, [bootApp]);
 
   useEffect(() => {
+    if (!window.habits) {
+      return;
+    }
+
     const subscribeWindDownNavigation =
       "onWindDownNavigationRequested" in window.habits
         ? window.habits.onWindDownNavigationRequested.bind(window.habits)

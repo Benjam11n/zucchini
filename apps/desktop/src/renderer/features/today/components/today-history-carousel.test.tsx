@@ -116,7 +116,7 @@ describe("today history carousel", () => {
       />
     );
 
-    expect(screen.getByText("Sick")).toBeInTheDocument();
+    expect(screen.getByText("Sick day")).toBeInTheDocument();
     expect(screen.getByText("Moved")).toBeInTheDocument();
   });
 

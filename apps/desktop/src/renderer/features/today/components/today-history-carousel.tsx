@@ -1,3 +1,4 @@
+import { m } from "framer-motion";
 import { useEffect, useState } from "react";
 
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
@@ -8,7 +9,9 @@ import {
   CarouselItem,
 } from "@/renderer/shared/components/ui/carousel";
 import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
+import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
+import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { formatDateKey } from "@/shared/utils/date";
 
@@ -108,13 +111,19 @@ export function TodayHistoryCarousel({
 
             return (
               <CarouselItem key={day.date} className="basis-auto pl-2 sm:pl-4">
-                <button
+                <m.button
                   type="button"
                   aria-pressed={isSelected}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-md p-2 transition-opacity hover:bg-background/45 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className={cn(
+                    "flex cursor-pointer flex-col items-center gap-2 rounded-md p-2 transition-all duration-150 hover:bg-background/45 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    isSelected &&
+                      "selected-day-pulse bg-primary/8 ring-2 ring-primary/35 shadow-sm"
+                  )}
                   onClick={() => {
                     onSelectDate(day.date);
                   }}
+                  whileHover={hoverLift}
+                  whileTap={tapPress}
                 >
                   <HabitActivityRingGlyph
                     categoryProgress={day.categoryProgress}
@@ -124,7 +133,7 @@ export function TodayHistoryCarousel({
                     {dayOfWeek}
                   </span>
                   <HistoryStatusBadge compact status={activityStatus} />
-                </button>
+                </m.button>
               </CarouselItem>
             );
           })}

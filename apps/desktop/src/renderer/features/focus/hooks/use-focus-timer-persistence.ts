@@ -30,6 +30,11 @@ export function useFocusTimerPersistence({
   const latestSaveRequestIdRef = useRef(0);
 
   useEffect(() => {
+    if (!window.habits) {
+      setHasHydrated(true);
+      return;
+    }
+
     let cancelled = false;
 
     async function restoreTimerState() {
@@ -69,28 +74,34 @@ export function useFocusTimerPersistence({
     };
   }, [setTimerState]);
 
-  useEffect(
-    () =>
-      window.habits.onFocusTimerStateChanged((nextTimerState) => {
-        const resolvedTimerState = resolveRestoredTimerState(nextTimerState);
-        persistedTimerStateRef.current = resolvedTimerState;
+  useEffect(() => {
+    if (!window.habits) {
+      return;
+    }
 
-        if (
-          arePersistedFocusTimerStatesEqual(
-            useFocusStore.getState().timerState,
-            resolvedTimerState
-          )
-        ) {
-          return;
-        }
+    return window.habits.onFocusTimerStateChanged((nextTimerState) => {
+      const resolvedTimerState = resolveRestoredTimerState(nextTimerState);
+      persistedTimerStateRef.current = resolvedTimerState;
 
-        useFocusStore.getState().setTimerState(resolvedTimerState);
-      }),
-    []
-  );
+      if (
+        arePersistedFocusTimerStatesEqual(
+          useFocusStore.getState().timerState,
+          resolvedTimerState
+        )
+      ) {
+        return;
+      }
+
+      useFocusStore.getState().setTimerState(resolvedTimerState);
+    });
+  }, []);
 
   useEffect(() => {
     if (!hasHydrated) {
+      return;
+    }
+
+    if (!window.habits) {
       return;
     }
 

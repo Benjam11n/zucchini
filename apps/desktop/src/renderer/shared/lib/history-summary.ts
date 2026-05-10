@@ -1,3 +1,4 @@
+import { getHistoryStatusLabel } from "@/renderer/shared/components/history-status/history-status-ui";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { DailySummary } from "@/shared/domain/streak";
 
@@ -32,33 +33,7 @@ export function getActivityBadgeLabel(
   summary: DailySummary,
   isToday?: boolean
 ): string {
-  const status = getActivityStatus(summary, isToday);
-
-  if (status === "complete") {
-    return "Complete";
-  }
-
-  if (status === "freeze") {
-    return "Freeze";
-  }
-
-  if (status === "sick") {
-    return "Sick Day";
-  }
-
-  if (status === "rest") {
-    return "Rest Day";
-  }
-
-  if (status === "rescheduled") {
-    return "Moved";
-  }
-
-  if (status === "in-progress") {
-    return "In Progress";
-  }
-
-  return "Missed";
+  return getHistoryStatusLabel(getActivityStatus(summary, isToday), isToday);
 }
 
 export function getHistoryDayLookup<T extends { date: string }>(

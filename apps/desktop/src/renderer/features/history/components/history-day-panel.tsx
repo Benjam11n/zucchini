@@ -14,9 +14,11 @@ import {
 import { HistoryLongTermGoalChip } from "@/renderer/features/history/components/history-long-term-goal-chip";
 import { HabitActivityCard } from "@/renderer/shared/components/activity-ring";
 import { HistoryStatusBadge } from "@/renderer/shared/components/history-status/history-status-badge";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { StatCard } from "@/renderer/shared/components/ui/stat-card";
+import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { microTransition } from "@/renderer/shared/lib/motion";
 import { RING_COLORS } from "@/renderer/shared/lib/ring-colors";
@@ -38,7 +40,7 @@ export function HistoryDayPanel({
 }: HistoryDayPanelProps) {
   if (!selectedDay) {
     return (
-      <div className="rounded-md border border-dashed border-border/60 bg-background/20 p-6 text-center">
+      <div className="rounded-md border border-dashed border-border/60 bg-background/20 p-6 text-center transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/5">
         <p className="text-sm text-muted-foreground">
           No tracked days yet. Start completing habits to build your history.
         </p>
@@ -124,7 +126,10 @@ export function HistoryDayPanel({
                 {selectedDay.summary.freezeUsed ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mx-auto flex items-center gap-1.5 rounded-full border border-secondary/60 bg-secondary/12 px-2.5 py-1 text-xs text-secondary-foreground dark:text-secondary"
+                    className={cn(
+                      "mx-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs",
+                      HISTORY_STATUS_UI.freeze.badgeClassName
+                    )}
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >
@@ -135,7 +140,10 @@ export function HistoryDayPanel({
                 {selectedDay.summary.dayStatus === "sick" ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mx-auto flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/8 px-2.5 py-1 text-xs text-amber-700 dark:text-amber-300"
+                    className={cn(
+                      "mx-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs",
+                      HISTORY_STATUS_UI.sick.badgeClassName
+                    )}
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >
@@ -146,7 +154,10 @@ export function HistoryDayPanel({
                 {selectedDay.summary.dayStatus === "rest" ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mx-auto flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/8 px-2.5 py-1 text-xs text-sky-700 dark:text-sky-300"
+                    className={cn(
+                      "mx-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs",
+                      HISTORY_STATUS_UI.rest.badgeClassName
+                    )}
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >
@@ -157,7 +168,10 @@ export function HistoryDayPanel({
                 {selectedDay.summary.dayStatus === "rescheduled" ? (
                   <m.div
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mx-auto flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/8 px-2.5 py-1 text-xs text-emerald-700 dark:text-emerald-300"
+                    className={cn(
+                      "mx-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs",
+                      HISTORY_STATUS_UI.rescheduled.badgeClassName
+                    )}
                     initial={{ opacity: 0, scale: 0.94 }}
                     transition={microTransition}
                   >

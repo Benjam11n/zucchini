@@ -8,6 +8,15 @@
   --panel: rgba(255, 255, 255, 0.045);
   --panel-border: rgba(255, 255, 255, 0.1);
   --glass: rgba(255, 255, 255, 0.04);
+  --ring-fitness: #ff2d55;
+  --ring-fitness-muted: rgba(255, 45, 85, 0.1);
+  --ring-fitness-shadow: rgba(255, 45, 85, 0.55);
+  --ring-nutrition: #a3f900;
+  --ring-nutrition-muted: rgba(163, 249, 0, 0.1);
+  --ring-nutrition-shadow: rgba(163, 249, 0, 0.55);
+  --ring-productivity: #04c7dd;
+  --ring-productivity-muted: rgba(4, 199, 221, 0.1);
+  --ring-productivity-shadow: rgba(4, 199, 221, 0.55);
   --font-main: "Satoshi", "Inter", -apple-system, sans-serif;
 }
 
@@ -460,7 +469,7 @@ body {
 .progress-fill {
   height: 100%;
   border-radius: 2px;
-  background: #a3f900;
+  background: var(--ring-nutrition);
 }
 
 .category-group {
@@ -500,8 +509,8 @@ body {
 }
 
 .check-circle.active {
-  border-color: #a3f900;
-  background: #a3f900;
+  border-color: var(--ring-nutrition);
+  background: var(--ring-nutrition);
 }
 
 .mini-check {
@@ -513,7 +522,7 @@ body {
 
 .mini-check.active {
   position: relative;
-  border-color: #a3f900;
+  border-color: var(--ring-nutrition);
 }
 
 .mini-check.active::after {
@@ -524,7 +533,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #a3f900;
+  background: var(--ring-nutrition);
   transform: translate(-50%, -50%);
 }
 

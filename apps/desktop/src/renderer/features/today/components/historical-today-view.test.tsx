@@ -35,6 +35,6 @@ describe("historical today view", () => {
       />
     );
 
-    expect(screen.getByText("Rest Day")).toBeInTheDocument();
+    expect(screen.getByText("Rest day")).toBeInTheDocument();
   });
 });

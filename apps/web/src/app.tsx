@@ -122,7 +122,7 @@ export default function App() {
                           cy="20"
                           r="18"
                           fill="none"
-                          stroke="rgba(255, 45, 85, 0.1)"
+                          stroke="var(--ring-fitness-muted)"
                           strokeWidth="3.5"
                         />
                         <circle
@@ -130,7 +130,7 @@ export default function App() {
                           cy="20"
                           r="18"
                           fill="none"
-                          stroke="#ff2d55"
+                          stroke="var(--ring-fitness)"
                           strokeWidth="3.5"
                           strokeDasharray="113"
                           strokeDashoffset={20 + (progressIndex % 5) * 10}
@@ -144,7 +144,7 @@ export default function App() {
                           cy="20"
                           r="13.5"
                           fill="none"
-                          stroke="rgba(163, 249, 0, 0.1)"
+                          stroke="var(--ring-nutrition-muted)"
                           strokeWidth="3.5"
                         />
                         <circle
@@ -152,7 +152,7 @@ export default function App() {
                           cy="20"
                           r="13.5"
                           fill="none"
-                          stroke="#a3f900"
+                          stroke="var(--ring-nutrition)"
                           strokeWidth="3.5"
                           strokeDasharray="85"
                           strokeDashoffset={15 + (progressIndex % 4) * 12}
@@ -166,7 +166,7 @@ export default function App() {
                           cy="20"
                           r="9"
                           fill="none"
-                          stroke="rgba(4, 199, 221, 0.1)"
+                          stroke="var(--ring-productivity-muted)"
                           strokeWidth="3.5"
                         />
                         <circle
@@ -174,7 +174,7 @@ export default function App() {
                           cy="20"
                           r="9"
                           fill="none"
-                          stroke="#04c7dd"
+                          stroke="var(--ring-productivity)"
                           strokeWidth="3.5"
                           strokeDasharray="57"
                           strokeDashoffset={10 + (progressIndex % 3) * 15}
@@ -198,7 +198,7 @@ export default function App() {
                           cy="100"
                           r="80"
                           fill="none"
-                          stroke="rgba(255, 45, 85, 0.1)"
+                          stroke="var(--ring-fitness-muted)"
                           strokeWidth="18"
                         />
                         <circle
@@ -206,7 +206,7 @@ export default function App() {
                           cy="100"
                           r="60"
                           fill="none"
-                          stroke="rgba(120, 197, 0, 0.1)"
+                          stroke="var(--ring-nutrition-muted)"
                           strokeWidth="18"
                         />
                         <circle
@@ -214,7 +214,7 @@ export default function App() {
                           cy="100"
                           r="40"
                           fill="none"
-                          stroke="rgba(0, 159, 184, 0.1)"
+                          stroke="var(--ring-productivity-muted)"
                           strokeWidth="18"
                         />
 
@@ -224,13 +224,16 @@ export default function App() {
                           cy="100"
                           r="80"
                           fill="none"
-                          stroke="#ff2d55"
+                          stroke="var(--ring-fitness)"
                           strokeWidth="18"
                           strokeDasharray="502"
                           strokeDashoffset="251"
                           strokeLinecap="round"
                           transform="rotate(-90 100 100)"
-                          style={{ filter: "drop-shadow(0 0 4px #ff2d5588)" }}
+                          style={{
+                            filter:
+                              "drop-shadow(0 0 4px var(--ring-fitness-shadow))",
+                          }}
                         />
 
                         {/* Nutrition Ring (Middle) */}
@@ -239,13 +242,16 @@ export default function App() {
                           cy="100"
                           r="60"
                           fill="none"
-                          stroke="#a3f900"
+                          stroke="var(--ring-nutrition)"
                           strokeWidth="18"
                           strokeDasharray="377"
                           strokeDashoffset="150"
                           strokeLinecap="round"
                           transform="rotate(-90 100 100)"
-                          style={{ filter: "drop-shadow(0 0 4px #a3f90088)" }}
+                          style={{
+                            filter:
+                              "drop-shadow(0 0 4px var(--ring-nutrition-shadow))",
+                          }}
                         />
 
                         {/* Productivity Ring (Inner) */}
@@ -254,13 +260,16 @@ export default function App() {
                           cy="100"
                           r="40"
                           fill="none"
-                          stroke="#04c7dd"
+                          stroke="var(--ring-productivity)"
                           strokeWidth="18"
                           strokeDasharray="251"
                           strokeDashoffset="125"
                           strokeLinecap="round"
                           transform="rotate(-90 100 100)"
-                          style={{ filter: "drop-shadow(0 0 4px #04c7dd88)" }}
+                          style={{
+                            filter:
+                              "drop-shadow(0 0 4px var(--ring-productivity-shadow))",
+                          }}
                         />
                       </svg>
                     </div>
@@ -268,7 +277,7 @@ export default function App() {
                       <div className="stat-group">
                         <span
                           className="stat-label"
-                          style={{ color: "#ff2d55" }}
+                          style={{ color: "var(--ring-fitness)" }}
                         >
                           FITNESS
                         </span>
@@ -279,7 +288,7 @@ export default function App() {
                       <div className="stat-group">
                         <span
                           className="stat-label"
-                          style={{ color: "#a3f900" }}
+                          style={{ color: "var(--ring-nutrition)" }}
                         >
                           NUTRITION
                         </span>
@@ -290,7 +299,7 @@ export default function App() {
                       <div className="stat-group">
                         <span
                           className="stat-label"
-                          style={{ color: "#04c7dd" }}
+                          style={{ color: "var(--ring-productivity)" }}
                         >
                           PRODUCTIVITY
                         </span>
@@ -303,7 +312,10 @@ export default function App() {
 
                   <div className="quick-stats">
                     <div className="q-stat">
-                      <span className="q-icon-box" style={{ color: "#ff2d55" }}>
+                      <span
+                        className="q-icon-box"
+                        style={{ color: "var(--ring-fitness)" }}
+                      >
                         <Flame size={16} />
                       </span>
                       <div>
@@ -312,7 +324,10 @@ export default function App() {
                       </div>
                     </div>
                     <div className="q-stat">
-                      <span className="q-icon-box" style={{ color: "#009fb8" }}>
+                      <span
+                        className="q-icon-box"
+                        style={{ color: "var(--ring-productivity)" }}
+                      >
                         <Snowflake size={16} />
                       </span>
                       <div>
@@ -359,7 +374,7 @@ export default function App() {
                   <div className="category-group">
                     <div
                       className="category-header"
-                      style={{ color: "#a3f900" }}
+                      style={{ color: "var(--ring-nutrition)" }}
                     >
                       <span>
                         <Utensils

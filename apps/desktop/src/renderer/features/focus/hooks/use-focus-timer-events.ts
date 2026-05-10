@@ -25,46 +25,50 @@ export function useFocusTimerEvents({
   const hasSeenTimerStateRef = useRef(false);
   const previousTimerStateRef = useRef(timerState);
 
-  useEffect(
-    () =>
-      window.habits.onFocusSessionRecorded((focusSession) => {
-        useFocusStore.getState().prependFocusSession(focusSession);
-      }),
-    []
-  );
+  useEffect(() => {
+    if (!window.habits) {
+      return;
+    }
 
-  useEffect(
-    () =>
-      window.habits.onFocusTimerActionRequested((request) => {
-        const currentTimerState = useFocusStore.getState().timerState;
+    return window.habits.onFocusSessionRecorded((focusSession) => {
+      useFocusStore.getState().prependFocusSession(focusSession);
+    });
+  }, []);
 
-        async function performRequestedAction() {
-          try {
-            await performFocusTimerAction({
-              action: request.action,
-              dependencies: {
-                clearFocusSaveError,
-                pomodoroSettings: pomodoroSettingsRef.current,
-                recordFocusSession,
-                setFocusSaveErrorMessage,
-                setTimerState: useFocusStore.getState().setTimerState,
-                timerState: currentTimerState,
-              },
-            });
-          } catch {
-            // Action failures are already routed through focus timer state.
-          }
+  useEffect(() => {
+    if (!window.habits) {
+      return;
+    }
+
+    return window.habits.onFocusTimerActionRequested((request) => {
+      const currentTimerState = useFocusStore.getState().timerState;
+
+      async function performRequestedAction() {
+        try {
+          await performFocusTimerAction({
+            action: request.action,
+            dependencies: {
+              clearFocusSaveError,
+              pomodoroSettings: pomodoroSettingsRef.current,
+              recordFocusSession,
+              setFocusSaveErrorMessage,
+              setTimerState: useFocusStore.getState().setTimerState,
+              timerState: currentTimerState,
+            },
+          });
+        } catch {
+          // Action failures are already routed through focus timer state.
         }
+      }
 
-        void performRequestedAction();
-      }),
-    [
-      clearFocusSaveError,
-      pomodoroSettingsRef,
-      recordFocusSession,
-      setFocusSaveErrorMessage,
-    ]
-  );
+      void performRequestedAction();
+    });
+  }, [
+    clearFocusSaveError,
+    pomodoroSettingsRef,
+    recordFocusSession,
+    setFocusSaveErrorMessage,
+  ]);
 
   useEffect(() => {
     if (!hasSeenTimerStateRef.current) {
@@ -75,6 +79,10 @@ export function useFocusTimerEvents({
 
     const previousTimerState = previousTimerStateRef.current;
     previousTimerStateRef.current = timerState;
+
+    if (!window.habits) {
+      return;
+    }
 
     const startedFocusTimer =
       previousTimerState.status !== "running" &&

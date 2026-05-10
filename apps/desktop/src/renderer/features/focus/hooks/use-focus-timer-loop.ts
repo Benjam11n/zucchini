@@ -24,6 +24,10 @@ async function notify(
 }
 
 async function releaseLeadership(instanceId: string): Promise<void> {
+  if (!window.habits) {
+    return;
+  }
+
   try {
     await window.habits.releaseFocusTimerLeadership(instanceId);
   } catch {
@@ -47,6 +51,10 @@ export function useFocusTimerLeadershipLoop({
   timerStatus: PersistedFocusTimerState["status"];
 }) {
   useEffect(() => {
+    if (!window.habits) {
+      return;
+    }
+
     if (timerStatus !== "running") {
       void releaseLeadership(instanceId);
       return;

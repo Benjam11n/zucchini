@@ -15,6 +15,13 @@ import {
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import {
+  HABIT_COMPLETION_POP_CLASSNAME,
+  HABIT_ROW_BASE_CLASSNAME,
+  HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
+  HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
+  HABIT_ROW_INTERACTIVE_CLASSNAME,
+} from "@/renderer/shared/lib/habit-row-interaction";
+import {
   hoverLift,
   microTransition,
   tapPress,
@@ -175,11 +182,10 @@ function HabitListItemComponent({
   const isInteractive = !(disabled || readOnly);
   const itemStateClassName = habit.completed
     ? "text-muted-foreground/50"
-    : isInteractive && "hover:bg-muted/25";
+    : isInteractive && HABIT_ROW_INTERACTIVE_CLASSNAME;
   const labelStateClassName = habit.completed
     ? "line-through decoration-muted-foreground/30"
-    : isInteractive &&
-      "group-hover:brightness-125 dark:group-hover:brightness-150";
+    : isInteractive && HABIT_ROW_CONTENT_INTERACTION_CLASSNAME;
 
   return (
     <m.label
@@ -187,11 +193,10 @@ function HabitListItemComponent({
       htmlFor={isInteractive ? `habit-${habit.id}` : undefined}
       initial={HABIT_ITEM_INITIAL}
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
-        "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        "flex items-center gap-3 px-3 py-2.5",
+        HABIT_ROW_BASE_CLASSNAME,
         disabled && "cursor-default opacity-55",
         readOnly && "cursor-default",
-        isInteractive && "cursor-pointer",
         itemStateClassName
       )}
       transition={microTransition}
@@ -202,7 +207,11 @@ function HabitListItemComponent({
       <Checkbox
         aria-disabled={readOnly ? true : undefined}
         checked={habit.completed}
-        className="size-4 shrink-0 rounded-full border-2 transition-all duration-200 group-hover:scale-110 group-active:scale-90"
+        className={cn(
+          "size-4 shrink-0 rounded-full border-2",
+          HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
+          HABIT_COMPLETION_POP_CLASSNAME
+        )}
         disabled={disabled}
         id={`habit-${habit.id}`}
         onCheckedChange={() => {

@@ -1,5 +1,6 @@
 import { m } from "framer-motion";
 
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
 import {
   Tooltip,
   TooltipContent,
@@ -23,13 +24,6 @@ interface GitHubCalendarCell {
   totalCount: number;
 }
 
-const SPECIAL_CONTRIBUTION_STATE_CLASSNAMES: Record<
-  "complete" | "freeze",
-  string
-> = {
-  complete: "border-emerald-500/85 bg-emerald-500 ring-1 ring-emerald-500/18",
-  freeze: "border-sky-500/85 bg-sky-400/85 ring-1 ring-sky-500/18",
-};
 const CONTRIBUTION_INTENSITY_CLASSNAMES: Record<ContributionIntensity, string> =
   {
     0: "border-border/60 bg-transparent",
@@ -41,11 +35,11 @@ const CONTRIBUTION_INTENSITY_CLASSNAMES: Record<ContributionIntensity, string> =
 
 function getContributionSquareClassName(cell: GitHubCalendarCell): string {
   if (cell.status === "complete") {
-    return SPECIAL_CONTRIBUTION_STATE_CLASSNAMES.complete;
+    return HISTORY_STATUS_UI.complete.squareClassName;
   }
 
   if (cell.status === "freeze") {
-    return SPECIAL_CONTRIBUTION_STATE_CLASSNAMES.freeze;
+    return HISTORY_STATUS_UI.freeze.squareClassName;
   }
 
   return CONTRIBUTION_INTENSITY_CLASSNAMES[cell.intensity];

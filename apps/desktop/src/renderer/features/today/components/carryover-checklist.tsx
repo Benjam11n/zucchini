@@ -8,6 +8,13 @@ import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import {
+  HABIT_COMPLETION_POP_CLASSNAME,
+  HABIT_ROW_BASE_CLASSNAME,
+  HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
+  HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
+  HABIT_ROW_INTERACTIVE_CLASSNAME,
+} from "@/renderer/shared/lib/habit-row-interaction";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 
@@ -54,11 +61,11 @@ export function CarryoverChecklist({
           return (
             <label
               className={cn(
-                "group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150",
-                "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                "flex items-center gap-3 px-3 py-2.5",
+                HABIT_ROW_BASE_CLASSNAME,
                 carryover.completed
                   ? "text-muted-foreground/50"
-                  : "hover:bg-muted/25"
+                  : HABIT_ROW_INTERACTIVE_CLASSNAME
               )}
               htmlFor={`carryover-${carryover.sourceDate}-${carryover.id}`}
               key={`${carryover.sourceDate}-${carryover.id}`}
@@ -66,7 +73,11 @@ export function CarryoverChecklist({
             >
               <Checkbox
                 checked={carryover.completed}
-                className="size-4 shrink-0 rounded-full border-2"
+                className={cn(
+                  "size-4 shrink-0 rounded-full border-2",
+                  HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
+                  HABIT_COMPLETION_POP_CLASSNAME
+                )}
                 id={`carryover-${carryover.sourceDate}-${carryover.id}`}
                 onCheckedChange={() =>
                   onToggleCarryover(carryover.sourceDate, carryover.id)
@@ -86,8 +97,9 @@ export function CarryoverChecklist({
               <span
                 className={cn(
                   "min-w-0 flex-1 truncate text-sm transition-all duration-150",
-                  carryover.completed &&
-                    "line-through decoration-muted-foreground/30"
+                  carryover.completed
+                    ? "line-through decoration-muted-foreground/30"
+                    : HABIT_ROW_CONTENT_INTERACTION_CLASSNAME
                 )}
               >
                 {carryover.name}
