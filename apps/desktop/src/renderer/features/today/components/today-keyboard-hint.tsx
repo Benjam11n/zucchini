@@ -1,11 +1,12 @@
 import { AnimatePresence, m } from "framer-motion";
+import { memo } from "react";
 
-import type { TodayKeyboardHint } from "@/renderer/features/today/hooks/use-today-keyboard-flow";
+import type { TodayKeyboardHint as TodayKeyboardHintValue } from "@/renderer/features/today/hooks/use-today-keyboard-flow";
 import { Kbd, KbdGroup } from "@/renderer/shared/components/ui/kbd";
 import { cn } from "@/renderer/shared/lib/class-names";
 
 interface TodayKeyboardHintProps {
-  hint: TodayKeyboardHint | null;
+  hint: TodayKeyboardHintValue | null;
 }
 
 interface HintItem {
@@ -25,11 +26,11 @@ const PERIODIC_HINT: HintItem[] = [
   { keys: ["N"], label: "next" },
 ];
 
-function getHintItems(hint: TodayKeyboardHint): HintItem[] {
+function getHintItems(hint: TodayKeyboardHintValue): HintItem[] {
   return hint.kind === "periodic" ? PERIODIC_HINT : CHECKLIST_HINT;
 }
 
-export function TodayKeyboardHint({ hint }: TodayKeyboardHintProps) {
+function TodayKeyboardHintComponent({ hint }: TodayKeyboardHintProps) {
   return (
     <AnimatePresence>
       {hint ? (
@@ -68,3 +69,5 @@ export function TodayKeyboardHint({ hint }: TodayKeyboardHintProps) {
     </AnimatePresence>
   );
 }
+
+export const TodayKeyboardHint = memo(TodayKeyboardHintComponent);

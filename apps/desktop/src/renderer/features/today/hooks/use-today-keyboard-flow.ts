@@ -20,6 +20,9 @@ export interface TodayKeyboardHint {
   rowId: string;
 }
 
+const HINT_HOVER_SHOW_DELAY_MS = 180;
+const HINT_HOVER_HIDE_DELAY_MS = 90;
+
 function isEditableElement(element: Element | null): boolean {
   if (!(element instanceof HTMLElement)) {
     return false;
@@ -75,11 +78,57 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
   );
   const rowElements = useRef(new Map<string, HTMLElement>());
   const hasAutoFocused = useRef(false);
+  const hintHoverTimeout = useRef<ReturnType<
+    typeof globalThis.setTimeout
+  > | null>(null);
   const [hintRowId, setHintRowId] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(
     enabledRowIds[0] ?? null
   );
   const hint = hintRowId ? rowsById.get(hintRowId) : null;
+
+  const clearHintHoverTimeout = useCallback(() => {
+    if (!hintHoverTimeout.current) {
+      return;
+    }
+
+    globalThis.clearTimeout(hintHoverTimeout.current);
+    hintHoverTimeout.current = null;
+  }, []);
+
+  const showHintImmediately = useCallback(
+    (rowId: string) => {
+      clearHintHoverTimeout();
+      setHintRowId(rowId);
+    },
+    [clearHintHoverTimeout]
+  );
+
+  const scheduleHoverHint = useCallback(
+    (rowId: string) => {
+      clearHintHoverTimeout();
+      hintHoverTimeout.current = globalThis.setTimeout(() => {
+        setHintRowId(rowId);
+        hintHoverTimeout.current = null;
+      }, HINT_HOVER_SHOW_DELAY_MS);
+    },
+    [clearHintHoverTimeout]
+  );
+
+  const scheduleHoverHintClear = useCallback(
+    (rowId: string) => {
+      clearHintHoverTimeout();
+      hintHoverTimeout.current = globalThis.setTimeout(() => {
+        setHintRowId((currentRowId) =>
+          currentRowId === rowId && activeRowId !== rowId ? null : currentRowId
+        );
+        hintHoverTimeout.current = null;
+      }, HINT_HOVER_HIDE_DELAY_MS);
+    },
+    [activeRowId, clearHintHoverTimeout]
+  );
+
+  useEffect(() => () => clearHintHoverTimeout(), [clearHintHoverTimeout]);
 
   useEffect(() => {
     setOptimisticallyCompletedRowIds((currentRowIds) => {
@@ -97,6 +146,8 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
   }, [rowsById]);
 
   useEffect(() => {
+    clearHintHoverTimeout();
+
     if (enabledRowIds.length === 0) {
       setActiveRowId(null);
       return;
@@ -111,13 +162,16 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
     setHintRowId((currentRowId) =>
       currentRowId && enabledRowIds.includes(currentRowId) ? currentRowId : null
     );
-  }, [enabledRowIds]);
+  }, [clearHintHoverTimeout, enabledRowIds]);
 
-  const focusRow = useCallback((rowId: string) => {
-    setActiveRowId(rowId);
-    setHintRowId(rowId);
-    rowElements.current.get(rowId)?.focus();
-  }, []);
+  const focusRow = useCallback(
+    (rowId: string) => {
+      setActiveRowId(rowId);
+      showHintImmediately(rowId);
+      rowElements.current.get(rowId)?.focus();
+    },
+    [showHintImmediately]
+  );
 
   const markRowCompleted = useCallback((rowId: string) => {
     setOptimisticallyCompletedRowIds(
@@ -220,6 +274,8 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
       return {
         "data-keyboard-row": rowId,
         onBlur: (event) => {
+          clearHintHoverTimeout();
+
           const nextFocusedElement = event.relatedTarget;
           if (
             nextFocusedElement instanceof HTMLElement &&
@@ -234,7 +290,7 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
         },
         onFocus: () => {
           setActiveRowId(rowId);
-          setHintRowId(rowId);
+          showHintImmediately(rowId);
         },
         onKeyDown: (event) => {
           if (
@@ -287,14 +343,8 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
             row.onDecrement?.();
           }
         },
-        onMouseEnter: () => setHintRowId(rowId),
-        onMouseLeave: () => {
-          setHintRowId((currentRowId) =>
-            currentRowId === rowId && activeRowId !== rowId
-              ? null
-              : currentRowId
-          );
-        },
+        onMouseEnter: () => scheduleHoverHint(rowId),
+        onMouseLeave: () => scheduleHoverHintClear(rowId),
         ref: (node) => {
           if (node) {
             rowElements.current.set(rowId, node);
@@ -305,13 +355,26 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
         tabIndex: activeRowId === rowId ? 0 : -1,
       };
     },
-    [activeRowId, markRowCompleted, moveFocus, rowsById]
+    [
+      activeRowId,
+      clearHintHoverTimeout,
+      markRowCompleted,
+      moveFocus,
+      rowsById,
+      scheduleHoverHint,
+      scheduleHoverHintClear,
+      showHintImmediately,
+    ]
+  );
+
+  const keyboardHint = useMemo(
+    () => (hint && hintRowId ? { kind: hint.kind, rowId: hintRowId } : null),
+    [hint, hintRowId]
   );
 
   return {
     getRowProps,
-    keyboardHint:
-      hint && hintRowId ? { kind: hint.kind, rowId: hintRowId } : null,
+    keyboardHint,
     markRowCompleted,
   };
 }
