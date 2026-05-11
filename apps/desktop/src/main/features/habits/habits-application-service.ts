@@ -904,8 +904,12 @@ export class HabitsApplicationService implements HabitsService {
     return this.withSyncedRead("getInsightsDashboard", () => {
       const today = this.getTodayKey();
       const rangeStart = addDays(today, -179);
+      const activeHabitIds = new Set(
+        this.repository.getHabits().map((habit) => habit.id)
+      );
 
       return buildInsightsDashboard({
+        activeHabitIds,
         dailySummaries: this.repository.getDailySummariesInRange(
           rangeStart,
           today

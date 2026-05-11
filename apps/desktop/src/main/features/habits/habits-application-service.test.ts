@@ -1721,6 +1721,40 @@ describe("history retrieval", () => {
       overview.latestReview?.habitMetrics.map((metric) => metric.name)
     ).toContain("Weekly stretch");
   });
+
+  it("excludes archived habits from insights through the service path", () => {
+    const repository = new FakeRepository();
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: true,
+      name: "Archived habit",
+      selectedWeekdays: null,
+      sortOrder: 0,
+      targetCount: 1,
+    });
+    repository.setStatusForDate(
+      "2026-03-10",
+      new Map([
+        [1, true],
+        [2, true],
+      ])
+    );
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const dashboard = service.getInsightsDashboard();
+
+    expect(dashboard.summary.completed.value).toBe("1");
+    expect(dashboard.habitLeaderboard.map((habit) => habit.name)).toStrictEqual(
+      ["Habit 1"]
+    );
+  });
 });
 
 describe("focus sessions", () => {

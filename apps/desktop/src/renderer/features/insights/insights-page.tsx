@@ -54,7 +54,8 @@ function Sparkline({
 }) {
   const width = 180;
   const height = 44;
-  const safePoints = points.length > 0 ? points : [0];
+  const safePoints =
+    points.length > 1 ? points : [points.at(0) ?? 0, points.at(0) ?? 0];
   const polyline = safePoints
     .map((point, index) => {
       const x =
@@ -304,7 +305,7 @@ function HabitLeaderboard({
             <TrendingUp className="size-4 text-primary" />
             Habit leaderboard
           </CardTitle>
-          <CardDescription>Top habits by 90-day completion</CardDescription>
+          <CardDescription>Top habits by 30-day completion</CardDescription>
         </div>
       </CardHeader>
       <CardContent>

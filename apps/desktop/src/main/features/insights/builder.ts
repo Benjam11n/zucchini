@@ -15,11 +15,12 @@ import {
   addDays,
   endOfIsoWeek,
   formatDateKey,
+  parseDateKey,
   startOfIsoWeek,
-  startOfMonth,
 } from "@/shared/utils/date";
 
 interface BuildInsightsDashboardOptions {
+  activeHabitIds?: ReadonlySet<number>;
   dailySummaries: DailySummary[];
   focusSessions: FocusSession[];
   habitStatuses: HabitPeriodStatusSnapshot[];
@@ -41,8 +42,9 @@ interface HabitMetric extends OpportunityTotals {
   trend: number[];
 }
 
-const CURRENT_PERIOD_DAYS = 90;
-const PREVIOUS_PERIOD_DAYS = 90;
+const CURRENT_PERIOD_DAYS = 30;
+const PREVIOUS_PERIOD_DAYS = 30;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY_LABELS = [
   "Monday",
   "Tuesday",
@@ -66,6 +68,36 @@ function clamp(value: number, min: number, max: number): number {
 
 function toRate(completed: number, total: number): number {
   return total === 0 ? 0 : Math.round((completed / total) * 100);
+}
+
+function getInclusiveDayCount(start: string, end: string): number {
+  return Math.max(
+    1,
+    Math.round(
+      (parseDateKey(end).getTime() - parseDateKey(start).getTime()) / DAY_IN_MS
+    ) + 1
+  );
+}
+
+function buildDateRangeBuckets(
+  rangeStart: string,
+  rangeEnd: string,
+  bucketCount: number
+): { end: string; start: string }[] {
+  const dayCount = getInclusiveDayCount(rangeStart, rangeEnd);
+  const boundedBucketCount = Math.max(1, Math.min(bucketCount, dayCount));
+  const bucketSize = Math.ceil(dayCount / boundedBucketCount);
+
+  return Array.from({ length: boundedBucketCount }, (_, index) => {
+    const start = addDays(rangeStart, index * bucketSize);
+    const end =
+      index === boundedBucketCount - 1
+        ? rangeEnd
+        : ([addDays(start, bucketSize - 1), rangeEnd].toSorted()[0] ??
+          rangeEnd);
+
+    return { end, start };
+  }).filter((bucket) => bucket.start <= rangeEnd);
 }
 
 function toSignedPercentLabel(value: number): string {
@@ -99,6 +131,17 @@ function getOpportunityTotals(
   return totals;
 }
 
+function filterActiveHabitStatuses(
+  statuses: HabitPeriodStatusSnapshot[],
+  activeHabitIds: ReadonlySet<number> | undefined
+): HabitPeriodStatusSnapshot[] {
+  if (!activeHabitIds) {
+    return statuses;
+  }
+
+  return statuses.filter((status) => activeHabitIds.has(status.habitId));
+}
+
 function getFocusMinutes(sessions: FocusSession[]): number {
   return toFocusMinutes(
     sessions.reduce(
@@ -128,20 +171,6 @@ function getDeltaMetricLabel(current: number, previous: number): string {
   }
 
   return `${delta > 0 ? "+" : ""}${delta.toLocaleString()} vs previous period`;
-}
-
-function getCompletionRateForRange(
-  statuses: HabitPeriodStatusSnapshot[],
-  start: string,
-  end: string
-): number {
-  const totals = getOpportunityTotals(
-    statuses.filter(
-      (status) => status.periodEnd >= start && status.periodEnd <= end
-    )
-  );
-
-  return toRate(totals.completed, totals.total);
 }
 
 function buildMomentum({
@@ -280,7 +309,7 @@ function buildWeekdayRhythm(
 
   for (const status of statuses) {
     if (
-      !status.completed ||
+      getStatusCompletedCount(status) === 0 ||
       !status.completedAt ||
       status.periodEnd < currentStart ||
       status.periodEnd > nowDate
@@ -332,11 +361,11 @@ function buildWeekdayRhythm(
     ),
     hasData: maxCompletionCount > 0,
     maxCompletionCount,
-    subtitle: "Completion timing from recorded habit completions",
+    subtitle: "Completion timing",
     timeOfDayLabels: TIME_OF_DAY_BUCKETS.map(
       (bucket) => `${bucket.label}\n${bucket.subtitle}`
     ),
-    title: "Weekday rhythm by time of day",
+    title: "Weekday rhythm",
     weekdayLabels: WEEKDAY_SHORT_LABELS,
   };
 }
@@ -346,11 +375,17 @@ function buildSparkline(
   rangeStart: string,
   nowDate: string
 ): number[] {
-  return Array.from({ length: 12 }, (_, index) => {
-    const start = addDays(rangeStart, index * 7);
-    const end = index === 11 ? nowDate : addDays(start, 6);
-    return getCompletionRateForRange(statuses, start, end);
-  });
+  return buildDateRangeBuckets(rangeStart, nowDate, 6).flatMap(
+    ({ end, start }) => {
+      const totals = getOpportunityTotals(
+        statuses.filter(
+          (status) => status.periodEnd >= start && status.periodEnd <= end
+        )
+      );
+
+      return totals.total === 0 ? [] : [toRate(totals.completed, totals.total)];
+    }
+  );
 }
 
 function buildMetricTrend({
@@ -362,11 +397,9 @@ function buildMetricTrend({
   nowDate: string;
   periodStart: string;
 }): number[] {
-  return Array.from({ length: 6 }, (_, index) => {
-    const start = addDays(periodStart, index * 5);
-    const end = index === 5 ? nowDate : addDays(start, 4);
-    return getValue(start, end);
-  });
+  return buildDateRangeBuckets(periodStart, nowDate, 6).map(({ end, start }) =>
+    getValue(start, end)
+  );
 }
 
 function buildHabitLeaderboard(
@@ -399,10 +432,9 @@ function buildHabitLeaderboard(
     metrics.set(status.habitId, existing);
   }
 
+  const trendBuckets = buildDateRangeBuckets(currentStart, nowDate, 8);
   for (const metric of metrics.values()) {
-    metric.trend = Array.from({ length: 8 }, (_, index) => {
-      const start = addDays(currentStart, index * 11);
-      const end = index === 7 ? nowDate : addDays(start, 10);
+    metric.trend = trendBuckets.flatMap(({ end, start }) => {
       const habitStatuses = statusesInRange.filter(
         (status) =>
           status.habitId === metric.habitId &&
@@ -410,7 +442,8 @@ function buildHabitLeaderboard(
           status.periodEnd <= end
       );
       const totals = getOpportunityTotals(habitStatuses);
-      return toRate(totals.completed, totals.total);
+
+      return totals.total === 0 ? [] : [toRate(totals.completed, totals.total)];
     });
   }
 
@@ -552,8 +585,8 @@ function buildSmartInsights({
     {
       body:
         currentRate >= previousRate
-          ? `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 90 days.`
-          : `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 90 days.`,
+          ? `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 30 days.`
+          : `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 30 days.`,
       severity: currentRate >= previousRate ? "positive" : "warning",
       title:
         currentRate >= previousRate
@@ -587,6 +620,7 @@ function buildSmartInsights({
 }
 
 export function buildInsightsDashboard({
+  activeHabitIds,
   dailySummaries,
   focusSessions,
   habitStatuses,
@@ -597,64 +631,51 @@ export function buildInsightsDashboard({
   const currentStart = addDays(nowDate, -(CURRENT_PERIOD_DAYS - 1));
   const previousStart = addDays(currentStart, -PREVIOUS_PERIOD_DAYS);
   const previousEnd = addDays(currentStart, -1);
-  const currentMonthStart = startOfMonth(nowDate);
-  const currentStatuses = habitStatuses.filter(
+  const activeHabitStatuses = filterActiveHabitStatuses(
+    habitStatuses,
+    activeHabitIds
+  );
+  const currentStatuses = activeHabitStatuses.filter(
     (status) => status.periodEnd >= currentStart && status.periodEnd <= nowDate
   );
-  const previousStatuses = habitStatuses.filter(
+  const previousStatuses = activeHabitStatuses.filter(
     (status) =>
       status.periodEnd >= previousStart && status.periodEnd <= previousEnd
   );
-  const monthStatuses = habitStatuses.filter(
-    (status) =>
-      status.periodEnd >= currentMonthStart && status.periodEnd <= nowDate
-  );
-  const previousMonthStart = addDays(currentMonthStart, -30);
-  const previousMonthStatuses = habitStatuses.filter(
-    (status) =>
-      status.periodEnd >= previousMonthStart &&
-      status.periodEnd < currentMonthStart
-  );
   const currentTotals = getOpportunityTotals(currentStatuses);
   const previousTotals = getOpportunityTotals(previousStatuses);
-  const monthTotals = getOpportunityTotals(monthStatuses);
-  const previousMonthTotals = getOpportunityTotals(previousMonthStatuses);
   const currentRate = toRate(currentTotals.completed, currentTotals.total);
   const previousRate = toRate(previousTotals.completed, previousTotals.total);
-  const focusMinutes = getFocusMinutes(
-    focusSessions.filter(
-      (session) =>
-        session.completedDate >= currentMonthStart &&
-        session.completedDate <= nowDate
-    )
+  const currentFocusSessions = focusSessions.filter(
+    (session) =>
+      session.completedDate >= currentStart && session.completedDate <= nowDate
   );
-  const previousFocusMinutes = getFocusMinutes(
-    focusSessions.filter(
-      (session) =>
-        session.completedDate >= previousMonthStart &&
-        session.completedDate < currentMonthStart
-    )
+  const previousFocusSessions = focusSessions.filter(
+    (session) =>
+      session.completedDate >= previousStart &&
+      session.completedDate <= previousEnd
   );
-  const currentMonthSummaries = dailySummaries.filter(
-    (summary) => summary.date >= currentMonthStart && summary.date <= nowDate
+  const currentSummaries = dailySummaries.filter(
+    (summary) => summary.date >= currentStart && summary.date <= nowDate
   );
-  const previousMonthSummaries = dailySummaries.filter(
-    (summary) =>
-      summary.date >= previousMonthStart && summary.date < currentMonthStart
+  const previousSummaries = dailySummaries.filter(
+    (summary) => summary.date >= previousStart && summary.date <= previousEnd
   );
-  const perfectDays = currentMonthSummaries.filter(
+  const focusMinutes = getFocusMinutes(currentFocusSessions);
+  const previousFocusMinutes = getFocusMinutes(previousFocusSessions);
+  const perfectDays = currentSummaries.filter(
     (summary) => summary.allCompleted
   ).length;
-  const previousPerfectDays = previousMonthSummaries.filter(
+  const previousPerfectDays = previousSummaries.filter(
     (summary) => summary.allCompleted
   ).length;
-  const savedStreaks = currentMonthSummaries.filter(
+  const savedStreaks = currentSummaries.filter(
     (summary) => summary.freezeUsed
   ).length;
-  const previousSavedStreaks = previousMonthSummaries.filter(
+  const previousSavedStreaks = previousSummaries.filter(
     (summary) => summary.freezeUsed
   ).length;
-  const sparkline = buildSparkline(habitStatuses, currentStart, nowDate);
+  const sparkline = buildSparkline(activeHabitStatuses, currentStart, nowDate);
   const momentum = buildMomentum({
     currentRate,
     previousRate,
@@ -664,12 +685,12 @@ export function buildInsightsDashboard({
   const statusTrend = buildMetricTrend({
     getValue: (start, end) =>
       getOpportunityTotals(
-        habitStatuses.filter(
+        activeHabitStatuses.filter(
           (status) => status.periodEnd >= start && status.periodEnd <= end
         )
       ).completed,
     nowDate,
-    periodStart: currentMonthStart,
+    periodStart: currentStart,
   });
   const focusTrend = buildMetricTrend({
     getValue: (start, end) =>
@@ -680,7 +701,7 @@ export function buildInsightsDashboard({
         )
       ),
     nowDate,
-    periodStart: currentMonthStart,
+    periodStart: currentStart,
   });
   const perfectDayTrend = buildMetricTrend({
     getValue: (start, end) =>
@@ -689,7 +710,7 @@ export function buildInsightsDashboard({
           summary.date >= start && summary.date <= end && summary.allCompleted
       ).length,
     nowDate,
-    periodStart: currentMonthStart,
+    periodStart: currentStart,
   });
   const savedStreakTrend = buildMetricTrend({
     getValue: (start, end) =>
@@ -698,39 +719,42 @@ export function buildInsightsDashboard({
           summary.date >= start && summary.date <= end && summary.freezeUsed
       ).length,
     nowDate,
-    periodStart: currentMonthStart,
+    periodStart: currentStart,
   });
 
   return {
     generatedAtDate: nowDate,
     habitLeaderboard: buildHabitLeaderboard(
-      habitStatuses,
+      activeHabitStatuses,
       currentStart,
       nowDate
     ),
-    isEmpty: currentTotals.total === 0 && dailySummaries.length === 0,
+    isEmpty:
+      currentTotals.total === 0 &&
+      currentSummaries.length === 0 &&
+      currentFocusSessions.length === 0,
     momentum,
     period: {
       currentEnd: nowDate,
       currentStart,
-      label: "Last 90 days",
+      label: "Last 30 days",
     },
     smartInsights: buildSmartInsights({
       currentRate,
       currentStart,
       nowDate,
       previousRate,
-      statuses: habitStatuses,
+      statuses: activeHabitStatuses,
     }),
     summary: {
       completed: {
         deltaLabel: getDeltaMetricLabel(
-          monthTotals.completed,
-          previousMonthTotals.completed
+          currentTotals.completed,
+          previousTotals.completed
         ),
         label: "Completed",
         trend: statusTrend,
-        value: monthTotals.completed.toLocaleString(),
+        value: currentTotals.completed.toLocaleString(),
       },
       focus: {
         deltaLabel: getDeltaMetricLabel(focusMinutes, previousFocusMinutes),

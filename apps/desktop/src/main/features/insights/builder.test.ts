@@ -84,7 +84,21 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.weeklyCompletion).toHaveLength(8);
   });
 
-  it("counts monthly completed opportunities, focus, perfect days, and saved streaks", () => {
+  it("does not show the empty state when only focus data exists", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [createFocusSession("2026-03-31", 1500)],
+      habitStatuses: [],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.isEmpty).toBe(false);
+    expect(dashboard.summary.focus.value).toBe("25m");
+  });
+
+  it("counts last-30-day completed opportunities, focus, perfect days, and saved streaks", () => {
     const dashboard = buildInsightsDashboard({
       dailySummaries: [
         createSummary("2026-03-01", { allCompleted: true }),
@@ -106,10 +120,40 @@ describe("buildInsightsDashboard()", () => {
       timezone: "UTC",
     });
 
-    expect(dashboard.summary.completed.value).toBe("3");
+    expect(dashboard.summary.completed.value).toBe("0");
     expect(dashboard.summary.focus.value).toBe("1h 30m");
-    expect(dashboard.summary.perfectDays.value).toBe("1");
+    expect(dashboard.summary.perfectDays.value).toBe("0");
     expect(dashboard.summary.savedStreaks.value).toBe("1");
+  });
+
+  it("uses previous 30 days for summary deltas", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [
+        createSummary("2026-03-02", { allCompleted: true }),
+        createSummary("2026-02-15", { allCompleted: true }),
+        createSummary("2026-02-16", { allCompleted: true }),
+      ],
+      focusSessions: [
+        createFocusSession("2026-03-02", 1800),
+        createFocusSession("2026-02-15", 3600),
+      ],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", 1),
+        createStatus(1, "2026-02-15", 1),
+        createStatus(2, "2026-02-16", 1),
+      ],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.summary.completed.deltaLabel).toBe(
+      "-1 vs previous period"
+    );
+    expect(dashboard.summary.focus.deltaLabel).toBe("-30 vs previous period");
+    expect(dashboard.summary.perfectDays.deltaLabel).toBe(
+      "-1 vs previous period"
+    );
   });
 
   it("gives stronger momentum to better recent completion", () => {
@@ -140,15 +184,33 @@ describe("buildInsightsDashboard()", () => {
     expect(high.momentum.score).toBeGreaterThan(low.momentum.score);
   });
 
+  it("does not include future empty buckets in momentum sparkline", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: Array.from({ length: 30 }, (_, index) =>
+        createStatus(1, addDays("2026-03-02", index), 1)
+      ),
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.momentum.sparkline).toHaveLength(6);
+    expect(dashboard.momentum.sparkline).toStrictEqual([
+      100, 100, 100, 100, 100, 100,
+    ]);
+  });
+
   it("ranks the habit leaderboard by completion rate", () => {
     const dashboard = buildInsightsDashboard({
       dailySummaries: [],
       focusSessions: [],
       habitStatuses: [
-        createStatus(1, "2026-03-01", 0, { name: "Low", sortOrder: 0 }),
-        createStatus(1, "2026-03-02", 1, { name: "Low", sortOrder: 0 }),
-        createStatus(2, "2026-03-01", 1, { name: "High", sortOrder: 1 }),
-        createStatus(2, "2026-03-02", 1, { name: "High", sortOrder: 1 }),
+        createStatus(1, "2026-03-30", 0, { name: "Low", sortOrder: 0 }),
+        createStatus(1, "2026-03-31", 1, { name: "Low", sortOrder: 0 }),
+        createStatus(2, "2026-03-30", 1, { name: "High", sortOrder: 1 }),
+        createStatus(2, "2026-03-31", 1, { name: "High", sortOrder: 1 }),
       ],
       nowDate: "2026-03-31",
       streak,
@@ -158,6 +220,76 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.habitLeaderboard.map((habit) => habit.name)).toStrictEqual(
       ["High", "Low"]
     );
+  });
+
+  it("does not show empty no-opportunity buckets as leaderboard trend drops", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-03", 1, {
+          frequency: "weekly",
+          name: "Fitness",
+          periodStart: "2026-02-25",
+        }),
+        createStatus(1, "2026-03-10", 1, {
+          frequency: "weekly",
+          name: "Fitness",
+          periodStart: "2026-03-04",
+        }),
+        createStatus(1, "2026-03-17", 1, {
+          frequency: "weekly",
+          name: "Fitness",
+          periodStart: "2026-03-11",
+        }),
+        createStatus(1, "2026-03-24", 1, {
+          frequency: "weekly",
+          name: "Fitness",
+          periodStart: "2026-03-18",
+        }),
+        createStatus(1, "2026-03-31", 1, {
+          frequency: "weekly",
+          name: "Fitness",
+          periodStart: "2026-03-25",
+        }),
+      ],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.habitLeaderboard[0]).toMatchObject({
+      completionRate: 100,
+      name: "Fitness",
+      trend: [100, 100, 100, 100, 100],
+    });
+  });
+
+  it("excludes archived habits from status-based insights", () => {
+    const dashboard = buildInsightsDashboard({
+      activeHabitIds: new Set([1]),
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-31", 1, {
+          name: "Active",
+          sortOrder: 1,
+        }),
+        createStatus(2, "2026-03-31", 1, {
+          name: "Archived",
+          sortOrder: 0,
+        }),
+      ],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.summary.completed.value).toBe("1");
+    expect(dashboard.habitLeaderboard.map((habit) => habit.name)).toStrictEqual(
+      ["Active"]
+    );
+    expect(dashboard.weeklyCompletion.at(-1)?.completedPercent).toBe(100);
   });
 
   it("reports the weakest weekday deterministically", () => {
@@ -209,6 +341,33 @@ describe("buildInsightsDashboard()", () => {
       )
     ).toMatchObject({
       completionCount: 2,
+      intensity: 100,
+    });
+  });
+
+  it("includes partial multi-target completions in weekday rhythm", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-03", 2, {
+          completedAt: "2026-03-03T02:15:00.000Z",
+          frequency: "weekly",
+          targetCount: 3,
+        }),
+      ],
+      nowDate: "2026-03-31",
+      streak,
+      timezone: "Asia/Singapore",
+    });
+
+    expect(dashboard.weekdayRhythm.hasData).toBe(true);
+    expect(
+      dashboard.weekdayRhythm.cells.find(
+        (cell) => cell.weekday === "Tue" && cell.timeOfDay === "Morning"
+      )
+    ).toMatchObject({
+      completionCount: 1,
       intensity: 100,
     });
   });

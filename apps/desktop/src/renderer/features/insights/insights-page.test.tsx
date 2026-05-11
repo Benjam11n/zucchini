@@ -30,11 +30,11 @@ function createDashboard(
     period: {
       currentEnd: "2026-03-31",
       currentStart: "2026-01-01",
-      label: "Last 90 days",
+      label: "Last 30 days",
     },
     smartInsights: [
       {
-        body: "Completion rate is +9% vs previous 90 days.",
+        body: "Completion rate is +9% vs previous 30 days.",
         severity: "positive",
         title: "Consistency is improving.",
       },
@@ -77,14 +77,14 @@ function createDashboard(
       ),
       hasData: true,
       maxCompletionCount: 3,
-      subtitle: "Completion timing from recorded habit completions",
+      subtitle: "Completion timing",
       timeOfDayLabels: [
         "Morning\n5am - 11am",
         "Afternoon\n11am - 5pm",
         "Evening\n5pm - 11pm",
         "Night\n11pm - 5am",
       ],
-      title: "Weekday rhythm by time of day",
+      title: "Weekday rhythm",
       weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     },
     weeklyCompletion: [
@@ -131,12 +131,8 @@ describe("InsightsPage", () => {
       />
     );
 
-    expect(
-      screen.getByText("Weekday rhythm by time of day")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Completion timing from recorded habit completions")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Weekday rhythm")).toBeInTheDocument();
+    expect(screen.getByText("Completion timing")).toBeInTheDocument();
     expect(screen.getByText("Peak: 3")).toBeInTheDocument();
   });
 
