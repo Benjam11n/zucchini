@@ -20,7 +20,10 @@ import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
-import type { InsightsDashboard } from "@/shared/domain/insights";
+import type {
+  InsightsDashboard,
+  InsightsRangeDays,
+} from "@/shared/domain/insights";
 import type { AppSettings } from "@/shared/domain/settings";
 import type {
   WeeklyReview,
@@ -45,6 +48,7 @@ export interface AppControllerState {
   insightsDashboard: InsightsDashboard | null;
   insightsError: HabitsIpcError | null;
   insightsPhase: "error" | "idle" | "loading" | "ready";
+  insightsRangeDays: InsightsRangeDays;
   isHistoryLoading: boolean;
   isHistoryDayLoading: boolean;
   loadingHistoryDayKey: string | null;

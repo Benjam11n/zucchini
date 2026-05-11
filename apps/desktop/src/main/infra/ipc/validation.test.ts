@@ -158,7 +158,13 @@ describe("ipc validation", () => {
   });
 
   it("accepts the insights dashboard query", () => {
-    expect(validateHabitQuery({ type: "insights.dashboard" })).toStrictEqual({
+    expect(
+      validateHabitQuery({
+        payload: { rangeDays: 90 },
+        type: "insights.dashboard",
+      })
+    ).toStrictEqual({
+      payload: { rangeDays: 90 },
       type: "insights.dashboard",
     });
   });

@@ -72,7 +72,10 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
-import type { InsightsDashboard } from "@/shared/domain/insights";
+import type {
+  InsightsDashboard,
+  InsightsRangeDays,
+} from "@/shared/domain/insights";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -132,7 +135,7 @@ export interface HabitsService {
   getHistoryYears(): number[];
   getWeeklyReviewOverview(): WeeklyReviewOverview;
   getWeeklyReview(weekStart: string): WeeklyReview;
-  getInsightsDashboard(): InsightsDashboard;
+  getInsightsDashboard(rangeDays?: InsightsRangeDays): InsightsDashboard;
   getReminderRuntimeState(): ReminderRuntimeState;
   updateSettings(settings: AppSettings): AppSettings;
   saveReminderRuntimeState(state: ReminderRuntimeState): void;
@@ -900,10 +903,11 @@ export class HabitsApplicationService implements HabitsService {
     });
   }
 
-  getInsightsDashboard(): InsightsDashboard {
+  getInsightsDashboard(rangeDays?: InsightsRangeDays): InsightsDashboard {
     return this.withSyncedRead("getInsightsDashboard", () => {
       const today = this.getTodayKey();
-      const rangeStart = addDays(today, -179);
+      const requestedRangeDays = rangeDays ?? 30;
+      const rangeStart = addDays(today, -(requestedRangeDays * 2 - 1));
       const activeHabitIds = new Set(
         this.repository.getHabits().map((habit) => habit.id)
       );
@@ -923,6 +927,7 @@ export class HabitsApplicationService implements HabitsService {
           today
         ),
         nowDate: today,
+        rangeDays: requestedRangeDays,
         streak: this.repository.getPersistedStreakState(),
         timezone: this.getTimezone(),
       });

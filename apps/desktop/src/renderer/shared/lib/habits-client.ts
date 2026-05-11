@@ -15,6 +15,7 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
+import type { InsightsRangeDays } from "@/shared/domain/insights";
 import type { AppSettings } from "@/shared/domain/settings";
 
 function command<C extends HabitCommand>(
@@ -123,10 +124,15 @@ export const habitsClient = {
     query({
       type: "history.years",
     }),
-  getInsightsDashboard: () =>
-    query({
-      type: "insights.dashboard",
-    }),
+  getInsightsDashboard: (rangeDays?: InsightsRangeDays) =>
+    query(
+      rangeDays === undefined
+        ? { type: "insights.dashboard" }
+        : {
+            payload: { rangeDays },
+            type: "insights.dashboard",
+          }
+    ),
   getTodayState: () =>
     query({
       type: "today.get",

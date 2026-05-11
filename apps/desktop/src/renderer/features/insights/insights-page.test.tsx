@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import type { InsightsDashboard } from "@/shared/domain/insights";
 
@@ -14,10 +14,12 @@ function createDashboard(
     habitLeaderboard: [
       {
         category: "productivity",
+        completedCount: 24,
         completionRate: 96,
         habitId: 1,
         name: "Morning Journal",
         rank: 1,
+        totalCount: 25,
         trend: [80, 82, 84, 90],
       },
     ],
@@ -89,10 +91,14 @@ function createDashboard(
     },
     weeklyCompletion: [
       {
+        completedCount: 7,
         completedPercent: 70,
         label: "Mar 23",
+        missedCount: 2,
         missedPercent: 20,
+        partialCount: 1,
         partialPercent: 10,
+        totalCount: 10,
         weekEnd: "2026-03-29",
         weekStart: "2026-03-23",
       },
@@ -107,7 +113,9 @@ describe("InsightsPage", () => {
       <InsightsPage
         dashboard={createDashboard()}
         error={null}
+        onSelectRangeDays={vi.fn()}
         phase="ready"
+        rangeDays={30}
         onRetryLoad={vi.fn()}
       />
     );
@@ -118,7 +126,28 @@ describe("InsightsPage", () => {
     expect(screen.getByText("67")).toBeInTheDocument();
     expect(screen.getByText("Habit completion by week")).toBeInTheDocument();
     expect(screen.getByText("Morning Journal")).toBeInTheDocument();
+    expect(screen.getByText("24 / 25")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "90d" })).toBeInTheDocument();
     expect(screen.getByText("Consistency is improving.")).toBeInTheDocument();
+  });
+
+  it("selects a new insights range", () => {
+    const onSelectRangeDays = vi.fn();
+
+    render(
+      <InsightsPage
+        dashboard={createDashboard()}
+        error={null}
+        onRetryLoad={vi.fn()}
+        onSelectRangeDays={onSelectRangeDays}
+        phase="ready"
+        rangeDays={30}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "90d" }));
+
+    expect(onSelectRangeDays).toHaveBeenCalledWith(90);
   });
 
   it("renders the weekday rhythm chart", () => {
@@ -126,7 +155,9 @@ describe("InsightsPage", () => {
       <InsightsPage
         dashboard={createDashboard()}
         error={null}
+        onSelectRangeDays={vi.fn()}
         phase="ready"
+        rangeDays={30}
         onRetryLoad={vi.fn()}
       />
     );
@@ -141,7 +172,9 @@ describe("InsightsPage", () => {
       <InsightsPage
         dashboard={createDashboard({ isEmpty: true })}
         error={null}
+        onSelectRangeDays={vi.fn()}
         phase="ready"
+        rangeDays={30}
         onRetryLoad={vi.fn()}
       />
     );

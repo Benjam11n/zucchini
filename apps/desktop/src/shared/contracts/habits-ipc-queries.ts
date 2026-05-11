@@ -2,7 +2,10 @@ import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
-import type { InsightsDashboard } from "@/shared/domain/insights";
+import type {
+  InsightsDashboard,
+  InsightsRangeDays,
+} from "@/shared/domain/insights";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -17,7 +20,10 @@ export type HabitQuery =
     }
   | { type: "focusTimer.getState" }
   | { type: "habit.list" }
-  | { type: "insights.dashboard" }
+  | {
+      payload?: { rangeDays?: InsightsRangeDays | undefined } | undefined;
+      type: "insights.dashboard";
+    }
   | {
       payload?: { limit?: number | undefined } | undefined;
       type: "history.get";

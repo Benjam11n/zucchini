@@ -55,9 +55,12 @@ describe("readHabitServiceQuery()", () => {
       getInsightsDashboard: vi.fn(() => dashboard),
     } as unknown as HabitsService;
 
-    expect(readHabitServiceQuery(service, { type: "insights.dashboard" })).toBe(
-      dashboard
-    );
-    expect(service.getInsightsDashboard).toHaveBeenCalledOnce();
+    expect(
+      readHabitServiceQuery(service, {
+        payload: { rangeDays: 90 },
+        type: "insights.dashboard",
+      })
+    ).toBe(dashboard);
+    expect(service.getInsightsDashboard).toHaveBeenCalledWith(90);
   });
 });

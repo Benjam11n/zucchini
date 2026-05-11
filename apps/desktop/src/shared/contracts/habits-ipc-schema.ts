@@ -11,6 +11,7 @@ import {
   getFocusQuotaTargetMinutesBounds,
   isValidFocusQuotaTargetMinutes,
 } from "@/shared/domain/goal";
+import { INSIGHTS_RANGE_OPTIONS } from "@/shared/domain/insights";
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/domain/keyboard-shortcuts";
 import {
   isValidGlobalShortcutAccelerator,
@@ -512,6 +513,15 @@ const optionalLimitPayloadSchema = z
   })
   .strict()
   .optional();
+const insightsRangeDaysSchema = z.union(
+  INSIGHTS_RANGE_OPTIONS.map((rangeDays) => z.literal(rangeDays))
+);
+const optionalInsightsPayloadSchema = z
+  .object({
+    rangeDays: insightsRangeDaysSchema.optional(),
+  })
+  .strict()
+  .optional();
 
 export const habitQuerySchema = z.discriminatedUnion("type", [
   z
@@ -527,7 +537,12 @@ export const habitQuerySchema = z.discriminatedUnion("type", [
     .strict(),
   z.object({ type: z.literal("focusTimer.getState") }).strict(),
   z.object({ type: z.literal("habit.list") }).strict(),
-  z.object({ type: z.literal("insights.dashboard") }).strict(),
+  z
+    .object({
+      payload: optionalInsightsPayloadSchema,
+      type: z.literal("insights.dashboard"),
+    })
+    .strict(),
   z
     .object({
       payload: optionalLimitPayloadSchema,

@@ -176,7 +176,9 @@ function InsightsRoute({ actions, state }: ReadyAppController) {
         dashboard={state.insightsDashboard}
         error={state.insightsError}
         phase={state.insightsPhase}
+        rangeDays={state.insightsRangeDays}
         onRetryLoad={actions.handleRetryInsightsLoad}
+        onSelectRangeDays={actions.handleSelectInsightsRangeDays}
       />
     </Suspense>
   );

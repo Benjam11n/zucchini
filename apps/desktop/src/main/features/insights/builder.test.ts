@@ -81,7 +81,29 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.isEmpty).toBe(true);
     expect(dashboard.summary.completed.value).toBe("0");
     expect(dashboard.momentum.score).toBeGreaterThanOrEqual(0);
-    expect(dashboard.weeklyCompletion).toHaveLength(8);
+    expect(dashboard.weeklyCompletion).toHaveLength(5);
+  });
+
+  it("uses the selected range for the current period", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-25", 1),
+        createStatus(1, "2026-03-15", 1),
+      ],
+      nowDate: "2026-03-31",
+      rangeDays: 7,
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.period).toMatchObject({
+      currentStart: "2026-03-25",
+      label: "Last 7 days",
+    });
+    expect(dashboard.summary.completed.value).toBe("1");
+    expect(dashboard.smartInsights[0]?.body).toContain("previous 7 days");
   });
 
   it("does not show the empty state when only focus data exists", () => {

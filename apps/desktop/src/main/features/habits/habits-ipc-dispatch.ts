@@ -200,7 +200,7 @@ export function readHabitServiceQuery(
       return service.getHabits();
     }
     case "insights.dashboard": {
-      return service.getInsightsDashboard();
+      return service.getInsightsDashboard(query.payload?.rangeDays);
     }
     case "history.get": {
       return service.getHistory(query.payload?.limit);

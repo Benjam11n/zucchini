@@ -90,6 +90,7 @@ export function useInsightsPageState() {
     insightsDashboard: state.dashboard,
     insightsError: state.error,
     insightsPhase: state.phase,
+    insightsRangeDays: state.rangeDays,
   }));
 }
 

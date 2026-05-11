@@ -49,6 +49,7 @@ const DEFAULT_INSIGHTS_PAGE_STATE = {
   insightsDashboard: null,
   insightsError: null,
   insightsPhase: "idle",
+  insightsRangeDays: 30,
 } satisfies NonNullable<ReturnType<typeof useInsightsPageState>>;
 
 const DEFAULT_SETTINGS_PAGE_STATE = {
@@ -99,6 +100,7 @@ function buildControllerActions({
       await actions.loadInsightsDashboard(true);
     },
     handleSelectHistoryMonth: actions.selectHistoryMonth,
+    handleSelectInsightsRangeDays: actions.handleSelectInsightsRangeDays,
     handleSetDayStatus: actions.handleSetDayStatus,
     handleSettingsDraftChange: actions.handleSettingsDraftChange,
     handleShowFocusWidget: actions.showFocusWidget,

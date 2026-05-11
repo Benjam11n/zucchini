@@ -1,5 +1,9 @@
 import type { HabitCategory } from "./habit";
 
+export const INSIGHTS_RANGE_OPTIONS = [7, 30, 90, 180, 365] as const;
+
+export type InsightsRangeDays = (typeof INSIGHTS_RANGE_OPTIONS)[number];
+
 type InsightsSeverity = "positive" | "warning" | "neutral";
 
 export interface InsightsSummaryMetric {
@@ -16,20 +20,26 @@ export interface InsightsMomentum {
 }
 
 export interface InsightsWeeklyCompletion {
+  completedCount: number;
   completedPercent: number;
   label: string;
+  missedCount: number;
   missedPercent: number;
+  partialCount: number;
   partialPercent: number;
+  totalCount: number;
   weekEnd: string;
   weekStart: string;
 }
 
 export interface InsightsHabitLeaderboardItem {
   category: HabitCategory;
+  completedCount: number;
   completionRate: number;
   habitId: number;
   name: string;
   rank: number;
+  totalCount: number;
   trend: number[];
 }
 

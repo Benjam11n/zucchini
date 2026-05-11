@@ -6,10 +6,12 @@ import type {
   InsightsDashboard,
   InsightsHabitLeaderboardItem,
   InsightsMomentum,
+  InsightsRangeDays,
   InsightsSmartInsight,
   InsightsWeekdayRhythm,
   InsightsWeeklyCompletion,
 } from "@/shared/domain/insights";
+import { INSIGHTS_RANGE_OPTIONS } from "@/shared/domain/insights";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import {
   addDays,
@@ -25,6 +27,7 @@ interface BuildInsightsDashboardOptions {
   focusSessions: FocusSession[];
   habitStatuses: HabitPeriodStatusSnapshot[];
   nowDate: string;
+  rangeDays?: InsightsRangeDays;
   streak: StreakState;
   timezone: string;
 }
@@ -42,8 +45,7 @@ interface HabitMetric extends OpportunityTotals {
   trend: number[];
 }
 
-const CURRENT_PERIOD_DAYS = 30;
-const PREVIOUS_PERIOD_DAYS = 30;
+const DEFAULT_RANGE_DAYS = 30 satisfies InsightsRangeDays;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY_LABELS = [
   "Monday",
@@ -68,6 +70,18 @@ function clamp(value: number, min: number, max: number): number {
 
 function toRate(completed: number, total: number): number {
   return total === 0 ? 0 : Math.round((completed / total) * 100);
+}
+
+function normalizeRangeDays(
+  rangeDays: InsightsRangeDays | undefined
+): InsightsRangeDays {
+  return INSIGHTS_RANGE_OPTIONS.includes(rangeDays ?? DEFAULT_RANGE_DAYS)
+    ? (rangeDays ?? DEFAULT_RANGE_DAYS)
+    : DEFAULT_RANGE_DAYS;
+}
+
+function formatRangeLabel(rangeDays: InsightsRangeDays): string {
+  return rangeDays === 365 ? "Last year" : `Last ${rangeDays} days`;
 }
 
 function getInclusiveDayCount(start: string, end: string): number {
@@ -206,12 +220,20 @@ function buildMomentum({
 
 function buildWeeklyCompletion(
   statuses: HabitPeriodStatusSnapshot[],
+  currentStart: string,
   nowDate: string
 ): InsightsWeeklyCompletion[] {
   const latestWeekStart = startOfIsoWeek(nowDate);
-  const weekStarts = Array.from({ length: 8 }, (_, index) =>
-    addDays(latestWeekStart, (index - 7) * 7)
-  );
+  const firstWeekStart = startOfIsoWeek(currentStart);
+  const weekStarts: string[] = [];
+
+  for (
+    let weekStart = firstWeekStart;
+    weekStart <= latestWeekStart;
+    weekStart = addDays(weekStart, 7)
+  ) {
+    weekStarts.push(weekStart);
+  }
 
   return weekStarts.map((weekStart) => {
     const weekEnd = endOfIsoWeek(weekStart);
@@ -239,14 +261,18 @@ function buildWeeklyCompletion(
     const missedPercent = clamp(toRate(totals.missed, totals.total), 0, 100);
 
     return {
+      completedCount: totals.completed,
       completedPercent,
       label: formatDateKey(
         weekStart,
         { day: "numeric", month: "short" },
         "en-US"
       ),
+      missedCount: totals.missed,
       missedPercent,
+      partialCount: totals.partial,
       partialPercent,
+      totalCount: totals.total,
       weekEnd,
       weekStart,
     };
@@ -466,10 +492,12 @@ function buildHabitLeaderboard(
     .slice(0, 5)
     .map((metric, index) => ({
       category: metric.category,
+      completedCount: metric.completed,
       completionRate: toRate(metric.completed, metric.total),
       habitId: metric.habitId,
       name: metric.name,
       rank: index + 1,
+      totalCount: metric.total,
       trend: metric.trend,
     }));
 }
@@ -573,20 +601,19 @@ function buildSmartInsights({
   currentStart,
   nowDate,
   previousRate,
+  rangeDays,
   statuses,
 }: {
   currentRate: number;
   currentStart: string;
   nowDate: string;
   previousRate: number;
+  rangeDays: InsightsRangeDays;
   statuses: HabitPeriodStatusSnapshot[];
 }): InsightsSmartInsight[] {
   const insights: InsightsSmartInsight[] = [
     {
-      body:
-        currentRate >= previousRate
-          ? `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 30 days.`
-          : `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous 30 days.`,
+      body: `Completion rate is ${toSignedPercentLabel(currentRate - previousRate)} vs previous ${rangeDays} days.`,
       severity: currentRate >= previousRate ? "positive" : "warning",
       title:
         currentRate >= previousRate
@@ -625,11 +652,13 @@ export function buildInsightsDashboard({
   focusSessions,
   habitStatuses,
   nowDate,
+  rangeDays,
   streak,
   timezone,
 }: BuildInsightsDashboardOptions): InsightsDashboard {
-  const currentStart = addDays(nowDate, -(CURRENT_PERIOD_DAYS - 1));
-  const previousStart = addDays(currentStart, -PREVIOUS_PERIOD_DAYS);
+  const currentRangeDays = normalizeRangeDays(rangeDays);
+  const currentStart = addDays(nowDate, -(currentRangeDays - 1));
+  const previousStart = addDays(currentStart, -currentRangeDays);
   const previousEnd = addDays(currentStart, -1);
   const activeHabitStatuses = filterActiveHabitStatuses(
     habitStatuses,
@@ -737,13 +766,14 @@ export function buildInsightsDashboard({
     period: {
       currentEnd: nowDate,
       currentStart,
-      label: "Last 30 days",
+      label: formatRangeLabel(currentRangeDays),
     },
     smartInsights: buildSmartInsights({
       currentRate,
       currentStart,
       nowDate,
       previousRate,
+      rangeDays: currentRangeDays,
       statuses: activeHabitStatuses,
     }),
     summary: {
@@ -781,6 +811,10 @@ export function buildInsightsDashboard({
       nowDate,
       timezone
     ),
-    weeklyCompletion: buildWeeklyCompletion(currentStatuses, nowDate),
+    weeklyCompletion: buildWeeklyCompletion(
+      currentStatuses,
+      currentStart,
+      nowDate
+    ),
   };
 }

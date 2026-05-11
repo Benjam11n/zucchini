@@ -2,6 +2,7 @@ import {
   Activity,
   BarChart3,
   Clock3,
+  Info,
   RefreshCw,
   TrendingUp,
 } from "lucide-react";
@@ -27,22 +28,63 @@ import {
   TableRow,
 } from "@/renderer/shared/components/ui/table";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import type {
-  InsightsHabitLeaderboardItem,
   InsightsDashboard,
+  InsightsHabitLeaderboardItem,
+  InsightsRangeDays,
   InsightsSmartInsight,
   InsightsSummaryMetric,
   InsightsWeekdayRhythm,
   InsightsWeeklyCompletion,
 } from "@/shared/domain/insights";
+import { INSIGHTS_RANGE_OPTIONS } from "@/shared/domain/insights";
 
 interface SummaryMetricCardProps {
   metric: InsightsSummaryMetric;
+}
+
+const RANGE_LABELS: Record<InsightsRangeDays, string> = {
+  180: "180d",
+  30: "30d",
+  365: "1y",
+  7: "7d",
+  90: "90d",
+};
+
+function RangeSelector({
+  rangeDays,
+  onSelectRangeDays,
+}: {
+  onSelectRangeDays: (rangeDays: InsightsRangeDays) => void;
+  rangeDays: InsightsRangeDays;
+}) {
+  return (
+    <div className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5">
+      {INSIGHTS_RANGE_OPTIONS.map((option) => (
+        <Button
+          aria-pressed={rangeDays === option}
+          className="h-7 rounded-md px-2 text-xs"
+          key={option}
+          onClick={() => onSelectRangeDays(option)}
+          type="button"
+          variant={rangeDays === option ? "secondary" : "ghost"}
+        >
+          {RANGE_LABELS[option]}
+        </Button>
+      ))}
+    </div>
+  );
 }
 
 function Sparkline({
@@ -124,6 +166,19 @@ function MomentumCard({ dashboard }: { dashboard: InsightsDashboard }) {
           <CardTitle className="inline-flex items-center gap-2">
             <Activity className="size-4 text-primary" />
             Momentum
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info
+                  aria-label="Momentum score details"
+                  className="size-3.5 text-muted-foreground"
+                  role="img"
+                />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-72 leading-relaxed">
+                Momentum combines current completion rate, change vs the
+                previous period, and current streak.
+              </TooltipContent>
+            </Tooltip>
           </CardTitle>
           <CardDescription>{dashboard.momentum.label}</CardDescription>
         </div>
@@ -147,7 +202,16 @@ function MomentumCard({ dashboard }: { dashboard: InsightsDashboard }) {
           </div>
         </div>
         <div className="w-full text-primary">
-          <Sparkline points={dashboard.momentum.sparkline} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Sparkline points={dashboard.momentum.sparkline} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              Trend: {dashboard.momentum.sparkline.join("%, ")}%
+            </TooltipContent>
+          </Tooltip>
         </div>
       </CardContent>
     </Card>
@@ -187,23 +251,41 @@ function WeeklyCompletionChart({
             Missed
           </span>
         </div>
-        <div className="grid h-48 grid-cols-8 items-end gap-3">
+        <div className="grid h-48 auto-cols-[minmax(2rem,1fr)] grid-flow-col items-end gap-3 overflow-x-auto pb-2">
           {weeks.map((week) => (
             <div key={week.weekStart} className="grid min-w-0 gap-2">
-              <div className="flex h-40 flex-col-reverse overflow-hidden rounded-md bg-muted">
-                <div
-                  className="w-full bg-primary/90"
-                  style={{ height: `${week.completedPercent}%` }}
-                />
-                <div
-                  className="w-full bg-primary/30"
-                  style={{ height: `${week.partialPercent}%` }}
-                />
-                <div
-                  className="w-full bg-muted-foreground/20"
-                  style={{ height: `${week.missedPercent}%` }}
-                />
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label={`${week.label}: ${week.completedCount} completed, ${week.partialCount} partial, ${week.missedCount} missed out of ${week.totalCount} opportunities`}
+                    className="flex h-40 w-full flex-col-reverse overflow-hidden rounded-md bg-muted text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    type="button"
+                  >
+                    <div
+                      className="w-full bg-primary/90"
+                      style={{ height: `${week.completedPercent}%` }}
+                    />
+                    <div
+                      className="w-full bg-primary/30"
+                      style={{ height: `${week.partialPercent}%` }}
+                    />
+                    <div
+                      className="w-full bg-muted-foreground/20"
+                      style={{ height: `${week.missedPercent}%` }}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="grid gap-1">
+                  <span>
+                    {week.weekStart} to {week.weekEnd}
+                  </span>
+                  <span>
+                    {week.completedCount} completed, {week.partialCount}{" "}
+                    partial, {week.missedCount} missed
+                  </span>
+                  <span>{week.totalCount} opportunities</span>
+                </TooltipContent>
+              </Tooltip>
               <span className="truncate text-center text-[0.68rem] text-muted-foreground">
                 {week.label}
               </span>
@@ -320,7 +402,7 @@ function HabitLeaderboard({
                 <TableHead className="w-8 px-0 pr-2">#</TableHead>
                 <TableHead className="px-4">Habit</TableHead>
                 <TableHead className="w-32 px-2">Category</TableHead>
-                <TableHead className="w-32 px-2">Completion</TableHead>
+                <TableHead className="w-44 px-2">Completion</TableHead>
                 <TableHead className="hidden w-36 px-0 pl-3 sm:table-cell">
                   Trend
                 </TableHead>
@@ -346,6 +428,9 @@ function HabitLeaderboard({
                       <span className="w-10 shrink-0 tabular-nums">
                         {habit.completionRate}%
                       </span>
+                      <span className="w-14 shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {habit.completedCount} / {habit.totalCount}
+                      </span>
                       <Progress
                         className="h-2 min-w-10 flex-1"
                         value={habit.completionRate}
@@ -353,7 +438,21 @@ function HabitLeaderboard({
                     </div>
                   </TableCell>
                   <TableCell className="hidden px-0 py-4 pl-3 text-primary sm:table-cell">
-                    <Sparkline className="h-8" points={habit.trend} />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          aria-label={`${habit.name} trend: ${habit.trend.join("%, ")}%`}
+                          className="w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          type="button"
+                        >
+                          <Sparkline className="h-8" points={habit.trend} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-72 leading-relaxed">
+                        {habit.completedCount}/{habit.totalCount} opportunities
+                        completed. Trend: {habit.trend.join("%, ")}%
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
@@ -459,7 +558,11 @@ function WeekdayRhythmCard({ rhythm }: { rhythm: InsightsWeekdayRhythm }) {
   );
 }
 
-function EmptyState({ onRetryLoad }: Pick<InsightsPageProps, "onRetryLoad">) {
+function EmptyState({
+  onRetryLoad,
+  onSelectRangeDays,
+  rangeDays,
+}: Pick<InsightsPageProps, "onRetryLoad" | "onSelectRangeDays" | "rangeDays">) {
   return (
     <Card className="border-dashed">
       <CardContent className="grid justify-items-center gap-3 py-10 text-center">
@@ -473,10 +576,21 @@ function EmptyState({ onRetryLoad }: Pick<InsightsPageProps, "onRetryLoad">) {
             the dashboard.
           </p>
         </div>
-        <Button onClick={onRetryLoad} size="sm" type="button" variant="outline">
-          <RefreshCw className="size-3.5" />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <RangeSelector
+            onSelectRangeDays={onSelectRangeDays}
+            rangeDays={rangeDays}
+          />
+          <Button
+            onClick={onRetryLoad}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            <RefreshCw className="size-3.5" />
+            Refresh
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -522,7 +636,9 @@ function InsightsPageComponent({
   dashboard,
   error,
   phase,
+  rangeDays,
   onRetryLoad,
+  onSelectRangeDays,
 }: InsightsPageProps) {
   if (phase === "loading" && !dashboard) {
     return <LoadingState />;
@@ -533,53 +649,72 @@ function InsightsPageComponent({
   }
 
   if (!dashboard || dashboard.isEmpty) {
-    return <EmptyState onRetryLoad={onRetryLoad} />;
+    return (
+      <EmptyState
+        onRetryLoad={onRetryLoad}
+        onSelectRangeDays={onSelectRangeDays}
+        rangeDays={rangeDays}
+      />
+    );
   }
 
   return (
-    <div className="grid gap-6">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-            Insights
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {dashboard.period.label} ending {dashboard.generatedAtDate}
-          </p>
-        </div>
-        <Button onClick={onRetryLoad} size="sm" type="button" variant="outline">
-          <RefreshCw className="size-3.5" />
-          Refresh
-        </Button>
-      </section>
+    <TooltipProvider>
+      <div className="grid gap-6">
+        <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              Insights
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {dashboard.period.label} ending {dashboard.generatedAtDate}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <RangeSelector
+              onSelectRangeDays={onSelectRangeDays}
+              rangeDays={rangeDays}
+            />
+            <Button
+              onClick={onRetryLoad}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <RefreshCw className="size-3.5" />
+              Refresh
+            </Button>
+          </div>
+        </section>
 
-      <Card>
-        <CardContent className="grid gap-0 py-1 sm:grid-cols-2 lg:grid-cols-4">
-          <SummaryMetricCard metric={dashboard.summary.completed} />
-          <SummaryMetricCard metric={dashboard.summary.focus} />
-          <SummaryMetricCard metric={dashboard.summary.perfectDays} />
-          <SummaryMetricCard metric={dashboard.summary.savedStreaks} />
-        </CardContent>
-      </Card>
+        <Card>
+          <CardContent className="grid gap-0 py-1 sm:grid-cols-2 lg:grid-cols-4">
+            <SummaryMetricCard metric={dashboard.summary.completed} />
+            <SummaryMetricCard metric={dashboard.summary.focus} />
+            <SummaryMetricCard metric={dashboard.summary.perfectDays} />
+            <SummaryMetricCard metric={dashboard.summary.savedStreaks} />
+          </CardContent>
+        </Card>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <MomentumCard dashboard={dashboard} />
-        </div>
-        <div className="lg:col-span-2">
-          <WeeklyCompletionChart weeks={dashboard.weeklyCompletion} />
-        </div>
-      </section>
+        <section className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-1">
+            <MomentumCard dashboard={dashboard} />
+          </div>
+          <div className="lg:col-span-2">
+            <WeeklyCompletionChart weeks={dashboard.weeklyCompletion} />
+          </div>
+        </section>
 
-      <section>
-        <HabitLeaderboard habits={dashboard.habitLeaderboard} />
-      </section>
+        <section>
+          <HabitLeaderboard habits={dashboard.habitLeaderboard} />
+        </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <SmartInsightsCard insights={dashboard.smartInsights} />
-        <WeekdayRhythmCard rhythm={dashboard.weekdayRhythm} />
-      </section>
-    </div>
+        <section className="grid gap-4 lg:grid-cols-2">
+          <SmartInsightsCard insights={dashboard.smartInsights} />
+          <WeekdayRhythmCard rhythm={dashboard.weekdayRhythm} />
+        </section>
+      </div>
+    </TooltipProvider>
   );
 }
 
