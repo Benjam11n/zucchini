@@ -2,6 +2,8 @@
   "name": "zucchini",
   "version": "0.1.2-beta.10",
   "private": true,
+  "description": "Local-first habit tracker.",
+  "author": "Benjamin Wang",
   "main": "dist-electron/main.js",
   "scripts": {
     "assets:process": "tsx scripts/process-mascots.ts",

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 
@@ -50,6 +51,22 @@ function shouldAutoFocus(): boolean {
     activeElement === document.body ||
     !isEditableElement(activeElement)
   );
+}
+
+function shouldIgnoreRowKeyDown(event: KeyboardEvent<HTMLElement>): boolean {
+  return (
+    event.key.toLowerCase() === "n" ||
+    event.currentTarget !== event.target ||
+    isEditableElement(event.target as Element)
+  );
+}
+
+function activateRow(row: TodayKeyboardRow): boolean {
+  if (row.kind !== "periodic" && row.incomplete) {
+    return true;
+  }
+
+  return row.kind === "periodic" && Boolean(row.completesOnIncrement);
 }
 
 export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
@@ -293,54 +310,52 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
           showHintImmediately(rowId);
         },
         onKeyDown: (event) => {
-          if (
-            event.key.toLowerCase() === "n" ||
-            event.currentTarget !== event.target ||
-            isEditableElement(event.target as Element)
-          ) {
+          if (shouldIgnoreRowKeyDown(event)) {
             return;
           }
 
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            moveFocus(rowId, 1);
-            return;
-          }
-
-          if (event.key === "ArrowUp") {
-            event.preventDefault();
-            moveFocus(rowId, -1);
-            return;
-          }
-
-          if (event.key === " " || event.key === "Enter") {
-            event.preventDefault();
-            if (row.kind === "periodic") {
-              if (row.completesOnIncrement) {
+          switch (event.key) {
+            case "ArrowDown": {
+              event.preventDefault();
+              moveFocus(rowId, 1);
+              break;
+            }
+            case "ArrowUp": {
+              event.preventDefault();
+              moveFocus(rowId, -1);
+              break;
+            }
+            case " ":
+            case "Enter": {
+              event.preventDefault();
+              if (activateRow(row)) {
+                markRowCompleted(rowId);
+              }
+              (row.kind === "periodic" ? row.onIncrement : row.onToggle)?.();
+              break;
+            }
+            case "ArrowRight": {
+              if (row.kind !== "periodic") {
+                break;
+              }
+              event.preventDefault();
+              if (activateRow(row)) {
                 markRowCompleted(rowId);
               }
               row.onIncrement?.();
-              return;
+              break;
             }
-            if (row.incomplete) {
-              markRowCompleted(rowId);
+            case "ArrowLeft": {
+              if (row.kind !== "periodic") {
+                break;
+              }
+              event.preventDefault();
+              row.onDecrement?.();
+              break;
             }
-            row.onToggle?.();
-            return;
-          }
-
-          if (row.kind === "periodic" && event.key === "ArrowRight") {
-            event.preventDefault();
-            if (row.completesOnIncrement) {
-              markRowCompleted(rowId);
+            default: {
+              break;
             }
-            row.onIncrement?.();
-            return;
-          }
-
-          if (row.kind === "periodic" && event.key === "ArrowLeft") {
-            event.preventDefault();
-            row.onDecrement?.();
           }
         },
         onMouseEnter: () => scheduleHoverHint(rowId),

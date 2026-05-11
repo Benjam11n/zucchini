@@ -107,10 +107,6 @@
         "patterns": ["apps/desktop/src/renderer/features/wind-down/**"]
       },
       {
-        "name": "desktop-renderer",
-        "patterns": ["apps/desktop/src/renderer/**"]
-      },
-      {
         "name": "desktop-shared-contracts",
         "patterns": [
           "apps/desktop/src/shared/contracts/**",
@@ -143,7 +139,6 @@
           "desktop-main-persistence",
           "desktop-main-ports",
           "desktop-preload",
-          "desktop-renderer",
           "desktop-renderer-app",
           "desktop-renderer-feature-focus",
           "desktop-renderer-feature-history",
@@ -208,16 +203,6 @@
       {
         "from": "desktop-preload",
         "allow": [
-          "desktop-shared-contracts",
-          "desktop-shared-domain",
-          "desktop-shared-utils"
-        ]
-      },
-      {
-        "from": "desktop-renderer",
-        "allow": [
-          "desktop-renderer-app",
-          "desktop-renderer-shared",
           "desktop-shared-contracts",
           "desktop-shared-domain",
           "desktop-shared-utils"
