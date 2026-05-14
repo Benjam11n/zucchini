@@ -7,7 +7,6 @@ const CHART_ROW_HEIGHT = 42;
 interface WeeklyReviewHabitChartRow {
   category: WeeklyReviewHabitHeatmapRow["category"];
   cells: WeeklyReviewHabitHeatmapRow["cells"];
-  color: string;
   completedOpportunities: number;
   completionRate: number;
   habitId: number;
@@ -23,13 +22,11 @@ interface WeeklyReviewHabitChartState {
 }
 
 export function buildWeeklyReviewHabitChartState(
-  heatmapRows: WeeklyReviewHabitHeatmapRow[],
-  getColor: (category: WeeklyReviewHabitHeatmapRow["category"]) => string
+  heatmapRows: WeeklyReviewHabitHeatmapRow[]
 ): WeeklyReviewHabitChartState {
   const visibleRows = heatmapRows.map((row) => ({
     category: row.category,
     cells: row.cells,
-    color: getColor(row.category),
     completedOpportunities: row.completedOpportunities,
     completionRate: row.completionRate,
     habitId: row.habitId,

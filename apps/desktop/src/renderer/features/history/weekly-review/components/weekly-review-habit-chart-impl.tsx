@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
+import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
 import {
   Tooltip,
@@ -14,7 +15,7 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
-  getHabitCategoryColor,
+  getHabitCategoryLabel,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import type {
@@ -105,9 +106,7 @@ export function WeeklyReviewHabitChartImpl({
 }: WeeklyReviewHabitChartImplProps) {
   const categoryPreferences = useHabitCategoryPreferences();
   const { chartHeight, viewportHeight, visibleRows } =
-    buildWeeklyReviewHabitChartState(heatmapRows, (category) =>
-      getHabitCategoryColor(category, categoryPreferences)
-    );
+    buildWeeklyReviewHabitChartState(heatmapRows);
   const weekdayLabels = visibleRows[0]?.cells.map(
     (cell) => cell.weekdayLabel
   ) ?? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -140,40 +139,46 @@ export function WeeklyReviewHabitChartImpl({
                   <div className="text-right">Total</div>
                 </div>
                 <div className="grid gap-1 pt-2">
-                  {visibleRows.map((row) => (
-                    <div
-                      aria-label={`${row.name}: ${row.completedOpportunities} of ${row.opportunities} opportunities, ${row.completionRate}%`}
-                      className="grid grid-cols-[minmax(10rem,1fr)_repeat(7,1.75rem)_5.75rem] items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted/25"
-                      key={row.habitId}
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          aria-hidden="true"
-                          className="size-2.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: row.color }}
-                        />
-                        <TextWithTooltip
-                          className="text-sm font-medium"
-                          content={row.name}
-                        />
-                      </div>
-                      {row.cells.map((cell) => (
-                        <HeatmapCell
-                          cell={cell}
-                          habitName={row.name}
-                          key={`${row.habitId}-${cell.date}`}
-                        />
-                      ))}
-                      <div className="text-right">
-                        <div className="text-sm font-medium tabular-nums">
-                          {row.completedOpportunities}/{row.opportunities}
+                  {visibleRows.map((row) => {
+                    const categoryLabel = getHabitCategoryLabel(
+                      row.category,
+                      categoryPreferences
+                    );
+
+                    return (
+                      <div
+                        aria-label={`${row.name}, ${categoryLabel}: ${row.completedOpportunities} of ${row.opportunities} opportunities, ${row.completionRate}%`}
+                        className="grid grid-cols-[minmax(10rem,1fr)_repeat(7,1.75rem)_5.75rem] items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted/25"
+                        key={row.habitId}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <HabitCategoryMarker
+                            category={row.category}
+                            variant="dot"
+                          />
+                          <TextWithTooltip
+                            className="text-sm font-medium"
+                            content={row.name}
+                          />
                         </div>
-                        <div className="text-[0.68rem] text-muted-foreground tabular-nums">
-                          {row.completionRate}%
+                        {row.cells.map((cell) => (
+                          <HeatmapCell
+                            cell={cell}
+                            habitName={row.name}
+                            key={`${row.habitId}-${cell.date}`}
+                          />
+                        ))}
+                        <div className="text-right">
+                          <div className="text-sm font-medium tabular-nums">
+                            {row.completedOpportunities}/{row.opportunities}
+                          </div>
+                          <div className="text-[0.68rem] text-muted-foreground tabular-nums">
+                            {row.completionRate}%
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

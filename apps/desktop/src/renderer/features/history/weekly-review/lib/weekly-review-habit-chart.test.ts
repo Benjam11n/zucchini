@@ -25,21 +25,18 @@ function createHeatmapRow(
 
 describe("weekly review habit chart ranking", () => {
   it("keeps pre-ranked heatmap rows visible", () => {
-    const state = buildWeeklyReviewHabitChartState(
-      [
-        createHeatmapRow({
-          completionRate: 20,
-          habitId: 2,
-          name: "Stretch",
-        }),
-        createHeatmapRow({
-          completionRate: 40,
-          habitId: 3,
-          name: "Walk",
-        }),
-      ],
-      () => "var(--ring-productivity)"
-    );
+    const state = buildWeeklyReviewHabitChartState([
+      createHeatmapRow({
+        completionRate: 20,
+        habitId: 2,
+        name: "Stretch",
+      }),
+      createHeatmapRow({
+        completionRate: 40,
+        habitId: 3,
+        name: "Walk",
+      }),
+    ]);
 
     expect(state.visibleRows.map((habit) => habit.habitId)).toStrictEqual([
       2, 3,
@@ -58,8 +55,7 @@ describe("weekly review habit chart ranking", () => {
             habitId: index + 1,
             name: `Habit ${index + 1}`,
           })
-      ),
-      () => "var(--ring-productivity)"
+      )
     );
 
     expect(state.visibleRows).toHaveLength(12);
@@ -68,14 +64,11 @@ describe("weekly review habit chart ranking", () => {
   });
 
   it("keeps a compact minimum height for short lists", () => {
-    const state = buildWeeklyReviewHabitChartState(
-      [
-        createHeatmapRow({
-          name: "Very long habit name that should be truncated for the chart",
-        }),
-      ],
-      () => "var(--ring-productivity)"
-    );
+    const state = buildWeeklyReviewHabitChartState([
+      createHeatmapRow({
+        name: "Very long habit name that should be truncated for the chart",
+      }),
+    ]);
 
     expect(state.visibleRows[0]?.name).toBe(
       "Very long habit name that should be truncated for the chart"

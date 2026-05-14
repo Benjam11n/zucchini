@@ -48,6 +48,11 @@ describe("WeeklyReviewHabitChartImpl", () => {
     expect(screen.getByText("Mon")).toBeInTheDocument();
     expect(screen.getByText("Sun")).toBeInTheDocument();
     expect(screen.getByText("Plan top three tasks")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        "Plan top three tasks, Productivity: 3 of 7 opportunities, 43%"
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText("Walk")).toBeInTheDocument();
     expect(screen.getByText("3/7")).toBeInTheDocument();
     expect(screen.getByText("43%")).toBeInTheDocument();

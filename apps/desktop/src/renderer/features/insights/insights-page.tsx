@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
+import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { Progress } from "@/renderer/shared/components/ui/progress";
 import {
   Table,
@@ -35,10 +36,6 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
 import type {
   InsightsDashboard,
   InsightsHabitLeaderboardItem,
@@ -363,30 +360,6 @@ function SmartInsightsCard({ insights }: { insights: InsightsSmartInsight[] }) {
   );
 }
 
-function HabitCategoryBadge({
-  habit,
-}: {
-  habit: InsightsHabitLeaderboardItem;
-}) {
-  const categoryPreferences = useHabitCategoryPreferences();
-  const categoryPresentation = getHabitCategoryPresentation(
-    habit.category,
-    categoryPreferences
-  );
-  const CategoryIcon = categoryPresentation.icon;
-
-  return (
-    <Badge
-      className="gap-1.5 border font-medium"
-      style={categoryPresentation.badgeStyle}
-      variant="outline"
-    >
-      <CategoryIcon className="size-3" />
-      {categoryPresentation.label}
-    </Badge>
-  );
-}
-
 function HabitLeaderboard({
   habits,
 }: {
@@ -434,7 +407,10 @@ function HabitLeaderboard({
                     <TextWithTooltip content={habit.name} />
                   </TableCell>
                   <TableCell className="px-2 py-4">
-                    <HabitCategoryBadge habit={habit} />
+                    <HabitCategoryMarker
+                      category={habit.category}
+                      variant="badge"
+                    />
                   </TableCell>
                   <TableCell className="px-2 py-4">
                     <div className="flex min-w-0 items-center gap-2">

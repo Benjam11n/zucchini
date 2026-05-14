@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
+import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
 import {
-  getHabitCategoryColor,
+  getHabitCategoryLabel,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
@@ -35,23 +36,22 @@ export function WeeklyReviewMostMissedCard({
           </div>
         ) : (
           habits.map((habit) => {
-            const categoryColor = getHabitCategoryColor(
+            const categoryLabel = getHabitCategoryLabel(
               habit.category,
               categoryPreferences
             );
 
             return (
               <div
-                aria-label={`${habit.name}: ${habit.missedOpportunities} missed of ${habit.opportunities} opportunities, ${habit.completionRate}% completion`}
+                aria-label={`${habit.name}, ${categoryLabel}: ${habit.missedOpportunities} missed of ${habit.opportunities} opportunities, ${habit.completionRate}% completion`}
                 className="flex items-center justify-between gap-3 rounded-md px-1 py-2 hover:bg-muted/25"
                 key={habit.habitId}
               >
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: categoryColor }}
+                    <HabitCategoryMarker
+                      category={habit.category}
+                      variant="dot"
                     />
                     <TextWithTooltip
                       className="text-sm font-medium text-foreground"
