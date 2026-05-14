@@ -9,6 +9,7 @@ const latestReview: WeeklyReview = {
   endingStreak: 6,
   focusMinutes: 120,
   freezeDays: 1,
+  habitHeatmapRows: [],
   habitMetrics: [],
   label: "Mar 2 - Mar 8",
   longestCleanRun: 3,

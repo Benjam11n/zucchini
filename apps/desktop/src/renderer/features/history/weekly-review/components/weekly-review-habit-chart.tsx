@@ -1,10 +1,10 @@
 import { Suspense, lazy } from "react";
 
 import { WeeklyReviewChartFallback } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-fallback";
-import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
+import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewHabitChartProps {
-  habitMetrics: WeeklyReviewHabitMetric[];
+  heatmapRows: WeeklyReviewHabitHeatmapRow[];
 }
 
 const WeeklyReviewHabitChartImpl = lazy(async () => {
@@ -15,11 +15,11 @@ const WeeklyReviewHabitChartImpl = lazy(async () => {
 });
 
 export function WeeklyReviewHabitChart({
-  habitMetrics,
+  heatmapRows,
 }: WeeklyReviewHabitChartProps) {
   return (
     <Suspense fallback={<WeeklyReviewChartFallback />}>
-      <WeeklyReviewHabitChartImpl habitMetrics={habitMetrics} />
+      <WeeklyReviewHabitChartImpl heatmapRows={heatmapRows} />
     </Suspense>
   );
 }

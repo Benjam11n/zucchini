@@ -37,6 +37,29 @@ export interface WeeklyReviewHabitMetric {
   sortOrder: number;
 }
 
+export type WeeklyReviewHabitHeatmapCellStatus =
+  | "complete"
+  | "missed"
+  | "not-scheduled"
+  | "partial";
+
+export interface WeeklyReviewHabitHeatmapCell {
+  date: string;
+  status: WeeklyReviewHabitHeatmapCellStatus;
+  weekdayLabel: string;
+}
+
+export interface WeeklyReviewHabitHeatmapRow {
+  category: HabitCategory;
+  cells: WeeklyReviewHabitHeatmapCell[];
+  completedOpportunities: number;
+  completionRate: number;
+  habitId: number;
+  missedOpportunities: number;
+  name: string;
+  opportunities: number;
+}
+
 export interface WeeklyReviewTrendPoint {
   completedDays: number;
   completionRate: number;
@@ -65,6 +88,7 @@ export interface WeeklyReview {
   endingStreak: number | null;
   freezeDays: number;
   focusMinutes: number;
+  habitHeatmapRows: WeeklyReviewHabitHeatmapRow[];
   habitMetrics: WeeklyReviewHabitMetric[];
   label: string;
   longestCleanRun: number;

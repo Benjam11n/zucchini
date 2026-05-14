@@ -1,3 +1,5 @@
+import type { HabitWeekday } from "@/shared/domain/habit";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary } from "@/shared/domain/streak";
 import { addDays } from "@/shared/utils/date";
 
@@ -27,27 +29,31 @@ function createStatus(
   overrides: Partial<{
     category: "fitness" | "nutrition" | "productivity";
     completedCount: number;
+    createdAt: string;
     frequency: "daily" | "monthly" | "weekly";
     name: string;
     periodStart: string;
+    selectedWeekdays: HabitWeekday[] | null;
     sortOrder: number;
     targetCount: number;
   }> = {}
-) {
+): HabitPeriodStatusSnapshot {
   return {
     category: overrides.category ?? "productivity",
     completed,
     completedCount:
       overrides.completedCount ??
       (completed ? (overrides.targetCount ?? 1) : 0),
+    ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
     frequency: overrides.frequency ?? "daily",
     habitId,
     name: overrides.name ?? `Habit ${habitId}`,
     periodEnd,
     periodStart: overrides.periodStart ?? periodEnd,
+    selectedWeekdays: overrides.selectedWeekdays ?? null,
     sortOrder: overrides.sortOrder ?? habitId - 1,
     targetCount: overrides.targetCount ?? 1,
-  } as const;
+  };
 }
 
 describe("buildWeeklyReview()", () => {
@@ -127,6 +133,19 @@ describe("buildWeeklyReview()", () => {
       missedOpportunities: 0,
       opportunities: 7,
     });
+    expect(review.habitHeatmapRows[0]).toMatchObject({
+      completedOpportunities: 7,
+      completionRate: 100,
+      missedOpportunities: 0,
+      name: "Habit 1",
+      opportunities: 7,
+    });
+    expect(review.habitHeatmapRows[0]?.cells).toHaveLength(7);
+    expect(
+      review.habitHeatmapRows[0]?.cells.every(
+        (cell) => cell.status === "complete"
+      )
+    ).toBe(true);
   });
 
   it("counts freeze days and missed habits separately", () => {
@@ -208,6 +227,155 @@ describe("buildWeeklyReview()", () => {
       name: "Weekly planning",
       opportunities: 1,
     });
+    expect(review.habitHeatmapRows.map((row) => row.name)).toStrictEqual([
+      "Habit 1",
+    ]);
+  });
+
+  it("builds daily habit heatmap rows sorted weakest first", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", true, {
+          name: "Strong",
+          sortOrder: 0,
+        }),
+        createStatus(1, "2026-03-03", true, {
+          name: "Strong",
+          sortOrder: 0,
+        }),
+        createStatus(2, "2026-03-02", false, {
+          name: "Weak",
+          sortOrder: 1,
+          targetCount: 2,
+        }),
+        createStatus(2, "2026-03-03", true, {
+          name: "Weak",
+          sortOrder: 1,
+          targetCount: 2,
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.habitHeatmapRows.map((row) => row.name)).toStrictEqual([
+      "Weak",
+      "Strong",
+    ]);
+    expect(review.habitHeatmapRows[0]).toMatchObject({
+      completedOpportunities: 2,
+      completionRate: 50,
+      missedOpportunities: 2,
+      opportunities: 4,
+    });
+    expect(
+      review.habitHeatmapRows[0]?.cells.map((cell) => cell.status)
+    ).toEqual([
+      "missed",
+      "complete",
+      "not-scheduled",
+      "not-scheduled",
+      "not-scheduled",
+      "not-scheduled",
+      "not-scheduled",
+    ]);
+  });
+
+  it("does not count missing daily snapshots as missed heatmap opportunities", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-04", true, {
+          createdAt: "2026-03-04T00:00:00.000Z",
+          name: "New habit",
+        }),
+        createStatus(1, "2026-03-05", true, {
+          createdAt: "2026-03-04T00:00:00.000Z",
+          name: "New habit",
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.habitHeatmapRows[0]).toMatchObject({
+      completedOpportunities: 2,
+      completionRate: 100,
+      missedOpportunities: 0,
+      opportunities: 2,
+    });
+    expect(
+      review.habitHeatmapRows[0]?.cells.map((cell) => cell.status)
+    ).toEqual([
+      "not-scheduled",
+      "not-scheduled",
+      "complete",
+      "complete",
+      "not-scheduled",
+      "not-scheduled",
+      "not-scheduled",
+    ]);
+  });
+
+  it("marks unscheduled selected-weekday cells in habit heatmap", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", true, {
+          name: "Weekdays",
+          selectedWeekdays: [1, 3, 5],
+        }),
+        createStatus(1, "2026-03-04", false, {
+          name: "Weekdays",
+          selectedWeekdays: [1, 3, 5],
+        }),
+        createStatus(1, "2026-03-06", true, {
+          name: "Weekdays",
+          selectedWeekdays: [1, 3, 5],
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.habitHeatmapRows[0]?.opportunities).toBe(3);
+    expect(
+      review.habitHeatmapRows[0]?.cells.map((cell) => cell.status)
+    ).toEqual([
+      "complete",
+      "not-scheduled",
+      "missed",
+      "not-scheduled",
+      "complete",
+      "not-scheduled",
+      "not-scheduled",
+    ]);
+  });
+
+  it("excludes weekly and monthly habits from habit heatmap rows", () => {
+    const review = buildWeeklyReview({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [
+        createStatus(1, "2026-03-02", true, { name: "Daily" }),
+        createStatus(2, "2026-03-08", true, {
+          frequency: "weekly",
+          name: "Weekly",
+          periodStart: "2026-03-02",
+        }),
+        createStatus(3, "2026-03-31", true, {
+          frequency: "monthly",
+          name: "Monthly",
+          periodStart: "2026-03-01",
+        }),
+      ],
+      weekStart: "2026-03-02",
+    });
+
+    expect(review.habitHeatmapRows.map((row) => row.name)).toStrictEqual([
+      "Daily",
+    ]);
   });
 
   it("uses habit opportunities for completion rate when a week has no daily summaries", () => {

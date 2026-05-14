@@ -1,5 +1,3 @@
-import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
-
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";
 import {
   Card,
@@ -7,38 +5,112 @@ import {
   CardHeader,
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
+import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
 import {
-  ChartContainer,
-  ChartResponsiveContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/renderer/shared/components/ui/chart";
-import type { ChartConfig } from "@/renderer/shared/components/ui/chart";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/renderer/shared/components/ui/tooltip";
+import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryColor,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
-
-const chartConfig = {
-  completionRate: {
-    color: "var(--ring-productivity)",
-    label: "Habit completion",
-  },
-} satisfies ChartConfig;
+import type {
+  WeeklyReviewHabitHeatmapCell,
+  WeeklyReviewHabitHeatmapCellStatus,
+  WeeklyReviewHabitHeatmapRow,
+} from "@/shared/domain/weekly-review";
+import { formatDateKey } from "@/shared/utils/date";
 
 interface WeeklyReviewHabitChartImplProps {
-  habitMetrics: WeeklyReviewHabitMetric[];
+  heatmapRows: WeeklyReviewHabitHeatmapRow[];
+}
+
+const STATUS_LABELS = {
+  complete: "Complete",
+  missed: "Missed",
+  "not-scheduled": "Not scheduled",
+  partial: "Partial",
+} satisfies Record<WeeklyReviewHabitHeatmapCellStatus, string>;
+
+function getHeatmapCellClassName(
+  status: WeeklyReviewHabitHeatmapCellStatus
+): string {
+  if (status === "complete") {
+    return "bg-primary text-primary-foreground";
+  }
+
+  if (status === "partial") {
+    return "bg-primary/35 text-foreground";
+  }
+
+  if (status === "missed") {
+    return "bg-destructive/18 text-destructive";
+  }
+
+  return "border border-dashed border-border/60 bg-muted/35 text-muted-foreground";
+}
+
+function getCellTooltip(
+  habitName: string,
+  cell: WeeklyReviewHabitHeatmapCell
+): string {
+  const dateLabel = formatDateKey(
+    cell.date,
+    { day: "numeric", month: "short", weekday: "long" },
+    "en-US"
+  );
+
+  return `${habitName} · ${dateLabel} · ${STATUS_LABELS[cell.status]}`;
+}
+
+function HeatmapCell({
+  cell,
+  habitName,
+}: {
+  cell: WeeklyReviewHabitHeatmapCell;
+  habitName: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          aria-label={getCellTooltip(habitName, cell)}
+          className={cn(
+            "size-7 rounded-md",
+            getHeatmapCellClassName(cell.status)
+          )}
+          role="img"
+        />
+      </TooltipTrigger>
+      <TooltipContent side="top">
+        {getCellTooltip(habitName, cell)}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function EmptyHeatmapState() {
+  return (
+    <div className="rounded-md border border-dashed border-border/60 bg-background/40 px-4 py-6 text-sm text-muted-foreground">
+      No daily habit activity for this week.
+    </div>
+  );
 }
 
 export function WeeklyReviewHabitChartImpl({
-  habitMetrics,
+  heatmapRows,
 }: WeeklyReviewHabitChartImplProps) {
   const categoryPreferences = useHabitCategoryPreferences();
-  const { chartHeight, viewportHeight, visibleHabits } =
-    buildWeeklyReviewHabitChartState(habitMetrics, (category) =>
+  const { chartHeight, viewportHeight, visibleRows } =
+    buildWeeklyReviewHabitChartState(heatmapRows, (category) =>
       getHabitCategoryColor(category, categoryPreferences)
     );
+  const weekdayLabels = visibleRows[0]?.cells.map(
+    (cell) => cell.weekdayLabel
+  ) ?? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
     <Card>
@@ -46,62 +118,67 @@ export function WeeklyReviewHabitChartImpl({
         <CardTitle>Habit completion</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer
-          className="overflow-y-auto p-2"
-          config={chartConfig}
-          style={{
-            height: `${viewportHeight}px`,
-          }}
-        >
-          <div style={{ height: `${chartHeight}px` }}>
-            <ChartResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={visibleHabits}
-                layout="vertical"
-                margin={{ left: 4, right: 12 }}
-              >
-                <CartesianGrid
-                  horizontal={false}
-                  stroke="var(--border)"
-                  strokeDasharray="3 3"
-                />
-                <XAxis
-                  axisLine={false}
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                  tickLine={false}
-                  type="number"
-                />
-                <YAxis
-                  axisLine={false}
-                  dataKey="shortName"
-                  tick={{ fontSize: 11 }}
-                  tickLine={false}
-                  type="category"
-                  width={104}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value, _name) => `${value}%`}
-                      indicator="line"
-                    />
-                  }
-                  cursor={{ fill: "var(--muted)", opacity: 0.4 }}
-                />
-                <Bar
-                  dataKey="completionRate"
-                  name="Habit completion"
-                  radius={[0, 12, 12, 0]}
-                >
-                  {visibleHabits.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
+        {visibleRows.length === 0 ? (
+          <EmptyHeatmapState />
+        ) : (
+          <TooltipProvider delayDuration={100}>
+            <div
+              className="overflow-auto pr-2"
+              style={{
+                maxHeight: `${viewportHeight}px`,
+                minHeight: `${Math.min(viewportHeight, chartHeight)}px`,
+              }}
+            >
+              <div className="min-w-[35rem]" style={{ minHeight: chartHeight }}>
+                <div className="sticky top-0 z-10 grid grid-cols-[minmax(10rem,1fr)_repeat(7,1.75rem)_5.75rem] gap-2 border-border/70 border-b bg-card/95 pb-2 text-[0.68rem] text-muted-foreground backdrop-blur">
+                  <div>Habit</div>
+                  {weekdayLabels.map((weekday) => (
+                    <div className="text-center" key={weekday}>
+                      {weekday}
+                    </div>
                   ))}
-                </Bar>
-              </BarChart>
-            </ChartResponsiveContainer>
-          </div>
-        </ChartContainer>
+                  <div className="text-right">Total</div>
+                </div>
+                <div className="grid gap-1 pt-2">
+                  {visibleRows.map((row) => (
+                    <div
+                      aria-label={`${row.name}: ${row.completedOpportunities} of ${row.opportunities} opportunities, ${row.completionRate}%`}
+                      className="grid grid-cols-[minmax(10rem,1fr)_repeat(7,1.75rem)_5.75rem] items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted/25"
+                      key={row.habitId}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: row.color }}
+                        />
+                        <TextWithTooltip
+                          className="text-sm font-medium"
+                          content={row.name}
+                        />
+                      </div>
+                      {row.cells.map((cell) => (
+                        <HeatmapCell
+                          cell={cell}
+                          habitName={row.name}
+                          key={`${row.habitId}-${cell.date}`}
+                        />
+                      ))}
+                      <div className="text-right">
+                        <div className="text-sm font-medium tabular-nums">
+                          {row.completedOpportunities}/{row.opportunities}
+                        </div>
+                        <div className="text-[0.68rem] text-muted-foreground tabular-nums">
+                          {row.completionRate}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </TooltipProvider>
+        )}
       </CardContent>
     </Card>
   );

@@ -125,6 +125,9 @@ describe("InsightsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("67")).toBeInTheDocument();
     expect(screen.getByText("Habit completion by week")).toBeInTheDocument();
+    expect(
+      screen.getByText("Last 30 days ending Mar 31, 2026")
+    ).toBeInTheDocument();
     expect(screen.getByText("Morning Journal")).toBeInTheDocument();
     expect(screen.getByText("24 / 25")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "90d" })).toBeInTheDocument();

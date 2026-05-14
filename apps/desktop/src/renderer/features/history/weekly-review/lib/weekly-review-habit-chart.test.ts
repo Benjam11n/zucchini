@@ -1,88 +1,85 @@
-import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
+import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
 
 import { buildWeeklyReviewHabitChartState } from "./weekly-review-habit-chart";
 
-function createHabitMetric(
-  overrides: Partial<WeeklyReviewHabitMetric> = {}
-): WeeklyReviewHabitMetric {
+function createHeatmapRow(
+  overrides: Partial<WeeklyReviewHabitHeatmapRow> = {}
+): WeeklyReviewHabitHeatmapRow {
   return {
     category: "productivity",
+    cells: Array.from({ length: 7 }, (_, index) => ({
+      date: `2026-03-0${index + 2}`,
+      status: index < 3 ? "complete" : "missed",
+      weekdayLabel:
+        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index] ?? "Day",
+    })),
     completedOpportunities: 3,
     completionRate: 60,
-    frequency: "daily",
     habitId: 1,
     missedOpportunities: 2,
     name: "Plan top three tasks",
     opportunities: 5,
-    sortOrder: 0,
     ...overrides,
   };
 }
 
 describe("weekly review habit chart ranking", () => {
-  it("keeps the lowest-completion habits in the visible chart first", () => {
+  it("keeps pre-ranked heatmap rows visible", () => {
     const state = buildWeeklyReviewHabitChartState(
       [
-        createHabitMetric({
-          completionRate: 80,
-          habitId: 1,
-          name: "Read",
-          sortOrder: 1,
-        }),
-        createHabitMetric({
+        createHeatmapRow({
           completionRate: 20,
           habitId: 2,
           name: "Stretch",
-          sortOrder: 2,
         }),
-        createHabitMetric({
+        createHeatmapRow({
           completionRate: 40,
           habitId: 3,
           name: "Walk",
-          sortOrder: 3,
         }),
       ],
       () => "var(--ring-productivity)"
     );
 
-    expect(state.visibleHabits.map((habit) => habit.habitId)).toStrictEqual([
-      2, 3, 1,
+    expect(state.visibleRows.map((habit) => habit.habitId)).toStrictEqual([
+      2, 3,
     ]);
   });
 
-  it("moves overflow habits into the secondary list", () => {
+  it("uses a scroll viewport when many habits are present", () => {
     const state = buildWeeklyReviewHabitChartState(
       Array.from(
         {
           length: 12,
         },
         (_value, index) =>
-          createHabitMetric({
+          createHeatmapRow({
             completionRate: index,
             habitId: index + 1,
             name: `Habit ${index + 1}`,
-            sortOrder: index,
           })
       ),
       () => "var(--ring-productivity)"
     );
 
-    expect(state.visibleHabits).toHaveLength(12);
+    expect(state.visibleRows).toHaveLength(12);
     expect(state.viewportHeight).toBeLessThan(state.chartHeight);
     expect(state.viewportHeight).toBe(420);
   });
 
-  it("truncates long y-axis labels and keeps a compact minimum height", () => {
+  it("keeps a compact minimum height for short lists", () => {
     const state = buildWeeklyReviewHabitChartState(
       [
-        createHabitMetric({
+        createHeatmapRow({
           name: "Very long habit name that should be truncated for the chart",
         }),
       ],
       () => "var(--ring-productivity)"
     );
 
-    expect(state.visibleHabits[0]?.shortName).toContain("…");
+    expect(state.visibleRows[0]?.name).toBe(
+      "Very long habit name that should be truncated for the chart"
+    );
     expect(state.chartHeight).toBe(240);
   });
 });

@@ -12,6 +12,7 @@ function createReview(weekStart: string): WeeklyReview {
     endingStreak: 3,
     focusMinutes: 0,
     freezeDays: 0,
+    habitHeatmapRows: [],
     habitMetrics: [],
     label: weekStart,
     longestCleanRun: 2,

@@ -123,7 +123,7 @@ export function WeeklyReviewSection({
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
         <Suspense fallback={<ChartSectionFallback />}>
-          <WeeklyReviewHabitChart habitMetrics={review.habitMetrics} />
+          <WeeklyReviewHabitChart heatmapRows={review.habitHeatmapRows} />
         </Suspense>
         <WeeklyReviewMostMissedCard habits={review.mostMissedHabits} />
       </div>

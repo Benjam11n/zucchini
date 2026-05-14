@@ -49,6 +49,7 @@ import type {
   InsightsWeeklyCompletion,
 } from "@/shared/domain/insights";
 import { INSIGHTS_RANGE_OPTIONS } from "@/shared/domain/insights";
+import { formatDateKey } from "@/shared/utils/date";
 
 interface SummaryMetricCardProps {
   metric: InsightsSummaryMetric;
@@ -84,6 +85,18 @@ function RangeSelector({
         </Button>
       ))}
     </div>
+  );
+}
+
+function formatInsightsDate(dateKey: string): string {
+  return formatDateKey(
+    dateKey,
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    },
+    "en-US"
   );
 }
 
@@ -417,7 +430,7 @@ function HabitLeaderboard({
                   <TableCell className="px-0 py-4 pr-2 text-muted-foreground tabular-nums">
                     {habit.rank}
                   </TableCell>
-                  <TableCell className="min-w-0 px-4 py-4 font-medium text-foreground">
+                  <TableCell className="min-w-0 p-4 font-medium text-foreground">
                     <TextWithTooltip content={habit.name} />
                   </TableCell>
                   <TableCell className="px-2 py-4">
@@ -667,7 +680,8 @@ function InsightsPageComponent({
               Insights
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {dashboard.period.label} ending {dashboard.generatedAtDate}
+              {dashboard.period.label} ending{" "}
+              {formatInsightsDate(dashboard.generatedAtDate)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

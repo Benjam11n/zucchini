@@ -84,6 +84,7 @@ function createWeeklyReview(name: string): WeeklyReview {
     endingStreak: 2,
     focusMinutes: 0,
     freezeDays: 0,
+    habitHeatmapRows: [],
     habitMetrics: [
       {
         category: "productivity",

@@ -161,6 +161,7 @@ function createWeeklyReview(): WeeklyReview {
     endingStreak: 6,
     focusMinutes: 0,
     freezeDays: 1,
+    habitHeatmapRows: [],
     habitMetrics: [],
     label: "Mar 2 - Mar 8",
     longestCleanRun: 3,
