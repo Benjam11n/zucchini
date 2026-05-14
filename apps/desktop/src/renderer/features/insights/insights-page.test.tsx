@@ -130,7 +130,7 @@ describe("InsightsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Morning Journal")).toBeInTheDocument();
     expect(screen.getByText("Productivity")).toBeInTheDocument();
-    expect(screen.getByText("24 / 25")).toBeInTheDocument();
+    expect(screen.getByText("24 of 25")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "90d" })).toBeInTheDocument();
     expect(screen.getByText("Consistency is improving.")).toBeInTheDocument();
   });

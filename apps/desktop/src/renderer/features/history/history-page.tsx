@@ -5,7 +5,7 @@
  * pairs with the shell right sidebar.
  */
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph";
@@ -198,13 +198,13 @@ export function HistoryPage({
           variants={staggerContainerVariants}
         >
           <m.section className="grid gap-5" variants={staggerItemVariants}>
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+              <div className="shrink-0">
                 <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                   History
                 </h1>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 xl:ml-4">
                 <TabsList className="rounded-lg">
                   <TabsTrigger className="h-7 px-3 text-xs" value="timeline">
                     Timeline
@@ -213,6 +213,35 @@ export function HistoryPage({
                     Review
                   </TabsTrigger>
                 </TabsList>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 xl:ml-auto">
+                {historyMode === "timeline" ? (
+                  <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 px-1">
+                    <Button
+                      aria-label="Show previous month"
+                      disabled={!canShowPreviousMonth}
+                      onClick={() => showMonth(-1)}
+                      size="icon-sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    <span className="min-w-20 text-center text-sm font-medium text-muted-foreground">
+                      {formatDate(visibleMonth, { month: "long" })}
+                    </span>
+                    <Button
+                      aria-label="Show next month"
+                      disabled={!canShowNextMonth}
+                      onClick={() => showMonth(1)}
+                      size="icon-sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+                ) : null}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm" type="button" variant="outline">
@@ -272,13 +301,9 @@ export function HistoryPage({
 
           <TabsContent value={"timeline" satisfies HistoryViewMode}>
             <HistoryTimelineContent
-              canShowNextMonth={canShowNextMonth}
-              canShowPreviousMonth={canShowPreviousMonth}
               selectedDateKey={viewState.selectedDateKey}
               selectHistoryDate={selectHistoryDate}
-              showMonth={showMonth}
               todayDate={todayDate}
-              visibleMonth={visibleMonth}
               visibleMonthDays={visibleMonthDays}
               visibleMonthLabel={visibleMonthLabel}
             />

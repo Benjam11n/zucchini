@@ -19,7 +19,6 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
-import { Progress } from "@/renderer/shared/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -387,8 +386,7 @@ function HabitLeaderboard({
               <TableRow className="border-border/70 hover:bg-transparent">
                 <TableHead className="w-8 px-0 pr-2">#</TableHead>
                 <TableHead className="px-4">Habit</TableHead>
-                <TableHead className="w-32 px-2">Category</TableHead>
-                <TableHead className="w-44 px-2">Completion</TableHead>
+                <TableHead className="w-32 px-2">Completion</TableHead>
                 <TableHead className="hidden w-36 px-0 pl-3 sm:table-cell">
                   Trend
                 </TableHead>
@@ -404,33 +402,29 @@ function HabitLeaderboard({
                     {habit.rank}
                   </TableCell>
                   <TableCell className="min-w-0 p-4 font-medium text-foreground">
-                    <TextWithTooltip content={habit.name} />
-                  </TableCell>
-                  <TableCell className="px-2 py-4">
-                    <HabitCategoryMarker
-                      category={habit.category}
-                      variant="badge"
-                    />
-                  </TableCell>
-                  <TableCell className="px-2 py-4">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="w-10 shrink-0 tabular-nums">
+                      <HabitCategoryMarker
+                        category={habit.category}
+                        variant="dot"
+                      />
+                      <TextWithTooltip content={habit.name} />
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-2 py-4">
+                    <div className="grid gap-0.5">
+                      <span className="text-lg leading-none tabular-nums">
                         {habit.completionRate}%
                       </span>
-                      <span className="w-14 shrink-0 text-xs text-muted-foreground tabular-nums">
-                        {habit.completedCount} / {habit.totalCount}
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {habit.completedCount} of {habit.totalCount}
                       </span>
-                      <Progress
-                        className="h-2 min-w-10 flex-1"
-                        value={habit.completionRate}
-                      />
                     </div>
                   </TableCell>
                   <TableCell className="hidden px-0 py-4 pl-3 text-primary sm:table-cell">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
-                          aria-label={`${habit.name} trend: ${habit.trend.join("%, ")}%`}
+                          aria-label={`${habit.name} recent trend: ${habit.trend.join("%, ")}%`}
                           className="w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           type="button"
                         >
@@ -438,8 +432,8 @@ function HabitLeaderboard({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-72 leading-relaxed">
-                        {habit.completedCount}/{habit.totalCount} opportunities
-                        completed. Trend: {habit.trend.join("%, ")}%
+                        Overall: {habit.completedCount}/{habit.totalCount}{" "}
+                        completed. Recent trend: {habit.trend.join("%, ")}%
                       </TooltipContent>
                     </Tooltip>
                   </TableCell>

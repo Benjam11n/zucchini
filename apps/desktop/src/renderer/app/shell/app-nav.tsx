@@ -1,8 +1,8 @@
 import {
   BarChart3,
+  Brain,
   CalendarDays,
   CircleHelp,
-  Gauge,
   MoonStar,
   Settings2,
   Timer,
@@ -59,7 +59,7 @@ export function AppNav() {
             value="insights"
           >
             <span className="sr-only">Insights</span>
-            <Gauge className="size-5" />
+            <Brain className="size-5" />
           </TabsTrigger>
           <TabsTrigger
             aria-label="History"
@@ -94,7 +94,7 @@ export function AppNav() {
               <span className="hidden md:inline">Wind Down</span>
             </TabsTrigger>
             <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="insights">
-              <Gauge className="size-4 shrink-0" />
+              <Brain className="size-4 shrink-0" />
               <span className="hidden md:inline">Insights</span>
             </TabsTrigger>
             <TabsTrigger className="gap-1.5 px-2 sm:px-3" value="history">

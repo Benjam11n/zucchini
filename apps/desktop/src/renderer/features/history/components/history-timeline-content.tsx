@@ -1,33 +1,22 @@
 import { m } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { TimelineDayRow } from "@/renderer/features/history/components/timeline-day-row";
 import { TimelineHeaderRow } from "@/renderer/features/history/components/timeline-header-row";
-import { Button } from "@/renderer/shared/components/ui/button";
 import { staggerItemVariants } from "@/renderer/shared/lib/motion";
 import type { HistorySummaryDay } from "@/shared/domain/history";
-import { formatDate } from "@/shared/utils/date";
 
 interface HistoryTimelineContentProps {
-  canShowNextMonth: boolean;
-  canShowPreviousMonth: boolean;
   selectedDateKey: string | null;
   todayDate: string;
-  visibleMonth: Date;
   visibleMonthDays: HistorySummaryDay[];
   visibleMonthLabel: string;
   selectHistoryDate: (dateKey: string) => void;
-  showMonth: (offset: number) => void;
 }
 
 export function HistoryTimelineContent({
-  canShowNextMonth,
-  canShowPreviousMonth,
   selectedDateKey,
   selectHistoryDate,
-  showMonth,
   todayDate,
-  visibleMonth,
   visibleMonthDays,
   visibleMonthLabel,
 }: HistoryTimelineContentProps) {
@@ -41,31 +30,6 @@ export function HistoryTimelineContent({
           <span className="text-sm text-muted-foreground">
             {visibleMonthDays.length} tracked days
           </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            aria-label="Show previous month"
-            disabled={!canShowPreviousMonth}
-            onClick={() => showMonth(-1)}
-            size="icon"
-            type="button"
-            variant="ghost"
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-          <span className="min-w-20 text-center text-sm font-medium text-muted-foreground">
-            {formatDate(visibleMonth, { month: "long" })}
-          </span>
-          <Button
-            aria-label="Show next month"
-            disabled={!canShowNextMonth}
-            onClick={() => showMonth(1)}
-            size="icon"
-            type="button"
-            variant="ghost"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
         </div>
       </div>
 
