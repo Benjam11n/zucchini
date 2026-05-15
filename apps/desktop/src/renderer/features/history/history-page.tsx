@@ -198,13 +198,13 @@ export function HistoryPage({
           variants={staggerContainerVariants}
         >
           <m.section className="grid gap-5" variants={staggerItemVariants}>
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+            <div className="flex flex-wrap items-center gap-4">
               <div className="shrink-0">
                 <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                   History
                 </h1>
               </div>
-              <div className="flex flex-wrap items-center gap-2 xl:ml-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <TabsList className="rounded-lg">
                   <TabsTrigger className="h-7 px-3 text-xs" value="timeline">
                     Timeline
@@ -214,7 +214,7 @@ export function HistoryPage({
                   </TabsTrigger>
                 </TabsList>
               </div>
-              <div className="flex flex-wrap items-center gap-2 xl:ml-auto">
+              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                 {historyMode === "timeline" ? (
                   <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 px-1">
                     <Button

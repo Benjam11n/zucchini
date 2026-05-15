@@ -1,9 +1,9 @@
-import { Suspense, lazy } from "react";
-
-import { ChartSectionFallback } from "@/renderer/features/history/components/chart-section-fallback";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
+import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart";
+import { WeeklyReviewHabitChart } from "@/renderer/features/history/weekly-review/components/weekly-review-habit-chart";
 import { WeeklyReviewHeroCard } from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
 import { WeeklyReviewMostMissedCard } from "@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card";
+import { WeeklyReviewTrendChart } from "@/renderer/features/history/weekly-review/components/weekly-review-trend-chart";
 import {
   Card,
   CardContent,
@@ -12,30 +12,6 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
-
-const WeeklyReviewDailyCadenceChart = lazy(async () => {
-  const module =
-    await import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart");
-  return {
-    default: module.WeeklyReviewDailyCadenceChart,
-  };
-});
-
-const WeeklyReviewHabitChart = lazy(async () => {
-  const module =
-    await import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart");
-  return {
-    default: module.WeeklyReviewHabitChart,
-  };
-});
-
-const WeeklyReviewTrendChart = lazy(async () => {
-  const module =
-    await import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart");
-  return {
-    default: module.WeeklyReviewTrendChart,
-  };
-});
 
 export function WeeklyReviewSection({
   onSelectWeeklyReview,
@@ -113,18 +89,12 @@ export function WeeklyReviewSection({
       />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <Suspense fallback={<ChartSectionFallback />}>
-          <WeeklyReviewDailyCadenceChart review={review} />
-        </Suspense>
-        <Suspense fallback={<ChartSectionFallback />}>
-          <WeeklyReviewTrendChart trend={weeklyReviewOverview?.trend ?? []} />
-        </Suspense>
+        <WeeklyReviewDailyCadenceChart review={review} />
+        <WeeklyReviewTrendChart trend={weeklyReviewOverview?.trend ?? []} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
-        <Suspense fallback={<ChartSectionFallback />}>
-          <WeeklyReviewHabitChart heatmapRows={review.habitHeatmapRows} />
-        </Suspense>
+        <WeeklyReviewHabitChart heatmapRows={review.habitHeatmapRows} />
         <WeeklyReviewMostMissedCard habits={review.mostMissedHabits} />
       </div>
     </div>

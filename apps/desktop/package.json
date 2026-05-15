@@ -60,7 +60,6 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "recharts": "^3.8.0",
     "shadcn": "^4.5.0",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
@@ -89,18 +88,6 @@
         "electron-builder.config.ts",
         "scripts/generate-changelog.mjs",
         "scripts/generate-test-data.ts"
-      ],
-      "overrides": [
-        {
-          "files": [
-            "src/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart-impl.tsx",
-            "src/renderer/features/history/weekly-review/components/weekly-review-habit-chart-impl.tsx",
-            "src/renderer/features/history/weekly-review/components/weekly-review-trend-chart-impl.tsx"
-          ],
-          "rules": [
-            "react-doctor/prefer-dynamic-import"
-          ]
-        }
       ]
     }
   }
