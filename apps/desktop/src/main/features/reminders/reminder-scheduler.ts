@@ -1,4 +1,3 @@
-import type { TodayState } from "@/shared/contracts/today-state";
 /**
  * Reminder scheduling engine.
  *
@@ -7,6 +6,7 @@ import type { TodayState } from "@/shared/contracts/today-state";
  * reminders for missed days, and midnight warnings. Persists runtime state
  * (last reminder time, snooze expiration) across app restarts.
  */
+import type { TodayState } from "@/shared/contracts/today-state";
 import type { Clock } from "@/shared/domain/clock";
 import { systemClock } from "@/shared/domain/clock";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
@@ -52,160 +52,199 @@ interface ReminderScheduler {
   snooze: (settings: AppSettings) => boolean;
 }
 
-export function createReminderScheduler({
-  clock = systemClock,
-  getTodayState,
-  loadState = () => ({ ...DEFAULT_REMINDER_RUNTIME_STATE }),
-  notifier = electronHabitReminderNotifier,
-  saveState,
-  stateStore,
-  timers = realReminderTimers,
-}: ReminderSchedulerOptions): ReminderScheduler {
-  let reminderTimeout: TimerHandle | null = null;
-  let midnightWarningTimeout: TimerHandle | null = null;
-  let snoozeTimeout: TimerHandle | null = null;
-  const runtimeState =
-    stateStore ??
-    createRuntimeStateStore({
-      defaultState: { ...DEFAULT_REMINDER_RUNTIME_STATE },
-      loadState,
-      ...(saveState ? { saveState } : {}),
-    });
+interface ReminderSchedulerRuntimeOptions {
+  clock: Pick<Clock, "now">;
+  getTodayState: () => TodayState;
+  notifier: HabitReminderNotifier;
+  runtimeState: ReminderRuntimeStateStore<ReminderRuntimeState>;
+  timers: ReminderTimerPort;
+}
 
-  function persistState(nextState: ReminderRuntimeState): void {
-    runtimeState.set(nextState);
+class ReminderSchedulerRuntime {
+  private midnightWarningTimeout: TimerHandle | null = null;
+  private readonly options: ReminderSchedulerRuntimeOptions;
+  private reminderTimeout: TimerHandle | null = null;
+  private snoozeTimeout: TimerHandle | null = null;
+
+  constructor(options: ReminderSchedulerRuntimeOptions) {
+    this.options = options;
   }
 
-  function updateState(
-    update:
-      | Partial<ReminderRuntimeState>
-      | ((current: ReminderRuntimeState) => ReminderRuntimeState)
-  ): void {
-    const state = runtimeState.get();
-    const nextState =
-      typeof update === "function" ? update(state) : { ...state, ...update };
-    persistState(nextState);
+  schedule(settings: AppSettings): void {
+    this.ensureStateLoaded();
+    this.cancel();
+    this.runCatchUpChecks(settings);
+    this.scheduleMidnightWarning(settings);
+    this.scheduleUserReminder(settings);
+    this.scheduleSnoozedReminder(settings);
   }
 
-  function getState(): ReminderRuntimeState {
-    return runtimeState.get();
+  cancel(): void {
+    const { timers } = this.options;
+    this.reminderTimeout = clearTimer(this.reminderTimeout, timers);
+    this.midnightWarningTimeout = clearTimer(
+      this.midnightWarningTimeout,
+      timers
+    );
+    this.snoozeTimeout = clearTimer(this.snoozeTimeout, timers);
   }
 
-  function ensureStateLoaded(): void {
-    getState();
-  }
-
-  function getCurrentNow(): Date {
-    return clock.now();
-  }
-
-  function hasActiveSnooze(now = getCurrentNow()): boolean {
-    const state = getState();
-    return state.snoozedUntil !== null && new Date(state.snoozedUntil) > now;
-  }
-
-  function clearSnooze(): void {
-    const state = getState();
-    if (state.snoozedUntil === null) {
-      return;
-    }
-
-    updateState({ snoozedUntil: null });
-  }
-
-  function showReminderNotification(showNotification: () => void): void {
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
-      return;
-    }
-
-    showNotification();
-    updateState({
-      lastReminderSentAt: getCurrentNow().toISOString(),
-      snoozedUntil: null,
-    });
-  }
-
-  function maybeDeliverScheduledReminder(settings: AppSettings): void {
-    const state = getState();
-    if (hasActiveSnooze()) {
-      return;
-    }
-
-    if (
-      wasSentToday({
-        clock,
-        sentAt: state.lastReminderSentAt,
-        timezone: settings.timezone,
-      })
-    ) {
-      return;
-    }
-
-    showReminderNotification(notifier.showIncompleteReminder);
-  }
-
-  function maybeDeliverCatchUpReminder(settings: AppSettings): boolean {
-    const state = getState();
-    if (hasActiveSnooze()) {
+  snooze(settings: AppSettings): boolean {
+    this.ensureStateLoaded();
+    if (!settings.reminderEnabled) {
       return false;
     }
 
-    if (
-      wasSentToday({
-        clock,
-        sentAt: state.lastReminderSentAt,
-        timezone: settings.timezone,
-      })
-    ) {
-      return false;
-    }
-
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
-      return false;
-    }
-
-    notifier.showCatchUpReminder();
-    updateState({
-      lastReminderSentAt: getCurrentNow().toISOString(),
-      snoozedUntil: null,
-    });
-    return true;
-  }
-
-  function maybeDeliverSnoozedReminder(settings: AppSettings): boolean {
-    const state = getState();
-    if (!settings.reminderEnabled || state.snoozedUntil === null) {
-      return false;
-    }
-
-    if (new Date(state.snoozedUntil) > getCurrentNow()) {
-      return false;
-    }
-
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
+    if (!this.hasIncompleteHabitsForReminder()) {
       return false;
     }
 
     const snoozeMinutes = Math.max(settings.reminderSnoozeMinutes, 1);
-    notifier.showSnoozedReminder(snoozeMinutes);
-    updateState({
-      lastReminderSentAt: getCurrentNow().toISOString(),
+    const dueAt = new Date(
+      this.getCurrentNow().getTime() + snoozeMinutes * 60_000
+    );
+
+    this.updateState({
+      snoozedUntil: dueAt.toISOString(),
+    });
+    this.scheduleSnoozedReminder(settings);
+    return true;
+  }
+
+  private updateState(
+    update:
+      | Partial<ReminderRuntimeState>
+      | ((current: ReminderRuntimeState) => ReminderRuntimeState)
+  ): void {
+    const state = this.getState();
+    const nextState =
+      typeof update === "function" ? update(state) : { ...state, ...update };
+    this.options.runtimeState.set(nextState);
+  }
+
+  private getState(): ReminderRuntimeState {
+    return this.options.runtimeState.get();
+  }
+
+  private ensureStateLoaded(): void {
+    this.getState();
+  }
+
+  private getCurrentNow(): Date {
+    return this.options.clock.now();
+  }
+
+  private hasActiveSnooze(now = this.getCurrentNow()): boolean {
+    const state = this.getState();
+    return state.snoozedUntil !== null && new Date(state.snoozedUntil) > now;
+  }
+
+  private clearSnooze(): void {
+    const state = this.getState();
+    if (state.snoozedUntil === null) {
+      return;
+    }
+
+    this.updateState({ snoozedUntil: null });
+  }
+
+  private hasIncompleteHabitsForReminder(): boolean {
+    const today = this.options.getTodayState();
+    if (!hasIncompleteHabitsClosingToday(today)) {
+      this.clearSnooze();
+      return false;
+    }
+
+    return true;
+  }
+
+  private showReminderNotification(showNotification: () => void): void {
+    if (!this.hasIncompleteHabitsForReminder()) {
+      return;
+    }
+
+    showNotification();
+    this.updateState({
+      lastReminderSentAt: this.getCurrentNow().toISOString(),
+      snoozedUntil: null,
+    });
+  }
+
+  private maybeDeliverScheduledReminder(settings: AppSettings): void {
+    const state = this.getState();
+    if (this.hasActiveSnooze()) {
+      return;
+    }
+
+    if (
+      wasSentToday({
+        clock: this.options.clock,
+        sentAt: state.lastReminderSentAt,
+        timezone: settings.timezone,
+      })
+    ) {
+      return;
+    }
+
+    this.showReminderNotification(this.options.notifier.showIncompleteReminder);
+  }
+
+  private maybeDeliverCatchUpReminder(settings: AppSettings): boolean {
+    const state = this.getState();
+    if (this.hasActiveSnooze()) {
+      return false;
+    }
+
+    if (
+      wasSentToday({
+        clock: this.options.clock,
+        sentAt: state.lastReminderSentAt,
+        timezone: settings.timezone,
+      })
+    ) {
+      return false;
+    }
+
+    if (!this.hasIncompleteHabitsForReminder()) {
+      return false;
+    }
+
+    this.options.notifier.showCatchUpReminder();
+    this.updateState({
+      lastReminderSentAt: this.getCurrentNow().toISOString(),
       snoozedUntil: null,
     });
     return true;
   }
 
-  function maybeDeliverMidnightWarning(settings: AppSettings): boolean {
-    const state = getState();
+  private maybeDeliverSnoozedReminder(settings: AppSettings): boolean {
+    const state = this.getState();
+    if (!settings.reminderEnabled || state.snoozedUntil === null) {
+      return false;
+    }
+
+    if (new Date(state.snoozedUntil) > this.getCurrentNow()) {
+      return false;
+    }
+
+    if (!this.hasIncompleteHabitsForReminder()) {
+      return false;
+    }
+
+    const snoozeMinutes = Math.max(settings.reminderSnoozeMinutes, 1);
+    this.options.notifier.showSnoozedReminder(snoozeMinutes);
+    this.updateState({
+      lastReminderSentAt: this.getCurrentNow().toISOString(),
+      snoozedUntil: null,
+    });
+    return true;
+  }
+
+  private maybeDeliverMidnightWarning(settings: AppSettings): boolean {
+    const state = this.getState();
     if (
       wasSentToday({
-        clock,
+        clock: this.options.clock,
         sentAt: state.lastMidnightWarningSentAt,
         timezone: settings.timezone,
       })
@@ -213,32 +252,30 @@ export function createReminderScheduler({
       return false;
     }
 
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
+    if (!this.hasIncompleteHabitsForReminder()) {
       return false;
     }
 
-    notifier.showMidnightWarning();
-    updateState({
-      lastMidnightWarningSentAt: getCurrentNow().toISOString(),
+    this.options.notifier.showMidnightWarning();
+    this.updateState({
+      lastMidnightWarningSentAt: this.getCurrentNow().toISOString(),
     });
     return true;
   }
 
-  function maybeDeliverMissedReminderWarning(settings: AppSettings): boolean {
-    const state = getState();
+  private maybeDeliverMissedReminderWarning(settings: AppSettings): boolean {
+    const state = this.getState();
     if (!settings.reminderEnabled) {
       return false;
     }
 
-    if (hasActiveSnooze()) {
+    if (this.hasActiveSnooze()) {
       return false;
     }
 
     if (
       wasSentToday({
-        clock,
+        clock: this.options.clock,
         sentAt: state.lastReminderSentAt,
         timezone: settings.timezone,
       })
@@ -248,7 +285,7 @@ export function createReminderScheduler({
 
     if (
       wasSentToday({
-        clock,
+        clock: this.options.clock,
         sentAt: state.lastMissedReminderSentAt,
         timezone: settings.timezone,
       })
@@ -263,7 +300,7 @@ export function createReminderScheduler({
 
     if (
       !isAtOrPastZonedTime(
-        getCurrentNow(),
+        this.getCurrentNow(),
         settings.timezone,
         reminderTime.hours,
         reminderTime.minutes
@@ -272,15 +309,13 @@ export function createReminderScheduler({
       return false;
     }
 
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
+    if (!this.hasIncompleteHabitsForReminder()) {
       return false;
     }
 
-    notifier.showMissedReminderWarning();
-    const sentAt = getCurrentNow().toISOString();
-    updateState({
+    this.options.notifier.showMissedReminderWarning();
+    const sentAt = this.getCurrentNow().toISOString();
+    this.updateState({
       lastMidnightWarningSentAt: sentAt,
       lastMissedReminderSentAt: sentAt,
       lastReminderSentAt: sentAt,
@@ -289,141 +324,141 @@ export function createReminderScheduler({
     return true;
   }
 
-  function runCatchUpChecks(settings: AppSettings): void {
-    if (maybeDeliverSnoozedReminder(settings)) {
+  private runCatchUpChecks(settings: AppSettings): void {
+    if (this.maybeDeliverSnoozedReminder(settings)) {
       return;
     }
 
     if (
       isAtOrPastZonedTime(
-        getCurrentNow(),
+        this.getCurrentNow(),
         settings.timezone,
         MIDNIGHT_WARNING_HOUR,
         MIDNIGHT_WARNING_MINUTE
       )
     ) {
-      if (maybeDeliverMissedReminderWarning(settings)) {
+      if (this.maybeDeliverMissedReminderWarning(settings)) {
         return;
       }
 
-      maybeDeliverMidnightWarning(settings);
+      this.maybeDeliverMidnightWarning(settings);
       return;
     }
 
     if (!settings.reminderEnabled) {
-      clearSnooze();
+      this.clearSnooze();
       return;
     }
 
     const reminderTime = parseReminderClockTime(settings.reminderTime);
     if (!reminderTime) {
-      clearSnooze();
+      this.clearSnooze();
       return;
     }
 
     if (
       isAtOrPastZonedTime(
-        getCurrentNow(),
+        this.getCurrentNow(),
         settings.timezone,
         reminderTime.hours,
         reminderTime.minutes
       )
     ) {
-      maybeDeliverCatchUpReminder(settings);
+      this.maybeDeliverCatchUpReminder(settings);
     }
   }
 
-  function scheduleSnoozedReminder(settings: AppSettings): void {
-    snoozeTimeout = clearTimer(snoozeTimeout, timers);
+  private scheduleSnoozedReminder(settings: AppSettings): void {
+    const { timers } = this.options;
+    this.snoozeTimeout = clearTimer(this.snoozeTimeout, timers);
 
-    const state = getState();
+    const state = this.getState();
     if (!settings.reminderEnabled || state.snoozedUntil === null) {
       return;
     }
 
-    const now = getCurrentNow();
+    const now = this.getCurrentNow();
     const dueAt = new Date(state.snoozedUntil);
     if (dueAt <= now) {
       return;
     }
 
-    snoozeTimeout = timers.setTimeout(() => {
-      maybeDeliverSnoozedReminder(settings);
-      scheduleSnoozedReminder(settings);
+    this.snoozeTimeout = timers.setTimeout(() => {
+      this.maybeDeliverSnoozedReminder(settings);
+      this.scheduleSnoozedReminder(settings);
     }, dueAt.getTime() - now.getTime());
   }
 
-  function cancel(): void {
-    reminderTimeout = clearTimer(reminderTimeout, timers);
-    midnightWarningTimeout = clearTimer(midnightWarningTimeout, timers);
-    snoozeTimeout = clearTimer(snoozeTimeout, timers);
-  }
-
-  function schedule(settings: AppSettings): void {
-    ensureStateLoaded();
-    cancel();
-    runCatchUpChecks(settings);
-
+  private scheduleMidnightWarning(settings: AppSettings): void {
     scheduleDailyNotification({
-      clock,
+      clock: this.options.clock,
       hours: MIDNIGHT_WARNING_HOUR,
       minutes: MIDNIGHT_WARNING_MINUTE,
       onFire: () => {
-        maybeDeliverMidnightWarning(settings);
+        this.maybeDeliverMidnightWarning(settings);
       },
       setTimer: (timer) => {
-        midnightWarningTimeout = timer;
+        this.midnightWarningTimeout = timer;
       },
-      timers,
+      timers: this.options.timers,
       timezone: settings.timezone,
     });
-
-    if (settings.reminderEnabled) {
-      const reminderTime = parseReminderClockTime(settings.reminderTime);
-
-      if (reminderTime) {
-        scheduleDailyNotification({
-          clock,
-          hours: reminderTime.hours,
-          minutes: reminderTime.minutes,
-          onFire: () => {
-            maybeDeliverScheduledReminder(settings);
-          },
-          setTimer: (timer) => {
-            reminderTimeout = timer;
-          },
-          timers,
-          timezone: settings.timezone,
-        });
-      }
-    } else {
-      clearSnooze();
-    }
-
-    scheduleSnoozedReminder(settings);
   }
 
-  function snooze(settings: AppSettings): boolean {
-    ensureStateLoaded();
+  private scheduleUserReminder(settings: AppSettings): void {
     if (!settings.reminderEnabled) {
-      return false;
+      this.clearSnooze();
+      return;
     }
 
-    const today = getTodayState();
-    if (!hasIncompleteHabitsClosingToday(today)) {
-      clearSnooze();
-      return false;
+    const reminderTime = parseReminderClockTime(settings.reminderTime);
+    if (!reminderTime) {
+      return;
     }
 
-    const snoozeMinutes = Math.max(settings.reminderSnoozeMinutes, 1);
-    const dueAt = new Date(getCurrentNow().getTime() + snoozeMinutes * 60_000);
-
-    updateState({
-      snoozedUntil: dueAt.toISOString(),
+    scheduleDailyNotification({
+      clock: this.options.clock,
+      hours: reminderTime.hours,
+      minutes: reminderTime.minutes,
+      onFire: () => {
+        this.maybeDeliverScheduledReminder(settings);
+      },
+      setTimer: (timer) => {
+        this.reminderTimeout = timer;
+      },
+      timers: this.options.timers,
+      timezone: settings.timezone,
     });
-    scheduleSnoozedReminder(settings);
-    return true;
   }
+}
 
-  return { cancel, schedule, snooze };
+export function createReminderScheduler({
+  clock = systemClock,
+  getTodayState,
+  loadState = () => ({ ...DEFAULT_REMINDER_RUNTIME_STATE }),
+  notifier = electronHabitReminderNotifier,
+  saveState,
+  stateStore,
+  timers = realReminderTimers,
+}: ReminderSchedulerOptions): ReminderScheduler {
+  const runtimeState =
+    stateStore ??
+    createRuntimeStateStore({
+      defaultState: { ...DEFAULT_REMINDER_RUNTIME_STATE },
+      loadState,
+      ...(saveState ? { saveState } : {}),
+    });
+  const scheduler = new ReminderSchedulerRuntime({
+    clock,
+    getTodayState,
+    notifier,
+    runtimeState,
+    timers,
+  });
+
+  return {
+    cancel: () => scheduler.cancel(),
+    schedule: (settings) => scheduler.schedule(settings),
+    snooze: (settings) => scheduler.snooze(settings),
+  };
 }
