@@ -1,6 +1,6 @@
 {
   "name": "zucchini",
-  "version": "0.1.2-beta.11",
+  "version": "0.1.2-beta.12",
   "private": true,
   "description": "Local-first habit tracker.",
   "author": "Benjamin Wang",

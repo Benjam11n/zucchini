@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.12 - 2026-05-16
+
+Changes since `v0.1.2-beta.11`.
+
+### Maintenance
+
+- Reduce packaged app size
+
 ## 0.1.2-beta.11 - 2026-05-16
 
 Changes since `v0.1.2-beta.10`.
