@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.11 - 2026-05-16
+
+Changes since `v0.1.2-beta.10`.
+
+### Features
+
+- Add weekly review habit heatmap
+- Add insights range controls
+
+### Fixes
+
+- Correct insights analytics windows
+
+### Refactors
+
+- Split reminder scheduler and history page
+- Split insights page components
+- Extract shared sparkline
+- Replace recharts weekly review charts
+- Polish analytics navigation UI
+- Share habit category marker
+
+### Maintenance
+
+- Resolve release readiness warnings
+
 ## 0.1.2-beta.10 - 2026-05-10
 
 Changes since `v0.1.2-beta.9`.
