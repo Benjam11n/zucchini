@@ -10,19 +10,6 @@ Changes since `v0.1.2-beta.11`.
 
 - Restore safe packaged node modules
 
-### Maintenance
-
-- Release 0.1.2-beta.12
-- Reduce packaged app size
-
-## 0.1.2-beta.12 - 2026-05-16
-
-Changes since `v0.1.2-beta.11`.
-
-### Maintenance
-
-- Reduce packaged app size
-
 ## 0.1.2-beta.11 - 2026-05-16
 
 Changes since `v0.1.2-beta.10`.
