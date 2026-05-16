@@ -38,7 +38,7 @@ const FEATURE_SLIDES: FeatureSlide[] = [
     eyebrow: "Today",
     id: "habits",
     imageAlt: "Minimal habit checklist feature preview",
-    imageSrc: resolveFeatureAsset("feature-habits.png"),
+    imageSrc: resolveFeatureAsset("feature-habits.webp"),
     title: "Habit-level progress",
   },
   {
@@ -46,7 +46,7 @@ const FEATURE_SLIDES: FeatureSlide[] = [
     eyebrow: "Streaks",
     id: "streaks",
     imageAlt: "Minimal streak freeze feature preview",
-    imageSrc: resolveFeatureAsset("feature-streaks.png"),
+    imageSrc: resolveFeatureAsset("feature-streaks.webp"),
     title: "Streak freezes",
   },
   {
@@ -55,7 +55,7 @@ const FEATURE_SLIDES: FeatureSlide[] = [
     eyebrow: "Pomodoro",
     id: "focus",
     imageAlt: "Minimal Pomodoro focus feature preview",
-    imageSrc: resolveFeatureAsset("feature-focus.png"),
+    imageSrc: resolveFeatureAsset("feature-focus.webp"),
     title: "Focus rhythm",
   },
   {
@@ -63,7 +63,7 @@ const FEATURE_SLIDES: FeatureSlide[] = [
     eyebrow: "Reminders",
     id: "reminders",
     imageAlt: "Minimal reminders and wind-down feature preview",
-    imageSrc: resolveFeatureAsset("feature-reminders.png"),
+    imageSrc: resolveFeatureAsset("feature-reminders.webp"),
     title: "Gentle reminders",
   },
 ];

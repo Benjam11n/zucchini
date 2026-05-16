@@ -26,14 +26,13 @@
     "react-doctor": "npx -y react-doctor@latest . --verbose --diff"
   },
   "dependencies": {
-    "@tanstack/react-form": "^1.29.1",
     "better-sqlite3": "^12.9.0",
-    "electron-updater": "^6.8.3",
-    "sonner": "^2.0.7"
+    "electron-updater": "^6.8.3"
   },
   "devDependencies": {
     "@fiahfy/icns": "^0.0.7",
     "@tailwindcss/vite": "^4.2.4",
+    "@tanstack/react-form": "^1.29.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.13",
@@ -62,6 +61,7 @@
     "react-dom": "^19.2.5",
     "shadcn": "^4.5.0",
     "sharp": "^0.34.5",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.4",
     "tsdown": "^0.21.10",
