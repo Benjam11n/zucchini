@@ -18,6 +18,7 @@ import {
 import { autoUpdater } from "electron-updater";
 
 import { resolveRuntimeIconPath } from "@/main/app/assets";
+import { createAutoBackupService } from "@/main/app/auto-backup";
 import { createDataManagementActions } from "@/main/app/data-management";
 import { createFatalErrorReporter } from "@/main/app/fatal-error";
 import { createFocusTimerGlobalShortcutManager } from "@/main/app/global-shortcuts";
@@ -394,6 +395,12 @@ async function bootstrapApp(): Promise<void> {
       service: appRuntime.service,
       shell,
     });
+    const autoBackup = createAutoBackupService({
+      clock: systemClock,
+      log: logger,
+      repository: appRuntime.repository,
+      shell,
+    });
 
     registerIpcHandlers({
       broadcastFocusSessionRecorded,
@@ -411,6 +418,7 @@ async function bootstrapApp(): Promise<void> {
         dataManagement.importBackup(() => {
           context.markQuitting();
         }),
+      onOpenAutoBackupFolder: autoBackup.openBackupFolder,
       onOpenDataFolder: dataManagement.openDataFolder,
       onResizeFocusWidget: resizeFocusWidget,
       onSettingsChanged: (settings) => {
@@ -423,6 +431,7 @@ async function bootstrapApp(): Promise<void> {
           })
         );
         registerFocusTimerGlobalShortcuts(settings);
+        void autoBackup.runIfDue(settings);
       },
       onShowFocusWidget: showFocusWidget,
       onShowMainWindow: showMainWindow,
@@ -444,6 +453,11 @@ async function bootstrapApp(): Promise<void> {
     ensureFocusWidgetWindow();
     queueMicrotask(() => {
       warmAppRuntime(appRuntime);
+      try {
+        void autoBackup.runIfDue(appRuntime.service.getTodayState().settings);
+      } catch (error) {
+        logger.error("Failed to start auto backup.", error);
+      }
     });
     updaterController.start();
 
@@ -460,6 +474,7 @@ async function bootstrapApp(): Promise<void> {
       const runtime = context.getRuntime();
       const { settings } = runtime.service.getTodayState();
       runtime.reminders.schedule(settings);
+      void autoBackup.runIfDue(settings);
     });
   } catch (error) {
     reportAppReadyFailure(error);

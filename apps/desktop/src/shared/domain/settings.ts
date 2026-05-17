@@ -10,6 +10,7 @@ import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcut
  * for reminder times, snooze values, and time zone strings.
  */
 export type ThemeMode = "system" | "light" | "dark";
+export type AutoBackupCadence = "off" | "daily" | "weekly";
 export interface PomodoroTimerSettings {
   focusDefaultDurationSeconds: number;
   focusCyclesBeforeLongBreak: number;
@@ -112,6 +113,8 @@ const DEFAULT_HABIT_CATEGORY_ICONS: Record<HabitCategory, HabitCategoryIcon> = {
 };
 
 export interface AppSettings {
+  autoBackupCadence: AutoBackupCadence;
+  autoBackupLastRunAt: string | null;
   categoryPreferences: HabitCategoryPreferences;
   focusDefaultDurationSeconds: PomodoroTimerSettings["focusDefaultDurationSeconds"];
   focusCyclesBeforeLongBreak: PomodoroTimerSettings["focusCyclesBeforeLongBreak"];
@@ -186,6 +189,8 @@ export function createDefaultHabitCategoryPreferences(): HabitCategoryPreference
 
 export function createDefaultAppSettings(timezone: string): AppSettings {
   return {
+    autoBackupCadence: "off",
+    autoBackupLastRunAt: null,
     categoryPreferences: createDefaultHabitCategoryPreferences(),
     ...createDefaultPomodoroTimerSettings(),
     ...createDefaultFocusTimerShortcutSettings(),

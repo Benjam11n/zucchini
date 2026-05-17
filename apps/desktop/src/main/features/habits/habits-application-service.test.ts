@@ -494,6 +494,13 @@ class FakeRepository implements AppRepository {
     return { ...this.settings };
   }
 
+  updateAutoBackupLastRunAt(timestamp: string): void {
+    this.settings = {
+      ...this.settings,
+      autoBackupLastRunAt: timestamp,
+    };
+  }
+
   getWindDownActions(): WindDownAction[] {
     return this.windDownActions.toSorted((left, right) => {
       if (left.sortOrder !== right.sortOrder) {

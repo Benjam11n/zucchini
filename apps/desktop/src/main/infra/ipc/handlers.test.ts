@@ -166,6 +166,7 @@ function createRegisterOptions(
     onExportBackup: vi.fn(() => Promise.resolve(null)),
     onExportCsvData: vi.fn(() => Promise.resolve(null)),
     onImportBackup: vi.fn(() => Promise.resolve(false)),
+    onOpenAutoBackupFolder: vi.fn(() => Promise.resolve("/tmp/Backups")),
     onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
     onResizeFocusWidget: vi.fn(),
     onSettingsChanged: vi.fn(),
@@ -594,6 +595,27 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(onOpenDataFolder.mock.calls).toHaveLength(1);
+  });
+
+  it("routes the open auto backup folder action to the provided callback", async () => {
+    resetHandlers();
+    const onOpenAutoBackupFolder = vi.fn(() => Promise.resolve("/tmp/Backups"));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onOpenAutoBackupFolder,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.openAutoBackupFolder)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: "/tmp/Backups",
+      ok: true,
+    });
+    expect(onOpenAutoBackupFolder.mock.calls).toHaveLength(1);
   });
 
   it("routes the clear data action to the provided callback", async () => {

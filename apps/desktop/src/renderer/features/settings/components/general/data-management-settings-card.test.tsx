@@ -2,6 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
 import { DataManagementSettingsCard } from "./data-management-settings-card";
@@ -27,10 +28,25 @@ function setHabitsApi() {
       Promise.resolve("/tmp/zucchini-csv-export-20260330")
     ),
     importBackup: vi.fn(() => Promise.resolve(true)),
+    openAutoBackupFolder: vi.fn(() => Promise.resolve("/tmp/Backups")),
     openDataFolder: vi.fn(() =>
       Promise.resolve("/Users/test/Library/Application Support/Zucchini")
     ),
   });
+}
+
+function renderCard(
+  options: {
+    onChange?: (settings: ReturnType<typeof createDefaultAppSettings>) => void;
+  } = {}
+) {
+  const settings = createDefaultAppSettings("Asia/Singapore");
+  return render(
+    <DataManagementSettingsCard
+      onChange={options.onChange ?? vi.fn()}
+      settings={settings}
+    />
+  );
 }
 
 describe("data management settings card", () => {
@@ -45,7 +61,7 @@ describe("data management settings card", () => {
   it("opens the local data folder from settings", async () => {
     const habits = setHabitsApi();
 
-    render(<DataManagementSettingsCard />);
+    renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: /open folder/i }));
 
@@ -60,7 +76,7 @@ describe("data management settings card", () => {
   it("exports a backup from settings", async () => {
     const habits = setHabitsApi();
 
-    render(<DataManagementSettingsCard />);
+    renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: /export backup/i }));
 
@@ -77,7 +93,7 @@ describe("data management settings card", () => {
   it("exports CSV data from settings", async () => {
     const habits = setHabitsApi();
 
-    render(<DataManagementSettingsCard />);
+    renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: /export csv/i }));
 
@@ -94,7 +110,7 @@ describe("data management settings card", () => {
   it("warns before importing a backup", async () => {
     const habits = setHabitsApi();
 
-    render(<DataManagementSettingsCard />);
+    renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: /import backup/i }));
 
@@ -118,7 +134,7 @@ describe("data management settings card", () => {
       JSON.stringify({ stale: true })
     );
 
-    render(<DataManagementSettingsCard />);
+    renderCard();
 
     fireEvent.click(screen.getByRole("button", { name: /clear data/i }));
 
@@ -134,5 +150,34 @@ describe("data management settings card", () => {
       expect(habits.clearData.mock.calls).toHaveLength(1);
     });
     expect(localStorage.getItem("zucchini_last_state")).toBeNull();
+  });
+
+  it("updates auto backup cadence", () => {
+    setHabitsApi();
+    const onChange = vi.fn();
+
+    renderCard({ onChange });
+
+    fireEvent.change(screen.getByLabelText(/auto backup cadence/i), {
+      target: { value: "daily" },
+    });
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ autoBackupCadence: "daily" })
+    );
+  });
+
+  it("opens the auto backup folder from settings", async () => {
+    const habits = setHabitsApi();
+
+    renderCard();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /open backup folder/i })
+    );
+
+    await waitFor(() => {
+      expect(habits.openAutoBackupFolder.mock.calls).toHaveLength(1);
+    });
   });
 });

@@ -47,6 +47,7 @@ interface RegisterIpcHandlersOptions {
   onExportBackup: () => Promise<string | null>;
   onExportCsvData: () => Promise<string | null>;
   onImportBackup: () => Promise<boolean>;
+  onOpenAutoBackupFolder: () => Promise<string>;
   onOpenDataFolder: () => Promise<string>;
   focusTimerCoordinator: FocusTimerCoordinator;
   onResizeFocusWidget: (width: number, height: number) => void;
@@ -88,6 +89,7 @@ export function registerIpcHandlers({
   onExportBackup,
   onExportCsvData,
   onImportBackup,
+  onOpenAutoBackupFolder,
   onOpenDataFolder,
   onResizeFocusWidget,
   onShowFocusWidget,
@@ -173,6 +175,9 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
   registerHandler(HABITS_IPC_CHANNELS.clearData, () => onClearData());
+  registerHandler(HABITS_IPC_CHANNELS.openAutoBackupFolder, () =>
+    onOpenAutoBackupFolder()
+  );
   registerHandler(HABITS_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
   registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
   registerHandler(HABITS_IPC_CHANNELS.exportCsvData, () => onExportCsvData());

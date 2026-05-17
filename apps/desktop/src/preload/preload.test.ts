@@ -432,6 +432,19 @@ describe("preload habits API", () => {
     expect(invoke).toHaveBeenCalledWith("habits:openDataFolder");
   });
 
+  it("invokes open auto backup folder through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: "/tmp/Backups",
+      ok: true,
+    });
+
+    await expect(getHabitsApi().openAutoBackupFolder()).resolves.toBe(
+      "/tmp/Backups"
+    );
+    expect(invoke).toHaveBeenCalledWith("habits:openAutoBackupFolder");
+  });
+
   it("invokes import backup through the preload bridge", async () => {
     await loadPreloadModule();
     invoke.mockResolvedValue({

@@ -205,6 +205,8 @@ export const windDownRuntimeState = sqliteTable("wind_down_runtime_state", {
 });
 
 export const settings = sqliteTable("settings", {
+  autoBackupCadence: text("auto_backup_cadence").notNull().default("off"),
+  autoBackupLastRunAt: text("auto_backup_last_run_at"),
   categoryPreferences: text("category_preferences").notNull(),
   focusCyclesBeforeLongBreak: integer(
     "focus_cycles_before_long_break"

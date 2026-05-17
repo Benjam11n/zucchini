@@ -335,6 +335,10 @@ export class SqliteAppRepository implements AppRepository {
     return this.settingsRepository.saveSettings(settings, defaultTimezone);
   }
 
+  updateAutoBackupLastRunAt(timestamp: string): void {
+    this.settingsRepository.updateAutoBackupLastRunAt(timestamp);
+  }
+
   getWindDownActions(): WindDownAction[] {
     return this.windDownActionRepository.getActions();
   }

@@ -13,6 +13,7 @@ export const HABITS_IPC_CHANNELS = {
   getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
   getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
   importBackup: "habits:importBackup",
+  openAutoBackupFolder: "habits:openAutoBackupFolder",
   openDataFolder: "habits:openDataFolder",
   query: "habits:query",
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",

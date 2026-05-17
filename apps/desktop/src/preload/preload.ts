@@ -128,6 +128,8 @@ const habitsApi: HabitsApi = {
       HABITS_IPC_CHANNELS.windDownNavigationRequested,
       listener
     ),
+  openAutoBackupFolder: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.openAutoBackupFolder),
   openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
   query: <Q extends HabitQuery>(query: Q) =>
     invokeHabits<ResultForQuery<Q>>(HABITS_IPC_CHANNELS.query, query),

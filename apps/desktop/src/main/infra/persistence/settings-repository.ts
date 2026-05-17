@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+
 import { settings } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
@@ -28,6 +30,29 @@ function deserializeCategoryPreferences(
   }
 }
 
+function normalizeAutoBackupCadence(
+  value: string | null | undefined,
+  fallback: AppSettings["autoBackupCadence"]
+): AppSettings["autoBackupCadence"] {
+  if (value === "daily" || value === "off" || value === "weekly") {
+    return value;
+  }
+
+  return fallback;
+}
+
+function normalizeAutoBackupLastRunAt(
+  value: string | null | undefined
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return appSettingsSchema.shape.autoBackupLastRunAt.safeParse(value).success
+    ? value
+    : null;
+}
+
 export class SqliteSettingsRepository {
   private readonly client: SqliteDatabaseClient;
 
@@ -40,6 +65,8 @@ export class SqliteSettingsRepository {
       .getDrizzle()
       .insert(settings)
       .values({
+        autoBackupCadence: settingsToSave.autoBackupCadence,
+        autoBackupLastRunAt: settingsToSave.autoBackupLastRunAt,
         categoryPreferences: serializeCategoryPreferences(
           settingsToSave.categoryPreferences
         ),
@@ -61,6 +88,8 @@ export class SqliteSettingsRepository {
       })
       .onConflictDoUpdate({
         set: {
+          autoBackupCadence: settingsToSave.autoBackupCadence,
+          autoBackupLastRunAt: settingsToSave.autoBackupLastRunAt,
           categoryPreferences: serializeCategoryPreferences(
             settingsToSave.categoryPreferences
           ),
@@ -95,6 +124,13 @@ export class SqliteSettingsRepository {
       }
 
       const candidateSettings: AppSettings = {
+        autoBackupCadence: normalizeAutoBackupCadence(
+          row.autoBackupCadence,
+          defaults.autoBackupCadence
+        ),
+        autoBackupLastRunAt: normalizeAutoBackupLastRunAt(
+          row.autoBackupLastRunAt
+        ),
         categoryPreferences: deserializeCategoryPreferences(
           row.categoryPreferences,
           defaults.categoryPreferences
@@ -129,8 +165,16 @@ export class SqliteSettingsRepository {
     defaultTimezone: string
   ): AppSettings {
     this.client.run("saveSettings", () => {
+      const existingRow = this.client
+        .getDrizzle()
+        .select()
+        .from(settings)
+        .get();
       this.persistSettings({
         ...nextSettings,
+        autoBackupLastRunAt:
+          normalizeAutoBackupLastRunAt(existingRow?.autoBackupLastRunAt) ??
+          nextSettings.autoBackupLastRunAt,
         timezone: defaultTimezone,
       });
     });
@@ -146,6 +190,8 @@ export class SqliteSettingsRepository {
         .getDrizzle()
         .insert(settings)
         .values({
+          autoBackupCadence: defaults.autoBackupCadence,
+          autoBackupLastRunAt: defaults.autoBackupLastRunAt,
           categoryPreferences: serializeCategoryPreferences(
             defaults.categoryPreferences
           ),
@@ -166,6 +212,17 @@ export class SqliteSettingsRepository {
           windDownTime: defaults.windDownTime,
         })
         .onConflictDoNothing()
+        .run();
+    });
+  }
+
+  updateAutoBackupLastRunAt(timestamp: string): void {
+    this.client.run("updateAutoBackupLastRunAt", () => {
+      this.client
+        .getDrizzle()
+        .update(settings)
+        .set({ autoBackupLastRunAt: timestamp })
+        .where(eq(settings.id, SETTINGS_ROW_ID))
         .run();
     });
   }

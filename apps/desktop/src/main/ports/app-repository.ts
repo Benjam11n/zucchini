@@ -179,6 +179,7 @@ export interface StreakRepositoryPort {
 export interface SettingsRepositoryPort {
   getSettings(defaultTimezone: string): AppSettings;
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings;
+  updateAutoBackupLastRunAt(timestamp: string): void;
 }
 
 export interface ReminderRuntimeStateRepositoryPort {

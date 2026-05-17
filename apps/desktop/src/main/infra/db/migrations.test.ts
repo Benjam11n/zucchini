@@ -55,6 +55,9 @@ describeWithSqlite("runMigrations", () => {
     const habitPeriodStatusColumns = sqlite
       .prepare(`pragma table_info("habit_period_status")`)
       .all() as { name: string }[];
+    const settingsColumns = sqlite
+      .prepare(`pragma table_info("settings")`)
+      .all() as { name: string }[];
     const migrationsCount = sqlite
       .prepare(`select count(*) as count from "__drizzle_migrations"`)
       .get() as { count: number };
@@ -64,6 +67,14 @@ describeWithSqlite("runMigrations", () => {
     expect(categoryStreakStateTableExists).toBe(1);
     expect(
       habitPeriodStatusColumns.some((column) => column.name === "completed_at")
+    ).toBe(true);
+    expect(
+      settingsColumns.some((column) => column.name === "auto_backup_cadence")
+    ).toBe(true);
+    expect(
+      settingsColumns.some(
+        (column) => column.name === "auto_backup_last_run_at"
+      )
     ).toBe(true);
     expect(migrationsCount.count).toBeGreaterThan(0);
 

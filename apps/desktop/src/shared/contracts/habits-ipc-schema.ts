@@ -122,6 +122,7 @@ export const habitWeekdaysSchema = z
   });
 
 const themeModeSchema = z.enum(["system", "light", "dark"]);
+const autoBackupCadenceSchema = z.enum(["off", "daily", "weekly"]);
 const globalShortcutSchema = z
   .string()
   .trim()
@@ -133,6 +134,8 @@ const globalShortcutSchema = z
 
 export const appSettingsSchema = z
   .object({
+    autoBackupCadence: autoBackupCadenceSchema,
+    autoBackupLastRunAt: isoTimestampSchema.nullable(),
     categoryPreferences: habitCategoryPreferencesSchema,
     focusCyclesBeforeLongBreak: z
       .number()

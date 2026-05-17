@@ -125,7 +125,10 @@ export function SettingsPage(props: SettingsPageProps) {
                 settings={props.settings}
               />
               <UpdateSettingsCard />
-              <DataManagementSettingsCard />
+              <DataManagementSettingsCard
+                onChange={props.onChange}
+                settings={props.settings}
+              />
             </m.div>
           </TabsContent>
 

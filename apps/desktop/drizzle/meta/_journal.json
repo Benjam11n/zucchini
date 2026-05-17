@@ -134,6 +134,13 @@
       "when": 1778200000000,
       "tag": "0018_habit_completion_timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1778300000000,
+      "tag": "0019_auto_backup_settings",
+      "breakpoints": true
     }
   ]
 }

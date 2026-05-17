@@ -74,6 +74,7 @@ export interface HabitsApi {
     listener: (state: PersistedFocusTimerState) => void
   ) => () => void;
   openDataFolder: () => Promise<string>;
+  openAutoBackupFolder: () => Promise<string>;
   query: <Q extends HabitQuery>(query: Q) => Promise<ResultForQuery<Q>>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;

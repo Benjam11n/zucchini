@@ -276,6 +276,7 @@ function createMockHabitsApi(
     onFocusTimerShortcutStatusChanged: vi.fn(() => vi.fn()),
     onFocusTimerStateChanged: vi.fn(() => vi.fn()),
     onWindDownNavigationRequested: vi.fn(() => vi.fn()),
+    openAutoBackupFolder: vi.fn().mockResolvedValue(""),
     openDataFolder: vi.fn().mockResolvedValue(""),
     query: vi.fn().mockResolvedValue(null),
     moveUnfinishedHabitsToTomorrow: vi.fn().mockResolvedValue(null),
