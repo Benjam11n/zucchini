@@ -17,7 +17,6 @@ export interface HabitActivityRingProps {
   categoryProgress: HabitCategoryProgress[];
   categoryPreferences?: HabitCategoryPreferences;
   className?: string;
-  showDetails?: boolean;
   size?: number;
 }
 
@@ -25,9 +24,4 @@ export interface ActivityRingGlyphProps {
   activities: ActivityData[];
   className?: string;
   size?: number;
-}
-
-export interface CircleProgressProps {
-  data: ActivityData;
-  index: number;
 }
