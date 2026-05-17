@@ -112,6 +112,25 @@ describeWithSqlite("runMigrations", () => {
         PRIMARY KEY("frequency", "period_start", "habit_id")
       );
 
+      CREATE TABLE "settings" (
+        "category_preferences" text NOT NULL,
+        "focus_cycles_before_long_break" integer NOT NULL,
+        "focus_default_duration_seconds" integer NOT NULL,
+        "focus_long_break_seconds" integer NOT NULL,
+        "focus_short_break_seconds" integer NOT NULL,
+        "id" integer PRIMARY KEY NOT NULL,
+        "launch_at_login" integer NOT NULL,
+        "minimize_to_tray" integer NOT NULL,
+        "reminder_enabled" integer NOT NULL,
+        "reminder_snooze_minutes" integer NOT NULL,
+        "reminder_time" text NOT NULL,
+        "reset_focus_timer_shortcut" text NOT NULL,
+        "theme_mode" text NOT NULL,
+        "timezone" text NOT NULL,
+        "toggle_focus_timer_shortcut" text NOT NULL,
+        "wind_down_time" text DEFAULT '21:30' NOT NULL
+      );
+
       CREATE TABLE "__drizzle_migrations" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
         "hash" text NOT NULL,
