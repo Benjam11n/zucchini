@@ -343,10 +343,10 @@ describe("today page", () => {
       screen.getByLabelText("Current streak 2 days. Best streak 4 days.")
     ).toBeInTheDocument();
     expect(screen.getByText("2d")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.queryByText("best 4")).toBeNull();
   });
 
-  it("shows a record badge instead of streak progress when current matches best", () => {
+  it("shows only the current streak when current matches best", () => {
     renderTodayPage({
       ...state,
       habitStreaks: {
@@ -362,6 +362,7 @@ describe("today page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("55d")).toBeInTheDocument();
     expect(screen.queryByText("Best")).toBeNull();
+    expect(screen.queryByText("record")).toBeNull();
   });
 
   it("removes the placeholder when loaded streak data has no current streak", () => {

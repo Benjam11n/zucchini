@@ -1,5 +1,4 @@
 import { m } from "framer-motion";
-import { Trophy } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
@@ -58,9 +57,6 @@ function HabitStreakLabel({
     const bestUnit = streak.bestStreak === 1 ? "day" : "days";
     const bestStreak = Math.max(streak.bestStreak, streak.currentStreak);
     const isBestStreak = streak.currentStreak >= bestStreak;
-    const progress = isBestStreak
-      ? 100
-      : Math.min(100, Math.max(8, (streak.currentStreak / bestStreak) * 100));
 
     return (
       <TooltipProvider>
@@ -69,36 +65,13 @@ function HabitStreakLabel({
             <span
               aria-label={`Current streak ${streak.currentStreak} ${currentUnit}. Best streak ${bestStreak} ${bestUnit}.`}
               className={cn(
-                "inline-flex shrink-0 cursor-help items-center gap-1 text-xs font-medium tabular-nums",
+                "inline-flex shrink-0 cursor-help items-center text-xs font-medium tabular-nums",
                 isBestStreak
                   ? "text-secondary"
                   : "text-primary/85 dark:text-primary"
               )}
             >
-              <span>{streak.currentStreak}d</span>
-              {isBestStreak ? (
-                <span
-                  aria-hidden="true"
-                  className="inline-flex size-4 items-center justify-center rounded-full bg-secondary/15 text-secondary"
-                >
-                  <Trophy className="size-2.5" />
-                </span>
-              ) : (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className="relative h-1 w-5 overflow-hidden rounded-full bg-primary/15"
-                  >
-                    <span
-                      className="absolute inset-y-0 left-0 rounded-full bg-current"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </span>
-                  <span className="min-w-3 text-[0.68rem] text-muted-foreground/55">
-                    {bestStreak}
-                  </span>
-                </>
-              )}
+              {streak.currentStreak}d
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" sideOffset={8}>
