@@ -79,10 +79,9 @@ function HabitStreakLabel({
               {isBestStreak ? (
                 <span
                   aria-hidden="true"
-                  className="inline-flex h-4 items-center gap-0.5 rounded-full bg-secondary/15 px-1.5 text-[0.62rem] font-semibold text-secondary uppercase"
+                  className="inline-flex size-4 items-center justify-center rounded-full bg-secondary/15 text-secondary"
                 >
                   <Trophy className="size-2.5" />
-                  Best
                 </span>
               ) : (
                 <>
