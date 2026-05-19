@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run typecheck && vite build",
+    "build": "node scripts/generate-release-metadata.mjs && pnpm run typecheck && vite build",
     "audit": "pnpm audit",
     "audit:ci": "pnpm audit --prod --audit-level high",
     "typecheck": "tsgo -p tsconfig.json --noEmit",

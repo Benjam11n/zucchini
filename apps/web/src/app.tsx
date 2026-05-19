@@ -2,7 +2,7 @@
  * Marketing landing page root component.
  *
  * Renders the Zucchini product landing page with feature highlights,
- * mascot branding, and a link to the latest GitHub release for download.
+ * mascot branding, and build-time release metadata for download.
  * No routing or state management — just static content and external links.
  */
 import {
@@ -15,7 +15,12 @@ import {
   Utensils,
 } from "lucide-react";
 
-import { latestReleaseUrl } from "./constants";
+import {
+  githubRepositoryUrl,
+  latestReleaseUrl,
+  latestVersionLabel,
+  macDownloadUrl,
+} from "./constants";
 import { formatPreviewDate, getCopyrightYear } from "./date";
 import PixelBlast from "./pixel-blast";
 
@@ -61,7 +66,7 @@ export default function App() {
           <span>Zucchini</span>
         </div>
         <a
-          href="https://github.com/Benjam11n/zucchini"
+          href={githubRepositoryUrl}
           className="btn btn-secondary"
           style={{ fontSize: "0.9rem", padding: "8px 16px" }}
         >
@@ -77,16 +82,17 @@ export default function App() {
             where they belong, on your machine.
           </p>
           <div className="actions">
-            <a href={latestReleaseUrl} className="btn btn-primary">
+            <a href={macDownloadUrl} className="btn btn-primary">
               Download for macOS <ArrowUpRight size={16} />
             </a>
-            <a
-              href="https://github.com/Benjam11n/zucchini"
-              className="btn btn-secondary"
-            >
+            <a href={githubRepositoryUrl} className="btn btn-secondary">
               View Source <ArrowRight size={18} />
             </a>
           </div>
+          <p className="download-meta">
+            {latestVersionLabel} from{" "}
+            <a href={latestReleaseUrl}>GitHub Releases</a>
+          </p>
 
           <div className="app-preview-container">
             <div className="app-preview">

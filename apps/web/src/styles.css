@@ -196,7 +196,19 @@ body {
 .actions {
   display: flex;
   gap: 16px;
+  margin-bottom: 14px;
+}
+
+.download-meta {
   margin-bottom: 80px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.9rem;
+}
+
+.download-meta a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration-color: rgba(255, 255, 255, 0.32);
+  text-underline-offset: 4px;
 }
 
 .btn {
