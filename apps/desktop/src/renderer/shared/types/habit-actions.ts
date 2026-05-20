@@ -15,7 +15,9 @@ export interface HabitMutationActions {
     targetCount?: number | null
   ) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
+  onPauseHabit: (habitId: number) => Promise<void>;
   onReorderHabits: (habits: Habit[]) => Promise<void>;
+  onResumeHabit: (habitId: number) => Promise<void>;
   onUnarchiveHabit: (habitId: number) => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,

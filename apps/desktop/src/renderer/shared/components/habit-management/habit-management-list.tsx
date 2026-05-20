@@ -96,10 +96,12 @@ export interface HabitManagementListProps {
     position: "after" | "before"
   ) => Promise<void>;
   onExpandedHabitChange: (habitId: number | null) => void;
+  onPauseHabit: (habitId: number, habitName: string) => Promise<void>;
   onRenameHabit: (habitId: number, name: string) => Promise<void>;
   onReorderHabits: (
     habits: HabitManagementCardProps["habits"]
   ) => Promise<void>;
+  onResumeHabit: (habitId: number, habitName: string) => Promise<void>;
   onUndoArchive: () => Promise<void>;
   onUpdateHabitCategory: (
     habitId: number,
@@ -133,8 +135,10 @@ export function HabitManagementList({
   onDragStateChange,
   onDrop,
   onExpandedHabitChange,
+  onPauseHabit,
   onRenameHabit,
   onReorderHabits,
+  onResumeHabit,
   onUndoArchive,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
@@ -280,8 +284,10 @@ export function HabitManagementList({
                     onDragStateChange={onDragStateChange}
                     onDrop={onDrop}
                     onExpandedHabitChange={onExpandedHabitChange}
+                    onPauseHabit={onPauseHabit}
                     onRenameHabit={onRenameHabit}
                     onReorderHabits={onReorderHabits}
+                    onResumeHabit={onResumeHabit}
                     onUndoArchive={onUndoArchive}
                     onUpdateHabitCategory={onUpdateHabitCategory}
                     onUpdateHabitFrequency={onUpdateHabitFrequency}
@@ -308,8 +314,10 @@ export function HabitManagementList({
                     onDragStateChange={onDragStateChange}
                     onDrop={onDrop}
                     onExpandedHabitChange={onExpandedHabitChange}
+                    onPauseHabit={onPauseHabit}
                     onRenameHabit={onRenameHabit}
                     onReorderHabits={onReorderHabits}
+                    onResumeHabit={onResumeHabit}
                     onUndoArchive={onUndoArchive}
                     onUpdateHabitCategory={onUpdateHabitCategory}
                     onUpdateHabitFrequency={onUpdateHabitFrequency}

@@ -33,8 +33,10 @@ function TodayRoute({ actions, state }: ReadyAppController) {
       onCreateHabit={actions.handleCreateHabit}
       onDecrementHabitProgress={actions.handleDecrementHabitProgress}
       onIncrementHabitProgress={actions.handleIncrementHabitProgress}
+      onPauseHabit={actions.handlePauseHabit}
       onRenameHabit={actions.handleRenameHabit}
       onReorderHabits={actions.handleReorderHabits}
+      onResumeHabit={actions.handleResumeHabit}
       onUnarchiveHabit={actions.handleUnarchiveHabit}
       state={state.todayState}
       onToggleHabitCarryover={actions.handleToggleHabitCarryover}
@@ -148,8 +150,10 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
         onChange={actions.handleSettingsDraftChange}
         onCreateHabit={actions.handleCreateHabit}
         onOpenWindDown={actions.handleOpenWindDown}
+        onPauseHabit={actions.handlePauseHabit}
         onRenameHabit={actions.handleRenameHabit}
         onReorderHabits={actions.handleReorderHabits}
+        onResumeHabit={actions.handleResumeHabit}
         onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
         onUnarchiveHabit={actions.handleUnarchiveHabit}
         onUnarchiveFocusQuotaGoal={actions.handleUnarchiveFocusQuotaGoal}

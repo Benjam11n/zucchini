@@ -31,8 +31,10 @@ export function HabitRowEditor({
   onDragStart,
   onDrop,
   onExpandedChange,
+  onPauseHabit,
   onRenameHabit,
   onReorderHabits,
+  onResumeHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
   onUpdateHabitTargetCount,
@@ -112,7 +114,9 @@ export function HabitRowEditor({
             onArchiveHabit={onArchiveHabit}
             onDragEnd={onDragEnd}
             onDragStart={onDragStart}
+            onPauseHabit={onPauseHabit}
             onReorderHabits={onReorderHabits}
+            onResumeHabit={onResumeHabit}
           />
 
           <CollapsibleContent>

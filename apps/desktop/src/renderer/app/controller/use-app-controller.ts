@@ -88,9 +88,11 @@ function buildControllerActions({
     handleMoveUnfinishedHabitsToTomorrow:
       actions.handleMoveUnfinishedHabitsToTomorrow,
     handleOpenWindDown: actions.handleOpenWindDown,
+    handlePauseHabit: actions.handlePauseHabit,
     handleRenameHabit: actions.handleRenameHabit,
     handleRenameWindDownAction: actions.handleRenameWindDownAction,
     handleReorderHabits: actions.handleReorderHabits,
+    handleResumeHabit: actions.handleResumeHabit,
     handleRetryBoot: actions.retryBoot,
     handleRetryFocusLoad: async () => {
       await actions.loadFocusSessions(true);

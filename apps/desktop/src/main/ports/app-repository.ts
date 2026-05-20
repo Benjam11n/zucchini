@@ -73,6 +73,8 @@ export interface HabitRepositoryPort {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): void;
+  pauseHabit(habitId: number, pausedAt: string): void;
+  resumeHabit(habitId: number): void;
   archiveHabit(habitId: number): void;
   unarchiveHabit(habitId: number): void;
   normalizeHabitOrder(): void;

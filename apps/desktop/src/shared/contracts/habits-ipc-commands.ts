@@ -37,8 +37,10 @@ export type HabitCommand =
   | { payload: { habitId: number }; type: "habit.archive" }
   | { payload: { habitId: number }; type: "habit.decrementProgress" }
   | { payload: { habitId: number }; type: "habit.incrementProgress" }
+  | { payload: { habitId: number }; type: "habit.pause" }
   | { payload: { habitId: number; name: string }; type: "habit.rename" }
   | { payload: { habitIds: number[] }; type: "habit.reorder" }
+  | { payload: { habitId: number }; type: "habit.resume" }
   | { payload: { habitId: number }; type: "habit.toggle" }
   | { payload: { habitId: number }; type: "habit.unarchive" }
   | {
@@ -94,8 +96,10 @@ interface HabitCommandResultByType {
   "habit.create": TodayState;
   "habit.decrementProgress": HabitStatusPatch;
   "habit.incrementProgress": HabitStatusPatch;
+  "habit.pause": TodayState;
   "habit.rename": TodayState;
   "habit.reorder": TodayState;
+  "habit.resume": TodayState;
   "habit.toggle": HabitStatusPatch;
   "habit.unarchive": TodayState;
   "habit.updateCategory": TodayState;

@@ -23,6 +23,13 @@ import type { HabitManagementCardProps } from "./habit-management.types";
 const FEEDBACK_TIMEOUT_MS = 2200;
 const UNDO_TIMEOUT_MS = 5000;
 
+const noopPauseAction: NonNullable<
+  HabitManagementCardProps["onPauseHabit"]
+> = () => Promise.resolve();
+const noopResumeAction: NonNullable<
+  HabitManagementCardProps["onResumeHabit"]
+> = () => Promise.resolve();
+
 function clearTimeoutRef(timeoutRef: { current: number | null }) {
   if (timeoutRef.current !== null) {
     window.clearTimeout(timeoutRef.current);
@@ -34,8 +41,10 @@ export function useHabitManagementController({
   habits,
   onArchiveHabit,
   onCreateHabit,
+  onPauseHabit = noopPauseAction,
   onRenameHabit,
   onReorderHabits,
+  onResumeHabit = noopResumeAction,
   onUnarchiveHabit,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
@@ -256,6 +265,24 @@ export function useHabitManagementController({
     });
   }
 
+  async function handlePauseHabit(habitId: number, habitName: string) {
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Paused "${habitName}".`);
+      },
+      task: () => onPauseHabit(habitId),
+    });
+  }
+
+  async function handleResumeHabit(habitId: number, habitName: string) {
+    await runHabitAction({
+      onSuccess: () => {
+        showSavedFeedback(`Resumed "${habitName}".`);
+      },
+      task: () => onResumeHabit(habitId),
+    });
+  }
+
   async function handleUndoArchive() {
     if (!recentArchivedHabit) {
       return;
@@ -368,8 +395,10 @@ export function useHabitManagementController({
     handleAutoSort,
     handleCreateHabit,
     handleDrop,
+    handlePauseHabit,
     handleRenameHabit,
     handleReorderHabits,
+    handleResumeHabit,
     handleUndoArchive,
     handleUndoAutoSort,
     handleUpdateHabitCategory,

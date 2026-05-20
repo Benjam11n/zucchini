@@ -64,6 +64,7 @@ export function mapHabit(row: HabitRow): Habit {
     id: row.id,
     isArchived: row.isArchived,
     name: row.name,
+    pausedAt: row.pausedAt,
     selectedWeekdays: normalizeHabitWeekdays(
       row.selectedWeekdays ? JSON.parse(row.selectedWeekdays) : null
     ),

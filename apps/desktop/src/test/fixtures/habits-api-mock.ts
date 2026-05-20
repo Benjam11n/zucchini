@@ -18,6 +18,7 @@ const EMPTY_HABIT_STATUS_PATCH: HabitStatusPatch = {
     id: 0,
     isArchived: false,
     name: "Mock habit",
+    pausedAt: null,
     selectedWeekdays: null,
     sortOrder: 0,
     targetCount: 1,
@@ -97,6 +98,8 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
     "habit.incrementProgress": (
       command: Extract<HabitCommand, { type: "habit.incrementProgress" }>
     ) => getMock(mock, "incrementHabitProgress")(command.payload.habitId),
+    "habit.pause": (command: Extract<HabitCommand, { type: "habit.pause" }>) =>
+      getMock(mock, "pauseHabit")(command.payload.habitId),
     "habit.rename": (
       command: Extract<HabitCommand, { type: "habit.rename" }>
     ) =>
@@ -107,6 +110,9 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
     "habit.reorder": (
       command: Extract<HabitCommand, { type: "habit.reorder" }>
     ) => getMock(mock, "reorderHabits")(command.payload.habitIds),
+    "habit.resume": (
+      command: Extract<HabitCommand, { type: "habit.resume" }>
+    ) => getMock(mock, "resumeHabit")(command.payload.habitId),
     "habit.toggle": (
       command: Extract<HabitCommand, { type: "habit.toggle" }>
     ) => getMock(mock, "toggleHabit")(command.payload.habitId),
@@ -280,6 +286,7 @@ function createMockHabitsApi(
     onWindDownNavigationRequested: vi.fn(() => vi.fn()),
     openAutoBackupFolder: vi.fn().mockResolvedValue(""),
     openDataFolder: vi.fn().mockResolvedValue(""),
+    pauseHabit: vi.fn().mockResolvedValue(null),
     query: vi.fn().mockResolvedValue(null),
     moveUnfinishedHabitsToTomorrow: vi.fn().mockResolvedValue(null),
     recordFocusSession: vi.fn().mockResolvedValue(null),
@@ -288,6 +295,7 @@ function createMockHabitsApi(
     renameHabit: vi.fn().mockResolvedValue(null),
     renameWindDownAction: vi.fn().mockResolvedValue(null),
     reorderHabits: vi.fn().mockResolvedValue(null),
+    resumeHabit: vi.fn().mockResolvedValue(null),
     resizeFocusWidget: vi.fn().mockResolvedValue(null),
     saveFocusTimerState: vi.fn((state: unknown) => Promise.resolve(state)),
     setDayStatus: vi.fn().mockResolvedValue(null),

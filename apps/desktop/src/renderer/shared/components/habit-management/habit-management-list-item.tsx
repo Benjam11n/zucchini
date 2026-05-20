@@ -17,8 +17,10 @@ interface HabitManagementListItemProps {
   onDragStateChange: HabitManagementListProps["onDragStateChange"];
   onDrop: HabitManagementListProps["onDrop"];
   onExpandedHabitChange: HabitManagementListProps["onExpandedHabitChange"];
+  onPauseHabit: HabitManagementListProps["onPauseHabit"];
   onRenameHabit: HabitManagementListProps["onRenameHabit"];
   onReorderHabits: HabitManagementListProps["onReorderHabits"];
+  onResumeHabit: HabitManagementListProps["onResumeHabit"];
   onUndoArchive: HabitManagementListProps["onUndoArchive"];
   onUpdateHabitCategory: HabitManagementListProps["onUpdateHabitCategory"];
   onUpdateHabitFrequency: HabitManagementListProps["onUpdateHabitFrequency"];
@@ -37,8 +39,10 @@ export function HabitManagementListItem({
   onDragStateChange,
   onDrop,
   onExpandedHabitChange,
+  onPauseHabit,
   onRenameHabit,
   onReorderHabits,
+  onResumeHabit,
   onUndoArchive,
   onUpdateHabitCategory,
   onUpdateHabitFrequency,
@@ -149,6 +153,8 @@ export function HabitManagementListItem({
       }}
       onRenameHabit={onRenameHabit}
       onReorderHabits={onReorderHabits}
+      onPauseHabit={(habitId) => onPauseHabit(habitId, habit.name)}
+      onResumeHabit={(habitId) => onResumeHabit(habitId, habit.name)}
       onUpdateHabitCategory={(habitId, category) =>
         onUpdateHabitCategory(habitId, category, habit.name)
       }

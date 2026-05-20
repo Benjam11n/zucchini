@@ -60,11 +60,17 @@ function executeHabitCommand(
     case "habit.incrementProgress": {
       return service.incrementHabitProgress(command.payload.habitId);
     }
+    case "habit.pause": {
+      return service.pauseHabit(command.payload.habitId);
+    }
     case "habit.rename": {
       return service.renameHabit(command.payload.habitId, command.payload.name);
     }
     case "habit.reorder": {
       return service.reorderHabits(command.payload.habitIds);
+    }
+    case "habit.resume": {
+      return service.resumeHabit(command.payload.habitId);
     }
     case "habit.toggle": {
       return service.toggleHabit(command.payload.habitId);

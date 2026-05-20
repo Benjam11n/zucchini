@@ -19,8 +19,10 @@ export function HabitManagementContent(props: HabitManagementCardProps) {
     handleAutoSort,
     handleCreateHabit,
     handleDrop,
+    handlePauseHabit,
     handleRenameHabit,
     handleReorderHabits,
+    handleResumeHabit,
     handleUndoArchive,
     handleUndoAutoSort,
     handleUpdateHabitCategory,
@@ -59,8 +61,10 @@ export function HabitManagementContent(props: HabitManagementCardProps) {
         onDragStateChange={setDragState}
         onDrop={handleDrop}
         onExpandedHabitChange={setExpandedHabitId}
+        onPauseHabit={handlePauseHabit}
         onRenameHabit={handleRenameHabit}
         onReorderHabits={handleReorderHabits}
+        onResumeHabit={handleResumeHabit}
         onUndoArchive={handleUndoArchive}
         onUpdateHabitCategory={handleUpdateHabitCategory}
         onUpdateHabitFrequency={handleUpdateHabitFrequency}

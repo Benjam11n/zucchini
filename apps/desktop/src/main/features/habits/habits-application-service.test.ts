@@ -26,7 +26,7 @@ import type {
   HabitWeekday,
   HabitWithStatus,
 } from "@/shared/domain/habit";
-import { isHabitScheduledForDate } from "@/shared/domain/habit";
+import { isHabitActiveOnDate } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
@@ -149,7 +149,7 @@ class FakeRepository implements AppRepository {
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
     return this.getHabits()
-      .filter((habit) => isHabitScheduledForDate(habit, date))
+      .filter((habit) => isHabitActiveOnDate(habit, date))
       .map((habit) => ({
         ...habit,
         completed:
@@ -201,7 +201,7 @@ class FakeRepository implements AppRepository {
 
   getHabitProgress(date: string, habitId: number): number {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit || !isHabitScheduledForDate(habit, date)) {
+    if (!habit || !isHabitActiveOnDate(habit, date)) {
       return 0;
     }
 
@@ -234,7 +234,7 @@ class FakeRepository implements AppRepository {
 
   ensureStatusRowsForDate(date: string): void {
     const scheduledHabits = this.getHabits().filter((habit) =>
-      isHabitScheduledForDate(habit, date)
+      isHabitActiveOnDate(habit, date)
     );
 
     for (const habit of scheduledHabits) {
@@ -247,7 +247,7 @@ class FakeRepository implements AppRepository {
 
   ensureStatusRow(date: string, habitId: number): void {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit || !isHabitScheduledForDate(habit, date)) {
+    if (!habit || !isHabitActiveOnDate(habit, date)) {
       return;
     }
 
@@ -279,7 +279,7 @@ class FakeRepository implements AppRepository {
 
   toggleHabit(date: string, habitId: number, _completedAt?: string): void {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit) {
+    if (!habit || !isHabitActiveOnDate(habit, date)) {
       return;
     }
 
@@ -294,7 +294,7 @@ class FakeRepository implements AppRepository {
     completedCount: number
   ): void {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit || !isHabitScheduledForDate(habit, date)) {
+    if (!habit || !isHabitActiveOnDate(habit, date)) {
       return;
     }
 
@@ -311,7 +311,7 @@ class FakeRepository implements AppRepository {
     _completedAt?: string
   ): void {
     const habit = this.habits.find((item) => item.id === habitId);
-    if (!habit) {
+    if (!habit || !isHabitActiveOnDate(habit, date)) {
       return;
     }
 
@@ -718,6 +718,24 @@ class FakeRepository implements AppRepository {
     const habit = this.habits.find((item) => item.id === habitId);
     if (habit) {
       habit.selectedWeekdays = selectedWeekdays;
+    }
+  }
+
+  pauseHabit(habitId: number, pausedAt: string): void {
+    const habit = this.habits.find(
+      (item) => item.id === habitId && !item.isArchived
+    );
+    if (habit) {
+      habit.pausedAt = pausedAt;
+    }
+  }
+
+  resumeHabit(habitId: number): void {
+    const habit = this.habits.find(
+      (item) => item.id === habitId && !item.isArchived
+    );
+    if (habit) {
+      habit.pausedAt = null;
     }
   }
 
@@ -1337,6 +1355,89 @@ describe("habit categories", () => {
     expect(repository.habits.find((habit) => habit.id === 2)).toMatchObject({
       isArchived: false,
       sortOrder: 1,
+    });
+  });
+});
+
+describe("habit pause", () => {
+  it("pauses a habit, clears today's status, and excludes it from today", () => {
+    const repository = new FakeRepository();
+    repository.setStatusForDate("2026-03-08", new Map([[1, true]]));
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.pauseHabit(1);
+
+    expect(repository.habits[0]?.pausedAt).toBe("2026-03-08T09:00:00.000Z");
+    expect(todayState.habits).toStrictEqual([]);
+    expect(
+      repository.getHabitPeriodStatusesEndingInRange("2026-03-08", "2026-03-08")
+    ).toStrictEqual([]);
+  });
+
+  it("resumes a paused scheduled habit and recreates today's status row", () => {
+    const repository = new FakeRepository();
+    const [habit] = repository.habits;
+    if (!habit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...habit,
+      pausedAt: "2026-03-08T08:00:00.000Z",
+    };
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.resumeHabit(1);
+
+    expect(repository.habits[0]?.pausedAt).toBeNull();
+    expect(todayState.habits.map((item) => item.id)).toStrictEqual([1]);
+    expect(todayState.habits[0]).toMatchObject({
+      completed: false,
+      completedCount: 0,
+    });
+  });
+
+  it("keeps paused closed days neutral before resuming", () => {
+    const repository = new FakeRepository();
+    const [habit] = repository.habits;
+    if (!habit) {
+      throw new Error("Expected a seeded habit.");
+    }
+
+    repository.habits[0] = {
+      ...habit,
+      pausedAt: "2026-03-06T09:00:00.000Z",
+    };
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 4,
+      currentStreak: 4,
+      lastEvaluatedDate: "2026-03-05",
+    };
+    repository.habitStreakStates.set(1, {
+      bestStreak: 4,
+      currentStreak: 4,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const todayState = service.resumeHabit(1);
+
+    expect(repository.streak.currentStreak).toBe(4);
+    expect(repository.dailySummaries.get("2026-03-06")).toBeUndefined();
+    expect(todayState.habitStreaks?.[1]).toStrictEqual({
+      bestStreak: 4,
+      currentStreak: 4,
     });
   });
 });

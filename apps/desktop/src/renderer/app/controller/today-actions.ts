@@ -300,6 +300,9 @@ export function createTodayActions({
     async handleRenameHabit(habitId: number, name: string) {
       await applyTodayMutation(habitsClient.renameHabit(habitId, name));
     },
+    async handlePauseHabit(habitId: number) {
+      await applyTodayMutation(habitsClient.pauseHabit(habitId));
+    },
     async handleRenameWindDownAction(actionId: number, name: string) {
       await applyTodayMutation(
         habitsClient.renameWindDownAction(actionId, name)
@@ -385,6 +388,9 @@ export function createTodayActions({
     },
     async handleUnarchiveHabit(habitId: number) {
       await applyTodayMutation(habitsClient.unarchiveHabit(habitId));
+    },
+    async handleResumeHabit(habitId: number) {
+      await applyTodayMutation(habitsClient.resumeHabit(habitId));
     },
     async handleUpsertFocusQuotaGoal(
       frequency: GoalFrequency,

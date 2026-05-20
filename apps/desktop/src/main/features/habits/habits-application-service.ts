@@ -120,6 +120,8 @@ export interface HabitsService {
   toggleHabit(habitId: number): HabitStatusPatch;
   incrementHabitProgress(habitId: number): HabitStatusPatch;
   decrementHabitProgress(habitId: number): HabitStatusPatch;
+  pauseHabit(habitId: number): TodayState;
+  resumeHabit(habitId: number): TodayState;
   getFocusSessions(limit?: number): FocusSession[];
   recordFocusSession(input: CreateFocusSessionInput): FocusSession;
   getPersistedFocusTimerState(): PersistedFocusTimerState | null;
@@ -479,6 +481,26 @@ export class HabitsApplicationService implements HabitsService {
         );
       }
     );
+  }
+
+  pauseHabit(habitId: number): TodayState {
+    return this.inInitializedTransaction("pauseHabit", () => {
+      this.syncRollingState();
+      const today = this.getTodayKey();
+      this.repository.pauseHabit(habitId, this.clock.now().toISOString());
+      this.repository.removeStatusRowsForDate(today, habitId);
+      return this.rebuildCurrentTodayState();
+    });
+  }
+
+  resumeHabit(habitId: number): TodayState {
+    return this.inInitializedTransaction("resumeHabit", () => {
+      this.syncRollingState();
+      const today = this.getTodayKey();
+      this.repository.resumeHabit(habitId);
+      this.repository.ensureStatusRow(today, habitId);
+      return this.rebuildCurrentTodayState();
+    });
   }
 
   getFocusSessions(limit?: number): FocusSession[] {

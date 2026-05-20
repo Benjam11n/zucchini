@@ -1,4 +1,11 @@
-import { ArrowDown, ArrowUp, Archive, GripVertical } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Archive,
+  GripVertical,
+  Pause,
+  Play,
+} from "lucide-react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import { CollapsibleTrigger } from "@/renderer/shared/components/ui/collapsible";
@@ -18,8 +25,14 @@ export function HabitRowHeader({
   onArchiveHabit,
   onDragEnd,
   onDragStart,
+  onPauseHabit,
   onReorderHabits,
+  onResumeHabit,
 }: HabitRowHeaderProps) {
+  const pauseActionLabel = habit.pausedAt
+    ? `Resume ${habit.name}`
+    : `Pause ${habit.name}`;
+
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-2.5 sm:px-3 sm:py-3">
       <CollapsibleTrigger asChild>
@@ -58,6 +71,14 @@ export function HabitRowHeader({
               <span className="min-w-0 truncate text-xs text-muted-foreground">
                 {getHabitCadenceSummary(habit)}
               </span>
+              {habit.pausedAt ? (
+                <span
+                  className="shrink-0 rounded-full border border-border/70 px-2 py-0.5 text-[0.68rem] font-medium text-muted-foreground"
+                  title="Paused habits do not count as missed and do not affect streaks."
+                >
+                  Paused
+                </span>
+              ) : null}
             </div>
           </div>
         </button>
@@ -103,6 +124,27 @@ export function HabitRowHeader({
           variant="ghost"
         >
           <ArrowDown className="size-3.5" />
+        </Button>
+        <Button
+          aria-label={pauseActionLabel}
+          onClick={async () => {
+            if (habit.pausedAt) {
+              await onResumeHabit(habit.id);
+              return;
+            }
+
+            await onPauseHabit(habit.id);
+          }}
+          size="icon-sm"
+          title="Paused habits do not count as missed and do not affect streaks."
+          type="button"
+          variant="ghost"
+        >
+          {habit.pausedAt ? (
+            <Play className="size-3.5" />
+          ) : (
+            <Pause className="size-3.5" />
+          )}
         </Button>
         <ConfirmIconButton
           confirmLabel={`Confirm archive ${habit.name}`}

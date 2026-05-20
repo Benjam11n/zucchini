@@ -155,6 +155,11 @@ export const habitsClient = {
     command({
       type: "today.moveUnfinishedToTomorrow",
     }),
+  pauseHabit: (habitId: number) =>
+    command({
+      payload: { habitId },
+      type: "habit.pause",
+    }),
   recordFocusSession: (input: CreateFocusSessionInput) =>
     command({
       payload: input,
@@ -174,6 +179,11 @@ export const habitsClient = {
     command({
       payload: { habitIds },
       type: "habit.reorder",
+    }),
+  resumeHabit: (habitId: number) =>
+    command({
+      payload: { habitId },
+      type: "habit.resume",
     }),
   saveFocusTimerState: (state: PersistedFocusTimerState) =>
     command({

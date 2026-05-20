@@ -5,7 +5,7 @@
  * pure utilities for normalizing categories/frequencies and calculating ring
  * progress.
  */
-import { parseDateKey } from "@/shared/utils/date";
+import { parseDateKey, toDateKeyInTimeZone } from "@/shared/utils/date";
 
 // Category slots are fixed product-defined identities. Users can customize
 // the display label, color, and icon for each slot.
@@ -95,6 +95,7 @@ export interface Habit {
   id: number;
   name: string;
   frequency: HabitFrequency;
+  pausedAt?: string | null;
   targetCount?: number;
   selectedWeekdays?: HabitWeekday[] | null;
   sortOrder: number;
@@ -191,6 +192,27 @@ export function isDailyHabit(habit: Pick<Habit, "frequency">): boolean {
   return habit.frequency === "daily";
 }
 
+export function isHabitPaused(habit: Pick<Habit, "pausedAt">): boolean {
+  return habit.pausedAt !== null && habit.pausedAt !== undefined;
+}
+
+function getHabitPauseDateKey(
+  habit: Pick<Habit, "pausedAt">,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+): string | null {
+  const { pausedAt } = habit;
+  if (pausedAt === null || pausedAt === undefined) {
+    return null;
+  }
+
+  const pausedDate = new Date(pausedAt);
+  if (Number.isNaN(pausedDate.getTime())) {
+    return null;
+  }
+
+  return toDateKeyInTimeZone(pausedDate, timezone);
+}
+
 function isHabitScheduledForWeekday(
   habit: Pick<Habit, "frequency" | "selectedWeekdays">,
   weekday: number
@@ -198,7 +220,7 @@ function isHabitScheduledForWeekday(
   return getEffectiveHabitWeekdays(habit).includes(weekday as HabitWeekday);
 }
 
-export function isHabitScheduledForDate(
+function isHabitScheduledForDate(
   habit: Pick<Habit, "frequency" | "selectedWeekdays">,
   dateKey: string
 ): boolean {
@@ -207,6 +229,21 @@ export function isHabitScheduledForDate(
   }
 
   return isHabitScheduledForWeekday(habit, parseDateKey(dateKey).getDay());
+}
+
+export function isHabitActiveOnDate(
+  habit: Pick<Habit, "frequency" | "pausedAt" | "selectedWeekdays">,
+  dateKey: string,
+  timezone?: string
+): boolean {
+  if (isHabitPaused(habit)) {
+    const pauseDateKey = getHabitPauseDateKey(habit, timezone);
+    if (pauseDateKey === null || dateKey >= pauseDateKey) {
+      return false;
+    }
+  }
+
+  return isHabitScheduledForDate(habit, dateKey);
 }
 
 export function getHabitCategoryProgress(

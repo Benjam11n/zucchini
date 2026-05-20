@@ -207,8 +207,15 @@ describe("today page", () => {
 
   function renderTodayPage(
     todayState: TodayState = state,
-    historySummary: HistorySummaryDay[] = history
+    historySummary: HistorySummaryDay[] = history,
+    options: {
+      managedHabits?: Habit[];
+      onResumeHabit?: (habitId: number) => Promise<void>;
+    } = {}
   ) {
+    const optionalProps = options.onResumeHabit
+      ? { onResumeHabit: options.onResumeHabit }
+      : {};
     const handlers = {
       handleDecrementHabitProgress: vi.fn(),
       handleIncrementHabitProgress: vi.fn(),
@@ -220,7 +227,7 @@ describe("today page", () => {
       <TodayPage
         hasLoadedHistorySummary
         historySummary={historySummary}
-        managedHabits={managedHabits}
+        managedHabits={options.managedHabits ?? managedHabits}
         onArchiveHabit={vi.fn(() => Promise.resolve())}
         onCreateHabit={vi.fn(() => Promise.resolve())}
         onRenameHabit={vi.fn(() => Promise.resolve())}
@@ -235,6 +242,7 @@ describe("today page", () => {
         onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
         onUpdateHabitTargetCount={vi.fn(() => Promise.resolve())}
         onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
+        {...optionalProps}
       />
     );
 
@@ -255,6 +263,36 @@ describe("today page", () => {
     expect(screen.getByText("Manage habits")).toBeInTheDocument();
     expect(screen.getByText("Add a habit")).toBeInTheDocument();
     expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
+  });
+
+  it("shows paused habits separately and resumes them from today", async () => {
+    const onResumeHabit = vi.fn(() => Promise.resolve());
+    renderTodayPage(state, history, {
+      managedHabits: [
+        ...managedHabits,
+        {
+          category: "fitness",
+          createdAt: "2026-03-01T00:00:00.000Z",
+          frequency: "daily",
+          id: 2,
+          isArchived: false,
+          name: "Morning run",
+          pausedAt: "2026-03-13T08:00:00.000Z",
+          sortOrder: 1,
+        },
+      ],
+      onResumeHabit,
+    });
+
+    expect(screen.getByRole("button", { name: /paused/i })).toBeInTheDocument();
+    expect(screen.queryByText("Morning run")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /paused/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Resume" }));
+
+    await waitFor(() => {
+      expect(onResumeHabit).toHaveBeenCalledWith(2);
+    });
   });
 
   it("passes only historical summary days to the top carousel", () => {

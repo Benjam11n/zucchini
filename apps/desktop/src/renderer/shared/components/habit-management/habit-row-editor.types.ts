@@ -13,6 +13,9 @@ type HabitRowDragState = {
   position: "after" | "before";
 } | null;
 
+type HabitPauseAction = NonNullable<HabitManagementCardProps["onPauseHabit"]>;
+type HabitResumeAction = NonNullable<HabitManagementCardProps["onResumeHabit"]>;
+
 export interface HabitRowEditorProps extends Pick<
   HabitManagementCardProps,
   | "onArchiveHabit"
@@ -33,6 +36,8 @@ export interface HabitRowEditorProps extends Pick<
   onDragStart: () => void;
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onExpandedChange: (open: boolean) => void;
+  onPauseHabit: HabitPauseAction;
+  onResumeHabit: HabitResumeAction;
 }
 
 export interface HabitNameFieldProps {
@@ -51,9 +56,11 @@ export interface HabitRowHeaderProps {
   index: number;
   isExpanded: boolean;
   onArchiveHabit: HabitManagementCardProps["onArchiveHabit"];
+  onPauseHabit: HabitPauseAction;
   onDragEnd: () => void;
   onDragStart: () => void;
   onReorderHabits: HabitManagementCardProps["onReorderHabits"];
+  onResumeHabit: HabitResumeAction;
 }
 
 export interface HabitDetailsFormProps extends Pick<

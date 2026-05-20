@@ -194,6 +194,28 @@ export class SqliteHabitsRepository {
     });
   }
 
+  pauseHabit(habitId: number, pausedAt: string): void {
+    this.client.run("pauseHabit", () => {
+      this.client
+        .getDrizzle()
+        .update(habits)
+        .set({ pausedAt })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
+    });
+  }
+
+  resumeHabit(habitId: number): void {
+    this.client.run("resumeHabit", () => {
+      this.client
+        .getDrizzle()
+        .update(habits)
+        .set({ pausedAt: null })
+        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
+    });
+  }
+
   archiveHabit(habitId: number): void {
     this.client.run("archiveHabit", () => {
       this.client

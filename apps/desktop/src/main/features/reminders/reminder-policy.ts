@@ -5,6 +5,7 @@
  * the current time, habit period boundaries, and completion state.
  */
 import type { TodayState } from "@/shared/contracts/today-state";
+import { isHabitPaused } from "@/shared/domain/habit";
 import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 
 export function hasIncompleteHabitsClosingToday(today: TodayState): boolean {
@@ -12,7 +13,9 @@ export function hasIncompleteHabitsClosingToday(today: TodayState): boolean {
     today.habits.length > 0 &&
     today.habits.some(
       (habit) =>
-        !habit.completed && isLastDayOfHabitPeriod(habit.frequency, today.date)
+        !isHabitPaused(habit) &&
+        !habit.completed &&
+        isLastDayOfHabitPeriod(habit.frequency, today.date)
     )
   );
 }

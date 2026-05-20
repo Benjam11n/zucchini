@@ -171,8 +171,10 @@ export function SettingsPage(props: SettingsPageProps) {
                 onArchiveHabit={props.onArchiveHabit}
                 onArchiveFocusQuotaGoal={props.onArchiveFocusQuotaGoal}
                 onCreateHabit={props.onCreateHabit}
+                onPauseHabit={props.onPauseHabit}
                 onRenameHabit={props.onRenameHabit}
                 onReorderHabits={props.onReorderHabits}
+                onResumeHabit={props.onResumeHabit}
                 onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
                 onUnarchiveHabit={props.onUnarchiveHabit}
                 onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}

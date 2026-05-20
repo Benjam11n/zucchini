@@ -95,6 +95,7 @@ function renderHabitRowEditor(
       index={1}
       isExpanded={false}
       onArchiveHabit={vi.fn().mockResolvedValue(42)}
+      onPauseHabit={vi.fn().mockResolvedValue(42)}
       onDragEnd={vi.fn()}
       onDragOver={vi.fn()}
       onDragStart={vi.fn()}
@@ -102,6 +103,7 @@ function renderHabitRowEditor(
       onExpandedChange={vi.fn()}
       onRenameHabit={vi.fn().mockResolvedValue(42)}
       onReorderHabits={vi.fn().mockResolvedValue(42)}
+      onResumeHabit={vi.fn().mockResolvedValue(42)}
       onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
       onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
       onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
@@ -146,8 +148,10 @@ describe("habit row editor", () => {
 
   it("forwards category, frequency, weekday, and archive actions when expanded", async () => {
     const onArchiveHabit = vi.fn().mockResolvedValue(42);
+    const onPauseHabit = vi.fn().mockResolvedValue(42);
     const onRenameHabit = vi.fn().mockResolvedValue(42);
     const onReorderHabits = vi.fn().mockResolvedValue(42);
+    const onResumeHabit = vi.fn().mockResolvedValue(42);
     const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
     const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
     const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
@@ -166,6 +170,7 @@ describe("habit row editor", () => {
         index={0}
         isExpanded
         onArchiveHabit={onArchiveHabit}
+        onPauseHabit={onPauseHabit}
         onDragEnd={vi.fn()}
         onDragOver={vi.fn()}
         onDragStart={vi.fn()}
@@ -173,6 +178,7 @@ describe("habit row editor", () => {
         onExpandedChange={vi.fn()}
         onRenameHabit={onRenameHabit}
         onReorderHabits={onReorderHabits}
+        onResumeHabit={onResumeHabit}
         onUpdateHabitCategory={onUpdateHabitCategory}
         onUpdateHabitFrequency={onUpdateHabitFrequency}
         onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
@@ -250,6 +256,7 @@ describe("habit row editor", () => {
         index={1}
         isExpanded={false}
         onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onPauseHabit={vi.fn().mockResolvedValue(42)}
         onDragEnd={vi.fn()}
         onDragOver={vi.fn()}
         onDragStart={vi.fn()}
@@ -257,6 +264,7 @@ describe("habit row editor", () => {
         onExpandedChange={vi.fn()}
         onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={onReorderHabits}
+        onResumeHabit={vi.fn().mockResolvedValue(42)}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
         onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
         onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
@@ -279,6 +287,36 @@ describe("habit row editor", () => {
     ).toStrictEqual([1, 3, 2]);
   });
 
+  it("pauses and resumes habits from the row header", async () => {
+    const onPauseHabit = vi.fn().mockResolvedValue(42);
+    const onResumeHabit = vi.fn().mockResolvedValue(42);
+
+    const { unmount } = renderHabitRowEditor({
+      habit: createHabit(2),
+      onPauseHabit,
+      onResumeHabit,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause Habit 2" }));
+
+    await waitFor(() => {
+      expect(onPauseHabit).toHaveBeenCalledWith(2);
+    });
+
+    unmount();
+    renderHabitRowEditor({
+      habit: createHabit(2, { pausedAt: "2026-03-08T09:00:00.000Z" }),
+      onPauseHabit,
+      onResumeHabit,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Resume Habit 2" }));
+
+    await waitFor(() => {
+      expect(onResumeHabit).toHaveBeenCalledWith(2);
+    });
+  });
+
   it("disables the upward reorder control for the first habit", () => {
     render(
       <HabitRowEditor
@@ -288,6 +326,7 @@ describe("habit row editor", () => {
         index={0}
         isExpanded={false}
         onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onPauseHabit={vi.fn().mockResolvedValue(42)}
         onDragEnd={vi.fn()}
         onDragOver={vi.fn()}
         onDragStart={vi.fn()}
@@ -295,6 +334,7 @@ describe("habit row editor", () => {
         onExpandedChange={vi.fn()}
         onRenameHabit={vi.fn().mockResolvedValue(42)}
         onReorderHabits={vi.fn().mockResolvedValue(42)}
+        onResumeHabit={vi.fn().mockResolvedValue(42)}
         onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
         onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
         onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}

@@ -407,6 +407,9 @@ const commandSchemas = [
     })
     .strict(),
   z
+    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.pause") })
+    .strict(),
+  z
     .object({
       payload: z
         .object({ habitId: habitIdSchema, name: habitNameSchema })
@@ -419,6 +422,9 @@ const commandSchemas = [
       payload: z.object({ habitIds: reorderHabitIdsSchema }).strict(),
       type: z.literal("habit.reorder"),
     })
+    .strict(),
+  z
+    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.resume") })
     .strict(),
   z
     .object({ payload: habitIdPayloadSchema, type: z.literal("habit.toggle") })

@@ -55,6 +55,11 @@ describeWithSqlite("runMigrations", () => {
     const habitPeriodStatusColumns = sqlite
       .prepare(`pragma table_info("habit_period_status")`)
       .all() as { name: string }[];
+    const habitsColumns = sqlite
+      .prepare(`pragma table_info("habits")`)
+      .all() as {
+      name: string;
+    }[];
     const settingsColumns = sqlite
       .prepare(`pragma table_info("settings")`)
       .all() as { name: string }[];
@@ -68,6 +73,9 @@ describeWithSqlite("runMigrations", () => {
     expect(
       habitPeriodStatusColumns.some((column) => column.name === "completed_at")
     ).toBe(true);
+    expect(habitsColumns.some((column) => column.name === "paused_at")).toBe(
+      true
+    );
     expect(
       settingsColumns.some((column) => column.name === "auto_backup_cadence")
     ).toBe(true);
@@ -94,6 +102,18 @@ describeWithSqlite("runMigrations", () => {
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
         "started_at" text NOT NULL,
         "timer_session_id" text
+      );
+
+      CREATE TABLE "habits" (
+        "archived_at" text,
+        "category" text DEFAULT 'productivity' NOT NULL,
+        "created_at" text NOT NULL,
+        "frequency" text DEFAULT 'daily' NOT NULL,
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "name" text NOT NULL,
+        "selected_weekdays" text,
+        "sort_order" integer DEFAULT 0 NOT NULL,
+        "target_count" integer DEFAULT 1 NOT NULL
       );
 
       CREATE TABLE "habit_period_status" (

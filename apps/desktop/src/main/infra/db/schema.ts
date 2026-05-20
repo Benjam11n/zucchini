@@ -29,6 +29,7 @@ export const habits = sqliteTable("habits", {
     .notNull()
     .default(false),
   name: text().notNull(),
+  pausedAt: text("paused_at"),
   selectedWeekdays: text("selected_weekdays"),
   sortOrder: integer("sort_order").notNull(),
   targetCount: integer("target_count").notNull().default(1),

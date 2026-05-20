@@ -480,6 +480,14 @@ export class SqliteAppRepository implements AppRepository {
     this.habitsRepository.updateHabitWeekdays(habitId, selectedWeekdays);
   }
 
+  pauseHabit(habitId: number, pausedAt: string): void {
+    this.habitsRepository.pauseHabit(habitId, pausedAt);
+  }
+
+  resumeHabit(habitId: number): void {
+    this.habitsRepository.resumeHabit(habitId);
+  }
+
   upsertFocusQuotaGoal(
     frequency: GoalFrequency,
     targetMinutes: number,

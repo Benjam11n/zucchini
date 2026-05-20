@@ -155,6 +155,31 @@ describe("reminder scheduler", () => {
     });
   });
 
+  it("does not remind for paused incomplete habits", () => {
+    withFakeTime("2026-01-15T13:30:00.000Z", () => {
+      let runtimeState = { ...DEFAULT_RUNTIME_STATE };
+      const scheduler = createTestReminderScheduler({
+        getTodayState: () =>
+          buildTodayState([
+            {
+              ...buildHabit(false),
+              pausedAt: "2026-01-15T09:00:00.000Z",
+            },
+          ]),
+        loadState: () => runtimeState,
+        saveState: (nextState) => {
+          runtimeState = { ...nextState };
+        },
+      });
+
+      scheduler.schedule(DEFAULT_SETTINGS);
+
+      vi.advanceTimersByTime(30 * 60 * 1000);
+      expect(notificationState.incompleteReminderCount).toBe(0);
+      expect(runtimeState.lastReminderSentAt).toBeNull();
+    });
+  });
+
   it("shows a catch-up reminder when the app reopens after reminder time", () => {
     withFakeTime("2026-01-15T20:45:00.000Z", () => {
       let runtimeState = { ...DEFAULT_RUNTIME_STATE };

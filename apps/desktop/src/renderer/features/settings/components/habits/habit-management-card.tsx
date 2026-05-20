@@ -20,8 +20,10 @@ export function HabitManagementCard({
   onArchiveHabit,
   onArchiveFocusQuotaGoal,
   onCreateHabit,
+  onPauseHabit,
   onRenameHabit,
   onReorderHabits,
+  onResumeHabit,
   onUpsertFocusQuotaGoal,
   onUnarchiveHabit,
   onUnarchiveFocusQuotaGoal,
@@ -71,6 +73,8 @@ export function HabitManagementCard({
   const optionalProps = {
     ...(focusQuotaGoals.length > 0 ? { focusQuotaGoals } : {}),
     ...(onArchiveFocusQuotaGoal ? { onArchiveFocusQuotaGoal } : {}),
+    ...(onPauseHabit ? { onPauseHabit } : {}),
+    ...(onResumeHabit ? { onResumeHabit } : {}),
     ...(onUpsertFocusQuotaGoal ? { onUpsertFocusQuotaGoal } : {}),
   };
 
