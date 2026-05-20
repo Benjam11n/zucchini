@@ -37,9 +37,17 @@ export interface DataManagementRepositoryPort {
   exportBackup(destinationPath: string): Promise<void>;
   exportCsvData(destinationPath: string): void;
   getDatabasePath(): string;
+  getDatabasePreview(sourcePath: string): BackupDatabasePreview;
   replaceDatabase(sourcePath: string): void;
   resetDatabase(): void;
   validateDatabase(sourcePath: string): void;
+}
+
+export interface BackupDatabasePreview {
+  completedHabitCount: number;
+  focusSessionCount: number;
+  habitCount: number;
+  latestActivityDate: string | null;
 }
 
 export interface DataManagementServicePort {

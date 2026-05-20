@@ -96,12 +96,28 @@ function createMockDatabaseConstructor({
   close = vi.fn(),
   columnRowsByTable = {},
   pragma = vi.fn(() => "ok"),
+  previewValues = {
+    completedHabitCount: 4,
+    focusSessionCount: 2,
+    habitCount: 3,
+    latestFocusDate: "2026-03-29",
+    latestHabitCompletedAt: "2026-03-30T14:15:16.789Z",
+    latestHabitPeriodStart: "2026-03-28",
+  },
   rowsByTable = {},
   tableRows = DEFAULT_TABLE_ROWS,
 }: {
   close?: ReturnType<typeof vi.fn>;
   columnRowsByTable?: Record<string, { name: string }[]>;
   pragma?: ReturnType<typeof vi.fn>;
+  previewValues?: {
+    completedHabitCount: number;
+    focusSessionCount: number;
+    habitCount: number;
+    latestFocusDate: null | string;
+    latestHabitCompletedAt: null | string;
+    latestHabitPeriodStart: null | string;
+  };
   rowsByTable?: Record<string, Record<string, unknown>[]>;
   tableRows?: { name: string }[];
 }) {
@@ -128,6 +144,39 @@ function createMockDatabaseConstructor({
               ? (rowsByTable[selectedTableName] ?? [])
               : all();
           }),
+      get: vi.fn(() => {
+        if (statement.includes("count(*)") && statement.includes("habits")) {
+          return { count: previewValues.habitCount };
+        }
+
+        if (
+          statement.includes("count(*)") &&
+          statement.includes("focus_sessions")
+        ) {
+          return { count: previewValues.focusSessionCount };
+        }
+
+        if (
+          statement.includes("count(*)") &&
+          statement.includes("habit_period_status")
+        ) {
+          return { count: previewValues.completedHabitCount };
+        }
+
+        if (statement.includes("max(completed_at)")) {
+          return { value: previewValues.latestHabitCompletedAt };
+        }
+
+        if (statement.includes("max(period_start)")) {
+          return { value: previewValues.latestHabitPeriodStart };
+        }
+
+        if (statement.includes("max(completed_date)")) {
+          return { value: previewValues.latestFocusDate };
+        }
+
+        return {};
+      }),
     })),
   };
 
@@ -251,6 +300,74 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
     expect(() => client.validateDatabase("/tmp/backup.db")).toThrow(
       "Backup is missing the Zucchini settings.timezone column"
     );
+  });
+});
+
+describe("SqliteDatabaseClient.getDatabasePreview()", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  it("returns backup counts and latest activity date", async () => {
+    const sqliteMock = createMockDatabaseConstructor({
+      previewValues: {
+        completedHabitCount: 9,
+        focusSessionCount: 5,
+        habitCount: 7,
+        latestFocusDate: "2026-03-29",
+        latestHabitCompletedAt: "2026-03-30T14:15:16.789Z",
+        latestHabitPeriodStart: "2026-03-28",
+      },
+    });
+    vi.doMock("better-sqlite3", () => sqliteMock);
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: "/tmp/live.db",
+    });
+
+    expect(client.getDatabasePreview("/tmp/backup.db")).toStrictEqual({
+      completedHabitCount: 9,
+      focusSessionCount: 5,
+      habitCount: 7,
+      latestActivityDate: "2026-03-30",
+    });
+    expect(sqliteMock.default.prototype.prepare).toHaveBeenCalledWith(
+      "select count(*) as count from habit_period_status where completed = 1"
+    );
+  });
+
+  it("previews legacy backups without habit completion timestamps", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        columnRowsByTable: {
+          habit_period_status: DEFAULT_COLUMN_ROWS.filter(
+            ({ name }) => name !== "completed_at"
+          ),
+        },
+        previewValues: {
+          completedHabitCount: 2,
+          focusSessionCount: 1,
+          habitCount: 3,
+          latestFocusDate: "2026-03-27",
+          latestHabitCompletedAt: "2026-03-30T14:15:16.789Z",
+          latestHabitPeriodStart: "2026-03-28",
+        },
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: "/tmp/live.db",
+    });
+
+    expect(client.getDatabasePreview("/tmp/backup.db")).toStrictEqual({
+      completedHabitCount: 2,
+      focusSessionCount: 1,
+      habitCount: 3,
+      latestActivityDate: "2026-03-28",
+    });
   });
 });
 

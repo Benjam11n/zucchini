@@ -49,6 +49,7 @@ export const focusTimerCycleIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerInstanceIdSchema = z.string().trim().min(1).max(120);
 export const focusTimerLeaseTtlSchema = z.number().int().min(250).max(10_000);
 export const focusWidgetSizeSchema = z.number().int().min(32).max(640);
+export const backupRestoreIdSchema = z.string().trim().min(1).max(120);
 const focusSessionEntryKindSchema = z.enum(["completed", "partial"]);
 const focusTimerPhaseSchema = z.enum(["focus", "break"]);
 const focusTimerStatusSchema = z.enum(["idle", "running", "paused"]);

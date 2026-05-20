@@ -12,6 +12,7 @@ import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
 import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
 import {
   appSettingsSchema,
+  backupRestoreIdSchema,
   createFocusSessionInputSchema,
   focusSessionLimitSchema,
   focusTimerCycleIdSchema,
@@ -83,6 +84,11 @@ export const validateFocusSessionLimit = createValidator(
 export const validateFocusTimerCycleId = createValidator(
   "focus timer cycle id",
   focusTimerCycleIdSchema
+);
+
+export const validateBackupRestoreId = createValidator(
+  "backup restore id",
+  backupRestoreIdSchema
 );
 
 export const validateFocusTimerInstanceId = createValidator(

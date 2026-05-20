@@ -47,7 +47,21 @@ export interface DesktopNotificationStatus {
   reason: DesktopNotificationReason;
 }
 
+export interface BackupRestorePreview {
+  completedHabitCount: number;
+  fileName: string;
+  filePath: string;
+  focusSessionCount: number;
+  habitCount: number;
+  latestActivityDate: string | null;
+  modifiedAt: string;
+  restoreId: string;
+  sizeBytes: number;
+  source: "auto" | "file";
+}
+
 export interface HabitsApi {
+  chooseBackupForRestore: () => Promise<BackupRestorePreview | null>;
   command: <C extends HabitCommand>(command: C) => Promise<ResultForCommand<C>>;
   clearData: () => Promise<boolean>;
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
@@ -59,6 +73,7 @@ export interface HabitsApi {
   exportCsvData: () => Promise<string | null>;
   getDesktopNotificationStatus: () => Promise<DesktopNotificationStatus>;
   getFocusTimerShortcutStatus: () => Promise<FocusTimerShortcutStatus>;
+  getLatestAutoBackupRestorePreview: () => Promise<BackupRestorePreview | null>;
   importBackup: () => Promise<boolean>;
   onFocusTimerActionRequested: (
     listener: (request: FocusTimerActionRequest) => void
@@ -77,6 +92,7 @@ export interface HabitsApi {
   openAutoBackupFolder: () => Promise<string>;
   query: <Q extends HabitQuery>(query: Q) => Promise<ResultForQuery<Q>>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
+  restoreBackup: (restoreId: string) => Promise<boolean>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;
   showFocusWidget: () => Promise<void>;
   showMainWindow: () => Promise<void>;

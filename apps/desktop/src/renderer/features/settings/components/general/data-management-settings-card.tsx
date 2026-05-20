@@ -4,8 +4,8 @@ import {
   FileSpreadsheet,
   FolderOpen,
   HardDriveDownload,
+  RotateCcw,
   Trash2,
-  Upload,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
+import { Input } from "@/renderer/shared/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -28,13 +29,172 @@ import {
   ItemGroup,
 } from "@/renderer/shared/components/ui/item";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
+import type { BackupRestorePreview } from "@/shared/contracts/habits-api";
 import type { AppSettings, AutoBackupCadence } from "@/shared/domain/settings";
 
-type DataAction = "clear" | "export" | "exportCsv" | "import" | "open" | null;
+type DataAction =
+  | "chooseRestore"
+  | "clear"
+  | "export"
+  | "exportCsv"
+  | "open"
+  | "restore"
+  | null;
 type AutoBackupAction = "openAutoFolder";
 
 function getPathLabel(filePath: string): string {
   return filePath.split(/[/\\]/).at(-1) ?? filePath;
+}
+
+function formatBackupSize(sizeBytes: number): string {
+  if (sizeBytes < 1024) {
+    return `${sizeBytes} B`;
+  }
+
+  if (sizeBytes < 1024 * 1024) {
+    return `${(sizeBytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatBackupDate(value: string | null): string {
+  if (!value) {
+    return "None";
+  }
+
+  return new Date(value).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function RestoreBackupDialog({
+  activeAction,
+  confirmationText,
+  onConfirmationTextChange,
+  onOpenChange,
+  onRestore,
+  open,
+  preview,
+}: {
+  activeAction: DataAction;
+  confirmationText: string;
+  onConfirmationTextChange: (value: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onRestore: () => Promise<void>;
+  open: boolean;
+  preview: BackupRestorePreview | null;
+}) {
+  const canRestore =
+    confirmationText === "RESTORE" && activeAction !== "restore";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Restore backup</DialogTitle>
+          <DialogDescription>
+            Review this backup before replacing current local data.
+          </DialogDescription>
+        </DialogHeader>
+
+        {preview ? (
+          <div className="grid gap-4 p-6">
+            <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">{preview.fileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {preview.source === "auto" ? "Auto backup" : "Chosen file"}
+                  </p>
+                </div>
+                <span className="rounded-md border border-border/70 px-2 py-1 text-xs text-muted-foreground">
+                  {formatBackupSize(preview.sizeBytes)}
+                </span>
+              </div>
+
+              <dl className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Modified</dt>
+                  <dd>{formatBackupDate(preview.modifiedAt)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">
+                    Latest activity
+                  </dt>
+                  <dd>{preview.latestActivityDate ?? "None"}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Habits</dt>
+                  <dd>{preview.habitCount}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">
+                    Focus sessions
+                  </dt>
+                  <dd>{preview.focusSessionCount}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">
+                    Completed entries
+                  </dt>
+                  <dd>{preview.completedHabitCount}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div
+              className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
+              role="alert"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">This replaces current local data.</p>
+                <p className="leading-snug text-destructive/85">
+                  Zucchini will create a restore point, replace your local
+                  database, then restart.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="restore-confirm">
+                Type RESTORE to continue
+              </label>
+              <Input
+                id="restore-confirm"
+                autoComplete="off"
+                onChange={(event) => {
+                  onConfirmationTextChange(event.currentTarget.value);
+                }}
+                value={confirmationText}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={!canRestore}
+            onClick={() => {
+              void onRestore();
+            }}
+          >
+            Restore and restart
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function DataActionItem({
@@ -239,8 +399,12 @@ export function DataManagementSettingsCard({
   const [activeAction, setActiveAction] = useState<DataAction>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasNoAutoBackup, setHasNoAutoBackup] = useState(false);
+  const [restoreConfirmationText, setRestoreConfirmationText] = useState("");
+  const [restorePreview, setRestorePreview] =
+    useState<BackupRestorePreview | null>(null);
 
   async function runAction(
     action: Exclude<DataAction, null>,
@@ -259,6 +423,21 @@ export function DataManagementSettingsCard({
       );
     } finally {
       setActiveAction(null);
+    }
+  }
+
+  function openRestoreDialog(preview: BackupRestorePreview) {
+    setRestorePreview(preview);
+    setRestoreConfirmationText("");
+    setIsRestoreDialogOpen(true);
+  }
+
+  function closeRestoreDialog(open: boolean) {
+    setIsRestoreDialogOpen(open);
+
+    if (!open) {
+      setRestorePreview(null);
+      setRestoreConfirmationText("");
     }
   }
 
@@ -335,12 +514,47 @@ export function DataManagementSettingsCard({
             />
 
             <DataActionItem
-              description="Restore from a backup file. Zucchini will restart after the import finishes."
+              description="Preview and restore the latest scheduled backup."
               disabled={activeAction !== null}
-              icon={Upload}
-              label="Import backup"
-              onClick={() => {
-                setIsImportDialogOpen(true);
+              icon={RotateCcw}
+              label="Restore latest"
+              onClick={async () => {
+                await runAction("chooseRestore", async () => {
+                  const preview =
+                    await window.habits.getLatestAutoBackupRestorePreview();
+                  setHasNoAutoBackup(preview === null);
+
+                  if (!preview) {
+                    setFeedbackMessage("No auto backup yet.");
+                    return;
+                  }
+
+                  openRestoreDialog(preview);
+                });
+              }}
+            />
+
+            {hasNoAutoBackup ? (
+              <div className="px-4 pb-2 text-xs text-muted-foreground">
+                No auto backup yet.
+              </div>
+            ) : null}
+
+            <DataActionItem
+              description="Choose any Zucchini backup file, preview it, then restore."
+              disabled={activeAction !== null}
+              icon={RotateCcw}
+              label="Choose backup"
+              onClick={async () => {
+                await runAction("chooseRestore", async () => {
+                  const preview = await window.habits.chooseBackupForRestore();
+
+                  if (!preview) {
+                    return;
+                  }
+
+                  openRestoreDialog(preview);
+                });
               }}
             />
 
@@ -370,25 +584,29 @@ export function DataManagementSettingsCard({
         </CardContent>
       </Card>
 
-      <DestructiveDataDialog
-        actionLabel="Import and restart"
-        description="Choose a backup file to replace your current local data. Zucchini will restart immediately after a successful import."
-        disabled={activeAction !== null}
-        onAction={async () => {
-          await runAction("import", async () => {
-            setIsImportDialogOpen(false);
-            const didImport = await window.habits.importBackup();
+      <RestoreBackupDialog
+        activeAction={activeAction}
+        confirmationText={restoreConfirmationText}
+        onConfirmationTextChange={setRestoreConfirmationText}
+        onOpenChange={closeRestoreDialog}
+        onRestore={async () => {
+          if (!restorePreview) {
+            return;
+          }
 
-            if (didImport) {
+          const { restoreId } = restorePreview;
+
+          await runAction("restore", async () => {
+            closeRestoreDialog(false);
+            const didRestore = await window.habits.restoreBackup(restoreId);
+
+            if (didRestore) {
               setFeedbackMessage("Restarting Zucchini with your backup.");
             }
           });
         }}
-        open={isImportDialogOpen}
-        title="Import backup"
-        warningBody="Importing a backup overwrites the current `zucchini.db` on this device."
-        warningTitle="This replaces your current local data."
-        onOpenChange={setIsImportDialogOpen}
+        open={isRestoreDialogOpen}
+        preview={restorePreview}
       />
 
       <DestructiveDataDialog

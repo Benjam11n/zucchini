@@ -2,6 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import type { BackupRestorePreview } from "@/shared/contracts/habits-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
@@ -20,18 +21,42 @@ const localStorageMock = {
   },
 };
 
-function setHabitsApi() {
+function createRestorePreview(
+  overrides: Partial<BackupRestorePreview> = {}
+): BackupRestorePreview {
+  return {
+    completedHabitCount: 12,
+    fileName: "zucchini-auto-20260330-120000.db",
+    filePath: "/tmp/Backups/zucchini-auto-20260330-120000.db",
+    focusSessionCount: 3,
+    habitCount: 5,
+    latestActivityDate: "2026-03-30",
+    modifiedAt: "2026-03-30T12:00:00.000Z",
+    restoreId: "restore-1",
+    sizeBytes: 2048,
+    source: "auto",
+    ...overrides,
+  };
+}
+
+function setHabitsApi(
+  overrides: Partial<ReturnType<typeof installMockHabitsApi>> = {}
+) {
   return installMockHabitsApi({
+    chooseBackupForRestore: vi.fn(() => Promise.resolve(null)),
     clearData: vi.fn(() => Promise.resolve(true)),
     exportBackup: vi.fn(() => Promise.resolve("/tmp/zucchini-backup.db")),
     exportCsvData: vi.fn(() =>
       Promise.resolve("/tmp/zucchini-csv-export-20260330")
     ),
+    getLatestAutoBackupRestorePreview: vi.fn(() => Promise.resolve(null)),
     importBackup: vi.fn(() => Promise.resolve(true)),
     openAutoBackupFolder: vi.fn(() => Promise.resolve("/tmp/Backups")),
     openDataFolder: vi.fn(() =>
       Promise.resolve("/Users/test/Library/Application Support/Zucchini")
     ),
+    restoreBackup: vi.fn(() => Promise.resolve(true)),
+    ...overrides,
   });
 }
 
@@ -107,24 +132,125 @@ describe("data management settings card", () => {
     });
   });
 
-  it("warns before importing a backup", async () => {
-    const habits = setHabitsApi();
+  it("opens the latest auto backup restore preview", async () => {
+    const habits = setHabitsApi({
+      getLatestAutoBackupRestorePreview: vi.fn(() =>
+        Promise.resolve(createRestorePreview())
+      ),
+    });
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /import backup/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
 
     await expect(
-      screen.findByText(/zucchini will restart immediately/i)
+      screen.findByText(/this replaces current local data/i)
     ).resolves.toBeInTheDocument();
+    expect(habits.getLatestAutoBackupRestorePreview).toHaveBeenCalledOnce();
+    expect(
+      screen.getByText(/zucchini-auto-20260330-120000\.db/i)
+    ).toBeInTheDocument();
+  });
+
+  it("refreshes the latest auto backup preview each time", async () => {
+    const habits = setHabitsApi({
+      getLatestAutoBackupRestorePreview: vi
+        .fn()
+        .mockResolvedValueOnce(createRestorePreview({ fileName: "old.db" }))
+        .mockResolvedValueOnce(createRestorePreview({ fileName: "new.db" })),
+    });
+
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+    await expect(screen.findByText(/old\.db/i)).resolves.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+
+    await expect(screen.findByText(/new\.db/i)).resolves.toBeInTheDocument();
+    expect(habits.getLatestAutoBackupRestorePreview).toHaveBeenCalledTimes(2);
+  });
+
+  it("chooses a backup file and opens the restore preview", async () => {
+    setHabitsApi({
+      chooseBackupForRestore: vi.fn(() =>
+        Promise.resolve(
+          createRestorePreview({
+            fileName: "manual-backup.db",
+            restoreId: "manual-restore",
+            source: "file",
+          })
+        )
+      ),
+    });
+
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: /choose backup/i }));
+
+    await expect(
+      screen.findByText(/manual-backup\.db/i)
+    ).resolves.toBeInTheDocument();
+    expect(screen.getByText(/chosen file/i)).toBeInTheDocument();
+  });
+
+  it("requires typed confirmation before restoring a backup", async () => {
+    const habits = setHabitsApi({
+      getLatestAutoBackupRestorePreview: vi.fn(() =>
+        Promise.resolve(createRestorePreview())
+      ),
+    });
+
+    renderCard();
 
     fireEvent.click(
-      screen.getByRole("button", { name: /import and restart/i })
+      await screen.findByRole("button", { name: /restore latest/i })
+    );
+    const restoreButton = await screen.findByRole("button", {
+      name: /restore and restart/i,
+    });
+
+    expect(restoreButton).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/type restore to continue/i), {
+      target: { value: "RESTORE" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /restore and restart/i })
     );
 
     await waitFor(() => {
-      expect(habits.importBackup.mock.calls).toHaveLength(1);
+      expect(habits.restoreBackup).toHaveBeenCalledWith("restore-1");
     });
+  });
+
+  it("shows the no-auto-backup state", async () => {
+    setHabitsApi({
+      getLatestAutoBackupRestorePreview: vi.fn(() => Promise.resolve(null)),
+    });
+
+    renderCard();
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/no auto backup yet/i)).toHaveLength(2);
+    });
+  });
+
+  it("shows an error when backup preview fails", async () => {
+    setHabitsApi({
+      chooseBackupForRestore: vi.fn(() =>
+        Promise.reject(new Error("invalid backup"))
+      ),
+    });
+
+    renderCard();
+
+    fireEvent.click(screen.getByRole("button", { name: /choose backup/i }));
+
+    await expect(
+      screen.findByText(/invalid backup/i)
+    ).resolves.toBeInTheDocument();
   });
 
   it("warns before clearing local data", async () => {

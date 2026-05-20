@@ -125,6 +125,10 @@ export class SqliteAppRepository implements AppRepository {
     this.client.validateDatabase(sourcePath);
   }
 
+  getDatabasePreview(sourcePath: string) {
+    return this.client.getDatabasePreview(sourcePath);
+  }
+
   replaceDatabase(sourcePath: string): void {
     this.client.replaceDatabase(sourcePath);
   }

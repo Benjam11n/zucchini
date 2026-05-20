@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 import { createDataManagementActions } from "@/main/app/data-management";
@@ -7,11 +9,23 @@ const preImportBackupPath = path.join(
   "zucchini-before-import-20260330141516789.db"
 );
 
+function createTempDataDir(): string {
+  return fs.mkdtempSync(path.join(os.tmpdir(), "zucchini-restore-"));
+}
+
 // oxlint-disable-next-line eslint/sort-keys
 function createMocks() {
+  const backupPath = path.join(createTempDataDir(), "backup.db");
+  fs.writeFileSync(backupPath, "backup");
   const exportBackup = vi.fn(() => Promise.resolve());
   const exportCsvData = vi.fn();
   const getDatabasePath = vi.fn(() => "/tmp/zucchini.db");
+  const getDatabasePreview = vi.fn(() => ({
+    completedHabitCount: 12,
+    focusSessionCount: 3,
+    habitCount: 5,
+    latestActivityDate: "2026-03-30",
+  }));
   const replaceDatabase = vi.fn();
   const resetDatabase = vi.fn();
   const validateDatabase = vi.fn();
@@ -19,6 +33,7 @@ function createMocks() {
     exportBackup,
     exportCsvData,
     getDatabasePath,
+    getDatabasePreview,
     replaceDatabase,
     resetDatabase,
     validateDatabase,
@@ -33,7 +48,7 @@ function createMocks() {
   const showOpenDialog = vi.fn(() =>
     Promise.resolve({
       canceled: false,
-      filePaths: ["/tmp/backup.db"],
+      filePaths: [backupPath],
     })
   );
   const showSaveDialog = vi.fn(() =>
@@ -66,6 +81,7 @@ function createMocks() {
   return {
     actions,
     app,
+    backupPath,
     clock,
     dialog,
     onBeforeQuit,
@@ -89,12 +105,13 @@ function createActionsWithoutRelaunch(
   });
 }
 
-function expectImportBackupReplacedDatabase(
-  repository: ReturnType<typeof createMocks>["repository"]
-) {
-  expect(repository.validateDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+function expectImportBackupReplacedDatabase({
+  backupPath,
+  repository,
+}: Pick<ReturnType<typeof createMocks>, "backupPath" | "repository">) {
+  expect(repository.validateDatabase).toHaveBeenCalledWith(backupPath);
   expect(repository.exportBackup).toHaveBeenCalledWith(preImportBackupPath);
-  expect(repository.replaceDatabase).toHaveBeenCalledWith("/tmp/backup.db");
+  expect(repository.replaceDatabase).toHaveBeenCalledWith(backupPath);
 }
 
 function expectAppQuitWithoutRelaunch({
@@ -137,11 +154,12 @@ describe("createDataManagementActions()", () => {
   });
 
   it("validates a selected backup before replacing the live database", async () => {
-    const { actions, app, onBeforeQuit, repository } = createMocks();
+    const { actions, app, backupPath, onBeforeQuit, repository } =
+      createMocks();
 
     await expect(actions.importBackup(onBeforeQuit)).resolves.toBeTruthy();
 
-    expectImportBackupReplacedDatabase(repository);
+    expectImportBackupReplacedDatabase({ backupPath, repository });
     const [validateCallOrder] =
       repository.validateDatabase.mock.invocationCallOrder;
     const [exportCallOrder] = repository.exportBackup.mock.invocationCallOrder;
@@ -163,6 +181,156 @@ describe("createDataManagementActions()", () => {
     expect(app.quit).toHaveBeenCalledOnce();
   });
 
+  it("returns null when no latest auto backup exists", () => {
+    const mocks = createMocks();
+    mocks.repository.getDatabasePath.mockReturnValue(
+      path.join(createTempDataDir(), "zucchini.db")
+    );
+
+    expect(mocks.actions.getLatestAutoBackupRestorePreview()).toBeNull();
+
+    expect(mocks.repository.validateDatabase).not.toHaveBeenCalled();
+  });
+
+  it("previews the newest auto backup only", async () => {
+    const mocks = createMocks();
+    const dataDir = createTempDataDir();
+    const backupDir = path.join(dataDir, "Backups");
+    const olderBackup = path.join(
+      backupDir,
+      "zucchini-auto-20260329-120000.db"
+    );
+    const newerBackup = path.join(
+      backupDir,
+      "zucchini-auto-20260330-120000.db"
+    );
+    fs.mkdirSync(backupDir, { recursive: true });
+    fs.writeFileSync(olderBackup, "older");
+    fs.writeFileSync(newerBackup, "newer");
+    fs.utimesSync(olderBackup, new Date("2026-03-29"), new Date("2026-03-29"));
+    fs.utimesSync(newerBackup, new Date("2026-03-30"), new Date("2026-03-30"));
+    mocks.repository.getDatabasePath.mockReturnValue(
+      path.join(dataDir, "zucchini.db")
+    );
+
+    const preview = await mocks.actions.getLatestAutoBackupRestorePreview();
+
+    expect(preview).toMatchObject({
+      fileName: "zucchini-auto-20260330-120000.db",
+      source: "auto",
+    });
+    expect(mocks.repository.validateDatabase).toHaveBeenCalledWith(newerBackup);
+    expect(mocks.repository.getDatabasePreview).toHaveBeenCalledWith(
+      newerBackup
+    );
+  });
+
+  it("validates a chosen backup before returning a restore preview", async () => {
+    const mocks = createMocks();
+
+    const preview = await mocks.actions.chooseBackupForRestore();
+
+    expect(preview).toMatchObject({
+      completedHabitCount: 12,
+      fileName: "backup.db",
+      focusSessionCount: 3,
+      habitCount: 5,
+      latestActivityDate: "2026-03-30",
+      source: "file",
+    });
+    expect(preview?.restoreId).toEqual(expect.any(String));
+    expect(mocks.repository.validateDatabase).toHaveBeenCalledWith(
+      mocks.backupPath
+    );
+    expect(mocks.repository.getDatabasePreview).toHaveBeenCalledWith(
+      mocks.backupPath
+    );
+  });
+
+  it("does not create a restore token when backup preview validation fails", async () => {
+    const mocks = createMocks();
+    mocks.repository.validateDatabase.mockImplementation(() => {
+      throw new Error("invalid backup");
+    });
+
+    await expect(mocks.actions.chooseBackupForRestore()).rejects.toThrow(
+      "invalid backup"
+    );
+    await expect(
+      mocks.actions.restoreBackup("missing", mocks.onBeforeQuit)
+    ).rejects.toThrow("Backup restore session expired");
+    expectNoRestartOrImport(mocks);
+  });
+
+  it("restores a previewed backup after revalidating and creating a restore point", async () => {
+    const mocks = createMocks();
+    const actions = createActionsWithoutRelaunch(mocks);
+    const preview = await actions.chooseBackupForRestore();
+
+    if (!preview) {
+      throw new Error("Expected restore preview.");
+    }
+
+    await expect(
+      actions.restoreBackup(preview.restoreId, mocks.onBeforeQuit)
+    ).resolves.toBeTruthy();
+
+    expect(mocks.repository.validateDatabase).toHaveBeenCalledTimes(2);
+    expectImportBackupReplacedDatabase(mocks);
+    expectAppQuitWithoutRelaunch(mocks);
+  });
+
+  it("expires stale restore preview tokens", async () => {
+    const mocks = createMocks();
+    const actions = createActionsWithoutRelaunch(mocks);
+    mocks.clock.now
+      .mockReturnValueOnce(new Date("2026-03-30T14:15:16.789Z"))
+      .mockReturnValueOnce(new Date("2026-03-30T14:15:16.789Z"))
+      .mockReturnValue(new Date("2026-03-30T14:31:16.789Z"));
+    const preview = await actions.chooseBackupForRestore();
+
+    if (!preview) {
+      throw new Error("Expected restore preview.");
+    }
+
+    await expect(
+      actions.restoreBackup(preview.restoreId, mocks.onBeforeQuit)
+    ).rejects.toThrow("Backup restore session expired");
+
+    expectNoRestartOrImport(mocks);
+  });
+
+  it("does not reuse a restore token after restore validation fails", async () => {
+    const mocks = createMocks();
+    const preview = await mocks.actions.chooseBackupForRestore();
+
+    if (!preview) {
+      throw new Error("Expected restore preview.");
+    }
+
+    mocks.repository.validateDatabase.mockImplementation(() => {
+      throw new Error("invalid backup");
+    });
+
+    await expect(
+      mocks.actions.restoreBackup(preview.restoreId, mocks.onBeforeQuit)
+    ).rejects.toThrow("invalid backup");
+    await expect(
+      mocks.actions.restoreBackup(preview.restoreId, mocks.onBeforeQuit)
+    ).rejects.toThrow("Backup restore session expired");
+    expectNoRestartOrImport(mocks);
+  });
+
+  it("does not replace the database for a bad restore token", async () => {
+    const mocks = createMocks();
+
+    await expect(
+      mocks.actions.restoreBackup("missing", mocks.onBeforeQuit)
+    ).rejects.toThrow("Backup restore session expired");
+
+    expectNoRestartOrImport(mocks);
+  });
+
   it("quits without relaunching when import restart is delegated to the dev launcher", async () => {
     const mocks = createMocks();
     const actions = createActionsWithoutRelaunch(mocks);
@@ -171,7 +339,7 @@ describe("createDataManagementActions()", () => {
       actions.importBackup(mocks.onBeforeQuit)
     ).resolves.toBeTruthy();
 
-    expectImportBackupReplacedDatabase(mocks.repository);
+    expectImportBackupReplacedDatabase(mocks);
     expectAppQuitWithoutRelaunch(mocks);
   });
 

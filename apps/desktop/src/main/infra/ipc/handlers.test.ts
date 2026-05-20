@@ -162,13 +162,16 @@ function createRegisterOptions(
         isRegistered: true,
       },
     })),
+    onChooseBackupForRestore: vi.fn(() => Promise.resolve(null)),
     onClearData: vi.fn(() => Promise.resolve(true)),
     onExportBackup: vi.fn(() => Promise.resolve(null)),
     onExportCsvData: vi.fn(() => Promise.resolve(null)),
+    onGetLatestAutoBackupRestorePreview: vi.fn(() => Promise.resolve(null)),
     onImportBackup: vi.fn(() => Promise.resolve(false)),
     onOpenAutoBackupFolder: vi.fn(() => Promise.resolve("/tmp/Backups")),
     onOpenDataFolder: vi.fn(() => Promise.resolve("/tmp/zucchini")),
     onResizeFocusWidget: vi.fn(),
+    onRestoreBackup: vi.fn(() => Promise.resolve(true)),
     onSettingsChanged: vi.fn(),
     onShowFocusWidget: vi.fn(),
     onShowMainWindow: vi.fn(),
@@ -656,6 +659,84 @@ describe("registerIpcHandlers()", () => {
       ok: true,
     });
     expect(onExportBackup.mock.calls).toHaveLength(1);
+  });
+
+  it("routes latest auto backup restore preview to the provided callback", async () => {
+    resetHandlers();
+    const preview = {
+      completedHabitCount: 4,
+      fileName: "zucchini-auto-20260330-120000.db",
+      filePath: "/tmp/Backups/zucchini-auto-20260330-120000.db",
+      focusSessionCount: 2,
+      habitCount: 3,
+      latestActivityDate: "2026-03-30",
+      modifiedAt: "2026-03-30T12:00:00.000Z",
+      restoreId: "restore-1",
+      sizeBytes: 2048,
+      source: "auto" as const,
+    };
+    const onGetLatestAutoBackupRestorePreview = vi.fn(() =>
+      Promise.resolve(preview)
+    );
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onGetLatestAutoBackupRestorePreview,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: preview,
+      ok: true,
+    });
+    expect(onGetLatestAutoBackupRestorePreview.mock.calls).toHaveLength(1);
+  });
+
+  it("routes choose backup for restore to the provided callback", async () => {
+    resetHandlers();
+    const onChooseBackupForRestore = vi.fn(() => Promise.resolve(null));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onChooseBackupForRestore,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.chooseBackupForRestore)?.(
+        {} as IpcMainInvokeEvent
+      )
+    ).resolves.toStrictEqual({
+      data: null,
+      ok: true,
+    });
+    expect(onChooseBackupForRestore.mock.calls).toHaveLength(1);
+  });
+
+  it("routes restore backup with a validated restore id", async () => {
+    resetHandlers();
+    const onRestoreBackup = vi.fn(() => Promise.resolve(true));
+
+    registerIpcHandlers(
+      createRegisterOptions({
+        onRestoreBackup,
+      })
+    );
+
+    await expect(
+      handlers.get(HABITS_IPC_CHANNELS.restoreBackup)?.(
+        {} as IpcMainInvokeEvent,
+        "restore-1"
+      )
+    ).resolves.toStrictEqual({
+      data: true,
+      ok: true,
+    });
+    expect(onRestoreBackup).toHaveBeenCalledWith("restore-1");
   });
 
   it("routes the CSV export action to the provided callback", async () => {

@@ -227,6 +227,7 @@ function createMockHabitsApi(
   const baseMock = {
     archiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
     archiveHabit: vi.fn().mockResolvedValue(null),
+    chooseBackupForRestore: vi.fn().mockResolvedValue(null),
     clearData: vi.fn().mockResolvedValue(true),
     command: vi.fn().mockResolvedValue(null),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
@@ -256,6 +257,7 @@ function createMockHabitsApi(
         isRegistered: true,
       },
     }),
+    getLatestAutoBackupRestorePreview: vi.fn().mockResolvedValue(null),
     getFocusTimerState: vi.fn().mockResolvedValue(null),
     getHabits: vi.fn().mockResolvedValue([]),
     getHistory: vi.fn().mockResolvedValue([]),
@@ -282,6 +284,7 @@ function createMockHabitsApi(
     moveUnfinishedHabitsToTomorrow: vi.fn().mockResolvedValue(null),
     recordFocusSession: vi.fn().mockResolvedValue(null),
     releaseFocusTimerLeadership: vi.fn().mockResolvedValue(null),
+    restoreBackup: vi.fn().mockResolvedValue(true),
     renameHabit: vi.fn().mockResolvedValue(null),
     renameWindDownAction: vi.fn().mockResolvedValue(null),
     reorderHabits: vi.fn().mockResolvedValue(null),

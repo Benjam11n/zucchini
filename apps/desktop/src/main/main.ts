@@ -408,12 +408,15 @@ async function bootstrapApp(): Promise<void> {
       focusTimerCoordinator,
       getFocusTimerShortcutStatus: () =>
         focusTimerGlobalShortcutManager.getStatus(),
+      onChooseBackupForRestore: dataManagement.chooseBackupForRestore,
       onClearData: () =>
         dataManagement.clearData(() => {
           context.markQuitting();
         }),
       onExportBackup: dataManagement.exportBackup,
       onExportCsvData: dataManagement.exportCsvData,
+      onGetLatestAutoBackupRestorePreview:
+        dataManagement.getLatestAutoBackupRestorePreview,
       onImportBackup: () =>
         dataManagement.importBackup(() => {
           context.markQuitting();
@@ -421,6 +424,10 @@ async function bootstrapApp(): Promise<void> {
       onOpenAutoBackupFolder: autoBackup.openBackupFolder,
       onOpenDataFolder: dataManagement.openDataFolder,
       onResizeFocusWidget: resizeFocusWidget,
+      onRestoreBackup: (restoreId) =>
+        dataManagement.restoreBackup(restoreId, () => {
+          context.markQuitting();
+        }),
       onSettingsChanged: (settings) => {
         context.setTrayEnabled(
           applyRuntimeSettings({

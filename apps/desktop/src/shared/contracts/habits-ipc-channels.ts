@@ -1,5 +1,6 @@
 // oxlint-disable-next-line eslint/sort-keys
 export const HABITS_IPC_CHANNELS = {
+  chooseBackupForRestore: "habits:chooseBackupForRestore",
   command: "habits:command",
   clearData: "habits:clearData",
   claimFocusTimerCycleCompletion: "habits:claimFocusTimerCycleCompletion",
@@ -12,11 +13,13 @@ export const HABITS_IPC_CHANNELS = {
   focusTimerStateChanged: "habits:focusTimerStateChanged",
   getDesktopNotificationStatus: "habits:getDesktopNotificationStatus",
   getFocusTimerShortcutStatus: "habits:getFocusTimerShortcutStatus",
+  getLatestAutoBackupRestorePreview: "habits:getLatestAutoBackupRestorePreview",
   importBackup: "habits:importBackup",
   openAutoBackupFolder: "habits:openAutoBackupFolder",
   openDataFolder: "habits:openDataFolder",
   query: "habits:query",
   releaseFocusTimerLeadership: "habits:releaseFocusTimerLeadership",
+  restoreBackup: "habits:restoreBackup",
   resizeFocusWidget: "habits:resizeFocusWidget",
   showFocusWidget: "habits:showFocusWidget",
   showMainWindow: "habits:showMainWindow",

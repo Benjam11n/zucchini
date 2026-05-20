@@ -28,6 +28,12 @@ interface CreateAutoBackupServiceOptions {
 const AUTO_BACKUP_FILENAME_PATTERN = /^zucchini-auto-\d{8}-\d{6}\.db$/u;
 const AUTO_BACKUP_RETENTION_COUNT = 1;
 
+export interface AutoBackupFile {
+  filePath: string;
+  filename: string;
+  modifiedAtMs: number;
+}
+
 function formatBackupTimestamp(date: Date): string {
   const [datePart = "", timePart = ""] = date
     .toISOString()
@@ -73,6 +79,29 @@ export function getAutoBackupDirectory(databasePath: string): string {
   return path.join(path.dirname(databasePath), "Backups");
 }
 
+export function listAutoBackupFiles(backupDirectory: string): AutoBackupFile[] {
+  if (!fs.existsSync(backupDirectory)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(backupDirectory)
+    .filter((filename) => AUTO_BACKUP_FILENAME_PATTERN.test(filename))
+    .map((filename) => {
+      const filePath = path.join(backupDirectory, filename);
+      return {
+        filePath,
+        filename,
+        modifiedAtMs: fs.statSync(filePath).mtimeMs,
+      };
+    })
+    .toSorted(
+      (left, right) =>
+        right.modifiedAtMs - left.modifiedAtMs ||
+        right.filename.localeCompare(left.filename)
+    );
+}
+
 export function createAutoBackupService({
   clock,
   log,
@@ -92,22 +121,7 @@ export function createAutoBackupService({
   }
 
   function pruneOldBackups(backupDirectory: string) {
-    const backups = fs
-      .readdirSync(backupDirectory)
-      .filter((filename) => AUTO_BACKUP_FILENAME_PATTERN.test(filename))
-      .map((filename) => {
-        const filePath = path.join(backupDirectory, filename);
-        return {
-          filePath,
-          filename,
-          modifiedAtMs: fs.statSync(filePath).mtimeMs,
-        };
-      })
-      .toSorted(
-        (left, right) =>
-          right.modifiedAtMs - left.modifiedAtMs ||
-          right.filename.localeCompare(left.filename)
-      );
+    const backups = listAutoBackupFiles(backupDirectory);
 
     for (const backup of backups.slice(AUTO_BACKUP_RETENTION_COUNT)) {
       fs.unlinkSync(backup.filePath);

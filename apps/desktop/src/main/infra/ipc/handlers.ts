@@ -20,13 +20,17 @@ import {
   validateFocusTimerInstanceId,
   validateFocusTimerLeaseTtl,
   validateFocusWidgetSize,
+  validateBackupRestoreId,
   validateHabitCommand,
   validateHabitQuery,
   validateNotificationBody,
   validateNotificationIconFilename,
   validateNotificationTitle,
 } from "@/main/infra/ipc/validation";
-import type { FocusTimerShortcutStatus } from "@/shared/contracts/habits-api";
+import type {
+  BackupRestorePreview,
+  FocusTimerShortcutStatus,
+} from "@/shared/contracts/habits-api";
 import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
 import type {
   HabitCommand,
@@ -44,13 +48,19 @@ interface RegisterIpcHandlersOptions {
   broadcastFocusTimerStateChanged: (state: PersistedFocusTimerState) => void;
   getFocusTimerShortcutStatus: () => FocusTimerShortcutStatus;
   onClearData: () => Promise<boolean>;
+  onChooseBackupForRestore: () => Promise<BackupRestorePreview | null>;
   onExportBackup: () => Promise<string | null>;
   onExportCsvData: () => Promise<string | null>;
+  onGetLatestAutoBackupRestorePreview: () =>
+    | BackupRestorePreview
+    | null
+    | Promise<BackupRestorePreview | null>;
   onImportBackup: () => Promise<boolean>;
   onOpenAutoBackupFolder: () => Promise<string>;
   onOpenDataFolder: () => Promise<string>;
   focusTimerCoordinator: FocusTimerCoordinator;
   onResizeFocusWidget: (width: number, height: number) => void;
+  onRestoreBackup: (restoreId: string) => Promise<boolean>;
   onShowFocusWidget: () => void;
   onShowMainWindow: () => void;
   service: HabitsService;
@@ -86,12 +96,15 @@ export function registerIpcHandlers({
   focusTimerCoordinator,
   getFocusTimerShortcutStatus,
   onClearData,
+  onChooseBackupForRestore,
   onExportBackup,
   onExportCsvData,
+  onGetLatestAutoBackupRestorePreview,
   onImportBackup,
   onOpenAutoBackupFolder,
   onOpenDataFolder,
   onResizeFocusWidget,
+  onRestoreBackup,
   onShowFocusWidget,
   onShowMainWindow,
   service,
@@ -175,6 +188,12 @@ export function registerIpcHandlers({
   );
   registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
   registerHandler(HABITS_IPC_CHANNELS.clearData, () => onClearData());
+  registerHandler(HABITS_IPC_CHANNELS.chooseBackupForRestore, () =>
+    onChooseBackupForRestore()
+  );
+  registerHandler(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview, () =>
+    onGetLatestAutoBackupRestorePreview()
+  );
   registerHandler(HABITS_IPC_CHANNELS.openAutoBackupFolder, () =>
     onOpenAutoBackupFolder()
   );
@@ -182,6 +201,9 @@ export function registerIpcHandlers({
   registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
   registerHandler(HABITS_IPC_CHANNELS.exportCsvData, () => onExportCsvData());
   registerHandler(HABITS_IPC_CHANNELS.importBackup, () => onImportBackup());
+  registerHandler(HABITS_IPC_CHANNELS.restoreBackup, (restoreId: unknown) =>
+    onRestoreBackup(validateBackupRestoreId(restoreId))
+  );
   registerHandler(
     HABITS_IPC_CHANNELS.showNotification,
     (title: unknown, body: unknown, iconFilename?: unknown) =>

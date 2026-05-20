@@ -445,6 +445,45 @@ describe("preload habits API", () => {
     expect(invoke).toHaveBeenCalledWith("habits:openAutoBackupFolder");
   });
 
+  it("invokes latest auto backup restore preview through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: null,
+      ok: true,
+    });
+
+    await expect(
+      getHabitsApi().getLatestAutoBackupRestorePreview()
+    ).resolves.toBeNull();
+    expect(invoke).toHaveBeenCalledWith(
+      "habits:getLatestAutoBackupRestorePreview"
+    );
+  });
+
+  it("invokes choose backup for restore through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: null,
+      ok: true,
+    });
+
+    await expect(getHabitsApi().chooseBackupForRestore()).resolves.toBeNull();
+    expect(invoke).toHaveBeenCalledWith("habits:chooseBackupForRestore");
+  });
+
+  it("invokes restore backup through the preload bridge", async () => {
+    await loadPreloadModule();
+    invoke.mockResolvedValue({
+      data: true,
+      ok: true,
+    });
+
+    await expect(
+      getHabitsApi().restoreBackup("restore-1")
+    ).resolves.toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("habits:restoreBackup", "restore-1");
+  });
+
   it("invokes import backup through the preload bridge", async () => {
     await loadPreloadModule();
     invoke.mockResolvedValue({

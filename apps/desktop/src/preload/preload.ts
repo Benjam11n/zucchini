@@ -92,6 +92,8 @@ function subscribeToChannelWithoutPayload(
 }
 
 const habitsApi: HabitsApi = {
+  chooseBackupForRestore: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.chooseBackupForRestore),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
     invokeHabits(HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
   claimFocusTimerLeadership: (instanceId: string, ttlMs: number) =>
@@ -111,6 +113,8 @@ const habitsApi: HabitsApi = {
     invokeHabits<FocusTimerShortcutStatus>(
       HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus
     ),
+  getLatestAutoBackupRestorePreview: () =>
+    invokeHabits(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview),
   importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
   onFocusSessionRecorded: (listener) =>
     subscribeToChannel(HABITS_IPC_CHANNELS.focusSessionRecorded, listener),
@@ -137,6 +141,8 @@ const habitsApi: HabitsApi = {
     invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
   resizeFocusWidget: (width: number, height: number) =>
     invokeHabits(HABITS_IPC_CHANNELS.resizeFocusWidget, width, height),
+  restoreBackup: (restoreId: string) =>
+    invokeHabits(HABITS_IPC_CHANNELS.restoreBackup, restoreId),
   showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
   showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>

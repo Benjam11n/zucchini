@@ -141,6 +141,13 @@ interface TableInfoRow {
   name: string;
 }
 
+interface BackupDatabasePreviewRow {
+  completedHabitCount: number;
+  focusSessionCount: number;
+  habitCount: number;
+  latestActivityDate: string | null;
+}
+
 type CsvCellValue = bigint | Buffer | null | number | string;
 type CsvRow = Record<string, CsvCellValue>;
 
@@ -166,6 +173,34 @@ function serializeCsvCell(value: CsvCellValue): string {
 
 function serializeCsvRow(values: CsvCellValue[]): string {
   return values.map(serializeCsvCell).join(",");
+}
+
+function readCount(database: Database.Database, sql: string): number {
+  const row = database.prepare(sql).get() as { count: number };
+  return row.count;
+}
+
+function hasColumn(
+  database: Database.Database,
+  tableName: string,
+  columnName: string
+): boolean {
+  const columnRows = database
+    .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
+    .all() as TableInfoRow[];
+  return columnRows.some((row) => row.name === columnName);
+}
+
+function maxDate(values: (null | string | undefined)[]): string | null {
+  const populatedValues: string[] = [];
+
+  for (const value of values) {
+    if (value) {
+      populatedValues.push(value);
+    }
+  }
+
+  return populatedValues.toSorted().at(-1) ?? null;
 }
 
 function runWithDatabaseError<A>(label: string, execute: () => A): A {
@@ -324,6 +359,68 @@ export class SqliteDatabaseClient {
             }
           }
         }
+      } finally {
+        database.close();
+      }
+    });
+  }
+
+  getDatabasePreview(sourcePath: string): BackupDatabasePreviewRow {
+    return this.runWithDatabaseError("getDatabasePreview", () => {
+      const database = new Database(sourcePath, {
+        fileMustExist: true,
+        readonly: true,
+      });
+
+      try {
+        const habitCount = readCount(
+          database,
+          "select count(*) as count from habits"
+        );
+        const focusSessionCount = readCount(
+          database,
+          "select count(*) as count from focus_sessions"
+        );
+        const completedHabitCount = readCount(
+          database,
+          "select count(*) as count from habit_period_status where completed = 1"
+        );
+        const latestHabitCompletedAt = hasColumn(
+          database,
+          "habit_period_status",
+          "completed_at"
+        )
+          ? (
+              database
+                .prepare(
+                  "select max(completed_at) as value from habit_period_status where completed_at is not null"
+                )
+                .get() as { value: string | null }
+            ).value
+          : null;
+        const latestHabitPeriodStart = (
+          database
+            .prepare(
+              "select max(period_start) as value from habit_period_status where completed = 1 or completed_count > 0"
+            )
+            .get() as { value: string | null }
+        ).value;
+        const latestFocusDate = (
+          database
+            .prepare("select max(completed_date) as value from focus_sessions")
+            .get() as { value: string | null }
+        ).value;
+
+        return {
+          completedHabitCount,
+          focusSessionCount,
+          habitCount,
+          latestActivityDate: maxDate([
+            latestHabitCompletedAt?.slice(0, 10),
+            latestHabitPeriodStart,
+            latestFocusDate,
+          ]),
+        };
       } finally {
         database.close();
       }
