@@ -107,6 +107,7 @@ export class SqliteAppRepository implements AppRepository {
 
   initializeSchema(): void {
     runMigrations(this.client);
+    this.habitsRepository.repairHabitPauseCache();
   }
 
   getDatabasePath(): string {
@@ -484,8 +485,8 @@ export class SqliteAppRepository implements AppRepository {
     this.habitsRepository.pauseHabit(habitId, pausedAt);
   }
 
-  resumeHabit(habitId: number): void {
-    this.habitsRepository.resumeHabit(habitId);
+  resumeHabit(habitId: number, resumedAt: string): void {
+    this.habitsRepository.resumeHabit(habitId, resumedAt);
   }
 
   upsertFocusQuotaGoal(

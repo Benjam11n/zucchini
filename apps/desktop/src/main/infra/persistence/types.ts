@@ -9,6 +9,7 @@ import type {
   dayStatus,
   focusSessions,
   habitCarryovers,
+  habitPausePeriods,
   habitStreakState,
   habits,
   habitPeriodStatus,
@@ -18,6 +19,7 @@ import type {
 
 export type CategoryStreakStateRow = typeof categoryStreakState.$inferSelect;
 export type HabitRow = typeof habits.$inferSelect;
+export type HabitPausePeriodRow = typeof habitPausePeriods.$inferSelect;
 export type HabitPeriodStatusRow = typeof habitPeriodStatus.$inferSelect;
 export type DailySummaryRow = typeof dailySummary.$inferSelect;
 export type DayStatusRow = typeof dayStatus.$inferSelect;

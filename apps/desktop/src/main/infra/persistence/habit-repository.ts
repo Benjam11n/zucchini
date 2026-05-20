@@ -5,19 +5,20 @@
  * from the `habits` SQLite table. Delegates to Drizzle ORM for all queries
  * and maps rows to domain `Habit` objects via shared mappers.
  */
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
-import { habits } from "@/main/infra/db/schema";
+import { habitPausePeriods, habits } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import type {
   Habit,
   HabitCategory,
   HabitFrequency,
+  HabitPausePeriod,
   HabitWeekday,
 } from "@/shared/domain/habit";
 import { normalizeHabitTargetCount } from "@/shared/domain/habit";
 
-import { mapHabit } from "./mappers";
+import { mapHabit, mapHabitPausePeriod } from "./mappers";
 
 function serializeHabitWeekdays(
   selectedWeekdays: readonly HabitWeekday[] | null
@@ -70,6 +71,45 @@ export class SqliteHabitsRepository {
         .get();
 
       return row ? mapHabit(row) : null;
+    });
+  }
+
+  getPausePeriods(): HabitPausePeriod[] {
+    return this.client.run("getPausePeriods", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(habitPausePeriods)
+        .all()
+        .map((row) => mapHabitPausePeriod(row))
+    );
+  }
+
+  getPausePeriodsForHabit(habitId: number): HabitPausePeriod[] {
+    return this.client.run("getPausePeriodsForHabit", () =>
+      this.client
+        .getDrizzle()
+        .select()
+        .from(habitPausePeriods)
+        .where(eq(habitPausePeriods.habitId, habitId))
+        .all()
+        .map((row) => mapHabitPausePeriod(row))
+    );
+  }
+
+  repairHabitPauseCache(): void {
+    this.client.run("repairHabitPauseCache", () => {
+      this.client.getSqlite().exec(`
+        UPDATE habits
+        SET paused_at = (
+          SELECT habit_pause_periods.paused_at
+          FROM habit_pause_periods
+          WHERE habit_pause_periods.habit_id = habits.id
+            AND habit_pause_periods.resumed_at IS NULL
+          ORDER BY habit_pause_periods.paused_at DESC, habit_pause_periods.id DESC
+          LIMIT 1
+        );
+      `);
     });
   }
 
@@ -196,22 +236,76 @@ export class SqliteHabitsRepository {
 
   pauseHabit(habitId: number, pausedAt: string): void {
     this.client.run("pauseHabit", () => {
+      const habit = this.getHabitById(habitId);
+      if (!habit || habit.pausedAt) {
+        return;
+      }
+
       this.client
         .getDrizzle()
         .update(habits)
         .set({ pausedAt })
         .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
         .run();
+      this.client
+        .getDrizzle()
+        .insert(habitPausePeriods)
+        .values({
+          habitId,
+          pausedAt,
+          resumedAt: null,
+        })
+        .run();
     });
   }
 
-  resumeHabit(habitId: number): void {
+  resumeHabit(habitId: number, resumedAt: string): void {
     this.client.run("resumeHabit", () => {
+      const habit = this.getHabitById(habitId);
+      if (!habit || !habit.pausedAt) {
+        return;
+      }
+      const openPeriod = this.client
+        .getDrizzle()
+        .select()
+        .from(habitPausePeriods)
+        .where(
+          and(
+            eq(habitPausePeriods.habitId, habitId),
+            isNull(habitPausePeriods.resumedAt)
+          )
+        )
+        .get();
+
       this.client
         .getDrizzle()
         .update(habits)
         .set({ pausedAt: null })
         .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
+        .run();
+      if (openPeriod) {
+        this.client
+          .getDrizzle()
+          .update(habitPausePeriods)
+          .set({ resumedAt })
+          .where(
+            and(
+              eq(habitPausePeriods.habitId, habitId),
+              isNull(habitPausePeriods.resumedAt)
+            )
+          )
+          .run();
+        return;
+      }
+
+      this.client
+        .getDrizzle()
+        .insert(habitPausePeriods)
+        .values({
+          habitId,
+          pausedAt: habit.pausedAt,
+          resumedAt,
+        })
         .run();
     });
   }

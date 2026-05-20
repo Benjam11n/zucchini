@@ -35,6 +35,21 @@ export const habits = sqliteTable("habits", {
   targetCount: integer("target_count").notNull().default(1),
 });
 
+export const habitPausePeriods = sqliteTable(
+  "habit_pause_periods",
+  {
+    habitId: integer("habit_id").notNull(),
+    id: integer().primaryKey({ autoIncrement: true }),
+    pausedAt: text("paused_at").notNull(),
+    resumedAt: text("resumed_at"),
+  },
+  (table) => [
+    index("habit_pause_periods_habit_id_idx").on(table.habitId),
+    index("habit_pause_periods_paused_at_idx").on(table.pausedAt),
+    index("habit_pause_periods_resumed_at_idx").on(table.resumedAt),
+  ]
+);
+
 export const habitPeriodStatus = sqliteTable(
   "habit_period_status",
   {
@@ -238,6 +253,7 @@ export const schema = {
   focusSessions,
   focusTimerState,
   habitCarryovers,
+  habitPausePeriods,
   habitPeriodStatus,
   habitStreakState,
   habits,

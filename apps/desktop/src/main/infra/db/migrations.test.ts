@@ -55,6 +55,9 @@ describeWithSqlite("runMigrations", () => {
     const habitPeriodStatusColumns = sqlite
       .prepare(`pragma table_info("habit_period_status")`)
       .all() as { name: string }[];
+    const habitPausePeriodColumns = sqlite
+      .prepare(`pragma table_info("habit_pause_periods")`)
+      .all() as { name: string }[];
     const habitsColumns = sqlite
       .prepare(`pragma table_info("habits")`)
       .all() as {
@@ -72,6 +75,9 @@ describeWithSqlite("runMigrations", () => {
     expect(categoryStreakStateTableExists).toBe(1);
     expect(
       habitPeriodStatusColumns.some((column) => column.name === "completed_at")
+    ).toBe(true);
+    expect(
+      habitPausePeriodColumns.some((column) => column.name === "resumed_at")
     ).toBe(true);
     expect(habitsColumns.some((column) => column.name === "paused_at")).toBe(
       true

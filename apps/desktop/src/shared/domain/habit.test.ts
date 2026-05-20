@@ -42,4 +42,27 @@ describe("habit pause helpers", () => {
     );
     expect(isHabitActiveOnDate(habit, "2026-03-07", "UTC")).toBe(false);
   });
+
+  it("uses closed pause periods when the habit is currently resumed", () => {
+    const pausePeriods = [
+      {
+        habitId: 1,
+        pausedAt: "2026-03-08T09:00:00.000Z",
+        resumedAt: "2026-03-10T09:00:00.000Z",
+      },
+    ];
+
+    expect(
+      isHabitActiveOnDate(dailyHabit, "2026-03-07", "UTC", pausePeriods)
+    ).toBe(true);
+    expect(
+      isHabitActiveOnDate(dailyHabit, "2026-03-08", "UTC", pausePeriods)
+    ).toBe(false);
+    expect(
+      isHabitActiveOnDate(dailyHabit, "2026-03-09", "UTC", pausePeriods)
+    ).toBe(false);
+    expect(
+      isHabitActiveOnDate(dailyHabit, "2026-03-10", "UTC", pausePeriods)
+    ).toBe(true);
+  });
 });

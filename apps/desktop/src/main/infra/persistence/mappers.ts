@@ -15,7 +15,7 @@ import {
   normalizeHabitTargetCount,
   normalizeHabitWeekdays,
 } from "@/shared/domain/habit";
-import type { Habit } from "@/shared/domain/habit";
+import type { Habit, HabitPausePeriod } from "@/shared/domain/habit";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { isThemeMode } from "@/shared/domain/settings";
@@ -28,6 +28,7 @@ import type {
   CategoryStreakStateRow,
   DayStatusRow,
   FocusSessionRow,
+  HabitPausePeriodRow,
   HabitPeriodStatusRow,
   HabitRow,
   HabitStreakStateRow,
@@ -73,6 +74,16 @@ export function mapHabit(row: HabitRow): Habit {
       normalizeHabitFrequency(row.frequency),
       row.targetCount
     ),
+  };
+}
+
+export function mapHabitPausePeriod(
+  row: HabitPausePeriodRow
+): HabitPausePeriod {
+  return {
+    habitId: row.habitId,
+    pausedAt: row.pausedAt,
+    resumedAt: row.resumedAt,
   };
 }
 

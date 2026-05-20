@@ -103,6 +103,12 @@ export interface Habit {
   createdAt: string;
 }
 
+export interface HabitPausePeriod {
+  habitId: number;
+  pausedAt: string;
+  resumedAt: string | null;
+}
+
 export type HabitWithStatus = Habit & {
   completed: boolean;
   completedCount?: number;
@@ -197,10 +203,10 @@ export function isHabitPaused(habit: Pick<Habit, "pausedAt">): boolean {
 }
 
 function getHabitPauseDateKey(
-  habit: Pick<Habit, "pausedAt">,
+  pause: Pick<HabitPausePeriod, "pausedAt"> | Pick<Habit, "pausedAt">,
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 ): string | null {
-  const { pausedAt } = habit;
+  const { pausedAt } = pause;
   if (pausedAt === null || pausedAt === undefined) {
     return null;
   }
@@ -211,6 +217,28 @@ function getHabitPauseDateKey(
   }
 
   return toDateKeyInTimeZone(pausedDate, timezone);
+}
+
+function isDateWithinHabitPausePeriod(
+  period: Pick<HabitPausePeriod, "pausedAt" | "resumedAt">,
+  dateKey: string,
+  timezone?: string
+): boolean {
+  const pauseDateKey = getHabitPauseDateKey(period, timezone);
+  if (pauseDateKey === null || dateKey < pauseDateKey) {
+    return false;
+  }
+
+  if (period.resumedAt === null) {
+    return true;
+  }
+
+  const resumedDateKey = getHabitPauseDateKey(
+    { pausedAt: period.resumedAt },
+    timezone
+  );
+
+  return resumedDateKey === null || dateKey < resumedDateKey;
 }
 
 function isHabitScheduledForWeekday(
@@ -234,8 +262,17 @@ function isHabitScheduledForDate(
 export function isHabitActiveOnDate(
   habit: Pick<Habit, "frequency" | "pausedAt" | "selectedWeekdays">,
   dateKey: string,
-  timezone?: string
+  timezone?: string,
+  pausePeriods: readonly Pick<HabitPausePeriod, "pausedAt" | "resumedAt">[] = []
 ): boolean {
+  if (
+    pausePeriods.some((period) =>
+      isDateWithinHabitPausePeriod(period, dateKey, timezone)
+    )
+  ) {
+    return false;
+  }
+
   if (isHabitPaused(habit)) {
     const pauseDateKey = getHabitPauseDateKey(habit, timezone);
     if (pauseDateKey === null || dateKey >= pauseDateKey) {

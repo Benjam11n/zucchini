@@ -497,7 +497,7 @@ export class HabitsApplicationService implements HabitsService {
     return this.inInitializedTransaction("resumeHabit", () => {
       this.syncRollingState();
       const today = this.getTodayKey();
-      this.repository.resumeHabit(habitId);
+      this.repository.resumeHabit(habitId, this.clock.now().toISOString());
       this.repository.ensureStatusRow(today, habitId);
       return this.rebuildCurrentTodayState();
     });

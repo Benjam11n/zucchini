@@ -26,7 +26,11 @@ import {
 } from "@/shared/domain/goal";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import { isHabitActiveOnDate } from "@/shared/domain/habit";
-import type { HabitWithStatus, Habit } from "@/shared/domain/habit";
+import type {
+  HabitWithStatus,
+  Habit,
+  HabitPausePeriod,
+} from "@/shared/domain/habit";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
@@ -44,6 +48,24 @@ import type { HabitPeriodStatusRow } from "./types";
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 
 type HabitPeriodStatusInsert = typeof habitPeriodStatus.$inferInsert;
+
+function groupPausePeriodsByHabitId(
+  periods: readonly HabitPausePeriod[]
+): Map<number, HabitPausePeriod[]> {
+  const periodsByHabitId = new Map<number, HabitPausePeriod[]>();
+
+  for (const period of periods) {
+    const existing = periodsByHabitId.get(period.habitId);
+    if (existing) {
+      existing.push(period);
+      continue;
+    }
+
+    periodsByHabitId.set(period.habitId, [period]);
+  }
+
+  return periodsByHabitId;
+}
 
 function getStatusPeriodWhere(
   habit: Pick<Habit, "frequency">,
@@ -120,6 +142,22 @@ export class SqliteHistoryRepository {
     this.focusQuotaGoalRepository = focusQuotaGoalRepository;
   }
 
+  private getActiveHabitForDate(date: string, habitId: number): Habit | null {
+    const habit = this.habitsRepository.getHabitById(habitId);
+    if (!habit) {
+      return null;
+    }
+
+    return isHabitActiveOnDate(
+      habit,
+      date,
+      undefined,
+      this.habitsRepository.getPausePeriodsForHabit(habitId)
+    )
+      ? habit
+      : null;
+  }
+
   getFocusQuotaGoalsWithStatus(date: string): FocusQuotaGoalWithStatus[] {
     return this.client.run("getFocusQuotaGoalsWithStatus", () =>
       this.buildFocusQuotaGoalsWithStatus(date)
@@ -132,6 +170,9 @@ export class SqliteHistoryRepository {
       if (activeHabits.length === 0) {
         return [];
       }
+      const pausePeriodsByHabitId = groupPausePeriodsByHabitId(
+        this.habitsRepository.getPausePeriods()
+      );
 
       const statusByKey = new Map(
         this.getStatusRowsForDate(date).map((row) => [
@@ -145,7 +186,14 @@ export class SqliteHistoryRepository {
       );
 
       return activeHabits
-        .filter((habit) => isHabitActiveOnDate(habit, date))
+        .filter((habit) =>
+          isHabitActiveOnDate(
+            habit,
+            date,
+            undefined,
+            pausePeriodsByHabitId.get(habit.id) ?? []
+          )
+        )
         .map((habit) => {
           const period = getHabitPeriod(habit.frequency, date);
           const status = statusByKey.get(
@@ -167,8 +215,8 @@ export class SqliteHistoryRepository {
 
   getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
     return this.client.run("getHabitWithStatus", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit || !isHabitActiveOnDate(habit, date)) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit) {
         return null;
       }
 
@@ -192,8 +240,8 @@ export class SqliteHistoryRepository {
 
   getHabitProgress(date: string, habitId: number): number {
     return this.client.run("getHabitProgress", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit || !isHabitActiveOnDate(habit, date)) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit) {
         return 0;
       }
 
@@ -330,9 +378,17 @@ export class SqliteHistoryRepository {
       if (activeHabits.length === 0) {
         return;
       }
+      const pausePeriodsByHabitId = groupPausePeriodsByHabitId(
+        this.habitsRepository.getPausePeriods()
+      );
 
       const dueHabits = activeHabits.filter((habit) =>
-        isHabitActiveOnDate(habit, date)
+        isHabitActiveOnDate(
+          habit,
+          date,
+          undefined,
+          pausePeriodsByHabitId.get(habit.id) ?? []
+        )
       );
 
       if (dueHabits.length === 0) {
@@ -421,8 +477,8 @@ export class SqliteHistoryRepository {
 
   ensureStatusRow(date: string, habitId: number): void {
     this.client.run("ensureStatusRow", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit || !isHabitActiveOnDate(habit, date)) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit) {
         return;
       }
 
@@ -452,8 +508,8 @@ export class SqliteHistoryRepository {
 
   toggleHabit(date: string, habitId: number, completedAt: string): void {
     this.client.run("toggleHabit", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit || !isHabitActiveOnDate(habit, date)) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit) {
         return;
       }
 
@@ -478,8 +534,8 @@ export class SqliteHistoryRepository {
     completedCount: number
   ): void {
     this.client.run("setHabitProgress", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (!habit || !isHabitActiveOnDate(habit, date)) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit) {
         return;
       }
 
@@ -512,13 +568,8 @@ export class SqliteHistoryRepository {
     completedAt: string
   ): void {
     this.client.run("adjustHabitProgress", () => {
-      const habit = this.habitsRepository.getHabitById(habitId);
-      if (
-        !habit ||
-        !isHabitActiveOnDate(habit, date) ||
-        habit.frequency === "daily" ||
-        delta === 0
-      ) {
+      const habit = this.getActiveHabitForDate(date, habitId);
+      if (!habit || habit.frequency === "daily" || delta === 0) {
         return;
       }
 
