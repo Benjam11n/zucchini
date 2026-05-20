@@ -1,9 +1,10 @@
-import { Flame } from "lucide-react";
+import { Flame, Pause, Play } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { getDailyHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
+import { Button } from "@/renderer/shared/components/ui/button";
 import {
   HabitListEmptyState,
   HabitListCard,
@@ -17,12 +18,18 @@ import {
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { CategoryStreak } from "@/shared/domain/category-streak";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type {
+  Habit,
+  HabitCategory,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
 
 interface HabitChecklistProps {
   habits: HabitWithStatus[];
+  pausedHabits?: Habit[];
   onToggleHabit?: (habitId: number) => void;
+  onResumeHabit?: (habitId: number) => Promise<void>;
   completedCount: number;
   emptyMessage?: string;
   emptyAction?: ReactNode;
@@ -43,7 +50,9 @@ type CategoryGroup = (typeof HABIT_CATEGORY_SLOTS)[number] & {
 
 function HabitChecklistComponent({
   habits,
+  pausedHabits = [],
   onToggleHabit,
+  onResumeHabit,
   completedCount,
   emptyMessage = "Add habits in Settings to get started.",
   emptyAction: _emptyAction,
@@ -57,6 +66,7 @@ function HabitChecklistComponent({
   icon: Icon,
 }: HabitChecklistProps) {
   const totalHabits = habits.length;
+  const totalPausedHabits = pausedHabits.length;
   const categoryPreferences = useHabitCategoryPreferences();
   const progressProps =
     totalHabits > 0
@@ -113,7 +123,7 @@ function HabitChecklistComponent({
       headerActions={headerActions}
       {...progressProps}
     >
-      {totalHabits === 0 ? (
+      {totalHabits === 0 && totalPausedHabits === 0 ? (
         <HabitListEmptyState action={_emptyAction}>
           {emptyMessage}
         </HabitListEmptyState>
@@ -187,6 +197,58 @@ function HabitChecklistComponent({
           </div>
         );
       })}
+
+      {totalPausedHabits > 0 ? (
+        <div className="grid gap-1">
+          <div className="flex items-center gap-2 px-0.5 pb-1">
+            <Pause className="size-3 shrink-0 text-muted-foreground/70" />
+            <span className="text-[0.68rem] uppercase tracking-wide text-muted-foreground">
+              Paused
+            </span>
+            <span
+              className="hidden text-[0.68rem] text-muted-foreground/70 sm:inline"
+              title="Paused habits do not count as missed and do not affect streaks."
+            >
+              Do not count as missed
+            </span>
+            <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
+              {totalPausedHabits}
+            </span>
+          </div>
+
+          <HabitListRows>
+            {pausedHabits.map((habit) => (
+              <HabitListItem
+                habit={
+                  {
+                    ...habit,
+                    completed: false,
+                    completedCount: 0,
+                  } satisfies HabitWithStatus
+                }
+                key={habit.id}
+                muted
+                readOnly
+                trailingActions={
+                  <Button
+                    className="bg-background text-foreground opacity-100"
+                    disabled={!onResumeHabit}
+                    onClick={async () => {
+                      await onResumeHabit?.(habit.id);
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    <Play className="size-3.5" />
+                    Resume
+                  </Button>
+                }
+              />
+            ))}
+          </HabitListRows>
+        </div>
+      ) : null}
     </HabitListCard>
   );
 }

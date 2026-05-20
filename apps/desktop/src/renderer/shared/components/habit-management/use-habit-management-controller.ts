@@ -265,20 +265,14 @@ export function useHabitManagementController({
     });
   }
 
-  async function handlePauseHabit(habitId: number, habitName: string) {
+  async function handlePauseHabit(habitId: number, _habitName: string) {
     await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Paused "${habitName}".`);
-      },
       task: () => onPauseHabit(habitId),
     });
   }
 
-  async function handleResumeHabit(habitId: number, habitName: string) {
+  async function handleResumeHabit(habitId: number, _habitName: string) {
     await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Resumed "${habitName}".`);
-      },
       task: () => onResumeHabit(habitId),
     });
   }

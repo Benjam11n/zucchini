@@ -37,6 +37,7 @@ interface HabitListItemProps {
   disabled?: boolean;
   habit: HabitWithStatus;
   keyboardRowProps?: KeyboardRowProps | undefined;
+  muted?: boolean;
   onToggle?: ((habitId: number) => void) | undefined;
   readOnly?: boolean;
   showCategory?: boolean | undefined;
@@ -134,10 +135,51 @@ function HabitTrailingActions({
   );
 }
 
+function getItemStateClassName({
+  completed,
+  isInteractive,
+  muted,
+}: {
+  completed: boolean;
+  isInteractive: boolean;
+  muted: boolean;
+}) {
+  if (completed) {
+    return "text-muted-foreground/50";
+  }
+
+  if (muted) {
+    return "text-muted-foreground/60";
+  }
+
+  return isInteractive && HABIT_ROW_INTERACTIVE_CLASSNAME;
+}
+
+function getLabelStateClassName({
+  completed,
+  isInteractive,
+  muted,
+}: {
+  completed: boolean;
+  isInteractive: boolean;
+  muted: boolean;
+}) {
+  if (completed) {
+    return "line-through decoration-muted-foreground/30";
+  }
+
+  if (muted) {
+    return "text-muted-foreground/70";
+  }
+
+  return isInteractive && HABIT_ROW_CONTENT_INTERACTION_CLASSNAME;
+}
+
 function HabitListItemComponent({
   disabled = false,
   habit,
   keyboardRowProps,
+  muted = false,
   onToggle,
   readOnly = false,
   showCategory,
@@ -152,12 +194,13 @@ function HabitListItemComponent({
   const hoverProps =
     habit.completed || disabled || readOnly ? {} : { whileHover: hoverLift };
   const isInteractive = !(disabled || readOnly);
-  const itemStateClassName = habit.completed
-    ? "text-muted-foreground/50"
-    : isInteractive && HABIT_ROW_INTERACTIVE_CLASSNAME;
-  const labelStateClassName = habit.completed
-    ? "line-through decoration-muted-foreground/30"
-    : isInteractive && HABIT_ROW_CONTENT_INTERACTION_CLASSNAME;
+  const stateClassNameProps = {
+    completed: habit.completed,
+    isInteractive,
+    muted,
+  };
+  const itemStateClassName = getItemStateClassName(stateClassNameProps);
+  const labelStateClassName = getLabelStateClassName(stateClassNameProps);
 
   return (
     <m.label
@@ -168,6 +211,7 @@ function HabitListItemComponent({
         "flex items-center gap-3 px-3 py-2.5",
         HABIT_ROW_BASE_CLASSNAME,
         disabled && "cursor-default opacity-55",
+        muted && !disabled && "cursor-default bg-muted/25",
         readOnly && "cursor-default",
         itemStateClassName
       )}
@@ -182,7 +226,8 @@ function HabitListItemComponent({
         className={cn(
           "size-4 shrink-0 rounded-full border-2",
           HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
-          HABIT_COMPLETION_POP_CLASSNAME
+          HABIT_COMPLETION_POP_CLASSNAME,
+          muted && "opacity-45 grayscale"
         )}
         disabled={disabled}
         id={`habit-${habit.id}`}

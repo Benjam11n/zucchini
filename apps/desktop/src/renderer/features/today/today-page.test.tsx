@@ -265,7 +265,7 @@ describe("today page", () => {
     expect(screen.getAllByText("Plan top task")).not.toHaveLength(0);
   });
 
-  it("shows paused habits separately and resumes them from today", async () => {
+  it("shows paused habits in the daily checklist and resumes them", async () => {
     const onResumeHabit = vi.fn(() => Promise.resolve());
     renderTodayPage(state, history, {
       managedHabits: [
@@ -284,10 +284,9 @@ describe("today page", () => {
       onResumeHabit,
     });
 
-    expect(screen.getByRole("button", { name: /paused/i })).toBeInTheDocument();
-    expect(screen.queryByText("Morning run")).not.toBeInTheDocument();
+    expect(screen.getByText("Paused")).toBeInTheDocument();
+    expect(screen.getByText("Morning run")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /paused/i }));
     fireEvent.click(screen.getByRole("button", { name: "Resume" }));
 
     await waitFor(() => {
