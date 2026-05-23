@@ -20,7 +20,6 @@ import type {
 } from "./habit-management-content.types";
 import type { HabitManagementCardProps } from "./habit-management.types";
 
-const FEEDBACK_TIMEOUT_MS = 2200;
 const UNDO_TIMEOUT_MS = 5000;
 
 const noopPauseAction: NonNullable<
@@ -109,16 +108,6 @@ export function useHabitManagementController({
     }, timeoutMs);
   }
 
-  function showSavedFeedback(message: string) {
-    setFeedbackWithTimeout(
-      {
-        kind: "saved",
-        message,
-      },
-      FEEDBACK_TIMEOUT_MS
-    );
-  }
-
   function showErrorFeedback(message: string) {
     setFeedbackWithTimeout({
       kind: "error",
@@ -183,21 +172,12 @@ export function useHabitManagementController({
     }
 
     await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Saved "${trimmedName}".`);
-      },
       task: () => onRenameHabit(habitId, name),
     });
   }
 
-  async function saveHabitChanges(
-    habitName: string,
-    task: () => Promise<void>
-  ) {
+  async function saveHabitChanges(task: () => Promise<void>) {
     await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback(`Saved changes to "${habitName}".`);
-      },
       task,
     });
   }
@@ -205,20 +185,18 @@ export function useHabitManagementController({
   async function handleUpdateHabitCategory(
     habitId: number,
     category: HabitCategory,
-    habitName: string
+    _habitName: string
   ) {
-    await saveHabitChanges(habitName, () =>
-      onUpdateHabitCategory(habitId, category)
-    );
+    await saveHabitChanges(() => onUpdateHabitCategory(habitId, category));
   }
 
   async function handleUpdateHabitFrequency(
     habitId: number,
     frequency: HabitFrequency,
     targetCount: number | null | undefined,
-    habitName: string
+    _habitName: string
   ) {
-    await saveHabitChanges(habitName, () =>
+    await saveHabitChanges(() =>
       onUpdateHabitFrequency(habitId, frequency, targetCount)
     );
   }
@@ -226,9 +204,9 @@ export function useHabitManagementController({
   async function handleUpdateHabitTargetCount(
     habitId: number,
     targetCount: number,
-    habitName: string
+    _habitName: string
   ) {
-    await saveHabitChanges(habitName, () =>
+    await saveHabitChanges(() =>
       onUpdateHabitTargetCount(habitId, targetCount)
     );
   }
@@ -236,9 +214,9 @@ export function useHabitManagementController({
   async function handleUpdateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null,
-    habitName: string
+    _habitName: string
   ) {
-    await saveHabitChanges(habitName, () =>
+    await saveHabitChanges(() =>
       onUpdateHabitWeekdays(habitId, selectedWeekdays)
     );
   }
@@ -303,7 +281,6 @@ export function useHabitManagementController({
       onSuccess: () => {
         setAutoSortUndoHabits(null);
         setFeedback(null);
-        showSavedFeedback("Restored the previous habit order.");
       },
       task: () => onReorderHabits(previousHabits),
     });
@@ -313,9 +290,6 @@ export function useHabitManagementController({
     nextHabits: HabitManagementCardProps["habits"]
   ) {
     await runHabitAction({
-      onSuccess: () => {
-        showSavedFeedback("Saved habit order.");
-      },
       task: () => onReorderHabits(nextHabits),
     });
   }
@@ -324,7 +298,6 @@ export function useHabitManagementController({
     const nextHabits = sortHabitListByCategory(habits);
 
     if (nextHabits === habits) {
-      showSavedFeedback("Habits are already grouped by category.");
       return;
     }
 

@@ -36,7 +36,7 @@ export function HabitManagementContent(props: HabitManagementCardProps) {
 
   return (
     <LazyMotion features={domAnimation}>
-      <div className="sticky top-0 z-10 pb-3">
+      <div className="pb-3">
         <NewHabitForm onCreateHabit={handleCreateHabit} />
       </div>
 

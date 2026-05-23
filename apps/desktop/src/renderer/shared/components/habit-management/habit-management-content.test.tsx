@@ -243,7 +243,7 @@ describe("habit management content", () => {
     });
 
     expect(
-      screen.getByText("Restored the previous habit order.")
-    ).toBeInTheDocument();
+      screen.queryByText("Grouped habits by category order.")
+    ).not.toBeInTheDocument();
   });
 });

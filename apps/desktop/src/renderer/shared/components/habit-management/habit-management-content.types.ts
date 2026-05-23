@@ -7,10 +7,6 @@ export type HabitFeedback =
       kind: "error";
       message: string;
     }
-  | {
-      kind: "saved";
-      message: string;
-    }
   | null;
 
 export interface RecentArchivedHabit {
