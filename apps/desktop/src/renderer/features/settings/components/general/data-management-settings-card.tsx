@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { getHabitCadenceSummary } from "@/renderer/shared/components/habit-management/habit-cadence-summary";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
@@ -20,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
-import { Input } from "@/renderer/shared/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -28,8 +28,16 @@ import {
   ItemDescription,
   ItemGroup,
 } from "@/renderer/shared/components/ui/item";
+import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
 import type { BackupRestorePreview } from "@/shared/contracts/habits-api";
+import {
+  normalizeHabitCategory,
+  normalizeHabitFrequency,
+  normalizeHabitTargetCount,
+  normalizeHabitWeekdays,
+} from "@/shared/domain/habit";
+import type { Habit } from "@/shared/domain/habit";
 import type { AppSettings, AutoBackupCadence } from "@/shared/domain/settings";
 
 type DataAction =
@@ -69,25 +77,93 @@ function formatBackupDate(value: string | null): string {
   });
 }
 
+function toRestoreSnapshotHabit(
+  habit: BackupRestorePreview["habits"][number]
+): Habit {
+  const frequency = normalizeHabitFrequency(habit.frequency);
+
+  return {
+    category: normalizeHabitCategory(habit.category),
+    createdAt: "",
+    frequency,
+    id: habit.id,
+    isArchived: false,
+    name: habit.name,
+    pausedAt: habit.pausedAt,
+    selectedWeekdays: normalizeHabitWeekdays(habit.selectedWeekdays),
+    sortOrder: habit.sortOrder,
+    targetCount: normalizeHabitTargetCount(frequency, habit.targetCount),
+  };
+}
+
+function RestoreHabitSnapshot({ preview }: { preview: BackupRestorePreview }) {
+  if (preview.habits.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border/70 px-4 py-6 text-center text-sm text-muted-foreground">
+        No active habits in this backup.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border/70 bg-muted/15 p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">Habits in backup</p>
+        <span className="text-xs text-muted-foreground">
+          {preview.habits.length}
+          {preview.habitPreviewTotalCount > preview.habits.length
+            ? ` of ${preview.habitPreviewTotalCount}`
+            : ""}
+        </span>
+      </div>
+
+      <div className="grid max-h-56 gap-1 overflow-y-auto pr-1">
+        {preview.habits.map((habitPreview) => {
+          const habit = toRestoreSnapshotHabit(habitPreview);
+          const presentation = getHabitCategoryPresentation(habit.category);
+
+          return (
+            <div
+              className="flex min-w-0 items-center gap-3 rounded-md px-2 py-2 text-sm"
+              key={habit.id}
+            >
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: presentation.color }}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-foreground">{habit.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {presentation.label} · {getHabitCadenceSummary(habit)}
+                </p>
+              </div>
+              {habit.pausedAt ? (
+                <span className="shrink-0 rounded-md border border-border/70 px-2 py-1 text-xs text-muted-foreground">
+                  Paused
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function RestoreBackupDialog({
   activeAction,
-  confirmationText,
-  onConfirmationTextChange,
   onOpenChange,
   onRestore,
   open,
   preview,
 }: {
   activeAction: DataAction;
-  confirmationText: string;
-  onConfirmationTextChange: (value: string) => void;
   onOpenChange: (open: boolean) => void;
   onRestore: () => Promise<void>;
   open: boolean;
   preview: BackupRestorePreview | null;
 }) {
-  const canRestore =
-    confirmationText === "RESTORE" && activeAction !== "restore";
+  const canRestore = activeAction !== "restore";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -144,6 +220,8 @@ function RestoreBackupDialog({
               </dl>
             </div>
 
+            <RestoreHabitSnapshot preview={preview} />
+
             <div
               className="flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/8 p-4 text-sm text-destructive"
               role="alert"
@@ -156,20 +234,6 @@ function RestoreBackupDialog({
                   database, then restart.
                 </p>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="restore-confirm">
-                Type RESTORE to continue
-              </label>
-              <Input
-                id="restore-confirm"
-                autoComplete="off"
-                onChange={(event) => {
-                  onConfirmationTextChange(event.currentTarget.value);
-                }}
-                value={confirmationText}
-              />
             </div>
           </div>
         ) : null}
@@ -402,7 +466,6 @@ export function DataManagementSettingsCard({
   const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasNoAutoBackup, setHasNoAutoBackup] = useState(false);
-  const [restoreConfirmationText, setRestoreConfirmationText] = useState("");
   const [restorePreview, setRestorePreview] =
     useState<BackupRestorePreview | null>(null);
 
@@ -428,7 +491,6 @@ export function DataManagementSettingsCard({
 
   function openRestoreDialog(preview: BackupRestorePreview) {
     setRestorePreview(preview);
-    setRestoreConfirmationText("");
     setIsRestoreDialogOpen(true);
   }
 
@@ -437,7 +499,6 @@ export function DataManagementSettingsCard({
 
     if (!open) {
       setRestorePreview(null);
-      setRestoreConfirmationText("");
     }
   }
 
@@ -586,8 +647,6 @@ export function DataManagementSettingsCard({
 
       <RestoreBackupDialog
         activeAction={activeAction}
-        confirmationText={restoreConfirmationText}
-        onConfirmationTextChange={setRestoreConfirmationText}
         onOpenChange={closeRestoreDialog}
         onRestore={async () => {
           if (!restorePreview) {

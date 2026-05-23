@@ -140,9 +140,18 @@ function createMockDatabaseConstructor({
               /select \* from "([^"]+)"/
             )?.[1];
 
-            return selectedTableName
-              ? (rowsByTable[selectedTableName] ?? [])
-              : all();
+            if (selectedTableName) {
+              return rowsByTable[selectedTableName] ?? [];
+            }
+
+            if (
+              statement.includes("from habits") &&
+              statement.includes("order by")
+            ) {
+              return rowsByTable["habits"] ?? [];
+            }
+
+            return all();
           }),
       get: vi.fn(() => {
         if (statement.includes("count(*)") && statement.includes("habits")) {
@@ -331,6 +340,8 @@ describe("SqliteDatabaseClient.getDatabasePreview()", () => {
       completedHabitCount: 9,
       focusSessionCount: 5,
       habitCount: 7,
+      habitPreviewTotalCount: 7,
+      habits: [],
       latestActivityDate: "2026-03-30",
     });
     expect(sqliteMock.default.prototype.prepare).toHaveBeenCalledWith(
@@ -366,8 +377,50 @@ describe("SqliteDatabaseClient.getDatabasePreview()", () => {
       completedHabitCount: 2,
       focusSessionCount: 1,
       habitCount: 3,
+      habitPreviewTotalCount: 3,
+      habits: [],
       latestActivityDate: "2026-03-28",
     });
+  });
+
+  it("returns active habit rows for restore previews", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        rowsByTable: {
+          habits: [
+            {
+              category: "fitness",
+              frequency: "weekly",
+              id: 2,
+              isArchived: 0,
+              name: "6500 steps",
+              pausedAt: "2026-03-29T12:00:00.000Z",
+              selectedWeekdays: null,
+              sortOrder: 1,
+              targetCount: 3,
+            },
+          ],
+        },
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: "/tmp/live.db",
+    });
+
+    expect(client.getDatabasePreview("/tmp/backup.db").habits).toStrictEqual([
+      {
+        category: "fitness",
+        frequency: "weekly",
+        id: 2,
+        name: "6500 steps",
+        pausedAt: "2026-03-29T12:00:00.000Z",
+        selectedWeekdays: null,
+        sortOrder: 1,
+        targetCount: 3,
+      },
+    ]);
   });
 });
 

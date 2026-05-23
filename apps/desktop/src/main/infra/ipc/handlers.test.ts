@@ -671,6 +671,8 @@ describe("registerIpcHandlers()", () => {
       filePath: "/tmp/Backups/zucchini-auto-20260330-120000.db",
       focusSessionCount: 2,
       habitCount: 3,
+      habitPreviewTotalCount: 0,
+      habits: [],
       latestActivityDate: "2026-03-30",
       modifiedAt: "2026-03-30T12:00:00.000Z",
       restoreId: "restore-1",

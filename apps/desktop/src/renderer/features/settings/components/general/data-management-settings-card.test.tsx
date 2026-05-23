@@ -30,6 +30,29 @@ function createRestorePreview(
     filePath: "/tmp/Backups/zucchini-auto-20260330-120000.db",
     focusSessionCount: 3,
     habitCount: 5,
+    habitPreviewTotalCount: 2,
+    habits: [
+      {
+        category: "productivity",
+        frequency: "daily",
+        id: 1,
+        name: "Plan top task",
+        pausedAt: null,
+        selectedWeekdays: null,
+        sortOrder: 0,
+        targetCount: 1,
+      },
+      {
+        category: "fitness",
+        frequency: "weekly",
+        id: 2,
+        name: "6500 steps",
+        pausedAt: "2026-03-29T12:00:00.000Z",
+        selectedWeekdays: null,
+        sortOrder: 1,
+        targetCount: 3,
+      },
+    ],
     latestActivityDate: "2026-03-30",
     modifiedAt: "2026-03-30T12:00:00.000Z",
     restoreId: "restore-1",
@@ -150,6 +173,10 @@ describe("data management settings card", () => {
     expect(
       screen.getByText(/zucchini-auto-20260330-120000\.db/i)
     ).toBeInTheDocument();
+    expect(screen.getByText("Habits in backup")).toBeInTheDocument();
+    expect(screen.getByText("Plan top task")).toBeInTheDocument();
+    expect(screen.getByText("6500 steps")).toBeInTheDocument();
+    expect(screen.getByText("Paused")).toBeInTheDocument();
   });
 
   it("refreshes the latest auto backup preview each time", async () => {
@@ -195,7 +222,7 @@ describe("data management settings card", () => {
     expect(screen.getByText(/chosen file/i)).toBeInTheDocument();
   });
 
-  it("requires typed confirmation before restoring a backup", async () => {
+  it("restores a backup from the preview dialog", async () => {
     const habits = setHabitsApi({
       getLatestAutoBackupRestorePreview: vi.fn(() =>
         Promise.resolve(createRestorePreview())
@@ -211,13 +238,8 @@ describe("data management settings card", () => {
       name: /restore and restart/i,
     });
 
-    expect(restoreButton).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/type restore to continue/i), {
-      target: { value: "RESTORE" },
-    });
-    fireEvent.click(
-      screen.getByRole("button", { name: /restore and restart/i })
-    );
+    expect(restoreButton).toBeEnabled();
+    fireEvent.click(restoreButton);
 
     await waitFor(() => {
       expect(habits.restoreBackup).toHaveBeenCalledWith("restore-1");

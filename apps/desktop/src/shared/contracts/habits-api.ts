@@ -53,11 +53,24 @@ export interface BackupRestorePreview {
   filePath: string;
   focusSessionCount: number;
   habitCount: number;
+  habitPreviewTotalCount: number;
+  habits: BackupRestoreHabitPreview[];
   latestActivityDate: string | null;
   modifiedAt: string;
   restoreId: string;
   sizeBytes: number;
   source: "auto" | "file";
+}
+
+interface BackupRestoreHabitPreview {
+  category: string;
+  frequency: string;
+  id: number;
+  name: string;
+  pausedAt: string | null;
+  selectedWeekdays: number[] | null;
+  sortOrder: number;
+  targetCount: number;
 }
 
 export interface HabitsApi {

@@ -47,7 +47,20 @@ export interface BackupDatabasePreview {
   completedHabitCount: number;
   focusSessionCount: number;
   habitCount: number;
+  habitPreviewTotalCount: number;
+  habits: BackupDatabaseHabitPreview[];
   latestActivityDate: string | null;
+}
+
+export interface BackupDatabaseHabitPreview {
+  category: string;
+  frequency: string;
+  id: number;
+  name: string;
+  pausedAt: string | null;
+  selectedWeekdays: number[] | null;
+  sortOrder: number;
+  targetCount: number;
 }
 
 export interface DataManagementServicePort {

@@ -24,6 +24,19 @@ function createMocks() {
     completedHabitCount: 12,
     focusSessionCount: 3,
     habitCount: 5,
+    habitPreviewTotalCount: 1,
+    habits: [
+      {
+        category: "productivity",
+        frequency: "daily",
+        id: 1,
+        name: "Plan top task",
+        pausedAt: null,
+        selectedWeekdays: null,
+        sortOrder: 0,
+        targetCount: 1,
+      },
+    ],
     latestActivityDate: "2026-03-30",
   }));
   const replaceDatabase = vi.fn();
