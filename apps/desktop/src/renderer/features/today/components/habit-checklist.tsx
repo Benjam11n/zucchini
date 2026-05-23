@@ -231,7 +231,7 @@ function HabitChecklistComponent({
                 readOnly
                 trailingActions={
                   <Button
-                    className="bg-background text-foreground opacity-100"
+                    className="border-primary/30 bg-primary/10 text-primary opacity-100 hover:bg-primary/15 hover:text-primary"
                     disabled={!onResumeHabit}
                     onClick={async () => {
                       await onResumeHabit?.(habit.id);
