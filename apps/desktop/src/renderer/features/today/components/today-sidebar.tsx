@@ -40,7 +40,6 @@ import {
 interface TodaySidebarProps {
   history: HistorySummaryDay[];
   state: TodayState;
-  onMoveUnfinishedHabitsToTomorrow: () => void;
   onSetDayStatus: (kind: DayStatusKind | null) => void;
 }
 
@@ -102,7 +101,6 @@ function formatWeekBarLabel(day: {
 
 export function TodaySidebar({
   history,
-  onMoveUnfinishedHabitsToTomorrow,
   state,
   onSetDayStatus,
 }: TodaySidebarProps) {
@@ -110,9 +108,6 @@ export function TodaySidebar({
   const dayStatusCopy = dayStatus ? DAY_STATUS_COPY[dayStatus] : null;
   const dayStatusUi = dayStatus ? HISTORY_STATUS_UI[dayStatus] : null;
   const DayStatusIcon = dayStatusCopy?.icon;
-  const canMoveUnfinishedHabits = state.habits.some(
-    (habit) => habit.frequency === "daily" && !habit.completed
-  );
   const todayMetricsState = useMemo(
     () => ({
       date: state.date,
@@ -178,18 +173,6 @@ export function TodaySidebar({
                   <span>Rest day</span>
                   <span className="text-xs text-muted-foreground">
                     Pause habits today
-                  </span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={!canMoveUnfinishedHabits}
-                onClick={onMoveUnfinishedHabitsToTomorrow}
-              >
-                <CalendarPlus className="size-4" />
-                <div className="grid gap-0.5">
-                  <span>Move unfinished</span>
-                  <span className="text-xs text-muted-foreground">
-                    Carry remaining to tomorrow
                   </span>
                 </div>
               </DropdownMenuItem>

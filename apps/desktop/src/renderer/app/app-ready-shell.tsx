@@ -35,9 +35,6 @@ function getRightSidebar({
       <TodaySidebar
         history={state.historySummary}
         state={state.todayState}
-        onMoveUnfinishedHabitsToTomorrow={
-          actions.handleMoveUnfinishedHabitsToTomorrow
-        }
         onSetDayStatus={actions.handleSetDayStatus}
       />
     );

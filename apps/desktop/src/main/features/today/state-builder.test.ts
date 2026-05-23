@@ -167,6 +167,55 @@ describe("state builder", () => {
       });
     });
 
+    it("does not preview a streak gain until today's carryovers are complete", () => {
+      const repository = createRepository({
+        getHabitCarryoversForDate: vi.fn(() => [
+          {
+            category: "fitness",
+            completed: false,
+            completedCount: 0,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 2,
+            isArchived: false,
+            name: "Stretch",
+            selectedWeekdays: null,
+            sortOrder: 1,
+            sourceDate: "2026-03-07",
+            targetCount: 1,
+            targetDate: "2026-03-08",
+          },
+        ]),
+        getHabitsWithStatus: vi.fn(() => [
+          {
+            category: "productivity",
+            completed: true,
+            completedCount: 1,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 1,
+            isArchived: false,
+            name: "Plan",
+            selectedWeekdays: null,
+            sortOrder: 0,
+            targetCount: 1,
+          },
+        ]),
+        getPersistedStreakState: vi.fn(() => ({
+          availableFreezes: 0,
+          bestStreak: 3,
+          currentStreak: 3,
+          lastEvaluatedDate: "2026-03-07",
+        })),
+      });
+      const clock = createClock("2026-03-08");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.streak.currentStreak).toBe(3);
+      expect(todayState.habitCarryovers).toHaveLength(1);
+    });
+
     it("builds per-habit streaks from persisted state plus today's preview", () => {
       const runHabit = {
         category: "fitness" as const,

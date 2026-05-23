@@ -85,8 +85,6 @@ function buildControllerActions({
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadHistoryYears: actions.loadHistoryYears,
     handleLoadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
-    handleMoveUnfinishedHabitsToTomorrow:
-      actions.handleMoveUnfinishedHabitsToTomorrow,
     handleOpenWindDown: actions.handleOpenWindDown,
     handlePauseHabit: actions.handlePauseHabit,
     handleRenameHabit: actions.handleRenameHabit,

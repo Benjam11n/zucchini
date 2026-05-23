@@ -40,7 +40,7 @@ export function CarryoverChecklist({
 
   return (
     <HabitListCard
-      description="Moved from yesterday."
+      description="Due today from yesterday."
       icon={CalendarPlus}
       progressLabel={`${completedCount}/${carryovers.length}`}
       progressValue={Math.round((completedCount / carryovers.length) * 100)}

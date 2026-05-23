@@ -993,7 +993,7 @@ class FakeRepository implements AppRepository {
 }
 
 describe("habitService rollover", () => {
-  it("uses a freeze for the first missed closed day and resets on the next missed day", () => {
+  it("automatically carries unfinished habits once and uses a freeze when carryovers expire incomplete", () => {
     const repository = new FakeRepository();
     repository.habitStreakStates.set(1, {
       bestStreak: 5,
@@ -1015,8 +1015,8 @@ describe("habitService rollover", () => {
       allCompleted: false,
       completedAt: null,
       date: "2026-03-06",
-      dayStatus: null,
-      freezeUsed: true,
+      dayStatus: "rescheduled",
+      freezeUsed: false,
       streakCountAfterDay: 3,
     });
 
@@ -1025,19 +1025,35 @@ describe("habitService rollover", () => {
       completedAt: null,
       date: "2026-03-07",
       dayStatus: null,
-      freezeUsed: false,
-      streakCountAfterDay: 0,
+      freezeUsed: true,
+      streakCountAfterDay: 3,
     });
 
+    expect(repository.getHabitCarryoversForDate("2026-03-07")).toMatchObject([
+      {
+        completed: false,
+        id: 1,
+        sourceDate: "2026-03-06",
+        targetDate: "2026-03-07",
+      },
+    ]);
+    expect(repository.getHabitCarryoversForDate("2026-03-08")).toMatchObject([
+      {
+        completed: false,
+        id: 1,
+        sourceDate: "2026-03-07",
+        targetDate: "2026-03-08",
+      },
+    ]);
     expect(todayState.streak).toStrictEqual({
       availableFreezes: 0,
       bestStreak: 5,
-      currentStreak: 0,
+      currentStreak: 3,
       lastEvaluatedDate: "2026-03-07",
     });
     expect(repository.habitStreakStates.get(1)).toStrictEqual({
       bestStreak: 5,
-      currentStreak: 0,
+      currentStreak: 3,
       habitId: 1,
       lastEvaluatedDate: "2026-03-07",
     });
@@ -1099,18 +1115,18 @@ describe("habitService rollover", () => {
     expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
       bestStreak: 3,
       category: "productivity",
-      currentStreak: 0,
+      currentStreak: 2,
       lastEvaluatedDate: "2026-03-07",
     });
     expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
-      bestStreak: 4,
+      bestStreak: 3,
       category: "fitness",
-      currentStreak: 4,
+      currentStreak: 3,
       lastEvaluatedDate: "2026-03-07",
     });
   });
 
-  it("keeps category streaks neutral for empty and frozen category days", () => {
+  it("keeps category streaks neutral for empty and automatically rescheduled category days", () => {
     const repository = new FakeRepository();
     repository.streak = {
       availableFreezes: 1,
@@ -1138,13 +1154,208 @@ describe("habitService rollover", () => {
 
     service.getTodayState();
 
-    expect(repository.dailySummaries.get("2026-03-06")?.freezeUsed).toBe(true);
+    expect(repository.dailySummaries.get("2026-03-06")).toMatchObject({
+      dayStatus: "rescheduled",
+      freezeUsed: false,
+    });
     expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
       bestStreak: 4,
       category: "fitness",
       currentStreak: 4,
       lastEvaluatedDate: "2026-03-06",
     });
+  });
+
+  it("increments the streak once when incoming carryovers and daily habits complete", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-08",
+    };
+    repository.habitCarryovers.set("2026-03-08:2026-03-09:1", {
+      completed: true,
+      habitId: 1,
+      sourceDate: "2026-03-08",
+      targetDate: "2026-03-09",
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const today = service.getTodayState();
+
+    expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
+      allCompleted: true,
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 4,
+    });
+    expect(today.streak.currentStreak).toBe(4);
+  });
+
+  it("breaks the streak when incoming carryovers expire incomplete", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-08",
+    };
+    repository.habitStreakStates.set(1, {
+      bestStreak: 3,
+      currentStreak: 3,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-08",
+    });
+    repository.categoryStreakStates.set("productivity", {
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-08",
+    });
+    repository.habitCarryovers.set("2026-03-08:2026-03-09:1", {
+      completed: false,
+      habitId: 1,
+      sourceDate: "2026-03-08",
+      targetDate: "2026-03-09",
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const today = service.getTodayState();
+
+    expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
+      allCompleted: false,
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 0,
+    });
+    expect(today.streak.currentStreak).toBe(0);
+    expect(repository.habitStreakStates.get(1)).toStrictEqual({
+      bestStreak: 3,
+      currentStreak: 0,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-09",
+    });
+    expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 0,
+      lastEvaluatedDate: "2026-03-09",
+    });
+  });
+
+  it("does not re-carry expired carryovers but carries unfinished daily habits", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-08",
+    };
+    repository.habitCarryovers.set("2026-03-08:2026-03-09:1", {
+      completed: false,
+      habitId: 1,
+      sourceDate: "2026-03-08",
+      targetDate: "2026-03-09",
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, false]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.getHabitCarryoversForDate("2026-03-10")).toMatchObject([
+      {
+        completed: false,
+        id: 1,
+        sourceDate: "2026-03-09",
+        targetDate: "2026-03-10",
+      },
+    ]);
+    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(1);
+  });
+
+  it("keeps sick days neutral even with incomplete incoming carryovers", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 3,
+      lastEvaluatedDate: "2026-03-08",
+    };
+    repository.habitCarryovers.set("2026-03-08:2026-03-09:1", {
+      completed: false,
+      habitId: 1,
+      sourceDate: "2026-03-08",
+      targetDate: "2026-03-09",
+    });
+    repository.dayStatuses.set("2026-03-09", {
+      createdAt: "2026-03-09T09:00:00.000Z",
+      date: "2026-03-09",
+      kind: "sick",
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, false]]));
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const today = service.getTodayState();
+
+    expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
+      dayStatus: "sick",
+      freezeUsed: false,
+      streakCountAfterDay: 3,
+    });
+    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
+    expect(today.streak.currentStreak).toBe(3);
+  });
+
+  it("does not auto-carry paused or archived habits", () => {
+    const repository = new FakeRepository();
+    const [habit] = repository.habits;
+    if (!habit) {
+      throw new Error("Expected default habit.");
+    }
+    repository.habits[0] = {
+      ...habit,
+      pausedAt: "2026-03-08T09:00:00.000Z",
+    };
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: true,
+      name: "Run",
+      selectedWeekdays: null,
+      sortOrder: 1,
+      targetCount: 1,
+    });
+    repository.streak.lastEvaluatedDate = "2026-03-08";
+
+    const service = new HabitsApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
   });
 });
 

@@ -16,6 +16,14 @@ import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
 
+const AUTO_RESCHEDULED_TIME = "T23:59:59.000";
+
+interface StreakCounterState {
+  bestStreak: number;
+  currentStreak: number;
+  lastEvaluatedDate: string | null;
+}
+
 function createEmptyHabitStreakState(
   habitId: number
 ): PersistedHabitStreakState {
@@ -56,38 +64,89 @@ function getClosedDayStreakInputs(
 ): {
   dayStatus: DayStatusKind | null;
   freezeUsed: boolean;
+  hasIncompleteCarryover: boolean;
 } {
   repository.ensureStatusRowsForDate(cursor);
   const dayStatus = repository.getDayStatus(cursor)?.kind ?? null;
   const [summary] = repository.getDailySummariesInRange(cursor, cursor);
 
   return {
-    dayStatus,
+    dayStatus: summary ? summary.dayStatus : dayStatus,
     freezeUsed: summary?.freezeUsed ?? false,
+    hasIncompleteCarryover: repository
+      .getHabitCarryoversForDate(cursor)
+      .some((carryover) => !carryover.completed),
   };
 }
 
-function getNextHabitStreakState({
+function applyClosedDayCarryoverPolicy({
+  clock,
   cursor,
-  dayStatus,
-  freezeUsed,
-  habit,
+  dailyHabits,
+  repository,
+}: {
+  clock: Clock;
+  cursor: string;
+  dailyHabits: HabitWithStatus[];
+  repository: AppRepository;
+}): DayStatusKind | null {
+  const currentDayStatus = repository.getDayStatus(cursor)?.kind ?? null;
+  if (currentDayStatus === "rest" || currentDayStatus === "sick") {
+    return currentDayStatus;
+  }
+
+  const incomingCarryovers = repository.getHabitCarryoversForDate(cursor);
+  const hasIncompleteIncomingCarryover = incomingCarryovers.some(
+    (carryover) => !carryover.completed
+  );
+  const hasUnfinishedDailyHabit = dailyHabits.some((habit) => !habit.completed);
+  if (!hasUnfinishedDailyHabit) {
+    if (currentDayStatus === "rescheduled") {
+      repository.clearDayStatus(cursor);
+    }
+    return null;
+  }
+
+  repository.createHabitCarryovers(
+    cursor,
+    clock.addDays(cursor, 1),
+    `${cursor}${AUTO_RESCHEDULED_TIME}`
+  );
+
+  if (hasIncompleteIncomingCarryover) {
+    if (currentDayStatus === "rescheduled") {
+      repository.clearDayStatus(cursor);
+    }
+    return null;
+  }
+
+  repository.setDayStatus(
+    cursor,
+    "rescheduled",
+    `${cursor}${AUTO_RESCHEDULED_TIME}`
+  );
+  return "rescheduled";
+}
+
+function getNextStreakCounterState<TState extends StreakCounterState>({
+  cursor,
+  isComplete,
+  isNeutral,
   state,
 }: {
   cursor: string;
-  dayStatus: DayStatusKind | null;
-  freezeUsed: boolean;
-  habit: HabitWithStatus | null;
-  state: PersistedHabitStreakState;
-}): PersistedHabitStreakState {
-  if (dayStatus || freezeUsed || !habit) {
+  isComplete: boolean;
+  isNeutral: boolean;
+  state: TState;
+}): TState {
+  if (isNeutral) {
     return {
       ...state,
       lastEvaluatedDate: cursor,
     };
   }
 
-  if (!habit.completed) {
+  if (!isComplete) {
     return {
       ...state,
       currentStreak: 0,
@@ -103,6 +162,29 @@ function getNextHabitStreakState({
     currentStreak,
     lastEvaluatedDate: cursor,
   };
+}
+
+function getNextHabitStreakState({
+  cursor,
+  dayStatus,
+  freezeUsed,
+  hasIncompleteCarryover,
+  habit,
+  state,
+}: {
+  cursor: string;
+  dayStatus: DayStatusKind | null;
+  freezeUsed: boolean;
+  hasIncompleteCarryover: boolean;
+  habit: HabitWithStatus | null;
+  state: PersistedHabitStreakState;
+}): PersistedHabitStreakState {
+  return getNextStreakCounterState({
+    cursor,
+    isComplete: Boolean(habit?.completed) && !hasIncompleteCarryover,
+    isNeutral: Boolean(dayStatus || freezeUsed || !habit),
+    state,
+  });
 }
 
 function syncHabitStreakStates(
@@ -157,10 +239,8 @@ function syncHabitStreakStates(
   let cursor = firstUnevaluatedDate;
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
-    const { dayStatus, freezeUsed } = getClosedDayStreakInputs(
-      repository,
-      cursor
-    );
+    const { dayStatus, freezeUsed, hasIncompleteCarryover } =
+      getClosedDayStreakInputs(repository, cursor);
     const habitById = new Map(
       repository
         .getHabitsWithStatus(cursor)
@@ -186,6 +266,7 @@ function syncHabitStreakStates(
           dayStatus,
           freezeUsed,
           habit: habitById.get(habit.id) ?? null,
+          hasIncompleteCarryover,
           state: currentState,
         })
       );
@@ -202,37 +283,24 @@ function getNextCategoryStreakState({
   cursor,
   dayStatus,
   freezeUsed,
+  hasIncompleteCarryover,
   state,
 }: {
   categoryHabits: Pick<HabitWithStatus, "category" | "completed">[];
   cursor: string;
   dayStatus: DayStatusKind | null;
   freezeUsed: boolean;
+  hasIncompleteCarryover: boolean;
   state: PersistedCategoryStreakState;
 }): PersistedCategoryStreakState {
-  if (dayStatus || freezeUsed || categoryHabits.length === 0) {
-    return {
-      ...state,
-      lastEvaluatedDate: cursor,
-    };
-  }
-
-  if (!categoryHabits.every((habit) => habit.completed)) {
-    return {
-      ...state,
-      currentStreak: 0,
-      lastEvaluatedDate: cursor,
-    };
-  }
-
-  const currentStreak = state.currentStreak + 1;
-
-  return {
-    ...state,
-    bestStreak: Math.max(state.bestStreak, currentStreak),
-    currentStreak,
-    lastEvaluatedDate: cursor,
-  };
+  return getNextStreakCounterState({
+    cursor,
+    isComplete:
+      categoryHabits.every((habit) => habit.completed) &&
+      !hasIncompleteCarryover,
+    isNeutral: Boolean(dayStatus || freezeUsed || categoryHabits.length === 0),
+    state,
+  });
 }
 
 function syncCategoryStreakStates(
@@ -279,10 +347,8 @@ function syncCategoryStreakStates(
   let cursor = firstUnevaluatedDate;
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
-    const { dayStatus, freezeUsed } = getClosedDayStreakInputs(
-      repository,
-      cursor
-    );
+    const { dayStatus, freezeUsed, hasIncompleteCarryover } =
+      getClosedDayStreakInputs(repository, cursor);
     const habitsByCategory = new Map<
       HabitCategory,
       Pick<HabitWithStatus, "category" | "completed">[]
@@ -314,6 +380,7 @@ function syncCategoryStreakStates(
           cursor,
           dayStatus,
           freezeUsed,
+          hasIncompleteCarryover,
           state: currentState,
         })
       );
@@ -355,23 +422,39 @@ export function syncRollingState(
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
     repository.ensureStatusRowsForDate(cursor);
     const habits = repository.getHabitsWithStatus(cursor).filter(isDailyHabit);
-    if (habits.length === 0) {
+    const incomingCarryovers = repository.getHabitCarryoversForDate(cursor);
+    const hasIncompleteIncomingCarryover = incomingCarryovers.some(
+      (carryover) => !carryover.completed
+    );
+    const allCompleted =
+      habits.length > 0 &&
+      habits.every((habit) => habit.completed) &&
+      !hasIncompleteIncomingCarryover;
+    const currentDayStatus = applyClosedDayCarryoverPolicy({
+      clock,
+      cursor,
+      dailyHabits: habits,
+      repository,
+    });
+
+    if (
+      habits.length === 0 &&
+      !hasIncompleteIncomingCarryover &&
+      !currentDayStatus
+    ) {
       rollingState.lastEvaluatedDate = cursor;
       cursor = clock.addDays(cursor, 1);
       continue;
     }
 
-    const allCompleted =
-      habits.length > 0 && habits.every((habit) => habit.completed);
     const completedAt = allCompleted
       ? (repository.getExistingCompletedAt(cursor) ?? `${cursor}T23:59:59.000`)
       : null;
-    const currentDayStatus = repository.getDayStatus(cursor);
 
     const next = settleClosedDay(createRollingStreakState(rollingState), {
       allCompleted,
       completedAt,
-      dayStatus: currentDayStatus?.kind ?? null,
+      dayStatus: currentDayStatus,
     });
 
     rollingState = {

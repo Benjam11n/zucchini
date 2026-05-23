@@ -76,25 +76,22 @@ function historyDay(
 
 function renderSidebar({
   history = [],
-  onMoveUnfinishedHabitsToTomorrow = vi.fn(),
   onSetDayStatus = vi.fn(),
   state = createTodayState(),
 }: {
   history?: HistorySummaryDay[];
-  onMoveUnfinishedHabitsToTomorrow?: () => void;
   onSetDayStatus?: (kind: TodayState["dayStatus"]) => void;
   state?: TodayState;
 } = {}) {
   render(
     <TodaySidebar
       history={history}
-      onMoveUnfinishedHabitsToTomorrow={onMoveUnfinishedHabitsToTomorrow}
       onSetDayStatus={onSetDayStatus}
       state={state}
     />
   );
 
-  return { onMoveUnfinishedHabitsToTomorrow, onSetDayStatus };
+  return { onSetDayStatus };
 }
 
 describe("TodaySidebar", () => {
@@ -125,5 +122,13 @@ describe("TodaySidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clear day status" }));
 
     expect(onSetDayStatus).toHaveBeenCalledWith(null);
+  });
+
+  it("does not expose manual carryover after automatic carryover became default", () => {
+    renderSidebar();
+
+    fireEvent.click(screen.getByRole("button", { name: "Open today options" }));
+
+    expect(screen.queryByText("Move unfinished")).not.toBeInTheDocument();
   });
 });

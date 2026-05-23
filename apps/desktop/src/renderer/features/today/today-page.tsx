@@ -71,6 +71,12 @@ function TodayPageComponent({
     () => splitTodayHabits(state.habits),
     [state.habits]
   );
+  const carryoversComplete = (state.habitCarryovers ?? []).every(
+    (carryover) => carryover.completed
+  );
+  const streakEligibleCompletedCount = carryoversComplete
+    ? completedDailyHabitCount
+    : Math.min(completedDailyHabitCount, Math.max(dailyHabits.length - 1, 0));
   const pausedHabits = useMemo(
     () => managedHabits.filter(isHabitPaused),
     [managedHabits]
@@ -84,13 +90,13 @@ function TodayPageComponent({
   );
   const isViewingHistoricalDay = historicalTodaySelection.selectedDate !== null;
   useTodayPopups({
-    completedCount: completedDailyHabitCount,
+    completedCount: streakEligibleCompletedCount,
     dailyHabits,
     state,
   });
 
   const celebration = useTodayCelebration({
-    completedCount: completedDailyHabitCount,
+    completedCount: streakEligibleCompletedCount,
     dailyHabitCount: dailyHabits.length,
     date: state.date,
     streak: state.streak,

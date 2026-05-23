@@ -356,9 +356,6 @@ export function createTodayActions({
     handleOpenWindDown() {
       useUiStore.getState().setTab("windDown");
     },
-    async handleMoveUnfinishedHabitsToTomorrow() {
-      await refreshToday(habitsClient.moveUnfinishedHabitsToTomorrow());
-    },
     handleCloseWindDown() {
       useUiStore.getState().setTab("today");
     },

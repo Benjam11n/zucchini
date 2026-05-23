@@ -175,10 +175,16 @@ export function buildTodayState(
   const habits = repository.getHabitsWithStatus(today);
   const currentDayStatus = repository.getDayStatus(today);
   const dailyHabits = habits.filter(isDailyHabit);
+  const habitCarryovers = repository.getHabitCarryoversForDate(today);
+  const allCarryoversComplete = habitCarryovers.every(
+    (carryover) => carryover.completed
+  );
   const settledStreak = repository.getPersistedStreakState();
   const preview = previewOpenDay(
     settledStreak,
-    dailyHabits.length > 0 && dailyHabits.every((habit) => habit.completed),
+    dailyHabits.length > 0 &&
+      dailyHabits.every((habit) => habit.completed) &&
+      allCarryoversComplete,
     currentDayStatus?.kind ?? null
   );
 
@@ -198,7 +204,7 @@ export function buildTodayState(
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
     focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
-    habitCarryovers: repository.getHabitCarryoversForDate(today),
+    habitCarryovers,
     habitStreaks: buildTodayHabitStreaksFromHabits(
       repository,
       habits,
