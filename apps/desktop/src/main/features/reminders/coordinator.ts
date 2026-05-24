@@ -1,6 +1,6 @@
 import { createReminderScheduler } from "@/main/features/reminders/reminder-scheduler";
 import { createRuntimeStateStore } from "@/main/features/reminders/scheduler-utils";
-import { createWindDownReminderScheduler } from "@/main/features/wind-down/reminder-scheduler";
+import { createWindDownReminderScheduler } from "@/main/features/reminders/wind-down-scheduler";
 import { systemClock } from "@/shared/domain/clock";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import { DEFAULT_REMINDER_RUNTIME_STATE } from "@/shared/domain/reminder-runtime-state";

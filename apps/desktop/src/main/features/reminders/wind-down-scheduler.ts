@@ -15,14 +15,14 @@ import type { TodayState } from "@/shared/read-models/today-state";
 import {
   isAtOrPastZonedTime,
   parseReminderClockTime,
-} from "../reminders/reminder-timezone";
+} from "./reminder-timezone";
 import {
   clearTimer,
   createRuntimeStateStore,
   scheduleDailyNotification,
   wasSentToday,
-} from "../reminders/scheduler-utils";
-import type { TimerHandle } from "../reminders/scheduler-utils";
+} from "./scheduler-utils";
+import type { TimerHandle } from "./scheduler-utils";
 
 interface WindDownReminderSchedulerOptions {
   clock?: Pick<Clock, "now">;
