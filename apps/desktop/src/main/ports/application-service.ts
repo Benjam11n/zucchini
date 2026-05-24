@@ -2,11 +2,11 @@ import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
   HabitCommandResult,
-} from "@/shared/contracts/habits-ipc-commands";
+} from "@/shared/contracts/habits-ipc-command-registry";
 import type {
   HabitQuery,
   HabitQueryResult,
-} from "@/shared/contracts/habits-ipc-queries";
+} from "@/shared/contracts/habits-ipc-query-registry";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type {

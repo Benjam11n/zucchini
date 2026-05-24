@@ -25,13 +25,13 @@ import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
 import type {
   HabitCommand,
   ResultForCommand,
-} from "@/shared/contracts/habits-ipc-commands";
+} from "@/shared/contracts/habits-ipc-command-registry";
 import { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
 import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
 import type {
   HabitQuery,
   ResultForQuery,
-} from "@/shared/contracts/habits-ipc-queries";
+} from "@/shared/contracts/habits-ipc-query-registry";
 
 async function invokeHabits<T>(
   channel: string,

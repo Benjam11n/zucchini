@@ -1,248 +1,156 @@
 import type { ApplicationService } from "@/main/ports/application-service";
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
   HabitCommandResult,
-} from "@/shared/contracts/habits-ipc-commands";
+  HabitCommandType,
+  PayloadForCommandType,
+  ResultForCommandType,
+} from "@/shared/contracts/habits-ipc-command-registry";
 import type {
   HabitQuery,
   HabitQueryResult,
-} from "@/shared/contracts/habits-ipc-queries";
-import type { TodayState } from "@/shared/contracts/today-state";
+  HabitQueryType,
+  PayloadForQueryType,
+  ResultForQueryType,
+} from "@/shared/contracts/habits-ipc-query-registry";
 
-function assertNever(value: never): never {
-  throw new Error(`Unsupported command or query: ${JSON.stringify(value)}`);
-}
+type HabitCommandHandler<TType extends HabitCommandType> = [
+  PayloadForCommandType<TType>,
+] extends [never]
+  ? (service: ApplicationService) => ResultForCommandType<TType>
+  : (
+      service: ApplicationService,
+      payload: PayloadForCommandType<TType>
+    ) => ResultForCommandType<TType>;
 
-function executeFocusQuotaGoalCommand(
-  service: ApplicationService,
-  command: Extract<HabitCommand, { type: `focusQuotaGoal.${string}` }>
-): TodayState {
-  switch (command.type) {
-    case "focusQuotaGoal.archive": {
-      return service.archiveFocusQuotaGoal(command.payload.goalId);
-    }
-    case "focusQuotaGoal.unarchive": {
-      return service.unarchiveFocusQuotaGoal(command.payload.goalId);
-    }
-    case "focusQuotaGoal.upsert": {
-      return service.upsertFocusQuotaGoal(
-        command.payload.frequency,
-        command.payload.targetMinutes
-      );
-    }
-    default: {
-      return assertNever(command);
-    }
-  }
-}
+type HabitCommandHandlers = {
+  [TType in HabitCommandType]: HabitCommandHandler<TType>;
+};
 
-function executeHabitCommand(
-  service: ApplicationService,
-  command: Extract<HabitCommand, { type: `habit.${string}` }>
-): HabitStatusPatch | TodayState {
-  switch (command.type) {
-    case "habit.archive": {
-      return service.archiveHabit(command.payload.habitId);
-    }
-    case "habit.create": {
-      return service.createHabit(
-        command.payload.name,
-        command.payload.category,
-        command.payload.frequency,
-        command.payload.selectedWeekdays,
-        command.payload.targetCount
-      );
-    }
-    case "habit.decrementProgress": {
-      return service.decrementHabitProgress(command.payload.habitId);
-    }
-    case "habit.incrementProgress": {
-      return service.incrementHabitProgress(command.payload.habitId);
-    }
-    case "habit.pause": {
-      return service.pauseHabit(command.payload.habitId);
-    }
-    case "habit.rename": {
-      return service.renameHabit(command.payload.habitId, command.payload.name);
-    }
-    case "habit.reorder": {
-      return service.reorderHabits(command.payload.habitIds);
-    }
-    case "habit.resume": {
-      return service.resumeHabit(command.payload.habitId);
-    }
-    case "habit.toggle": {
-      return service.toggleHabit(command.payload.habitId);
-    }
-    case "habit.unarchive": {
-      return service.unarchiveHabit(command.payload.habitId);
-    }
-    case "habit.updateCategory": {
-      return service.updateHabitCategory(
-        command.payload.habitId,
-        command.payload.category
-      );
-    }
-    case "habit.updateFrequency": {
-      return service.updateHabitFrequency(
-        command.payload.habitId,
-        command.payload.frequency,
-        command.payload.targetCount
-      );
-    }
-    case "habit.updateTargetCount": {
-      return service.updateHabitTargetCount(
-        command.payload.habitId,
-        command.payload.targetCount
-      );
-    }
-    case "habit.updateWeekdays": {
-      return service.updateHabitWeekdays(
-        command.payload.habitId,
-        command.payload.selectedWeekdays
-      );
-    }
-    default: {
-      return assertNever(command);
-    }
-  }
-}
+type HabitQueryHandler<TType extends HabitQueryType> = [
+  PayloadForQueryType<TType>,
+] extends [never]
+  ? (service: ApplicationService) => ResultForQueryType<TType>
+  : (
+      service: ApplicationService,
+      payload: PayloadForQueryType<TType>
+    ) => ResultForQueryType<TType>;
 
-function executeWindDownCommand(
-  service: ApplicationService,
-  command: Extract<HabitCommand, { type: `windDown.${string}` }>
-): TodayState {
-  switch (command.type) {
-    case "windDown.createAction": {
-      return service.createWindDownAction(command.payload.name);
-    }
-    case "windDown.deleteAction": {
-      return service.deleteWindDownAction(command.payload.actionId);
-    }
-    case "windDown.renameAction": {
-      return service.renameWindDownAction(
-        command.payload.actionId,
-        command.payload.name
-      );
-    }
-    case "windDown.toggleAction": {
-      return service.toggleWindDownAction(command.payload.actionId);
-    }
-    default: {
-      return assertNever(command);
-    }
-  }
-}
+type HabitQueryHandlers = {
+  [TType in HabitQueryType]: HabitQueryHandler<TType>;
+};
+
+const habitCommandHandlers = {
+  "focusQuotaGoal.archive": (service, payload) =>
+    service.archiveFocusQuotaGoal(payload.goalId),
+  "focusQuotaGoal.unarchive": (service, payload) =>
+    service.unarchiveFocusQuotaGoal(payload.goalId),
+  "focusQuotaGoal.upsert": (service, payload) =>
+    service.upsertFocusQuotaGoal(payload.frequency, payload.targetMinutes),
+  "focusSession.record": (service, payload) =>
+    service.recordFocusSession(payload),
+  "focusTimer.saveState": (service, payload) =>
+    service.savePersistedFocusTimerState(payload),
+  "habit.archive": (service, payload) => service.archiveHabit(payload.habitId),
+  "habit.create": (service, payload) =>
+    service.createHabit(
+      payload.name,
+      payload.category,
+      payload.frequency,
+      payload.selectedWeekdays,
+      payload.targetCount
+    ),
+  "habit.decrementProgress": (service, payload) =>
+    service.decrementHabitProgress(payload.habitId),
+  "habit.incrementProgress": (service, payload) =>
+    service.incrementHabitProgress(payload.habitId),
+  "habit.pause": (service, payload) => service.pauseHabit(payload.habitId),
+  "habit.rename": (service, payload) =>
+    service.renameHabit(payload.habitId, payload.name),
+  "habit.reorder": (service, payload) =>
+    service.reorderHabits(payload.habitIds),
+  "habit.resume": (service, payload) => service.resumeHabit(payload.habitId),
+  "habit.toggle": (service, payload) => service.toggleHabit(payload.habitId),
+  "habit.unarchive": (service, payload) =>
+    service.unarchiveHabit(payload.habitId),
+  "habit.updateCategory": (service, payload) =>
+    service.updateHabitCategory(payload.habitId, payload.category),
+  "habit.updateFrequency": (service, payload) =>
+    service.updateHabitFrequency(
+      payload.habitId,
+      payload.frequency,
+      payload.targetCount
+    ),
+  "habit.updateTargetCount": (service, payload) =>
+    service.updateHabitTargetCount(payload.habitId, payload.targetCount),
+  "habit.updateWeekdays": (service, payload) =>
+    service.updateHabitWeekdays(payload.habitId, payload.selectedWeekdays),
+  "settings.update": (service, payload) => service.updateSettings(payload),
+  "today.moveUnfinishedToTomorrow": (service) =>
+    service.moveUnfinishedHabitsToTomorrow(),
+  "today.setDayStatus": (service, payload) =>
+    service.setDayStatus(payload.kind),
+  "today.toggleCarryover": (service, payload) =>
+    service.toggleHabitCarryover(payload.sourceDate, payload.habitId),
+  "today.toggleSickDay": (service) => service.toggleSickDay(),
+  "windDown.createAction": (service, payload) =>
+    service.createWindDownAction(payload.name),
+  "windDown.deleteAction": (service, payload) =>
+    service.deleteWindDownAction(payload.actionId),
+  "windDown.renameAction": (service, payload) =>
+    service.renameWindDownAction(payload.actionId, payload.name),
+  "windDown.toggleAction": (service, payload) =>
+    service.toggleWindDownAction(payload.actionId),
+} satisfies HabitCommandHandlers;
+
+const habitQueryHandlers = {
+  "focusSession.list": (service, payload) =>
+    service.getFocusSessions(payload?.limit),
+  "focusTimer.getState": (service) => service.getPersistedFocusTimerState(),
+  "habit.list": (service) => service.getHabits(),
+  "history.get": (service, payload) => service.getHistory(payload?.limit),
+  "history.getDay": (service, payload) => service.getHistoryDay(payload.date),
+  "history.getYear": (service, payload) =>
+    service.getHistoryForYear(payload.year),
+  "history.summary": (service, payload) =>
+    service.getHistorySummary(payload?.limit),
+  "history.summaryMonth": (service, payload) =>
+    service.getHistorySummaryForMonth(payload.year, payload.month),
+  "history.summaryYear": (service, payload) =>
+    service.getHistorySummaryForYear(payload.year),
+  "history.years": (service) => service.getHistoryYears(),
+  "insights.dashboard": (service, payload) =>
+    service.getInsightsDashboard(payload?.rangeDays),
+  "today.get": (service) => service.getTodayState(),
+  "weeklyReview.get": (service, payload) =>
+    service.getWeeklyReview(payload.weekStart),
+  "weeklyReview.overview": (service) => service.getWeeklyReviewOverview(),
+} satisfies HabitQueryHandlers;
 
 export function executeHabitServiceCommand(
   service: ApplicationService,
   command: HabitCommand
 ): HabitCommandResult {
-  if (command.type.startsWith("habit.")) {
-    return executeHabitCommand(
-      service,
-      command as Extract<HabitCommand, { type: `habit.${string}` }>
-    );
-  }
+  const handler = habitCommandHandlers[command.type] as (
+    service: ApplicationService,
+    payload?: unknown
+  ) => HabitCommandResult;
 
-  if (command.type.startsWith("focusQuotaGoal.")) {
-    return executeFocusQuotaGoalCommand(
-      service,
-      command as Extract<HabitCommand, { type: `focusQuotaGoal.${string}` }>
-    );
-  }
-
-  if (command.type.startsWith("windDown.")) {
-    return executeWindDownCommand(
-      service,
-      command as Extract<HabitCommand, { type: `windDown.${string}` }>
-    );
-  }
-
-  switch (command.type) {
-    case "focusSession.record": {
-      return service.recordFocusSession(command.payload);
-    }
-    case "focusTimer.saveState": {
-      return service.savePersistedFocusTimerState(command.payload);
-    }
-    case "settings.update": {
-      return service.updateSettings(command.payload);
-    }
-    case "today.moveUnfinishedToTomorrow": {
-      return service.moveUnfinishedHabitsToTomorrow();
-    }
-    case "today.setDayStatus": {
-      return service.setDayStatus(command.payload.kind);
-    }
-    case "today.toggleCarryover": {
-      return service.toggleHabitCarryover(
-        command.payload.sourceDate,
-        command.payload.habitId
-      );
-    }
-    case "today.toggleSickDay": {
-      return service.toggleSickDay();
-    }
-    default: {
-      throw new Error(`Unsupported habit command: ${command.type}`);
-    }
-  }
+  return "payload" in command
+    ? handler(service, command.payload)
+    : handler(service);
 }
 
 export function readHabitServiceQuery(
   service: ApplicationService,
   query: HabitQuery
 ): HabitQueryResult {
-  switch (query.type) {
-    case "focusSession.list": {
-      return service.getFocusSessions(query.payload?.limit);
-    }
-    case "focusTimer.getState": {
-      return service.getPersistedFocusTimerState();
-    }
-    case "habit.list": {
-      return service.getHabits();
-    }
-    case "insights.dashboard": {
-      return service.getInsightsDashboard(query.payload?.rangeDays);
-    }
-    case "history.get": {
-      return service.getHistory(query.payload?.limit);
-    }
-    case "history.getYear": {
-      return service.getHistoryForYear(query.payload.year);
-    }
-    case "history.getDay": {
-      return service.getHistoryDay(query.payload.date);
-    }
-    case "history.summary": {
-      return service.getHistorySummary(query.payload?.limit);
-    }
-    case "history.summaryYear": {
-      return service.getHistorySummaryForYear(query.payload.year);
-    }
-    case "history.summaryMonth": {
-      return service.getHistorySummaryForMonth(
-        query.payload.year,
-        query.payload.month
-      );
-    }
-    case "history.years": {
-      return service.getHistoryYears();
-    }
-    case "today.get": {
-      return service.getTodayState();
-    }
-    case "weeklyReview.get": {
-      return service.getWeeklyReview(query.payload.weekStart);
-    }
-    case "weeklyReview.overview": {
-      return service.getWeeklyReviewOverview();
-    }
-    default: {
-      return assertNever(query);
-    }
-  }
+  const handler = habitQueryHandlers[query.type] as (
+    service: ApplicationService,
+    payload?: unknown
+  ) => HabitQueryResult;
+
+  return "payload" in query
+    ? handler(service, query.payload)
+    : handler(service);
 }

@@ -35,9 +35,9 @@ import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
 import type {
   HabitCommand,
   HabitCommandResult,
-} from "@/shared/contracts/habits-ipc-commands";
+} from "@/shared/contracts/habits-ipc-command-registry";
 import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
-import type { HabitQueryResult } from "@/shared/contracts/habits-ipc-queries";
+import type { HabitQueryResult } from "@/shared/contracts/habits-ipc-query-registry";
 import type { TodayState } from "@/shared/contracts/today-state";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";

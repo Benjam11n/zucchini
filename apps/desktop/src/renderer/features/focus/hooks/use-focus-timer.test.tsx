@@ -11,8 +11,8 @@ import {
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { resolveFocusTimerTick } from "@/renderer/features/focus/lib/focus-timer-tick";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
-import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
+import type { HabitCommand } from "@/shared/contracts/habits-ipc-command-registry";
+import type { HabitQuery } from "@/shared/contracts/habits-ipc-query-registry";
 import type {
   CreateFocusSessionInput,
   FocusSession,

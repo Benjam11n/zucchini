@@ -297,25 +297,25 @@ export const persistedFocusTimerStateSchema = z
     }
   });
 
-const focusQuotaGoalIdPayloadSchema = z
+export const focusQuotaGoalIdPayloadSchema = z
   .object({
     goalId: habitIdSchema,
   })
   .strict();
 
-const habitIdPayloadSchema = z
+export const habitIdPayloadSchema = z
   .object({
     habitId: habitIdSchema,
   })
   .strict();
 
-const windDownActionIdPayloadSchema = z
+export const windDownActionIdPayloadSchema = z
   .object({
     actionId: habitIdSchema,
   })
   .strict();
 
-const createHabitPayloadSchema = z
+export const createHabitPayloadSchema = z
   .object({
     category: habitCategorySchema,
     frequency: habitFrequencySchema,
@@ -325,7 +325,7 @@ const createHabitPayloadSchema = z
   })
   .strict();
 
-const updateHabitFrequencyPayloadSchema = z
+export const updateHabitFrequencyPayloadSchema = z
   .object({
     frequency: habitFrequencySchema,
     habitId: habitIdSchema,
@@ -333,7 +333,7 @@ const updateHabitFrequencyPayloadSchema = z
   })
   .strict();
 
-const focusQuotaGoalUpsertPayloadSchema = z
+export const focusQuotaGoalUpsertPayloadSchema = z
   .object({
     frequency: goalFrequencySchema,
     targetMinutes: focusQuotaTargetMinutesSchema,
@@ -354,170 +354,53 @@ const focusQuotaGoalUpsertPayloadSchema = z
     });
   });
 
-const commandSchemas = [
-  z
-    .object({
-      payload: focusQuotaGoalIdPayloadSchema,
-      type: z.literal("focusQuotaGoal.archive"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: focusQuotaGoalIdPayloadSchema,
-      type: z.literal("focusQuotaGoal.unarchive"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: focusQuotaGoalUpsertPayloadSchema,
-      type: z.literal("focusQuotaGoal.upsert"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: createFocusSessionInputSchema,
-      type: z.literal("focusSession.record"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: persistedFocusTimerStateSchema,
-      type: z.literal("focusTimer.saveState"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: createHabitPayloadSchema,
-      type: z.literal("habit.create"),
-    })
-    .strict(),
-  z
-    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.archive") })
-    .strict(),
-  z
-    .object({
-      payload: habitIdPayloadSchema,
-      type: z.literal("habit.decrementProgress"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: habitIdPayloadSchema,
-      type: z.literal("habit.incrementProgress"),
-    })
-    .strict(),
-  z
-    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.pause") })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({ habitId: habitIdSchema, name: habitNameSchema })
-        .strict(),
-      type: z.literal("habit.rename"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z.object({ habitIds: reorderHabitIdsSchema }).strict(),
-      type: z.literal("habit.reorder"),
-    })
-    .strict(),
-  z
-    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.resume") })
-    .strict(),
-  z
-    .object({ payload: habitIdPayloadSchema, type: z.literal("habit.toggle") })
-    .strict(),
-  z
-    .object({
-      payload: habitIdPayloadSchema,
-      type: z.literal("habit.unarchive"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({ category: habitCategorySchema, habitId: habitIdSchema })
-        .strict(),
-      type: z.literal("habit.updateCategory"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: updateHabitFrequencyPayloadSchema,
-      type: z.literal("habit.updateFrequency"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({ habitId: habitIdSchema, targetCount: habitTargetCountSchema })
-        .strict(),
-      type: z.literal("habit.updateTargetCount"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({
-          habitId: habitIdSchema,
-          selectedWeekdays: habitWeekdaysSchema.nullable(),
-        })
-        .strict(),
-      type: z.literal("habit.updateWeekdays"),
-    })
-    .strict(),
-  z
-    .object({ payload: appSettingsSchema, type: z.literal("settings.update") })
-    .strict(),
-  z.object({ type: z.literal("today.moveUnfinishedToTomorrow") }).strict(),
-  z
-    .object({
-      payload: z
-        .object({ kind: z.enum(["rescheduled", "rest", "sick"]).nullable() })
-        .strict(),
-      type: z.literal("today.setDayStatus"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z.object({ habitId: habitIdSchema, sourceDate: dateKeySchema }),
-      type: z.literal("today.toggleCarryover"),
-    })
-    .strict(),
-  z.object({ type: z.literal("today.toggleSickDay") }).strict(),
-  z
-    .object({
-      payload: z.object({ name: habitNameSchema }).strict(),
-      type: z.literal("windDown.createAction"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: windDownActionIdPayloadSchema,
-      type: z.literal("windDown.deleteAction"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({ actionId: habitIdSchema, name: habitNameSchema })
-        .strict(),
-      type: z.literal("windDown.renameAction"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: windDownActionIdPayloadSchema,
-      type: z.literal("windDown.toggleAction"),
-    })
-    .strict(),
-] as const;
+export const renameHabitPayloadSchema = z
+  .object({ habitId: habitIdSchema, name: habitNameSchema })
+  .strict();
 
-export const habitCommandSchema = z.discriminatedUnion("type", commandSchemas);
+export const reorderHabitPayloadSchema = z
+  .object({ habitIds: reorderHabitIdsSchema })
+  .strict();
 
-const optionalLimitPayloadSchema = z
+export const updateHabitCategoryPayloadSchema = z
+  .object({ category: habitCategorySchema, habitId: habitIdSchema })
+  .strict();
+
+export const updateHabitTargetCountPayloadSchema = z
+  .object({ habitId: habitIdSchema, targetCount: habitTargetCountSchema })
+  .strict();
+
+export const updateHabitWeekdaysPayloadSchema = z
+  .object({
+    habitId: habitIdSchema,
+    selectedWeekdays: habitWeekdaysSchema.nullable(),
+  })
+  .strict();
+
+export const setDayStatusPayloadSchema = z
+  .object({ kind: z.enum(["rescheduled", "rest", "sick"]).nullable() })
+  .strict();
+
+export const toggleCarryoverPayloadSchema = z
+  .object({ habitId: habitIdSchema, sourceDate: dateKeySchema })
+  .strict();
+
+export const createWindDownActionPayloadSchema = z
+  .object({ name: habitNameSchema })
+  .strict();
+
+export const renameWindDownActionPayloadSchema = z
+  .object({ actionId: habitIdSchema, name: habitNameSchema })
+  .strict();
+
+export const focusSessionListPayloadSchema = z
+  .object({
+    limit: focusSessionLimitSchema,
+  })
+  .strict()
+  .optional();
+
+export const optionalLimitPayloadSchema = z
   .object({
     limit: historyLimitSchema,
   })
@@ -526,78 +409,25 @@ const optionalLimitPayloadSchema = z
 const insightsRangeDaysSchema = z.union(
   INSIGHTS_RANGE_OPTIONS.map((rangeDays) => z.literal(rangeDays))
 );
-const optionalInsightsPayloadSchema = z
+export const optionalInsightsPayloadSchema = z
   .object({
     rangeDays: insightsRangeDaysSchema.optional(),
   })
   .strict()
   .optional();
 
-export const habitQuerySchema = z.discriminatedUnion("type", [
-  z
-    .object({
-      payload: z
-        .object({
-          limit: focusSessionLimitSchema,
-        })
-        .strict()
-        .optional(),
-      type: z.literal("focusSession.list"),
-    })
-    .strict(),
-  z.object({ type: z.literal("focusTimer.getState") }).strict(),
-  z.object({ type: z.literal("habit.list") }).strict(),
-  z
-    .object({
-      payload: optionalInsightsPayloadSchema,
-      type: z.literal("insights.dashboard"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: optionalLimitPayloadSchema,
-      type: z.literal("history.get"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z.object({ year: historyYearSchema }).strict(),
-      type: z.literal("history.getYear"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z.object({ year: historyYearSchema }).strict(),
-      type: z.literal("history.summaryYear"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z
-        .object({ month: historyMonthSchema, year: historyYearSchema })
-        .strict(),
-      type: z.literal("history.summaryMonth"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: z.object({ date: dateKeySchema }).strict(),
-      type: z.literal("history.getDay"),
-    })
-    .strict(),
-  z
-    .object({
-      payload: optionalLimitPayloadSchema,
-      type: z.literal("history.summary"),
-    })
-    .strict(),
-  z.object({ type: z.literal("history.years") }).strict(),
-  z.object({ type: z.literal("today.get") }).strict(),
-  z
-    .object({
-      payload: z.object({ weekStart: dateKeySchema }).strict(),
-      type: z.literal("weeklyReview.get"),
-    })
-    .strict(),
-  z.object({ type: z.literal("weeklyReview.overview") }).strict(),
-]);
+export const historyYearPayloadSchema = z
+  .object({ year: historyYearSchema })
+  .strict();
+
+export const historySummaryMonthPayloadSchema = z
+  .object({ month: historyMonthSchema, year: historyYearSchema })
+  .strict();
+
+export const historyDayPayloadSchema = z
+  .object({ date: dateKeySchema })
+  .strict();
+
+export const weeklyReviewPayloadSchema = z
+  .object({ weekStart: dateKeySchema })
+  .strict();

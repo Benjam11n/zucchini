@@ -2,8 +2,8 @@ import { vi } from "vitest";
 
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type { HabitsApi } from "@/shared/contracts/habits-api";
-import type { HabitCommand } from "@/shared/contracts/habits-ipc-commands";
-import type { HabitQuery } from "@/shared/contracts/habits-ipc-queries";
+import type { HabitCommand } from "@/shared/contracts/habits-ipc-command-registry";
+import type { HabitQuery } from "@/shared/contracts/habits-ipc-query-registry";
 
 type MockFn = ReturnType<typeof vi.fn>;
 type CallableMockFn = MockFn & ((...args: unknown[]) => unknown);

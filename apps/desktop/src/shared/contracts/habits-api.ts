@@ -1,8 +1,11 @@
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
-import type { HabitCommand, ResultForCommand } from "./habits-ipc-commands";
-import type { HabitQuery, ResultForQuery } from "./habits-ipc-queries";
+import type {
+  HabitCommand,
+  ResultForCommand,
+} from "./habits-ipc-command-registry";
+import type { HabitQuery, ResultForQuery } from "./habits-ipc-query-registry";
 
 export type FocusTimerAction = "reset" | "toggle";
 type FocusTimerActionSource = "global-shortcut" | "main-window" | "widget";
