@@ -116,9 +116,9 @@ describe("data management settings card", () => {
     await waitFor(() => {
       expect(habits.openDataFolder.mock.calls).toHaveLength(1);
     });
-    expect(
-      screen.getByText(/opened zucchini in your file manager/i)
-    ).toBeInTheDocument();
+    await expect(
+      screen.findByText(/opened zucchini in your file manager/i)
+    ).resolves.toBeInTheDocument();
   });
 
   it("exports a backup from settings", async () => {
