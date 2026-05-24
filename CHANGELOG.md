@@ -18,6 +18,8 @@ Changes since `v0.1.2-beta.13`.
 
 ### Fixes
 
+- Defer default session access
+- Refresh beta release metadata
 - Allow slower history month test
 - Wait for data folder feedback
 - Tighten mobile hero actions
