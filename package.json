@@ -11,6 +11,7 @@
     "dev:web": "pnpm --dir apps/web dev",
     "build:desktop": "pnpm --dir apps/desktop build",
     "build:web": "pnpm --dir apps/web build",
+    "marketing:screenshot": "node apps/desktop/scripts/generate-marketing-screenshot.mjs",
     "test:desktop": "pnpm --dir apps/desktop test",
     "typecheck:desktop": "pnpm --dir apps/desktop run typecheck",
     "fallow": "fallow",

@@ -29,6 +29,13 @@ import {
 import { createDesktopLogger } from "@/main/app/logger";
 import { applyRuntimeSettings, createAppRuntime } from "@/main/app/runtime";
 import type { AppRuntime } from "@/main/app/runtime";
+import {
+  captureMarketingScreenshot,
+  configureScreenshotUserDataPath,
+  getScreenshotModeConfig,
+  isScreenshotMode,
+  seedMarketingScreenshotData,
+} from "@/main/app/screenshot-mode";
 import { configureSessionSecurity } from "@/main/app/session-security";
 import {
   acquireSingleInstanceLock,
@@ -44,6 +51,7 @@ import { createFocusWidgetWindow } from "@/main/app/windows/focus-widget-window"
 import { createMainWindow } from "@/main/app/windows/main-window";
 import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
 import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
+import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 import type {
@@ -116,6 +124,8 @@ function createMainProcessContext() {
 }
 
 const context = createMainProcessContext();
+configureScreenshotUserDataPath(app);
+
 const logger = createDesktopLogger({
   app,
 });
@@ -350,7 +360,11 @@ async function bootstrapApp(): Promise<void> {
   try {
     await app.whenReady();
     configureSessionSecurity(electronSession.defaultSession, logger);
+    const screenshotConfig = getScreenshotModeConfig();
 
+    const screenshotRepository = screenshotConfig.databasePath
+      ? new SqliteAppRepository({ databasePath: screenshotConfig.databasePath })
+      : null;
     const appRuntime = createAppRuntime({
       onOpenFocusWidget: showFocusWidget,
       onOpenMainWindow: showMainWindow,
@@ -377,8 +391,13 @@ async function bootstrapApp(): Promise<void> {
         context.markQuitting();
         app.quit();
       },
+      ...(screenshotRepository ? { repository: screenshotRepository } : {}),
     });
     context.setRuntime(appRuntime);
+    seedMarketingScreenshotData({
+      repository: appRuntime.repository,
+      service: appRuntime.service,
+    });
 
     if (process.platform === "darwin" && app.dock) {
       const icon = nativeImage.createFromPath(resolveRuntimeIconPath());
@@ -456,7 +475,17 @@ async function bootstrapApp(): Promise<void> {
       log: logger,
     });
 
-    ensureMainWindow();
+    const mainWindow = ensureMainWindow();
+
+    if (isScreenshotMode()) {
+      await captureMarketingScreenshot({
+        app,
+        log: logger,
+        window: mainWindow,
+      });
+      return;
+    }
+
     ensureFocusWidgetWindow();
     queueMicrotask(() => {
       warmAppRuntime(appRuntime);
@@ -497,7 +526,9 @@ async function showMainWindowWhenReady(): Promise<void> {
   }
 }
 
-if (acquireSingleInstanceLock(app)) {
+if (isScreenshotMode()) {
+  bootstrapApp();
+} else if (acquireSingleInstanceLock(app)) {
   registerSecondInstanceHandler(app, () => {
     if (app.isReady()) {
       showMainWindow();

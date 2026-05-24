@@ -121,7 +121,10 @@ function TodayPageComponent({
       <TodayCelebrationOverlay celebration={celebration} />
       <TodayKeyboardHint hint={keyboardHint} />
 
-      <div className="grid w-full min-w-0 max-w-full gap-6">
+      <div
+        className="grid w-full min-w-0 max-w-full gap-6"
+        data-screenshot-ready={hasLoadedHistorySummary ? "true" : undefined}
+      >
         <section className="min-w-0">
           <TodayHistoryCarousel
             hasLoadedHistorySummary={hasLoadedHistorySummary}
