@@ -20,8 +20,8 @@ const logger = createDesktopLogger({
 new MainProcessRuntime({
   app,
   autoUpdater,
-  defaultSession: electronSession.defaultSession,
   dialog,
+  getDefaultSession: () => electronSession.defaultSession,
   ipcMain,
   logger,
   shell,

@@ -29,8 +29,8 @@ import type { AppSettings } from "@/shared/domain/settings";
 interface MainProcessRuntimeOptions {
   app: App;
   autoUpdater: AppUpdater;
-  defaultSession: Session;
   dialog: Dialog;
+  getDefaultSession: () => Session;
   ipcMain: IpcMain;
   logger: LoggerPort;
   shell: Shell;
@@ -87,7 +87,7 @@ export class MainProcessRuntime {
     try {
       await this.options.app.whenReady();
       configureSessionSecurity(
-        this.options.defaultSession,
+        this.options.getDefaultSession(),
         this.options.logger
       );
 
