@@ -8,6 +8,7 @@ import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
  * management into one place while surfacing the current save state.
  */
 import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
+import { FocusQuotaSettingsCard } from "@/renderer/features/settings/components/focus/focus-quota-settings-card";
 import { DataManagementSettingsCard } from "@/renderer/features/settings/components/general/data-management-settings-card";
 import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
 import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
@@ -166,22 +167,24 @@ export function SettingsPage(props: SettingsPageProps) {
                 settings={props.settings}
               />
               <HabitManagementCard
-                focusQuotaGoals={props.focusQuotaGoals}
                 habits={props.habits}
                 onArchiveHabit={props.onArchiveHabit}
-                onArchiveFocusQuotaGoal={props.onArchiveFocusQuotaGoal}
                 onCreateHabit={props.onCreateHabit}
                 onPauseHabit={props.onPauseHabit}
                 onRenameHabit={props.onRenameHabit}
                 onReorderHabits={props.onReorderHabits}
                 onResumeHabit={props.onResumeHabit}
-                onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
                 onUnarchiveHabit={props.onUnarchiveHabit}
-                onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}
                 onUpdateHabitCategory={props.onUpdateHabitCategory}
                 onUpdateHabitFrequency={props.onUpdateHabitFrequency}
                 onUpdateHabitTargetCount={props.onUpdateHabitTargetCount}
                 onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
+              />
+              <FocusQuotaSettingsCard
+                focusQuotaGoals={props.focusQuotaGoals}
+                onArchiveFocusQuotaGoal={props.onArchiveFocusQuotaGoal}
+                onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}
+                onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
               />
             </m.div>
           </TabsContent>

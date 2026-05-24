@@ -1,11 +1,10 @@
 import { useForm } from "@tanstack/react-form";
-import { Archive, Timer } from "lucide-react";
+import { Archive } from "lucide-react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getFocusQuotaTargetMinutesBounds,
   GOAL_FREQUENCY_DEFINITIONS,
@@ -18,7 +17,6 @@ import type {
 interface FocusQuotaGoalsCardProps {
   archiveButtonVariant?: "destructive" | "ghost";
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
-  embedded?: boolean;
   onArchiveGoal: (goalId: number) => Promise<void>;
   onArchiveGoalStart?: (goal: FocusQuotaGoalWithStatus) => void;
   onSaveGoal: (
@@ -139,7 +137,6 @@ function FocusQuotaGoalForm({
 
 export function FocusQuotaGoalsCard({
   archiveButtonVariant = "ghost",
-  embedded = false,
   focusQuotaGoals,
   onArchiveGoal,
   onArchiveGoalStart,
@@ -150,14 +147,7 @@ export function FocusQuotaGoalsCard({
   );
 
   return (
-    <section
-      className={cn("grid gap-3", embedded && "border-t border-border/60 pt-3")}
-    >
-      <div className="flex items-center gap-2">
-        <Timer className="size-4 text-primary" />
-        <p className="text-sm font-medium text-foreground">Focus quota</p>
-      </div>
-
+    <section className="grid gap-3">
       <div className="grid gap-4 md:grid-cols-2">
         {GOAL_FREQUENCY_DEFINITIONS.map((definition) => {
           const goal = goalsByFrequency.get(definition.value);
