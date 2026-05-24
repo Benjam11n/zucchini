@@ -1,11 +1,11 @@
 import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import type { AppRepository } from "@/main/ports/app-repository";
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Clock } from "@/shared/domain/clock";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export class ApplicationServiceRuntime {
   readonly repository: AppRepository;

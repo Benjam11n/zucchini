@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatIsoTime } from "@/shared/utils/date";
+import { formatIsoTime } from "@/shared/domain/date-key";
 
 function formatSessionTime(value: string): string {
   return formatIsoTime(value);

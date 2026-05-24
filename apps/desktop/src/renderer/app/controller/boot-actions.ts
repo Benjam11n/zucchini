@@ -7,7 +7,7 @@
  */
 import { useBootStore } from "@/renderer/app/state/boot-store";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 
 import { applyBootFailureState } from "./action-helpers";
 import type { ReloadAllFn } from "./today-actions";

@@ -1,18 +1,18 @@
 import type * as ElectronModule from "electron";
 import type { ContextBridge, IpcRenderer } from "electron";
 
-import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type {
   DesktopNotificationStatus,
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
   HabitsApi,
-} from "@/shared/contracts/habits-api";
-import type { TodayState } from "@/shared/contracts/today-state";
+} from "@/shared/contracts/api/habits-api";
+import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 const exposed = new Map<string, unknown>();
 const invoke = vi.fn();

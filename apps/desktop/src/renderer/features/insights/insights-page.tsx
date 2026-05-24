@@ -15,7 +15,7 @@ import type { InsightsPageProps } from "@/renderer/features/insights/insights.ty
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
-import { formatDateKey } from "@/shared/utils/date";
+import { formatDateKey } from "@/shared/domain/date-key";
 
 function formatInsightsDate(dateKey: string): string {
   return formatDateKey(

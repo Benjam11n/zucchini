@@ -6,13 +6,13 @@ import type {
 import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
-import type { DailySummary } from "@/shared/domain/streak";
 import {
   addDays,
   endOfWeek,
   formatDateKey,
   startOfWeek,
-} from "@/shared/utils/date";
+} from "@/shared/domain/date-key";
+import type { DailySummary } from "@/shared/domain/streak";
 
 const DAY_IN_WEEK = 7;
 const MAX_CONTRIBUTION_INTENSITY = 4;

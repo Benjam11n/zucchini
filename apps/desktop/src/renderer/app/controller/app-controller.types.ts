@@ -15,8 +15,7 @@ import type {
   SettingsFieldErrors,
   SettingsSavePhase,
 } from "@/renderer/features/settings/settings.types";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -29,6 +28,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export interface AppControllerState {
   bootError: HabitsIpcError | null;

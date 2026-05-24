@@ -9,7 +9,7 @@ import type {
   FocusTimerAction,
   FocusTimerShortcutRegistration,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/habits-api";
+} from "@/shared/contracts/api/habits-api";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { GlobalShortcutPort } from "./ports";

@@ -8,7 +8,7 @@ import type {
   ContributionIntensity,
   ContributionStatus as HistoryStatus,
 } from "@/renderer/shared/types/contribution";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {

@@ -1,5 +1,5 @@
 import type { PersistedTodayUiState } from "@/renderer/features/today/today.types";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export function createTodayUiSnapshot(
   state: Pick<TodayState, "date" | "streak">,

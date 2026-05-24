@@ -1,10 +1,10 @@
 import type { HabitReminderNotifier } from "@/main/features/reminders/ports";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-state";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import { createReminderScheduler } from "./reminder-scheduler";
 

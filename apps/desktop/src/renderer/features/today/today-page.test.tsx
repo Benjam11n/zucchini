@@ -4,11 +4,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import { TodayPage } from "./today-page";
 

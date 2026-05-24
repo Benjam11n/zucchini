@@ -1,5 +1,5 @@
 import type { Clock } from "@/shared/domain/clock";
-import { parseDateKey } from "@/shared/utils/date";
+import { parseDateKey } from "@/shared/domain/date-key";
 
 export class FakeClock implements Clock {
   private readonly comparisonLocale = "en";

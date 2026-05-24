@@ -1,5 +1,5 @@
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type {
   InsightsDashboard,
   InsightsRangeDays,

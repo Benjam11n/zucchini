@@ -1,3 +1,10 @@
+import {
+  addDays,
+  endOfIsoWeek,
+  formatDateKey,
+  parseDateKey,
+  startOfIsoWeek,
+} from "@/shared/domain/date-key";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import type { HabitCategory } from "@/shared/domain/habit";
@@ -13,13 +20,6 @@ import type {
 } from "@/shared/domain/insights";
 import { INSIGHTS_RANGE_OPTIONS } from "@/shared/domain/insights";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
-import {
-  addDays,
-  endOfIsoWeek,
-  formatDateKey,
-  parseDateKey,
-  startOfIsoWeek,
-} from "@/shared/utils/date";
 
 interface BuildInsightsDashboardOptions {
   activeHabitIds?: ReadonlySet<number>;

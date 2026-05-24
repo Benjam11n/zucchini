@@ -13,7 +13,7 @@ import {
   getHistoryTrendPoints,
 } from "@/renderer/features/history/lib/history-timeline";
 import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
-import { parseDateKey } from "@/shared/utils/date";
+import { parseDateKey } from "@/shared/domain/date-key";
 
 interface HistoryViewState {
   selectedDateKey: string | null;

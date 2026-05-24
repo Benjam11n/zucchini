@@ -4,10 +4,10 @@ import { CalendarRange } from "lucide-react";
 import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
+import { formatDateKey } from "@/shared/domain/date-key";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
-import { formatDateKey } from "@/shared/utils/date";
 
 import { PeriodicHabitSection } from "./periodic-habit-section";
 

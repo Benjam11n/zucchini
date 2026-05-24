@@ -30,18 +30,18 @@ import type { ApplicationService } from "@/main/ports/application-service";
 import type {
   BackupRestorePreview,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/habits-api";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+} from "@/shared/contracts/api/habits-api";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
 import type {
   HabitCommand,
   HabitCommandResult,
-} from "@/shared/contracts/habits-ipc-command-registry";
-import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
-import type { HabitQueryResult } from "@/shared/contracts/habits-ipc-query-registry";
-import type { TodayState } from "@/shared/contracts/today-state";
+} from "@/shared/contracts/ipc/habits-command-registry";
+import type { HabitsIpcResponse } from "@/shared/contracts/ipc/habits-errors";
+import type { HabitQueryResult } from "@/shared/contracts/ipc/habits-query-registry";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface RegisterIpcHandlersOptions {
   broadcastFocusSessionRecorded: (session: FocusSession) => void;

@@ -1,7 +1,7 @@
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import { getDateKeyMonth } from "@/shared/utils/date";
+import { getDateKeyMonth } from "@/shared/domain/date-key";
 
 function getTodayMonth(): number | undefined {
   const todayDate = useTodayStore.getState().todayState?.date;

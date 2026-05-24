@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 const SNAPSHOT_REFRESH_MS = 30 * 1000;
 

@@ -2,8 +2,8 @@ import { eq } from "drizzle-orm";
 
 import { focusTimerState } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
-import { persistedFocusTimerStateSchema } from "@/shared/contracts/habits-ipc-schema";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import { persistedFocusTimerStateSchema } from "@/shared/domain/schemas/focus-timer";
 
 const FOCUS_TIMER_STATE_ROW_ID = 1;
 

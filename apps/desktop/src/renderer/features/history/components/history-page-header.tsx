@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/renderer/shared/components/ui/dropdown-menu";
 import { TabsList, TabsTrigger } from "@/renderer/shared/components/ui/tabs";
-import { formatDate } from "@/shared/utils/date";
+import { formatDate } from "@/shared/domain/date-key";
 
 export type HistoryViewMode = "review" | "timeline";
 

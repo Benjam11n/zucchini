@@ -7,9 +7,9 @@ import {
   getDailyHabitKeyboardRowId,
   getPeriodicHabitKeyboardRowId,
 } from "@/renderer/features/today/lib/today-keyboard-row-ids";
-import type { TodayState } from "@/shared/contracts/today-state";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface UseTodayKeyboardRowsOptions {
   dailyHabits: HabitWithStatus[];

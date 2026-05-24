@@ -52,13 +52,13 @@ import { createMainWindow } from "@/main/app/windows/main-window";
 import { createFocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
 import { registerIpcHandlers } from "@/main/infra/ipc/handlers";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
-import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
-import type { AppUpdateState } from "@/shared/contracts/app-updater";
 import type {
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/habits-api";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+} from "@/shared/contracts/api/habits-api";
+import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
+import type { AppUpdateState } from "@/shared/contracts/app-updater";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
 import { systemClock } from "@/shared/domain/clock";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";

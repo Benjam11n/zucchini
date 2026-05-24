@@ -5,7 +5,7 @@
  * pure utilities for normalizing categories/frequencies and calculating ring
  * progress.
  */
-import { parseDateKey, toDateKeyInTimeZone } from "@/shared/utils/date";
+import { parseDateKey, toDateKeyInTimeZone } from "@/shared/domain/date-key";
 
 // Category slots are fixed product-defined identities. Users can customize
 // the display label, color, and icon for each slot.

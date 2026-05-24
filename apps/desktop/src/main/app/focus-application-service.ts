@@ -1,13 +1,11 @@
-import {
-  createFocusSessionInputSchema,
-  persistedFocusTimerStateSchema,
-} from "@/shared/contracts/habits-ipc-schema";
+import { toDateKeyInTimeZone } from "@/shared/domain/date-key";
 import type {
   CreateFocusSessionInput,
   FocusSession,
 } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-import { toDateKeyInTimeZone } from "@/shared/utils/date";
+import { createFocusSessionInputSchema } from "@/shared/domain/schemas/focus-session";
+import { persistedFocusTimerStateSchema } from "@/shared/domain/schemas/focus-timer";
 
 import { ApplicationServiceSlice } from "./application-service-slice";
 

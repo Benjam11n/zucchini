@@ -28,7 +28,7 @@ import {
   getMonthRange,
   getYearRange,
   parseDateKey,
-} from "@/shared/utils/date";
+} from "@/shared/domain/date-key";
 
 export function HistoryPage({
   contributionHistory,

@@ -1,12 +1,12 @@
+import { isHabitPaused } from "@/shared/domain/habit";
+import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
 /**
  * Reminder timing policy logic.
  *
  * Pure functions that determine whether a reminder should fire based on
  * the current time, habit period boundaries, and completion state.
  */
-import type { TodayState } from "@/shared/contracts/today-state";
-import { isHabitPaused } from "@/shared/domain/habit";
-import { isLastDayOfHabitPeriod } from "@/shared/domain/habit-period";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export function hasIncompleteHabitsClosingToday(today: TodayState): boolean {
   return (

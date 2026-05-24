@@ -2,18 +2,19 @@ import type { z, ZodType } from "zod";
 
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import { createFocusSessionInputSchema } from "@/shared/domain/schemas/focus-session";
+import { persistedFocusTimerStateSchema } from "@/shared/domain/schemas/focus-timer";
+import { appSettingsSchema } from "@/shared/domain/schemas/settings";
 import type { AppSettings } from "@/shared/domain/settings";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
-import type { HabitStatusPatch } from "./habit-status-patch";
 import {
-  appSettingsSchema,
-  createFocusSessionInputSchema,
   createHabitPayloadSchema,
   createWindDownActionPayloadSchema,
   focusQuotaGoalIdPayloadSchema,
   focusQuotaGoalUpsertPayloadSchema,
   habitIdPayloadSchema,
-  persistedFocusTimerStateSchema,
   renameHabitPayloadSchema,
   renameWindDownActionPayloadSchema,
   reorderHabitPayloadSchema,
@@ -24,8 +25,7 @@ import {
   updateHabitTargetCountPayloadSchema,
   updateHabitWeekdaysPayloadSchema,
   windDownActionIdPayloadSchema,
-} from "./habits-ipc-schema";
-import type { TodayState } from "./today-state";
+} from "./habits-schemas";
 
 interface PayloadCommandDefinition<TPayloadSchema extends ZodType, TResult> {
   payloadSchema: TPayloadSchema;

@@ -18,9 +18,9 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface WindDownPageProps {
   onCreateAction: (name: string) => Promise<void>;

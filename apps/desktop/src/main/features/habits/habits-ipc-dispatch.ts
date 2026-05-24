@@ -5,14 +5,14 @@ import type {
   HabitCommandType,
   PayloadForCommandType,
   ResultForCommandType,
-} from "@/shared/contracts/habits-ipc-command-registry";
+} from "@/shared/contracts/ipc/habits-command-registry";
 import type {
   HabitQuery,
   HabitQueryResult,
   HabitQueryType,
   PayloadForQueryType,
   ResultForQueryType,
-} from "@/shared/contracts/habits-ipc-query-registry";
+} from "@/shared/contracts/ipc/habits-query-registry";
 
 type HabitCommandHandler<TType extends HabitCommandType> = [
   PayloadForCommandType<TType>,

@@ -9,7 +9,7 @@ import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focu
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatIsoDateTime, formatIsoTime } from "@/shared/utils/date";
+import { formatIsoDateTime, formatIsoTime } from "@/shared/domain/date-key";
 
 import { FocusRunEntryRow } from "./focus-run-entry-row";
 import { FocusRunTimeline } from "./focus-run-timeline";

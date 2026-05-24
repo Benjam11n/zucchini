@@ -1,8 +1,8 @@
 import { buildTodayState } from "@/main/features/today/state-builder";
 import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Clock } from "@/shared/domain/clock";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 const DEBUG_READ_MODELS =
   typeof process !== "undefined" &&

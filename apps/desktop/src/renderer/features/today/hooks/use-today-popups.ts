@@ -15,8 +15,8 @@ import {
   readLastUiState,
   writeLastUiState,
 } from "@/renderer/features/today/lib/today-ui-storage";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitWithStatus } from "@/shared/domain/habit";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 const POPUP_TIMEOUT_MS = 5000;
 

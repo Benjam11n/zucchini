@@ -9,6 +9,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
   focusSessionListPayloadSchema,
@@ -18,8 +19,7 @@ import {
   optionalInsightsPayloadSchema,
   optionalLimitPayloadSchema,
   weeklyReviewPayloadSchema,
-} from "./habits-ipc-schema";
-import type { TodayState } from "./today-state";
+} from "./habits-schemas";
 
 interface PayloadQueryDefinition<TPayloadSchema extends ZodType, TResult> {
   payloadSchema: TPayloadSchema;

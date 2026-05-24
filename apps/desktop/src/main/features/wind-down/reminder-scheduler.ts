@@ -5,12 +5,12 @@ import type {
   WindDownReminderNotifier,
 } from "@/main/features/reminders/ports";
 import { realReminderTimers } from "@/main/features/reminders/ports";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Clock } from "@/shared/domain/clock";
 import { systemClock } from "@/shared/domain/clock";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/shared/domain/wind-down-runtime-state";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
   isAtOrPastZonedTime,

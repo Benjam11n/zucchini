@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type { BackupRestorePreview } from "@/shared/contracts/habits-api";
+import type { BackupRestorePreview } from "@/shared/contracts/api/habits-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 

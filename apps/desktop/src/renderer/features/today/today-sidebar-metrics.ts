@@ -1,7 +1,7 @@
 import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
-import type { TodayState } from "@/shared/contracts/today-state";
-import { addDays, startOfWeek } from "@/shared/utils/date";
+import { addDays, startOfWeek } from "@/shared/domain/date-key";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 type TodayMetricsState = Pick<TodayState, "date" | "habits">;
 

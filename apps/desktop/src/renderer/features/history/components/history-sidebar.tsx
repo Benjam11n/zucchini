@@ -19,8 +19,8 @@ import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ri
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
+import { formatDateKey } from "@/shared/domain/date-key";
 import type { HistorySummaryDay } from "@/shared/domain/history";
-import { formatDateKey } from "@/shared/utils/date";
 
 interface HistorySidebarProps {
   monthStats: HistoryMonthStats;

@@ -7,8 +7,8 @@ import Database from "better-sqlite3";
 
 import { AppApplicationService } from "@/main/app/application-service";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
+import { getPreviousCompletedIsoWeek } from "@/shared/domain/date-key";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
-import { getPreviousCompletedIsoWeek } from "@/shared/utils/date";
 import { FakeClock } from "@/test/fixtures/fake-clock";
 import { generateTestData } from "@/test/fixtures/test-data";
 import type { TestDataPreset } from "@/test/fixtures/test-data";

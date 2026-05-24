@@ -7,8 +7,8 @@
  */
 import { create } from "zustand";
 
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface TodayStoreState {
   managedHabits: Habit[];

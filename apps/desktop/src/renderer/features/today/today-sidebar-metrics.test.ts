@@ -1,7 +1,7 @@
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
   getRecentConsistencySummary,

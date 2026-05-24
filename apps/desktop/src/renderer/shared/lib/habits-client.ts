@@ -1,11 +1,11 @@
 import type {
   HabitCommand,
   ResultForCommand,
-} from "@/shared/contracts/habits-ipc-command-registry";
+} from "@/shared/contracts/ipc/habits-command-registry";
 import type {
   HabitQuery,
   ResultForQuery,
-} from "@/shared/contracts/habits-ipc-query-registry";
+} from "@/shared/contracts/ipc/habits-query-registry";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";

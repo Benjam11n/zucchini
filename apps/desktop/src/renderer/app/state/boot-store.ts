@@ -8,7 +8,7 @@
  */
 import { create } from "zustand";
 
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 
 interface BootStoreState {
   bootError: HabitsIpcError | null;

@@ -3,7 +3,7 @@ import type { IpcMain, IpcMainInvokeEvent } from "electron";
 
 import type * as NotificationsModule from "@/main/features/reminders/notifications";
 import { DatabaseError } from "@/main/ports/database-error";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";

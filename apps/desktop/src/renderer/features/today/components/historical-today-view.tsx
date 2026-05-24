@@ -9,8 +9,8 @@ import {
   getActivityBadgeLabel,
   getActivityStatus,
 } from "@/renderer/shared/lib/history-summary";
+import { formatDateKey } from "@/shared/domain/date-key";
 import type { HistoryDay } from "@/shared/domain/history";
-import { formatDateKey } from "@/shared/utils/date";
 
 import { HabitChecklist } from "./habit-checklist";
 import { PeriodicHabitChecklist } from "./periodic-habit-checklist";

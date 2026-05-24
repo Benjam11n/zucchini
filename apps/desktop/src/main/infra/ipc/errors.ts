@@ -7,7 +7,7 @@ import { IpcValidationError } from "@/main/infra/ipc/validation";
  * bridge can safely forward to the renderer.
  */
 import { DatabaseError } from "@/main/ports/database-error";
-import type { SerializedHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import type { SerializedHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 
 export function serializeIpcError(error: unknown): SerializedHabitsIpcError {
   if (error instanceof IpcValidationError) {

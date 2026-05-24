@@ -1,7 +1,7 @@
+import { addDays } from "@/shared/domain/date-key";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
-import { addDays } from "@/shared/utils/date";
 
 import { buildInsightsDashboard } from "./builder";
 

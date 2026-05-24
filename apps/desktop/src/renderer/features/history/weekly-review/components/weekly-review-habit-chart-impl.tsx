@@ -13,12 +13,12 @@ import {
   getHabitCategoryLabel,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
+import { formatDateKey } from "@/shared/domain/date-key";
 import type {
   WeeklyReviewHabitHeatmapCell,
   WeeklyReviewHabitHeatmapCellStatus,
   WeeklyReviewHabitHeatmapRow,
 } from "@/shared/domain/weekly-review";
-import { formatDateKey } from "@/shared/utils/date";
 
 interface WeeklyReviewHabitChartImplProps {
   heatmapRows: WeeklyReviewHabitHeatmapRow[];

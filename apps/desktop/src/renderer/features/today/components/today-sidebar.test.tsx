@@ -2,9 +2,9 @@
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import { TodaySidebar } from "./today-sidebar";
 

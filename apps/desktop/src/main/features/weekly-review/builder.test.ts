@@ -1,7 +1,7 @@
+import { addDays } from "@/shared/domain/date-key";
 import type { HabitWeekday } from "@/shared/domain/habit";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { DailySummary } from "@/shared/domain/streak";
-import { addDays } from "@/shared/utils/date";
 
 import { buildWeeklyReview, buildWeeklyReviewOverview } from "./builder";
 

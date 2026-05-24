@@ -2,8 +2,8 @@ import { create } from "zustand";
 
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type {
   InsightsDashboard,
   InsightsRangeDays,

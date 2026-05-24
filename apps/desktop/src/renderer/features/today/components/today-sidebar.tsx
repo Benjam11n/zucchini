@@ -26,10 +26,10 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { microTransition } from "@/renderer/shared/lib/motion";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
   getRecentConsistencySummary,

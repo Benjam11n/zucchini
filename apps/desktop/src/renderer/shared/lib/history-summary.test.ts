@@ -1,5 +1,5 @@
+import { toDateKey } from "@/shared/domain/date-key";
 import type { HistoryDay } from "@/shared/domain/history";
-import { toDateKey } from "@/shared/utils/date";
 
 import {
   getActivityBadgeLabel,

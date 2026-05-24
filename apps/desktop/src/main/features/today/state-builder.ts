@@ -1,5 +1,4 @@
 import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { CategoryStreak } from "@/shared/domain/category-streak";
 /**
  * Today state builder — assembles the read-model the renderer consumes.
@@ -9,6 +8,7 @@ import type { CategoryStreak } from "@/shared/domain/category-streak";
  * after streak synchronization.
  */
 import type { Clock } from "@/shared/domain/clock";
+import { addDays } from "@/shared/domain/date-key";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
 import {
@@ -22,7 +22,7 @@ import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
-import { addDays } from "@/shared/utils/date";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 function mapStatusToHabit(status: {
   category: HabitWithStatus["category"];

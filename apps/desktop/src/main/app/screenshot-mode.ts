@@ -6,7 +6,7 @@ import type { App, BrowserWindow } from "electron";
 
 import type { AppRepository } from "@/main/ports/app-repository";
 import type { ApplicationService } from "@/main/ports/application-service";
-import { addDays } from "@/shared/utils/date";
+import { addDays } from "@/shared/domain/date-key";
 
 interface ScreenshotModeConfig {
   databasePath: string | null;

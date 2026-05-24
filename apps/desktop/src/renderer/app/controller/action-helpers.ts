@@ -16,10 +16,10 @@ import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/
 import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import type { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
-import type { TodayState } from "@/shared/contracts/today-state";
+import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type { Habit } from "@/shared/domain/habit";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export function reorderVisibleTodayHabits(
   nextManagedHabits: Habit[],

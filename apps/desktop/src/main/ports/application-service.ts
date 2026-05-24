@@ -1,13 +1,11 @@
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
   HabitCommandResult,
-} from "@/shared/contracts/habits-ipc-command-registry";
+} from "@/shared/contracts/ipc/habits-command-registry";
 import type {
   HabitQuery,
   HabitQueryResult,
-} from "@/shared/contracts/habits-ipc-query-registry";
-import type { TodayState } from "@/shared/contracts/today-state";
+} from "@/shared/contracts/ipc/habits-query-registry";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -33,6 +31,8 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 export interface ApplicationService {
   execute(command: HabitCommand): HabitCommandResult;

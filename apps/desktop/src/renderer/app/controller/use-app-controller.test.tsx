@@ -3,7 +3,6 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { act } from "react";
 
-import type { TodayState } from "@/shared/contracts/today-state";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay } from "@/shared/domain/history";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
@@ -11,6 +10,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
+import type { TodayState } from "@/shared/read-models/today-state";
 import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {

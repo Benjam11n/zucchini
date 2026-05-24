@@ -8,6 +8,10 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { IpcRendererEvent } from "electron";
 
+import type {
+  FocusTimerShortcutStatus,
+  HabitsApi,
+} from "@/shared/contracts/api/habits-api";
 import {
   APP_UPDATER_CHANNELS,
   AppUpdaterIpcError,
@@ -17,21 +21,17 @@ import type {
   AppUpdaterApi,
   AppUpdaterIpcResponse,
 } from "@/shared/contracts/app-updater";
-import type {
-  FocusTimerShortcutStatus,
-  HabitsApi,
-} from "@/shared/contracts/habits-api";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/habits-ipc-channels";
+import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
 import type {
   HabitCommand,
   ResultForCommand,
-} from "@/shared/contracts/habits-ipc-command-registry";
-import { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
-import type { HabitsIpcResponse } from "@/shared/contracts/habits-ipc-errors";
+} from "@/shared/contracts/ipc/habits-command-registry";
+import { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { HabitsIpcResponse } from "@/shared/contracts/ipc/habits-errors";
 import type {
   HabitQuery,
   ResultForQuery,
-} from "@/shared/contracts/habits-ipc-query-registry";
+} from "@/shared/contracts/ipc/habits-query-registry";
 
 async function invokeHabits<T>(
   channel: string,

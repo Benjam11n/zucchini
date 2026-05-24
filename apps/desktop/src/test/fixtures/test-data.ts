@@ -4,6 +4,13 @@ import path from "node:path";
 import { runMigrations } from "@/main/infra/db/migrations";
 import { schema } from "@/main/infra/db/schema";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
+import {
+  addDays,
+  parseDateKey,
+  startOfMonth,
+  startOfWeek,
+  toDateKey,
+} from "@/shared/domain/date-key";
 import type { GoalFrequency, FocusQuotaGoal } from "@/shared/domain/goal";
 import {
   normalizeFocusQuotaTargetMinutes,
@@ -21,13 +28,6 @@ import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
-import {
-  addDays,
-  parseDateKey,
-  startOfMonth,
-  startOfWeek,
-  toDateKey,
-} from "@/shared/utils/date";
 
 export type TestDataPreset = "medium" | "stress";
 

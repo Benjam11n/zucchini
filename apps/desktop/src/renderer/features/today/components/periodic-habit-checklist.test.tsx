@@ -2,10 +2,10 @@
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { formatDateKey } from "@/shared/domain/date-key";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
-import { formatDateKey } from "@/shared/utils/date";
 
 import { PeriodicHabitChecklist } from "./periodic-habit-checklist";
 

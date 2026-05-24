@@ -10,8 +10,8 @@ import {
   createRunningFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import type { HabitCommand } from "@/shared/contracts/habits-ipc-command-registry";
-import type { HabitQuery } from "@/shared/contracts/habits-ipc-query-registry";
+import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
+import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import {

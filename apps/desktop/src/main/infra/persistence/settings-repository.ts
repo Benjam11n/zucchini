@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 
 import { settings } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
-import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import { appSettingsSchema } from "@/shared/domain/schemas/settings";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type {
   AppSettings,

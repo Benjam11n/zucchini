@@ -1,11 +1,13 @@
-import type { FocusSession } from "@/shared/domain/focus-session";
-import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
-
 import type {
   HabitCommand,
   ResultForCommand,
-} from "./habits-ipc-command-registry";
-import type { HabitQuery, ResultForQuery } from "./habits-ipc-query-registry";
+} from "@/shared/contracts/ipc/habits-command-registry";
+import type {
+  HabitQuery,
+  ResultForQuery,
+} from "@/shared/contracts/ipc/habits-query-registry";
+import type { FocusSession } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
 export type FocusTimerAction = "reset" | "toggle";
 type FocusTimerActionSource = "global-shortcut" | "main-window" | "widget";

@@ -4,7 +4,7 @@
  * Decouples business logic from `Date.now()` so tests can inject fixed
  * timestamps and timezones.
  */
-import { addDays, toDateKeyInTimeZone } from "@/shared/utils/date";
+import { addDays, toDateKeyInTimeZone } from "@/shared/domain/date-key";
 
 export interface Clock {
   now: () => Date;

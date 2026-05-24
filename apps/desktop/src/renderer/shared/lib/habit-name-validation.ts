@@ -1,4 +1,4 @@
-import { habitNameSchema } from "@/shared/contracts/habits-ipc-schema";
+import { habitNameSchema } from "@/shared/domain/schemas/habit";
 
 export function getHabitNameError(name: string): string | null {
   const result = habitNameSchema.safeParse(name);

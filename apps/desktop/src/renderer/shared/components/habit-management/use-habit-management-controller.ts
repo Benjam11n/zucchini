@@ -5,7 +5,7 @@ import {
   reorderHabitListByDropPosition,
   sortHabitListByCategory,
 } from "@/renderer/shared/lib/reorder-habits";
-import { toHabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 import type {
   Habit,
   HabitCategory,

@@ -10,7 +10,12 @@ import {
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
 import type { AppRepository } from "@/main/ports/app-repository";
-import type { TodayState } from "@/shared/contracts/today-state";
+import {
+  addDays,
+  endOfIsoWeek,
+  getPreviousCompletedIsoWeek,
+  startOfIsoWeek,
+} from "@/shared/domain/date-key";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -23,12 +28,7 @@ import type {
   WeeklyReview,
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
-import {
-  addDays,
-  endOfIsoWeek,
-  getPreviousCompletedIsoWeek,
-  startOfIsoWeek,
-} from "@/shared/utils/date";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import { ApplicationServiceRuntime } from "./application-service-runtime";
 import { ApplicationServiceSlice } from "./application-service-slice";

@@ -23,10 +23,10 @@ import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups
 import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
-import type { TodayState } from "@/shared/contracts/today-state";
 import { isHabitPaused } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface TodayPageProps extends Omit<
   HabitMutationActions,

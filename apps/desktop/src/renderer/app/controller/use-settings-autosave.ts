@@ -15,7 +15,7 @@ import {
   mapSettingsValidationErrors,
 } from "@/renderer/features/settings/lib/settings-form";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { appSettingsSchema } from "@/shared/contracts/habits-ipc-schema";
+import { appSettingsSchema } from "@/shared/domain/schemas/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function useSettingsAutosave({

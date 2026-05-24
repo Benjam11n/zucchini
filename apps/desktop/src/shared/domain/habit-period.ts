@@ -10,7 +10,7 @@ import {
   endOfWeek,
   startOfMonth,
   startOfWeek,
-} from "@/shared/utils/date";
+} from "@/shared/domain/date-key";
 
 import type { HabitFrequency } from "./habit";
 

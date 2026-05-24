@@ -12,7 +12,7 @@ import {
   startOfMonth,
   startOfIsoWeek,
   toDateKeyInTimeZone,
-} from "./date";
+} from "./date-key";
 
 describe("iSO week helpers", () => {
   it("computes Monday-Sunday review windows", () => {

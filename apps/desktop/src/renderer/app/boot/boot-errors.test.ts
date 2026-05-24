@@ -1,4 +1,4 @@
-import { HabitsIpcError } from "@/shared/contracts/habits-ipc-errors";
+import { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
 
 import { getBootErrorDisplay } from "./boot-errors";
 

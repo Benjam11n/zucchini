@@ -11,39 +11,41 @@ import type { ZodType } from "zod";
 import {
   habitCommandRegistry,
   isHabitCommandType,
-} from "@/shared/contracts/habits-ipc-command-registry";
-import type { HabitCommand } from "@/shared/contracts/habits-ipc-command-registry";
+} from "@/shared/contracts/ipc/habits-command-registry";
+import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
 import {
   habitQueryRegistry,
   isHabitQueryType,
-} from "@/shared/contracts/habits-ipc-query-registry";
-import type { HabitQuery } from "@/shared/contracts/habits-ipc-query-registry";
+} from "@/shared/contracts/ipc/habits-query-registry";
+import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
 import {
-  appSettingsSchema,
   backupRestoreIdSchema,
-  createFocusSessionInputSchema,
   focusSessionLimitSchema,
   focusTimerCycleIdSchema,
   focusTimerInstanceIdSchema,
   focusTimerLeaseTtlSchema,
   focusWidgetSizeSchema,
-  habitCategorySchema,
-  habitFrequencySchema,
-  habitIdSchema,
-  habitNameSchema,
-  habitTargetCountSchema,
-  habitWeekdaysSchema,
   notificationBodySchema,
   notificationIconFilenameSchema,
   notificationTitleSchema,
-  reorderHabitIdsSchema,
-} from "@/shared/contracts/habits-ipc-schema";
+} from "@/shared/contracts/ipc/habits-schemas";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
   HabitCategory,
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
+import { createFocusSessionInputSchema } from "@/shared/domain/schemas/focus-session";
+import {
+  habitCategorySchema,
+  habitFrequencySchema,
+  habitIdSchema,
+  habitNameSchema,
+  habitTargetCountSchema,
+  habitWeekdaysSchema,
+  reorderHabitIdsSchema,
+} from "@/shared/domain/schemas/habit";
+import { appSettingsSchema } from "@/shared/domain/schemas/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export class IpcValidationError extends Error {

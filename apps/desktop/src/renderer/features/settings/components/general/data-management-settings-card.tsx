@@ -30,7 +30,7 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
-import type { BackupRestorePreview } from "@/shared/contracts/habits-api";
+import type { BackupRestorePreview } from "@/shared/contracts/api/habits-api";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,

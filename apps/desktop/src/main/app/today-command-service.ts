@@ -1,5 +1,4 @@
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import type { TodayState } from "@/shared/contracts/today-state";
+import { addDays } from "@/shared/domain/date-key";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import {
@@ -20,7 +19,8 @@ import type {
   HabitFrequency,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import { addDays } from "@/shared/utils/date";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import { ApplicationServiceSlice } from "./application-service-slice";
 

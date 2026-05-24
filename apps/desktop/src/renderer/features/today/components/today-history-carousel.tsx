@@ -12,8 +12,8 @@ import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { tapPress } from "@/renderer/shared/lib/motion";
+import { formatDateKey } from "@/shared/domain/date-key";
 import type { HistorySummaryDay } from "@/shared/domain/history";
-import { formatDateKey } from "@/shared/utils/date";
 
 interface TodayHistoryCarouselProps {
   hasLoadedHistorySummary: boolean;

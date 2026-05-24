@@ -1,6 +1,6 @@
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
+import { isMonday } from "@/shared/domain/date-key";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
-import { isMonday } from "@/shared/utils/date";
 
 interface ShouldOpenWeeklyReviewSpotlightOptions {
   bootPhase: "error" | "loading" | "ready";

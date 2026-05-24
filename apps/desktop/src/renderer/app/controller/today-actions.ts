@@ -14,8 +14,7 @@ import { useInsightsStore } from "@/renderer/features/insights/state/insights-st
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
-import type { TodayState } from "@/shared/contracts/today-state";
+import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
@@ -25,7 +24,8 @@ import type {
   HabitWithStatus,
   HabitWeekday,
 } from "@/shared/domain/habit";
-import { getDateKeyMonth } from "@/shared/utils/date";
+import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
   applyTodayReloadResult,
