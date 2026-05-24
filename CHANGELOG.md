@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.14 - 2026-05-24
+
+Changes since `v0.1.2-beta.13`.
+
+### Features
+
+- Generate marketing app preview
+- Add restore habit preview
+- Track habit pause periods
+- Add habit pause
+- Add backup restore flow
+- Generate release download metadata
+- Add auto backup cadence
+
+### Fixes
+
+- Allow slower history month test
+- Wait for data folder feedback
+- Tighten mobile hero actions
+- Make carryover automatic
+- Reduce habit management dialog noise
+- Compact restore and paused actions
+- Simplify paused habit UI
+- Simplify habit streak label
+- Remove best text from habit streak badge
+
+### Refactors
+
+- Split focus quota settings
+- Move wind-down scheduler into reminders
+- Rename app ipc contracts
+- Split main process runtime
+- Organize shared contracts
+- Centralize habits ipc contracts
+- Split application service
+- Rename application service
+
+### Maintenance
+
+- Remove unused activity ring card
+
+### Other
+
+- Cover auto backup migration in legacy fixture
+
 ## 0.1.2-beta.13 - 2026-05-16
 
 Changes since `v0.1.2-beta.11`.
