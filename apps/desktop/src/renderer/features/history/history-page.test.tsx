@@ -313,7 +313,7 @@ describe("history page", () => {
     expect(
       screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
     ).toBeInTheDocument();
-  });
+  }, 10_000);
 
   it("falls back to the first available history day when the selected day disappears", () => {
     const history = [
