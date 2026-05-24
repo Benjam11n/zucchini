@@ -10,7 +10,7 @@ import {
   validateHabitFrequency,
   validateHabitId,
   validateHabitName,
-  validateHabitQuery,
+  validateAppQuery,
   validateHabitTargetCount,
   validateHabitWeekdays,
   validateNotificationIconFilename,
@@ -159,7 +159,7 @@ describe("ipc validation", () => {
 
   it("accepts the insights dashboard query", () => {
     expect(
-      validateHabitQuery({
+      validateAppQuery({
         payload: { rangeDays: 90 },
         type: "insights.dashboard",
       })

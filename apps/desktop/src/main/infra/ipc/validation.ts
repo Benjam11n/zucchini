@@ -9,15 +9,15 @@
 import type { ZodType } from "zod";
 
 import {
-  habitCommandRegistry,
-  isHabitCommandType,
-} from "@/shared/contracts/ipc/habits-command-registry";
-import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
+  appCommandRegistry,
+  isAppCommandType,
+} from "@/shared/contracts/ipc/app-command-registry";
+import type { AppCommand } from "@/shared/contracts/ipc/app-command-registry";
 import {
-  habitQueryRegistry,
-  isHabitQueryType,
-} from "@/shared/contracts/ipc/habits-query-registry";
-import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
+  appQueryRegistry,
+  isAppQueryType,
+} from "@/shared/contracts/ipc/app-query-registry";
+import type { AppQuery } from "@/shared/contracts/ipc/app-query-registry";
 import {
   backupRestoreIdSchema,
   focusSessionLimitSchema,
@@ -28,7 +28,7 @@ import {
   notificationBodySchema,
   notificationIconFilenameSchema,
   notificationTitleSchema,
-} from "@/shared/contracts/ipc/habits-schemas";
+} from "@/shared/contracts/ipc/app-schemas";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type {
   HabitCategory,
@@ -217,67 +217,62 @@ function readIpcEnvelope<TType extends string>(
   };
 }
 
-export function validateHabitCommand(value: unknown): HabitCommand {
+export function validateAppCommand(value: unknown): AppCommand {
   const envelope = readIpcEnvelope(
     value,
-    "habit command",
+    "app command",
     "Command",
-    isHabitCommandType
+    isAppCommandType
   );
   const commandType = envelope.type;
-  const definition = habitCommandRegistry[commandType];
+  const definition = appCommandRegistry[commandType];
   if (definition.payloadSchema === null) {
     if (envelope.hasPayload) {
-      throw new IpcValidationError("Invalid payload for habit command.", [
+      throw new IpcValidationError("Invalid payload for app command.", [
         "Command does not accept a payload.",
       ]);
     }
 
-    return { type: commandType } as HabitCommand;
+    return { type: commandType } as AppCommand;
   }
 
   if (!envelope.hasPayload) {
-    throw new IpcValidationError("Invalid payload for habit command.", [
+    throw new IpcValidationError("Invalid payload for app command.", [
       "Command payload is required.",
     ]);
   }
 
   return {
     payload: parseEnvelopePayload(
-      "habit command",
+      "app command",
       definition.payloadSchema as ZodType<unknown>,
       envelope.payload
     ),
     type: commandType,
-  } as HabitCommand;
+  } as AppCommand;
 }
 
-export function validateHabitQuery(value: unknown): HabitQuery {
-  const envelope = readIpcEnvelope(
-    value,
-    "habit query",
-    "Query",
-    isHabitQueryType
-  );
+export function validateAppQuery(value: unknown): AppQuery {
+  const envelope = readIpcEnvelope(value, "app query", "Query", isAppQueryType);
   const queryType = envelope.type;
-  const definition = habitQueryRegistry[queryType];
+  const definition = appQueryRegistry[queryType];
   if (definition.payloadSchema === null) {
     if (envelope.hasPayload) {
-      throw new IpcValidationError("Invalid payload for habit query.", [
+      throw new IpcValidationError("Invalid payload for app query.", [
         "Query does not accept a payload.",
       ]);
     }
 
-    return { type: queryType } as HabitQuery;
+    return { type: queryType } as AppQuery;
   }
 
   const payload = parseEnvelopePayload(
-    "habit query",
+    "app query",
     definition.payloadSchema as ZodType<unknown>,
     envelope.payload
   );
 
   return payload === undefined && !envelope.hasPayload
-    ? ({ type: queryType } as HabitQuery)
-    : ({ payload, type: queryType } as HabitQuery);
+    ? ({ type: queryType } as AppQuery)
+    : ({ payload, type: queryType } as AppQuery);
 }

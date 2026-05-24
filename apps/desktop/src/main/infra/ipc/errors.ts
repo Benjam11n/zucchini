@@ -3,13 +3,13 @@ import { IpcValidationError } from "@/main/infra/ipc/validation";
  * IPC error serialization.
  *
  * Converts internal error types (`IpcValidationError`, `DatabaseError`, or
- * unknown errors) into the `SerializedHabitsIpcError` shape that the preload
+ * unknown errors) into the `SerializedAppIpcError` shape that the preload
  * bridge can safely forward to the renderer.
  */
 import { DatabaseError } from "@/main/ports/database-error";
-import type { SerializedHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { SerializedAppIpcError } from "@/shared/contracts/ipc/app-errors";
 
-export function serializeIpcError(error: unknown): SerializedHabitsIpcError {
+export function serializeIpcError(error: unknown): SerializedAppIpcError {
   if (error instanceof IpcValidationError) {
     return {
       code: "VALIDATION_ERROR",

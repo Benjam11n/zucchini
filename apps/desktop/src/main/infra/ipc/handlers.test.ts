@@ -3,7 +3,7 @@ import type { IpcMain, IpcMainInvokeEvent } from "electron";
 
 import type * as NotificationsModule from "@/main/features/reminders/notifications";
 import { DatabaseError } from "@/main/ports/database-error";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
+import { APP_IPC_CHANNELS } from "@/shared/contracts/ipc/app-channels";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
@@ -191,7 +191,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     registerIpcHandlers(createRegisterOptions());
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+    const handler = handlers.get(APP_IPC_CHANNELS.command);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -218,7 +218,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+    const handler = handlers.get(APP_IPC_CHANNELS.query);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, { type: "today.get" })
@@ -240,7 +240,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+    const handler = handlers.get(APP_IPC_CHANNELS.query);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, { type: "today.get" })
@@ -261,7 +261,7 @@ describe("registerIpcHandlers()", () => {
 
     service.read.mockReturnValue([]);
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+    const handler = handlers.get(APP_IPC_CHANNELS.query);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -285,7 +285,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+    const handler = handlers.get(APP_IPC_CHANNELS.query);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -309,7 +309,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.query);
+    const handler = handlers.get(APP_IPC_CHANNELS.query);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -351,7 +351,7 @@ describe("registerIpcHandlers()", () => {
       })
     );
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+    const handler = handlers.get(APP_IPC_CHANNELS.command);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -375,7 +375,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+    const handler = handlers.get(APP_IPC_CHANNELS.command);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -399,7 +399,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ service }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+    const handler = handlers.get(APP_IPC_CHANNELS.command);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, {
@@ -424,9 +424,7 @@ describe("registerIpcHandlers()", () => {
     resetHandlers();
     registerIpcHandlers(createRegisterOptions());
 
-    const handler = handlers.get(
-      HABITS_IPC_CHANNELS.getDesktopNotificationStatus
-    );
+    const handler = handlers.get(APP_IPC_CHANNELS.getDesktopNotificationStatus);
 
     await expect(handler?.({} as IpcMainInvokeEvent)).resolves.toStrictEqual({
       data: {
@@ -442,7 +440,7 @@ describe("registerIpcHandlers()", () => {
     registerIpcHandlers(createRegisterOptions());
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus)?.(
+      handlers.get(APP_IPC_CHANNELS.getFocusTimerShortcutStatus)?.(
         {} as IpcMainInvokeEvent
       )
     ).resolves.toStrictEqual({
@@ -485,7 +483,7 @@ describe("registerIpcHandlers()", () => {
       })
     );
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.command);
+    const handler = handlers.get(APP_IPC_CHANNELS.command);
     const payload = {
       completedAt: "2026-03-08T09:25:00.000Z",
       completedDate: "2026-03-08",
@@ -545,7 +543,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.command)?.({} as IpcMainInvokeEvent, {
+      handlers.get(APP_IPC_CHANNELS.command)?.({} as IpcMainInvokeEvent, {
         payload: nextState,
         type: "focusTimer.saveState",
       })
@@ -567,7 +565,7 @@ describe("registerIpcHandlers()", () => {
 
     registerIpcHandlers(createRegisterOptions({ focusTimerCoordinator }));
 
-    const handler = handlers.get(HABITS_IPC_CHANNELS.claimFocusTimerLeadership);
+    const handler = handlers.get(APP_IPC_CHANNELS.claimFocusTimerLeadership);
 
     await expect(
       handler?.({} as IpcMainInvokeEvent, "widget-1", 2500)
@@ -592,9 +590,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.openDataFolder)?.(
-        {} as IpcMainInvokeEvent
-      )
+      handlers.get(APP_IPC_CHANNELS.openDataFolder)?.({} as IpcMainInvokeEvent)
     ).resolves.toStrictEqual({
       data: "/tmp/zucchini",
       ok: true,
@@ -613,7 +609,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.openAutoBackupFolder)?.(
+      handlers.get(APP_IPC_CHANNELS.openAutoBackupFolder)?.(
         {} as IpcMainInvokeEvent
       )
     ).resolves.toStrictEqual({
@@ -634,7 +630,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.clearData)?.({} as IpcMainInvokeEvent)
+      handlers.get(APP_IPC_CHANNELS.clearData)?.({} as IpcMainInvokeEvent)
     ).resolves.toStrictEqual({
       data: true,
       ok: true,
@@ -655,7 +651,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.exportBackup)?.({} as IpcMainInvokeEvent)
+      handlers.get(APP_IPC_CHANNELS.exportBackup)?.({} as IpcMainInvokeEvent)
     ).resolves.toStrictEqual({
       data: "/tmp/zucchini-backup.db",
       ok: true,
@@ -690,7 +686,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview)?.(
+      handlers.get(APP_IPC_CHANNELS.getLatestAutoBackupRestorePreview)?.(
         {} as IpcMainInvokeEvent
       )
     ).resolves.toStrictEqual({
@@ -711,7 +707,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.chooseBackupForRestore)?.(
+      handlers.get(APP_IPC_CHANNELS.chooseBackupForRestore)?.(
         {} as IpcMainInvokeEvent
       )
     ).resolves.toStrictEqual({
@@ -732,7 +728,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.restoreBackup)?.(
+      handlers.get(APP_IPC_CHANNELS.restoreBackup)?.(
         {} as IpcMainInvokeEvent,
         "restore-1"
       )
@@ -756,9 +752,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.exportCsvData)?.(
-        {} as IpcMainInvokeEvent
-      )
+      handlers.get(APP_IPC_CHANNELS.exportCsvData)?.({} as IpcMainInvokeEvent)
     ).resolves.toStrictEqual({
       data: "/tmp/zucchini-csv-export",
       ok: true,
@@ -777,7 +771,7 @@ describe("registerIpcHandlers()", () => {
     );
 
     await expect(
-      handlers.get(HABITS_IPC_CHANNELS.importBackup)?.({} as IpcMainInvokeEvent)
+      handlers.get(APP_IPC_CHANNELS.importBackup)?.({} as IpcMainInvokeEvent)
     ).resolves.toStrictEqual({
       data: true,
       ok: true,

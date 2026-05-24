@@ -30,7 +30,7 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
-import type { BackupRestorePreview } from "@/shared/contracts/api/habits-api";
+import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
@@ -429,7 +429,7 @@ function AutoBackupSettingsSection({
             disabled={activeAutoBackupAction !== null}
             onClick={() => {
               void runAutoBackupAction("openAutoFolder", async () => {
-                const openedPath = await window.habits.openAutoBackupFolder();
+                const openedPath = await window.desktop.openAutoBackupFolder();
                 onFeedbackMessage(
                   `Opened ${getPathLabel(openedPath)} in your file manager.`
                 );
@@ -520,7 +520,7 @@ export function DataManagementSettingsCard({
               label="Open folder"
               onClick={async () => {
                 await runAction("open", async () => {
-                  const openedPath = await window.habits.openDataFolder();
+                  const openedPath = await window.desktop.openDataFolder();
                   setFeedbackMessage(
                     `Opened ${getPathLabel(openedPath)} in your file manager.`
                   );
@@ -535,7 +535,7 @@ export function DataManagementSettingsCard({
               label="Export backup"
               onClick={async () => {
                 await runAction("export", async () => {
-                  const exportedPath = await window.habits.exportBackup();
+                  const exportedPath = await window.desktop.exportBackup();
 
                   if (exportedPath === null) {
                     return;
@@ -555,7 +555,7 @@ export function DataManagementSettingsCard({
               label="Export CSV"
               onClick={async () => {
                 await runAction("exportCsv", async () => {
-                  const exportedPath = await window.habits.exportCsvData();
+                  const exportedPath = await window.desktop.exportCsvData();
 
                   if (exportedPath === null) {
                     return;
@@ -576,7 +576,7 @@ export function DataManagementSettingsCard({
               onClick={async () => {
                 await runAction("chooseRestore", async () => {
                   const preview =
-                    await window.habits.getLatestAutoBackupRestorePreview();
+                    await window.desktop.getLatestAutoBackupRestorePreview();
                   setHasNoAutoBackup(preview === null);
 
                   if (!preview) {
@@ -602,7 +602,7 @@ export function DataManagementSettingsCard({
               label="Choose backup"
               onClick={async () => {
                 await runAction("chooseRestore", async () => {
-                  const preview = await window.habits.chooseBackupForRestore();
+                  const preview = await window.desktop.chooseBackupForRestore();
 
                   if (!preview) {
                     return;
@@ -651,7 +651,7 @@ export function DataManagementSettingsCard({
 
           await runAction("restore", async () => {
             closeRestoreDialog(false);
-            const didRestore = await window.habits.restoreBackup(restoreId);
+            const didRestore = await window.desktop.restoreBackup(restoreId);
 
             if (didRestore) {
               setFeedbackMessage("Restarting Zucchini with your backup.");
@@ -670,7 +670,7 @@ export function DataManagementSettingsCard({
           await runAction("clear", async () => {
             clearZucchiniStorage();
             setIsClearDataDialogOpen(false);
-            const didClear = await window.habits.clearData();
+            const didClear = await window.desktop.clearData();
 
             if (didClear) {
               setFeedbackMessage(

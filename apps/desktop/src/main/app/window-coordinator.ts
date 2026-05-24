@@ -13,10 +13,10 @@ import { createMainWindow } from "@/main/app/windows/main-window";
 import type {
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/api/habits-api";
+} from "@/shared/contracts/api/desktop-api";
 import { APP_UPDATER_CHANNELS } from "@/shared/contracts/app-updater";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
+import { APP_IPC_CHANNELS } from "@/shared/contracts/ipc/app-channels";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
@@ -155,7 +155,7 @@ export class WindowCoordinator {
   broadcastFocusSessionRecorded(focusSession: FocusSession): void {
     for (const window of this.options.getAllWindows()) {
       window.webContents.send(
-        HABITS_IPC_CHANNELS.focusSessionRecorded,
+        APP_IPC_CHANNELS.focusSessionRecorded,
         focusSession
       );
     }
@@ -163,17 +163,14 @@ export class WindowCoordinator {
 
   broadcastFocusTimerStateChanged(state: PersistedFocusTimerState): void {
     for (const window of this.options.getAllWindows()) {
-      window.webContents.send(
-        HABITS_IPC_CHANNELS.focusTimerStateChanged,
-        state
-      );
+      window.webContents.send(APP_IPC_CHANNELS.focusTimerStateChanged, state);
     }
   }
 
   broadcastFocusTimerShortcutStatus(status: FocusTimerShortcutStatus): void {
     for (const window of this.options.getAllWindows()) {
       window.webContents.send(
-        HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
+        APP_IPC_CHANNELS.focusTimerShortcutStatusChanged,
         status
       );
     }
@@ -187,7 +184,7 @@ export class WindowCoordinator {
     }
 
     targetWindow.webContents.send(
-      HABITS_IPC_CHANNELS.focusTimerActionRequested,
+      APP_IPC_CHANNELS.focusTimerActionRequested,
       request
     );
   }
@@ -218,7 +215,7 @@ export class WindowCoordinator {
 
   private broadcastWindDownNavigationRequested(): void {
     for (const window of this.options.getAllWindows()) {
-      window.webContents.send(HABITS_IPC_CHANNELS.windDownNavigationRequested);
+      window.webContents.send(APP_IPC_CHANNELS.windDownNavigationRequested);
     }
   }
 

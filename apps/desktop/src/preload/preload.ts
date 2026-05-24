@@ -2,7 +2,7 @@
  * Electron preload bridge.
  *
  * The preload script is the safe boundary between the renderer and Electron.
- * It exposes a narrow, typed API for habits and updater actions without
+ * It exposes a narrow, typed API for app and updater actions without
  * giving React direct access to privileged Electron objects.
  */
 import { contextBridge, ipcRenderer } from "electron";
@@ -10,8 +10,8 @@ import type { IpcRendererEvent } from "electron";
 
 import type {
   FocusTimerShortcutStatus,
-  HabitsApi,
-} from "@/shared/contracts/api/habits-api";
+  DesktopApi,
+} from "@/shared/contracts/api/desktop-api";
 import {
   APP_UPDATER_CHANNELS,
   AppUpdaterIpcError,
@@ -21,32 +21,32 @@ import type {
   AppUpdaterApi,
   AppUpdaterIpcResponse,
 } from "@/shared/contracts/app-updater";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
+import { APP_IPC_CHANNELS } from "@/shared/contracts/ipc/app-channels";
 import type {
-  HabitCommand,
-  ResultForCommand,
-} from "@/shared/contracts/ipc/habits-command-registry";
-import { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitsIpcResponse } from "@/shared/contracts/ipc/habits-errors";
+  AppCommand,
+  ResultForAppCommand,
+} from "@/shared/contracts/ipc/app-command-registry";
+import { AppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type { AppIpcResponse } from "@/shared/contracts/ipc/app-errors";
 import type {
-  HabitQuery,
-  ResultForQuery,
-} from "@/shared/contracts/ipc/habits-query-registry";
+  AppQuery,
+  ResultForAppQuery,
+} from "@/shared/contracts/ipc/app-query-registry";
 
-async function invokeHabits<T>(
+async function invokeDesktop<T>(
   channel: string,
   ...args: unknown[]
 ): Promise<T> {
   const response = (await ipcRenderer.invoke(
     channel,
     ...args
-  )) as HabitsIpcResponse<T>;
+  )) as AppIpcResponse<T>;
 
   if (response.ok) {
     return response.data;
   }
 
-  throw new HabitsIpcError(response.error);
+  throw new AppIpcError(response.error);
 }
 
 async function invokeUpdater<T>(channel: string): Promise<T> {
@@ -91,67 +91,62 @@ function subscribeToChannelWithoutPayload(
   };
 }
 
-const habitsApi: HabitsApi = {
+const desktopApi: DesktopApi = {
   chooseBackupForRestore: () =>
-    invokeHabits(HABITS_IPC_CHANNELS.chooseBackupForRestore),
+    invokeDesktop(APP_IPC_CHANNELS.chooseBackupForRestore),
   claimFocusTimerCycleCompletion: (cycleId: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
+    invokeDesktop(APP_IPC_CHANNELS.claimFocusTimerCycleCompletion, cycleId),
   claimFocusTimerLeadership: (instanceId: string, ttlMs: number) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.claimFocusTimerLeadership,
+    invokeDesktop(
+      APP_IPC_CHANNELS.claimFocusTimerLeadership,
       instanceId,
       ttlMs
     ),
-  clearData: () => invokeHabits(HABITS_IPC_CHANNELS.clearData),
-  command: <C extends HabitCommand>(command: C) =>
-    invokeHabits<ResultForCommand<C>>(HABITS_IPC_CHANNELS.command, command),
-  exportBackup: () => invokeHabits(HABITS_IPC_CHANNELS.exportBackup),
-  exportCsvData: () => invokeHabits(HABITS_IPC_CHANNELS.exportCsvData),
+  clearData: () => invokeDesktop(APP_IPC_CHANNELS.clearData),
+  command: <C extends AppCommand>(command: C) =>
+    invokeDesktop<ResultForAppCommand<C>>(APP_IPC_CHANNELS.command, command),
+  exportBackup: () => invokeDesktop(APP_IPC_CHANNELS.exportBackup),
+  exportCsvData: () => invokeDesktop(APP_IPC_CHANNELS.exportCsvData),
   getDesktopNotificationStatus: () =>
-    invokeHabits(HABITS_IPC_CHANNELS.getDesktopNotificationStatus),
+    invokeDesktop(APP_IPC_CHANNELS.getDesktopNotificationStatus),
   getFocusTimerShortcutStatus: () =>
-    invokeHabits<FocusTimerShortcutStatus>(
-      HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus
+    invokeDesktop<FocusTimerShortcutStatus>(
+      APP_IPC_CHANNELS.getFocusTimerShortcutStatus
     ),
   getLatestAutoBackupRestorePreview: () =>
-    invokeHabits(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview),
-  importBackup: () => invokeHabits(HABITS_IPC_CHANNELS.importBackup),
+    invokeDesktop(APP_IPC_CHANNELS.getLatestAutoBackupRestorePreview),
+  importBackup: () => invokeDesktop(APP_IPC_CHANNELS.importBackup),
   onFocusSessionRecorded: (listener) =>
-    subscribeToChannel(HABITS_IPC_CHANNELS.focusSessionRecorded, listener),
+    subscribeToChannel(APP_IPC_CHANNELS.focusSessionRecorded, listener),
   onFocusTimerActionRequested: (listener) =>
-    subscribeToChannel(HABITS_IPC_CHANNELS.focusTimerActionRequested, listener),
+    subscribeToChannel(APP_IPC_CHANNELS.focusTimerActionRequested, listener),
   onFocusTimerShortcutStatusChanged: (listener) =>
     subscribeToChannel(
-      HABITS_IPC_CHANNELS.focusTimerShortcutStatusChanged,
+      APP_IPC_CHANNELS.focusTimerShortcutStatusChanged,
       listener
     ),
   onFocusTimerStateChanged: (listener) =>
-    subscribeToChannel(HABITS_IPC_CHANNELS.focusTimerStateChanged, listener),
+    subscribeToChannel(APP_IPC_CHANNELS.focusTimerStateChanged, listener),
   onWindDownNavigationRequested: (listener) =>
     subscribeToChannelWithoutPayload(
-      HABITS_IPC_CHANNELS.windDownNavigationRequested,
+      APP_IPC_CHANNELS.windDownNavigationRequested,
       listener
     ),
   openAutoBackupFolder: () =>
-    invokeHabits(HABITS_IPC_CHANNELS.openAutoBackupFolder),
-  openDataFolder: () => invokeHabits(HABITS_IPC_CHANNELS.openDataFolder),
-  query: <Q extends HabitQuery>(query: Q) =>
-    invokeHabits<ResultForQuery<Q>>(HABITS_IPC_CHANNELS.query, query),
+    invokeDesktop(APP_IPC_CHANNELS.openAutoBackupFolder),
+  openDataFolder: () => invokeDesktop(APP_IPC_CHANNELS.openDataFolder),
+  query: <Q extends AppQuery>(query: Q) =>
+    invokeDesktop<ResultForAppQuery<Q>>(APP_IPC_CHANNELS.query, query),
   releaseFocusTimerLeadership: (instanceId: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
+    invokeDesktop(APP_IPC_CHANNELS.releaseFocusTimerLeadership, instanceId),
   resizeFocusWidget: (width: number, height: number) =>
-    invokeHabits(HABITS_IPC_CHANNELS.resizeFocusWidget, width, height),
+    invokeDesktop(APP_IPC_CHANNELS.resizeFocusWidget, width, height),
   restoreBackup: (restoreId: string) =>
-    invokeHabits(HABITS_IPC_CHANNELS.restoreBackup, restoreId),
-  showFocusWidget: () => invokeHabits(HABITS_IPC_CHANNELS.showFocusWidget),
-  showMainWindow: () => invokeHabits(HABITS_IPC_CHANNELS.showMainWindow),
+    invokeDesktop(APP_IPC_CHANNELS.restoreBackup, restoreId),
+  showFocusWidget: () => invokeDesktop(APP_IPC_CHANNELS.showFocusWidget),
+  showMainWindow: () => invokeDesktop(APP_IPC_CHANNELS.showMainWindow),
   showNotification: (title: string, body: string, iconFilename?: string) =>
-    invokeHabits(
-      HABITS_IPC_CHANNELS.showNotification,
-      title,
-      body,
-      iconFilename
-    ),
+    invokeDesktop(APP_IPC_CHANNELS.showNotification, title, body, iconFilename),
 };
 
 const updaterApi: AppUpdaterApi = {
@@ -163,5 +158,5 @@ const updaterApi: AppUpdaterApi = {
     subscribeToChannel(APP_UPDATER_CHANNELS.stateChanged, listener),
 };
 
-contextBridge.exposeInMainWorld("habits", habitsApi);
+contextBridge.exposeInMainWorld("desktop", desktopApi);
 contextBridge.exposeInMainWorld("updater", updaterApi);

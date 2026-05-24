@@ -5,7 +5,7 @@ import { SettingsCardHeader } from "@/renderer/features/settings/components/sett
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import { PomodoroSettingsFields } from "@/renderer/shared/components/pomodoro-settings/pomodoro-settings-fields";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import type { FocusTimerShortcutStatus } from "@/shared/contracts/api/habits-api";
+import type { FocusTimerShortcutStatus } from "@/shared/contracts/api/desktop-api";
 
 export function PomodoroSettingsCard({
   fieldErrors,
@@ -20,7 +20,7 @@ export function PomodoroSettingsCard({
 
     async function loadShortcutStatus() {
       try {
-        const nextStatus = await window.habits.getFocusTimerShortcutStatus();
+        const nextStatus = await window.desktop.getFocusTimerShortcutStatus();
 
         if (!cancelled) {
           setShortcutStatus(nextStatus);
@@ -35,7 +35,7 @@ export function PomodoroSettingsCard({
     loadShortcutStatus();
 
     const unsubscribe =
-      window.habits.onFocusTimerShortcutStatusChanged(setShortcutStatus);
+      window.desktop.onFocusTimerShortcutStatusChanged(setShortcutStatus);
 
     return () => {
       cancelled = true;

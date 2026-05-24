@@ -10,7 +10,7 @@ import path from "node:path";
 
 import { app, nativeImage, Notification } from "electron";
 
-import type { DesktopNotificationStatus } from "@/shared/contracts/api/habits-api";
+import type { DesktopNotificationStatus } from "@/shared/contracts/api/desktop-api";
 
 import { hasNativeAddonBinary } from "./native-addon";
 

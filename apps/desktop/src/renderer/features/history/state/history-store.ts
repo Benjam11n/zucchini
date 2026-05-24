@@ -6,10 +6,10 @@
  */
 import { create } from "zustand";
 
+import { appClient } from "@/renderer/shared/lib/app-client";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 
@@ -29,7 +29,7 @@ interface HistoryStoreState {
   contributionHistory: HistorySummaryDay[];
   history: HistorySummaryDay[];
   historyDayByDate: HistoryDayByDate;
-  historyLoadError: HabitsIpcError | null;
+  historyLoadError: AppIpcError | null;
   historySummary: HistorySummaryDay[];
   historySummaryByMonth: HistorySummaryByMonth;
   historySummaryByYear: HistorySummaryByYear;
@@ -114,8 +114,8 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => habitsClient.getHistoryDay(date), {
-      mapError: toHabitsIpcError,
+    await runAsyncTask(() => appClient.getHistoryDay(date), {
+      mapError: toAppIpcError,
       onError: (historyLoadError) => {
         set({
           historyLoadError,
@@ -161,9 +161,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
     }
 
     const historyMonthRequest = runAsyncTask(
-      () => habitsClient.getHistorySummaryForMonth(year, month),
+      () => appClient.getHistorySummaryForMonth(year, month),
       {
-        mapError: toHabitsIpcError,
+        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,
@@ -210,8 +210,8 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => habitsClient.getHistorySummary(limit), {
-      mapError: toHabitsIpcError,
+    await runAsyncTask(() => appClient.getHistorySummary(limit), {
+      mapError: toAppIpcError,
       onError: (historyLoadError) => {
         set({
           hasLoadedHistorySummary: true,
@@ -255,9 +255,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
     }
 
     const historyYearRequest = runAsyncTask(
-      () => habitsClient.getHistorySummaryForYear(year),
+      () => appClient.getHistorySummaryForYear(year),
       {
-        mapError: toHabitsIpcError,
+        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,
@@ -319,9 +319,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
     }
 
     const nextHistoryYearsRequest = runAsyncTask(
-      () => habitsClient.getHistoryYears(),
+      () => appClient.getHistoryYears(),
       {
-        mapError: toHabitsIpcError,
+        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,

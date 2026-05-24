@@ -2,11 +2,11 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type { DesktopNotificationStatus } from "@/shared/contracts/api/habits-api";
+import type { DesktopNotificationStatus } from "@/shared/contracts/api/desktop-api";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import type { AppSettings } from "@/shared/domain/settings";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
-import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
+import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
 import { ReminderSettingsCard } from "./reminder-settings-card";
 
@@ -21,17 +21,17 @@ const defaultNotificationStatus: DesktopNotificationStatus = {
   reason: null,
 };
 
-function setHabitsApi(
+function setDesktopApi(
   notificationStatus: DesktopNotificationStatus = defaultNotificationStatus
 ) {
-  return installMockHabitsApi({
+  return installMockDesktopApi({
     getDesktopNotificationStatus: vi.fn().mockResolvedValue(notificationStatus),
   });
 }
 
 describe("reminder settings card", () => {
   it("shows a blocked notification warning when reminders are enabled", async () => {
-    setHabitsApi({
+    setDesktopApi({
       availability: "blocked",
       reason: "do-not-disturb",
     });
@@ -50,7 +50,7 @@ describe("reminder settings card", () => {
   });
 
   it("does not show a notification warning when desktop delivery is available", async () => {
-    const habits = setHabitsApi({
+    const habits = setDesktopApi({
       availability: "available",
       reason: null,
     });
@@ -73,7 +73,7 @@ describe("reminder settings card", () => {
   });
 
   it("shows an informational message when desktop delivery is unsupported", async () => {
-    setHabitsApi({
+    setDesktopApi({
       availability: "unsupported",
       reason: "unsupported-platform",
     });
@@ -94,7 +94,7 @@ describe("reminder settings card", () => {
   });
 
   it("shows an informational message when desktop delivery status is unknown", async () => {
-    setHabitsApi({
+    setDesktopApi({
       availability: "unknown",
       reason: "platform-error",
     });
@@ -115,7 +115,7 @@ describe("reminder settings card", () => {
   });
 
   it("updates the reminder toggle without changing its behavior", () => {
-    setHabitsApi();
+    setDesktopApi();
     const onChange = vi.fn();
 
     render(
@@ -135,7 +135,7 @@ describe("reminder settings card", () => {
   });
 
   it("refreshes desktop notification status when the window regains focus", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
 
     render(
       <ReminderSettingsCard

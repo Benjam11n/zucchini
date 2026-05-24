@@ -16,7 +16,7 @@ import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/
 import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { Habit } from "@/shared/domain/habit";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
@@ -159,7 +159,7 @@ export function resetInsightsIfLoaded(): void {
   useInsightsStore.getState().resetDashboard();
 }
 
-export function applyBootFailureState(bootError: HabitsIpcError): void {
+export function applyBootFailureState(bootError: AppIpcError): void {
   unstable_batchedUpdates(() => {
     useBootStore.setState({
       bootError,

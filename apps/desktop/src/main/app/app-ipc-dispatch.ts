@@ -1,46 +1,46 @@
 import type { ApplicationService } from "@/main/ports/application-service";
 import type {
-  HabitCommand,
-  HabitCommandResult,
-  HabitCommandType,
-  PayloadForCommandType,
-  ResultForCommandType,
-} from "@/shared/contracts/ipc/habits-command-registry";
+  AppCommand,
+  AppCommandResult,
+  AppCommandType,
+  PayloadForAppCommandType,
+  ResultForAppCommandType,
+} from "@/shared/contracts/ipc/app-command-registry";
 import type {
-  HabitQuery,
-  HabitQueryResult,
-  HabitQueryType,
-  PayloadForQueryType,
-  ResultForQueryType,
-} from "@/shared/contracts/ipc/habits-query-registry";
+  AppQuery,
+  AppQueryResult,
+  AppQueryType,
+  PayloadForAppQueryType,
+  ResultForAppQueryType,
+} from "@/shared/contracts/ipc/app-query-registry";
 
-type HabitCommandHandler<TType extends HabitCommandType> = [
-  PayloadForCommandType<TType>,
+type AppCommandHandler<TType extends AppCommandType> = [
+  PayloadForAppCommandType<TType>,
 ] extends [never]
-  ? (service: ApplicationService) => ResultForCommandType<TType>
+  ? (service: ApplicationService) => ResultForAppCommandType<TType>
   : (
       service: ApplicationService,
-      payload: PayloadForCommandType<TType>
-    ) => ResultForCommandType<TType>;
+      payload: PayloadForAppCommandType<TType>
+    ) => ResultForAppCommandType<TType>;
 
-type HabitCommandHandlers = {
-  [TType in HabitCommandType]: HabitCommandHandler<TType>;
+type AppCommandHandlers = {
+  [TType in AppCommandType]: AppCommandHandler<TType>;
 };
 
-type HabitQueryHandler<TType extends HabitQueryType> = [
-  PayloadForQueryType<TType>,
+type AppQueryHandler<TType extends AppQueryType> = [
+  PayloadForAppQueryType<TType>,
 ] extends [never]
-  ? (service: ApplicationService) => ResultForQueryType<TType>
+  ? (service: ApplicationService) => ResultForAppQueryType<TType>
   : (
       service: ApplicationService,
-      payload: PayloadForQueryType<TType>
-    ) => ResultForQueryType<TType>;
+      payload: PayloadForAppQueryType<TType>
+    ) => ResultForAppQueryType<TType>;
 
-type HabitQueryHandlers = {
-  [TType in HabitQueryType]: HabitQueryHandler<TType>;
+type AppQueryHandlers = {
+  [TType in AppQueryType]: AppQueryHandler<TType>;
 };
 
-const habitCommandHandlers = {
+const appCommandHandlers = {
   "focusQuotaGoal.archive": (service, payload) =>
     service.archiveFocusQuotaGoal(payload.goalId),
   "focusQuotaGoal.unarchive": (service, payload) =>
@@ -101,9 +101,9 @@ const habitCommandHandlers = {
     service.renameWindDownAction(payload.actionId, payload.name),
   "windDown.toggleAction": (service, payload) =>
     service.toggleWindDownAction(payload.actionId),
-} satisfies HabitCommandHandlers;
+} satisfies AppCommandHandlers;
 
-const habitQueryHandlers = {
+const appQueryHandlers = {
   "focusSession.list": (service, payload) =>
     service.getFocusSessions(payload?.limit),
   "focusTimer.getState": (service) => service.getPersistedFocusTimerState(),
@@ -125,30 +125,30 @@ const habitQueryHandlers = {
   "weeklyReview.get": (service, payload) =>
     service.getWeeklyReview(payload.weekStart),
   "weeklyReview.overview": (service) => service.getWeeklyReviewOverview(),
-} satisfies HabitQueryHandlers;
+} satisfies AppQueryHandlers;
 
-export function executeHabitServiceCommand(
+export function executeAppServiceCommand(
   service: ApplicationService,
-  command: HabitCommand
-): HabitCommandResult {
-  const handler = habitCommandHandlers[command.type] as (
+  command: AppCommand
+): AppCommandResult {
+  const handler = appCommandHandlers[command.type] as (
     service: ApplicationService,
     payload?: unknown
-  ) => HabitCommandResult;
+  ) => AppCommandResult;
 
   return "payload" in command
     ? handler(service, command.payload)
     : handler(service);
 }
 
-export function readHabitServiceQuery(
+export function readAppServiceQuery(
   service: ApplicationService,
-  query: HabitQuery
-): HabitQueryResult {
-  const handler = habitQueryHandlers[query.type] as (
+  query: AppQuery
+): AppQueryResult {
+  const handler = appQueryHandlers[query.type] as (
     service: ApplicationService,
     payload?: unknown
-  ) => HabitQueryResult;
+  ) => AppQueryResult;
 
   return "payload" in query
     ? handler(service, query.payload)

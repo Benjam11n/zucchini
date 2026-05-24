@@ -1,11 +1,11 @@
 import type {
-  HabitCommand,
-  ResultForCommand,
-} from "@/shared/contracts/ipc/habits-command-registry";
+  AppCommand,
+  ResultForAppCommand,
+} from "@/shared/contracts/ipc/app-command-registry";
 import type {
-  HabitQuery,
-  ResultForQuery,
-} from "@/shared/contracts/ipc/habits-query-registry";
+  AppQuery,
+  ResultForAppQuery,
+} from "@/shared/contracts/ipc/app-query-registry";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 
@@ -78,9 +78,11 @@ interface BackupRestoreHabitPreview {
   targetCount: number;
 }
 
-export interface HabitsApi {
+export interface DesktopApi {
   chooseBackupForRestore: () => Promise<BackupRestorePreview | null>;
-  command: <C extends HabitCommand>(command: C) => Promise<ResultForCommand<C>>;
+  command: <C extends AppCommand>(
+    command: C
+  ) => Promise<ResultForAppCommand<C>>;
   clearData: () => Promise<boolean>;
   claimFocusTimerCycleCompletion: (cycleId: string) => Promise<boolean>;
   claimFocusTimerLeadership: (
@@ -108,7 +110,7 @@ export interface HabitsApi {
   ) => () => void;
   openDataFolder: () => Promise<string>;
   openAutoBackupFolder: () => Promise<string>;
-  query: <Q extends HabitQuery>(query: Q) => Promise<ResultForQuery<Q>>;
+  query: <Q extends AppQuery>(query: Q) => Promise<ResultForAppQuery<Q>>;
   releaseFocusTimerLeadership: (instanceId: string) => Promise<void>;
   restoreBackup: (restoreId: string) => Promise<boolean>;
   resizeFocusWidget: (width: number, height: number) => Promise<void>;

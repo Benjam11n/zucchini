@@ -8,7 +8,7 @@ import type {
   ContributionIntensity,
   ContributionStatus as HistoryStatus,
 } from "@/renderer/shared/types/contribution";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
 import type {
@@ -24,7 +24,7 @@ export interface HistoryPageProps {
   contributionHistory: HistorySummaryDay[];
   history: HistorySummaryDay[];
   historyYears: number[];
-  historyLoadError: HabitsIpcError | null;
+  historyLoadError: AppIpcError | null;
   onLoadHistoryYears: () => void;
   onNavigateToToday: () => void;
   onSelectHistoryMonth: (year: number, month: number) => void;
@@ -32,7 +32,7 @@ export interface HistoryPageProps {
   todayDate: string;
   selectedHistoryYear: number | null;
   selectedWeeklyReview: WeeklyReview | null;
-  weeklyReviewError: HabitsIpcError | null;
+  weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
   onSelectWeeklyReview: (weekStart: string) => void;

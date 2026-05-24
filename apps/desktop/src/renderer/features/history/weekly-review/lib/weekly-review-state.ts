@@ -14,10 +14,10 @@ interface WeeklyReviewLoader {
 }
 
 export async function loadWeeklyReviewState(
-  habitsApi: WeeklyReviewLoader,
+  desktopApi: WeeklyReviewLoader,
   previousSelectedWeeklyReview: WeeklyReview | null
 ): Promise<WeeklyReviewStateSnapshot> {
-  const overview = await habitsApi.getWeeklyReviewOverview();
+  const overview = await desktopApi.getWeeklyReviewOverview();
   const selectedWeekStart = previousSelectedWeeklyReview?.weekStart ?? null;
 
   if (!selectedWeekStart) {
@@ -47,6 +47,6 @@ export async function loadWeeklyReviewState(
 
   return {
     overview,
-    selectedWeeklyReview: await habitsApi.getWeeklyReview(selectedWeekStart),
+    selectedWeeklyReview: await desktopApi.getWeeklyReview(selectedWeekStart),
   };
 }

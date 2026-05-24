@@ -5,7 +5,7 @@ import {
   reorderHabitListByDropPosition,
   sortHabitListByCategory,
 } from "@/renderer/shared/lib/reorder-habits";
-import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   Habit,
   HabitCategory,
@@ -157,7 +157,7 @@ export function useHabitManagementController({
     task: () => Promise<void>;
   }) {
     await runAsyncTask(task, {
-      mapError: toHabitsIpcError,
+      mapError: toAppIpcError,
       onError: (error) => {
         showErrorFeedback(error.message);
       },

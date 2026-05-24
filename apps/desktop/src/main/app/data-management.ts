@@ -22,7 +22,7 @@ import type {
   DataManagementServicePort,
   DataManagementShellPort,
 } from "@/main/app/ports";
-import type { BackupRestorePreview } from "@/shared/contracts/api/habits-api";
+import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 
 const RESTORE_TOKEN_TTL_MS = 15 * 60 * 1000;
 

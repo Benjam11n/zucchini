@@ -15,7 +15,7 @@ import {
 import { Label } from "@/renderer/shared/components/ui/label";
 import { Switch } from "@/renderer/shared/components/ui/switch";
 import { TimeInput } from "@/renderer/shared/components/ui/time-input";
-import type { DesktopNotificationStatus } from "@/shared/contracts/api/habits-api";
+import type { DesktopNotificationStatus } from "@/shared/contracts/api/desktop-api";
 import { DEFAULT_REMINDER_SNOOZE_MINUTES } from "@/shared/domain/settings";
 
 interface NotificationStatusMessage {
@@ -109,7 +109,7 @@ export function ReminderSettingsCard({
 
     const refreshNotificationStatus = async () => {
       try {
-        const nextStatus = await window.habits.getDesktopNotificationStatus();
+        const nextStatus = await window.desktop.getDesktopNotificationStatus();
         if (isMounted) {
           setNotificationStatus(nextStatus);
         }

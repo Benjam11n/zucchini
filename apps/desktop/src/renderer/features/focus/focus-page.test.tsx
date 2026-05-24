@@ -51,7 +51,7 @@ function FocusPageHarness() {
 }
 
 function installHabitsMock() {
-  Object.defineProperty(window, "habits", {
+  Object.defineProperty(window, "desktop", {
     configurable: true,
     value: {
       getDesktopNotificationStatus: vi.fn(),

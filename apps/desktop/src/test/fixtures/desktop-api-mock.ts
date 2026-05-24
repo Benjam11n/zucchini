@@ -1,8 +1,8 @@
 import { vi } from "vitest";
 
-import type { HabitsApi } from "@/shared/contracts/api/habits-api";
-import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
-import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
+import type { DesktopApi } from "@/shared/contracts/api/desktop-api";
+import type { AppCommand } from "@/shared/contracts/ipc/app-command-registry";
+import type { AppQuery } from "@/shared/contracts/ipc/app-query-registry";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 
 type MockFn = ReturnType<typeof vi.fn>;
@@ -26,7 +26,7 @@ const EMPTY_HABIT_STATUS_PATCH: HabitStatusPatch = {
   habitStreaksStale: true,
 };
 
-export type MockHabitsApi = Record<keyof HabitsApi, MockFn> &
+export type MockDesktopApi = Record<keyof DesktopApi, MockFn> &
   Record<
     | "getHistory"
     | "getHistoryDay"
@@ -46,45 +46,43 @@ export type MockHabitsApi = Record<keyof HabitsApi, MockFn> &
   > &
   Record<string, MockFn>;
 
-type MockHabitsApiInternals = Record<string, MockFn>;
+type MockDesktopApiInternals = Record<string, MockFn>;
 
-function getMock(mock: MockHabitsApiInternals, name: string): CallableMockFn {
+function getMock(mock: MockDesktopApiInternals, name: string): CallableMockFn {
   const mockFn = mock[name];
 
   if (!mockFn) {
-    throw new Error(`Missing habits API mock: ${name}`);
+    throw new Error(`Missing desktop API mock: ${name}`);
   }
 
   return mockFn as CallableMockFn;
 }
 
-function createCommandHandlers(mock: MockHabitsApiInternals) {
+function createCommandHandlers(mock: MockDesktopApiInternals) {
   return {
     "focusQuotaGoal.archive": (
-      command: Extract<HabitCommand, { type: "focusQuotaGoal.archive" }>
+      command: Extract<AppCommand, { type: "focusQuotaGoal.archive" }>
     ) => getMock(mock, "archiveFocusQuotaGoal")(command.payload.goalId),
     "focusQuotaGoal.unarchive": (
-      command: Extract<HabitCommand, { type: "focusQuotaGoal.unarchive" }>
+      command: Extract<AppCommand, { type: "focusQuotaGoal.unarchive" }>
     ) => getMock(mock, "unarchiveFocusQuotaGoal")(command.payload.goalId),
     "focusQuotaGoal.upsert": (
-      command: Extract<HabitCommand, { type: "focusQuotaGoal.upsert" }>
+      command: Extract<AppCommand, { type: "focusQuotaGoal.upsert" }>
     ) =>
       getMock(mock, "upsertFocusQuotaGoal")(
         command.payload.frequency,
         command.payload.targetMinutes
       ),
     "focusSession.record": (
-      command: Extract<HabitCommand, { type: "focusSession.record" }>
+      command: Extract<AppCommand, { type: "focusSession.record" }>
     ) => getMock(mock, "recordFocusSession")(command.payload),
     "focusTimer.saveState": (
-      command: Extract<HabitCommand, { type: "focusTimer.saveState" }>
+      command: Extract<AppCommand, { type: "focusTimer.saveState" }>
     ) => getMock(mock, "saveFocusTimerState")(command.payload),
     "habit.archive": (
-      command: Extract<HabitCommand, { type: "habit.archive" }>
+      command: Extract<AppCommand, { type: "habit.archive" }>
     ) => getMock(mock, "archiveHabit")(command.payload.habitId),
-    "habit.create": (
-      command: Extract<HabitCommand, { type: "habit.create" }>
-    ) =>
+    "habit.create": (command: Extract<AppCommand, { type: "habit.create" }>) =>
       getMock(mock, "createHabit")(
         command.payload.name,
         command.payload.category,
@@ -93,41 +91,37 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
         command.payload.targetCount
       ),
     "habit.decrementProgress": (
-      command: Extract<HabitCommand, { type: "habit.decrementProgress" }>
+      command: Extract<AppCommand, { type: "habit.decrementProgress" }>
     ) => getMock(mock, "decrementHabitProgress")(command.payload.habitId),
     "habit.incrementProgress": (
-      command: Extract<HabitCommand, { type: "habit.incrementProgress" }>
+      command: Extract<AppCommand, { type: "habit.incrementProgress" }>
     ) => getMock(mock, "incrementHabitProgress")(command.payload.habitId),
-    "habit.pause": (command: Extract<HabitCommand, { type: "habit.pause" }>) =>
+    "habit.pause": (command: Extract<AppCommand, { type: "habit.pause" }>) =>
       getMock(mock, "pauseHabit")(command.payload.habitId),
-    "habit.rename": (
-      command: Extract<HabitCommand, { type: "habit.rename" }>
-    ) =>
+    "habit.rename": (command: Extract<AppCommand, { type: "habit.rename" }>) =>
       getMock(mock, "renameHabit")(
         command.payload.habitId,
         command.payload.name
       ),
     "habit.reorder": (
-      command: Extract<HabitCommand, { type: "habit.reorder" }>
+      command: Extract<AppCommand, { type: "habit.reorder" }>
     ) => getMock(mock, "reorderHabits")(command.payload.habitIds),
-    "habit.resume": (
-      command: Extract<HabitCommand, { type: "habit.resume" }>
-    ) => getMock(mock, "resumeHabit")(command.payload.habitId),
-    "habit.toggle": (
-      command: Extract<HabitCommand, { type: "habit.toggle" }>
-    ) => getMock(mock, "toggleHabit")(command.payload.habitId),
+    "habit.resume": (command: Extract<AppCommand, { type: "habit.resume" }>) =>
+      getMock(mock, "resumeHabit")(command.payload.habitId),
+    "habit.toggle": (command: Extract<AppCommand, { type: "habit.toggle" }>) =>
+      getMock(mock, "toggleHabit")(command.payload.habitId),
     "habit.unarchive": (
-      command: Extract<HabitCommand, { type: "habit.unarchive" }>
+      command: Extract<AppCommand, { type: "habit.unarchive" }>
     ) => getMock(mock, "unarchiveHabit")(command.payload.habitId),
     "habit.updateCategory": (
-      command: Extract<HabitCommand, { type: "habit.updateCategory" }>
+      command: Extract<AppCommand, { type: "habit.updateCategory" }>
     ) =>
       getMock(mock, "updateHabitCategory")(
         command.payload.habitId,
         command.payload.category
       ),
     "habit.updateFrequency": (
-      command: Extract<HabitCommand, { type: "habit.updateFrequency" }>
+      command: Extract<AppCommand, { type: "habit.updateFrequency" }>
     ) =>
       getMock(mock, "updateHabitFrequency")(
         command.payload.habitId,
@@ -135,29 +129,29 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
         command.payload.targetCount
       ),
     "habit.updateTargetCount": (
-      command: Extract<HabitCommand, { type: "habit.updateTargetCount" }>
+      command: Extract<AppCommand, { type: "habit.updateTargetCount" }>
     ) =>
       getMock(mock, "updateHabitTargetCount")(
         command.payload.habitId,
         command.payload.targetCount
       ),
     "habit.updateWeekdays": (
-      command: Extract<HabitCommand, { type: "habit.updateWeekdays" }>
+      command: Extract<AppCommand, { type: "habit.updateWeekdays" }>
     ) =>
       getMock(mock, "updateHabitWeekdays")(
         command.payload.habitId,
         command.payload.selectedWeekdays
       ),
     "settings.update": (
-      command: Extract<HabitCommand, { type: "settings.update" }>
+      command: Extract<AppCommand, { type: "settings.update" }>
     ) => getMock(mock, "updateSettings")(command.payload),
     "today.moveUnfinishedToTomorrow": () =>
       getMock(mock, "moveUnfinishedHabitsToTomorrow")(),
     "today.setDayStatus": (
-      command: Extract<HabitCommand, { type: "today.setDayStatus" }>
+      command: Extract<AppCommand, { type: "today.setDayStatus" }>
     ) => getMock(mock, "setDayStatus")(command.payload.kind),
     "today.toggleCarryover": (
-      command: Extract<HabitCommand, { type: "today.toggleCarryover" }>
+      command: Extract<AppCommand, { type: "today.toggleCarryover" }>
     ) =>
       getMock(mock, "toggleHabitCarryover")(
         command.payload.sourceDate,
@@ -165,70 +159,69 @@ function createCommandHandlers(mock: MockHabitsApiInternals) {
       ),
     "today.toggleSickDay": () => getMock(mock, "toggleSickDay")(),
     "windDown.createAction": (
-      command: Extract<HabitCommand, { type: "windDown.createAction" }>
+      command: Extract<AppCommand, { type: "windDown.createAction" }>
     ) => getMock(mock, "createWindDownAction")(command.payload.name),
     "windDown.deleteAction": (
-      command: Extract<HabitCommand, { type: "windDown.deleteAction" }>
+      command: Extract<AppCommand, { type: "windDown.deleteAction" }>
     ) => getMock(mock, "deleteWindDownAction")(command.payload.actionId),
     "windDown.renameAction": (
-      command: Extract<HabitCommand, { type: "windDown.renameAction" }>
+      command: Extract<AppCommand, { type: "windDown.renameAction" }>
     ) =>
       getMock(mock, "renameWindDownAction")(
         command.payload.actionId,
         command.payload.name
       ),
     "windDown.toggleAction": (
-      command: Extract<HabitCommand, { type: "windDown.toggleAction" }>
+      command: Extract<AppCommand, { type: "windDown.toggleAction" }>
     ) => getMock(mock, "toggleWindDownAction")(command.payload.actionId),
   };
 }
 
-function createQueryHandlers(mock: MockHabitsApiInternals) {
+function createQueryHandlers(mock: MockDesktopApiInternals) {
   return {
     "focusSession.list": (
-      query: Extract<HabitQuery, { type: "focusSession.list" }>
+      query: Extract<AppQuery, { type: "focusSession.list" }>
     ) => getMock(mock, "getFocusSessions")(query.payload?.limit),
     "focusTimer.getState": () => getMock(mock, "getFocusTimerState")(),
     "habit.list": () => getMock(mock, "getHabits")(),
-    "history.get": (query: Extract<HabitQuery, { type: "history.get" }>) =>
+    "history.get": (query: Extract<AppQuery, { type: "history.get" }>) =>
       query.payload
         ? getMock(mock, "getHistory")(query.payload.limit)
         : getMock(mock, "getHistory")(),
-    "history.getDay": (
-      query: Extract<HabitQuery, { type: "history.getDay" }>
-    ) => getMock(mock, "getHistoryDay")(query.payload.date),
+    "history.getDay": (query: Extract<AppQuery, { type: "history.getDay" }>) =>
+      getMock(mock, "getHistoryDay")(query.payload.date),
     "history.getYear": (
-      query: Extract<HabitQuery, { type: "history.getYear" }>
+      query: Extract<AppQuery, { type: "history.getYear" }>
     ) => getMock(mock, "getHistoryForYear")(query.payload.year),
     "history.summary": (
-      query: Extract<HabitQuery, { type: "history.summary" }>
+      query: Extract<AppQuery, { type: "history.summary" }>
     ) =>
       query.payload
         ? getMock(mock, "getHistorySummary")(query.payload.limit)
         : getMock(mock, "getHistorySummary")(),
     "history.summaryMonth": (
-      query: Extract<HabitQuery, { type: "history.summaryMonth" }>
+      query: Extract<AppQuery, { type: "history.summaryMonth" }>
     ) =>
       getMock(mock, "getHistorySummaryForMonth")(
         query.payload.year,
         query.payload.month
       ),
     "history.summaryYear": (
-      query: Extract<HabitQuery, { type: "history.summaryYear" }>
+      query: Extract<AppQuery, { type: "history.summaryYear" }>
     ) => getMock(mock, "getHistorySummaryForYear")(query.payload.year),
     "history.years": () => getMock(mock, "getHistoryYears")(),
     "insights.dashboard": () => getMock(mock, "getInsightsDashboard")(),
     "today.get": () => getMock(mock, "getTodayState")(),
     "weeklyReview.get": (
-      query: Extract<HabitQuery, { type: "weeklyReview.get" }>
+      query: Extract<AppQuery, { type: "weeklyReview.get" }>
     ) => getMock(mock, "getWeeklyReview")(query.payload.weekStart),
     "weeklyReview.overview": () => getMock(mock, "getWeeklyReviewOverview")(),
   };
 }
 
-function createMockHabitsApi(
-  overrides: Partial<MockHabitsApi> = {}
-): MockHabitsApi {
+function createMockDesktopApi(
+  overrides: Partial<MockDesktopApi> = {}
+): MockDesktopApi {
   // oxlint-disable-next-line eslint/sort-keys
   const baseMock = {
     archiveFocusQuotaGoal: vi.fn().mockResolvedValue(null),
@@ -314,38 +307,38 @@ function createMockHabitsApi(
     updateHabitTargetCount: vi.fn().mockResolvedValue(null),
     updateHabitWeekdays: vi.fn().mockResolvedValue(null),
     updateSettings: vi.fn((settings: unknown) => Promise.resolve(settings)),
-  } satisfies MockHabitsApi;
+  } satisfies MockDesktopApi;
 
   const mock = {
     ...baseMock,
     ...overrides,
-  } satisfies MockHabitsApi;
+  } satisfies MockDesktopApi;
 
-  mock["command"].mockImplementation((command: HabitCommand) =>
-    createCommandHandlers(mock as MockHabitsApiInternals)[command.type](
+  mock["command"].mockImplementation((command: AppCommand) =>
+    createCommandHandlers(mock as MockDesktopApiInternals)[command.type](
       command as never
     )
   );
 
-  mock["query"].mockImplementation((query: HabitQuery) =>
-    createQueryHandlers(mock as MockHabitsApiInternals)[query.type](
+  mock["query"].mockImplementation((query: AppQuery) =>
+    createQueryHandlers(mock as MockDesktopApiInternals)[query.type](
       query as never
     )
   );
 
-  return mock as MockHabitsApi;
+  return mock as MockDesktopApi;
 }
 
-export function installMockHabitsApi(
-  overrides: Partial<MockHabitsApi> = {}
-): MockHabitsApi {
-  const mock = createMockHabitsApi(overrides);
+export function installMockDesktopApi(
+  overrides: Partial<MockDesktopApi> = {}
+): MockDesktopApi {
+  const mock = createMockDesktopApi(overrides);
   const targetWindow =
     "window" in globalThis
       ? globalThis.window
       : ({} as Window & typeof globalThis);
 
-  Object.defineProperty(targetWindow, "habits", {
+  Object.defineProperty(targetWindow, "desktop", {
     configurable: true,
     value: mock,
   });

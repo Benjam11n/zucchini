@@ -24,12 +24,12 @@ async function notify(
 }
 
 async function releaseLeadership(instanceId: string): Promise<void> {
-  if (!window.habits) {
+  if (!window.desktop) {
     return;
   }
 
   try {
-    await window.habits.releaseFocusTimerLeadership(instanceId);
+    await window.desktop.releaseFocusTimerLeadership(instanceId);
   } catch {
     // Leadership release is best-effort cleanup.
   }
@@ -51,7 +51,7 @@ export function useFocusTimerLeadershipLoop({
   timerStatus: PersistedFocusTimerState["status"];
 }) {
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
@@ -71,7 +71,7 @@ export function useFocusTimerLeadershipLoop({
       tickInFlight = true;
 
       try {
-        const isLeader = await window.habits.claimFocusTimerLeadership(
+        const isLeader = await window.desktop.claimFocusTimerLeadership(
           instanceId,
           LEASE_TTL_MS
         );
@@ -97,12 +97,15 @@ export function useFocusTimerLeadershipLoop({
         }
 
         if (transition.kind === "breakCompleted") {
-          await notify(window.habits.showNotification, transition.notification);
+          await notify(
+            window.desktop.showNotification,
+            transition.notification
+          );
           return;
         }
 
         const claimedCompletion =
-          await window.habits.claimFocusTimerCycleCompletion(
+          await window.desktop.claimFocusTimerCycleCompletion(
             transition.cycleCompletionId
           );
 
@@ -111,7 +114,7 @@ export function useFocusTimerLeadershipLoop({
         }
 
         clearFocusSaveError();
-        await notify(window.habits.showNotification, transition.notification);
+        await notify(window.desktop.showNotification, transition.notification);
 
         if (!transition.focusSessionInput) {
           return;

@@ -11,8 +11,8 @@ import {
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { resolveFocusTimerTick } from "@/renderer/features/focus/lib/focus-timer-tick";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
-import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
+import type { AppCommand } from "@/shared/contracts/ipc/app-command-registry";
+import type { AppQuery } from "@/shared/contracts/ipc/app-query-registry";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -72,12 +72,12 @@ function setupFocusTimerTest(
     Promise.resolve(state)
   );
   const showFocusWidget = vi.fn(() => Promise.resolve());
-  Object.defineProperty(window, "habits", {
+  Object.defineProperty(window, "desktop", {
     configurable: true,
     value: {
       claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
       claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
-      command: vi.fn((command: HabitCommand) => {
+      command: vi.fn((command: AppCommand) => {
         if (command.type === "focusTimer.saveState") {
           return saveFocusTimerState(command.payload);
         }
@@ -110,7 +110,7 @@ function setupFocusTimerTest(
           };
         }
       ),
-      query: vi.fn((query: HabitQuery) => {
+      query: vi.fn((query: AppQuery) => {
         if (query.type === "focusTimer.getState") {
           return getFocusTimerState();
         }
@@ -431,7 +431,7 @@ describe("use focus timer", () => {
       status: "running",
       timerSessionId: "timer-session-4",
     });
-    expect(window.habits.showNotification).toHaveBeenCalledWith(
+    expect(window.desktop.showNotification).toHaveBeenCalledWith(
       "Focus set complete",
       "Time for a long break."
     );
@@ -525,7 +525,7 @@ describe("use focus timer", () => {
         }
       )
     );
-    expect(window.habits.showNotification).toHaveBeenCalledWith(
+    expect(window.desktop.showNotification).toHaveBeenCalledWith(
       "Long break complete",
       "Pomodoro set finished."
     );
@@ -691,7 +691,7 @@ describe("use focus timer", () => {
       remainingMs: defaultPomodoroSettings.focusLongBreakSeconds * 1000,
       status: "running",
     });
-    expect(window.habits.showNotification).toHaveBeenCalledWith(
+    expect(window.desktop.showNotification).toHaveBeenCalledWith(
       "Focus set complete",
       "Time for a long break."
     );

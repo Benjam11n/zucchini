@@ -1,6 +1,6 @@
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 
-export function getBootErrorDisplay(error: HabitsIpcError | null): {
+export function getBootErrorDisplay(error: AppIpcError | null): {
   description: string;
   title: string;
 } {

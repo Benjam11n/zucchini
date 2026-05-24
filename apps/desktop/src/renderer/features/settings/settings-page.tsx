@@ -102,7 +102,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 <Bell className="size-4" />
                 General
               </TabsTrigger>
-              <TabsTrigger className="flex-1" value="habits">
+              <TabsTrigger className="flex-1" value="desktop">
                 <ListTodo className="size-4" />
                 Habits
               </TabsTrigger>
@@ -152,7 +152,7 @@ export function SettingsPage(props: SettingsPageProps) {
             </m.section>
           </TabsContent>
 
-          <TabsContent value="habits">
+          <TabsContent value="desktop">
             <m.div className="grid gap-6" variants={staggerItemVariants}>
               <WindDownSettingsCard
                 fieldErrors={props.fieldErrors}

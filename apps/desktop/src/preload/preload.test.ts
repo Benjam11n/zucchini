@@ -5,8 +5,8 @@ import type {
   DesktopNotificationStatus,
   FocusTimerActionRequest,
   FocusTimerShortcutStatus,
-  HabitsApi,
-} from "@/shared/contracts/api/habits-api";
+  DesktopApi,
+} from "@/shared/contracts/api/desktop-api";
 import type { AppUpdaterApi } from "@/shared/contracts/app-updater";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
@@ -38,7 +38,7 @@ vi.mock<typeof ElectronModule>(import("electron"), () => {
   };
 });
 
-describe("preload habits API", () => {
+describe("preload desktop API", () => {
   async function loadPreloadModule(): Promise<void> {
     exposed.clear();
     invoke.mockReset();
@@ -48,8 +48,8 @@ describe("preload habits API", () => {
     await import("./preload");
   }
 
-  function getHabitsApi(): HabitsApi {
-    return exposed.get("habits") as HabitsApi;
+  function getDesktopApi(): DesktopApi {
+    return exposed.get("desktop") as DesktopApi;
   }
 
   function getUpdaterApi(): AppUpdaterApi {
@@ -82,11 +82,11 @@ describe("preload habits API", () => {
     });
 
     await expect(
-      getHabitsApi().query({ type: "today.get" })
+      getDesktopApi().query({ type: "today.get" })
     ).resolves.toStrictEqual(todayState);
   });
 
-  it("throws HabitsIpcError instances for error responses", async () => {
+  it("throws AppIpcError instances for error responses", async () => {
     await loadPreloadModule();
     invoke.mockResolvedValue({
       error: {
@@ -98,12 +98,12 @@ describe("preload habits API", () => {
     });
 
     await expect(
-      getHabitsApi().query({ type: "today.get" })
+      getDesktopApi().query({ type: "today.get" })
     ).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
       details: ["habitId: Invalid input"],
       message: "Invalid payload for habit id.",
-      name: "HabitsIpcError",
+      name: "AppIpcError",
     });
   });
 
@@ -111,7 +111,7 @@ describe("preload habits API", () => {
     await loadPreloadModule();
 
     const listener = vi.fn();
-    const unsubscribe = getHabitsApi().onFocusSessionRecorded(listener);
+    const unsubscribe = getDesktopApi().onFocusSessionRecorded(listener);
 
     expect(on.mock.calls).toHaveLength(1);
 
@@ -120,7 +120,7 @@ describe("preload habits API", () => {
       (_event: object, session: FocusSession) => void,
     ];
 
-    expect(channel).toBe("habits:focusSessionRecorded");
+    expect(channel).toBe("app:focusSessionRecorded");
 
     handler(
       {},
@@ -154,14 +154,14 @@ describe("preload habits API", () => {
     await loadPreloadModule();
 
     const listener = vi.fn();
-    const unsubscribe = getHabitsApi().onFocusTimerActionRequested(listener);
+    const unsubscribe = getDesktopApi().onFocusTimerActionRequested(listener);
 
     const [channel, handler] = on.mock.calls[0] as [
       string,
       (_event: object, request: FocusTimerActionRequest) => void,
     ];
 
-    expect(channel).toBe("habits:focusTimerActionRequested");
+    expect(channel).toBe("app:focusTimerActionRequested");
 
     handler({}, { action: "toggle", source: "global-shortcut" });
 
@@ -180,7 +180,7 @@ describe("preload habits API", () => {
 
     const listener = vi.fn();
     const unsubscribe =
-      getHabitsApi().onFocusTimerShortcutStatusChanged(listener);
+      getDesktopApi().onFocusTimerShortcutStatusChanged(listener);
 
     const [, handler] = on.mock.calls[0] as [
       string,
@@ -229,14 +229,14 @@ describe("preload habits API", () => {
     await loadPreloadModule();
 
     const listener = vi.fn();
-    const unsubscribe = getHabitsApi().onFocusTimerStateChanged(listener);
+    const unsubscribe = getDesktopApi().onFocusTimerStateChanged(listener);
 
     const [channel, handler] = on.mock.calls[0] as [
       string,
       (_event: object, state: PersistedFocusTimerState) => void,
     ];
 
-    expect(channel).toBe("habits:focusTimerStateChanged");
+    expect(channel).toBe("app:focusTimerStateChanged");
 
     const timerState: PersistedFocusTimerState = {
       breakVariant: null,
@@ -345,10 +345,10 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().exportBackup()).resolves.toBe(
+    await expect(getDesktopApi().exportBackup()).resolves.toBe(
       "/tmp/zucchini-backup.db"
     );
-    expect(invoke).toHaveBeenCalledWith("habits:exportBackup");
+    expect(invoke).toHaveBeenCalledWith("app:exportBackup");
   });
 
   it("invokes CSV export through the preload bridge", async () => {
@@ -358,10 +358,10 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().exportCsvData()).resolves.toBe(
+    await expect(getDesktopApi().exportCsvData()).resolves.toBe(
       "/tmp/zucchini-csv-export"
     );
-    expect(invoke).toHaveBeenCalledWith("habits:exportCsvData");
+    expect(invoke).toHaveBeenCalledWith("app:exportCsvData");
   });
 
   it("invokes clear data through the preload bridge", async () => {
@@ -371,8 +371,8 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().clearData()).resolves.toBeTruthy();
-    expect(invoke).toHaveBeenCalledWith("habits:clearData");
+    await expect(getDesktopApi().clearData()).resolves.toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("app:clearData");
   });
 
   it("invokes desktop notification status through the preload bridge", async () => {
@@ -387,9 +387,9 @@ describe("preload habits API", () => {
     });
 
     await expect(
-      getHabitsApi().getDesktopNotificationStatus()
+      getDesktopApi().getDesktopNotificationStatus()
     ).resolves.toStrictEqual(status);
-    expect(invoke).toHaveBeenCalledWith("habits:getDesktopNotificationStatus");
+    expect(invoke).toHaveBeenCalledWith("app:getDesktopNotificationStatus");
   });
 
   it("invokes focus timer shortcut status through the preload bridge", async () => {
@@ -413,10 +413,10 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().getFocusTimerShortcutStatus()).resolves.toBe(
+    await expect(getDesktopApi().getFocusTimerShortcutStatus()).resolves.toBe(
       status
     );
-    expect(invoke).toHaveBeenCalledWith("habits:getFocusTimerShortcutStatus");
+    expect(invoke).toHaveBeenCalledWith("app:getFocusTimerShortcutStatus");
   });
 
   it("invokes open data folder through the preload bridge", async () => {
@@ -426,10 +426,10 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().openDataFolder()).resolves.toBe(
+    await expect(getDesktopApi().openDataFolder()).resolves.toBe(
       "/tmp/zucchini"
     );
-    expect(invoke).toHaveBeenCalledWith("habits:openDataFolder");
+    expect(invoke).toHaveBeenCalledWith("app:openDataFolder");
   });
 
   it("invokes open auto backup folder through the preload bridge", async () => {
@@ -439,10 +439,10 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().openAutoBackupFolder()).resolves.toBe(
+    await expect(getDesktopApi().openAutoBackupFolder()).resolves.toBe(
       "/tmp/Backups"
     );
-    expect(invoke).toHaveBeenCalledWith("habits:openAutoBackupFolder");
+    expect(invoke).toHaveBeenCalledWith("app:openAutoBackupFolder");
   });
 
   it("invokes latest auto backup restore preview through the preload bridge", async () => {
@@ -453,10 +453,10 @@ describe("preload habits API", () => {
     });
 
     await expect(
-      getHabitsApi().getLatestAutoBackupRestorePreview()
+      getDesktopApi().getLatestAutoBackupRestorePreview()
     ).resolves.toBeNull();
     expect(invoke).toHaveBeenCalledWith(
-      "habits:getLatestAutoBackupRestorePreview"
+      "app:getLatestAutoBackupRestorePreview"
     );
   });
 
@@ -467,8 +467,8 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().chooseBackupForRestore()).resolves.toBeNull();
-    expect(invoke).toHaveBeenCalledWith("habits:chooseBackupForRestore");
+    await expect(getDesktopApi().chooseBackupForRestore()).resolves.toBeNull();
+    expect(invoke).toHaveBeenCalledWith("app:chooseBackupForRestore");
   });
 
   it("invokes restore backup through the preload bridge", async () => {
@@ -479,9 +479,9 @@ describe("preload habits API", () => {
     });
 
     await expect(
-      getHabitsApi().restoreBackup("restore-1")
+      getDesktopApi().restoreBackup("restore-1")
     ).resolves.toBeTruthy();
-    expect(invoke).toHaveBeenCalledWith("habits:restoreBackup", "restore-1");
+    expect(invoke).toHaveBeenCalledWith("app:restoreBackup", "restore-1");
   });
 
   it("invokes import backup through the preload bridge", async () => {
@@ -491,7 +491,7 @@ describe("preload habits API", () => {
       ok: true,
     });
 
-    await expect(getHabitsApi().importBackup()).resolves.toBeTruthy();
-    expect(invoke).toHaveBeenCalledWith("habits:importBackup");
+    await expect(getDesktopApi().importBackup()).resolves.toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("app:importBackup");
   });
 });

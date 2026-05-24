@@ -62,13 +62,13 @@ export function useAppLifecycleEffects({
   }, [bootApp]);
 
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
     const subscribeWindDownNavigation =
-      "onWindDownNavigationRequested" in window.habits
-        ? window.habits.onWindDownNavigationRequested.bind(window.habits)
+      "onWindDownNavigationRequested" in window.desktop
+        ? window.desktop.onWindDownNavigationRequested.bind(window.desktop)
         : null;
 
     if (!subscribeWindDownNavigation) {

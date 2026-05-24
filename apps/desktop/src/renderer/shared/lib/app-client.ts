@@ -1,11 +1,11 @@
 import type {
-  HabitCommand,
-  ResultForCommand,
-} from "@/shared/contracts/ipc/habits-command-registry";
+  AppCommand,
+  ResultForAppCommand,
+} from "@/shared/contracts/ipc/app-command-registry";
 import type {
-  HabitQuery,
-  ResultForQuery,
-} from "@/shared/contracts/ipc/habits-query-registry";
+  AppQuery,
+  ResultForAppQuery,
+} from "@/shared/contracts/ipc/app-query-registry";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
@@ -18,17 +18,17 @@ import type {
 import type { InsightsRangeDays } from "@/shared/domain/insights";
 import type { AppSettings } from "@/shared/domain/settings";
 
-function command<C extends HabitCommand>(
+function command<C extends AppCommand>(
   request: C
-): Promise<ResultForCommand<C>> {
-  return window.habits.command(request);
+): Promise<ResultForAppCommand<C>> {
+  return window.desktop.command(request);
 }
 
-function query<Q extends HabitQuery>(request: Q): Promise<ResultForQuery<Q>> {
-  return window.habits.query(request);
+function query<Q extends AppQuery>(request: Q): Promise<ResultForAppQuery<Q>> {
+  return window.desktop.query(request);
 }
 
-export const habitsClient = {
+export const appClient = {
   archiveFocusQuotaGoal: (goalId: number) =>
     command({
       payload: { goalId },

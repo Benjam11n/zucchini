@@ -19,7 +19,7 @@ import {
   optionalInsightsPayloadSchema,
   optionalLimitPayloadSchema,
   weeklyReviewPayloadSchema,
-} from "./habits-schemas";
+} from "./app-schemas";
 
 interface PayloadQueryDefinition<TPayloadSchema extends ZodType, TResult> {
   payloadSchema: TPayloadSchema;
@@ -45,7 +45,7 @@ function emptyQuery<TResult>(): EmptyQueryDefinition<TResult> {
   return { payloadSchema: null };
 }
 
-export const habitQueryRegistry = {
+export const appQueryRegistry = {
   "focusSession.list": query<
     typeof focusSessionListPayloadSchema,
     FocusSession[]
@@ -85,9 +85,9 @@ export const habitQueryRegistry = {
   "weeklyReview.overview": emptyQuery<WeeklyReviewOverview>(),
 } as const satisfies Record<string, QueryDefinition>;
 
-type HabitQueryRegistry = typeof habitQueryRegistry;
+type AppQueryRegistry = typeof appQueryRegistry;
 
-export type HabitQueryType = Extract<keyof HabitQueryRegistry, string>;
+export type AppQueryType = Extract<keyof AppQueryRegistry, string>;
 
 type PayloadForDefinition<TDefinition> =
   TDefinition extends PayloadQueryDefinition<infer TPayloadSchema, unknown>
@@ -99,39 +99,39 @@ type QueryPayload<TDefinition> = Exclude<
   undefined
 >;
 
-type QueryForType<TType extends HabitQueryType> =
-  HabitQueryRegistry[TType] extends PayloadQueryDefinition<ZodType, unknown>
-    ? undefined extends PayloadForDefinition<HabitQueryRegistry[TType]>
+type QueryForType<TType extends AppQueryType> =
+  AppQueryRegistry[TType] extends PayloadQueryDefinition<ZodType, unknown>
+    ? undefined extends PayloadForDefinition<AppQueryRegistry[TType]>
       ? {
-          payload?: QueryPayload<HabitQueryRegistry[TType]> | undefined;
+          payload?: QueryPayload<AppQueryRegistry[TType]> | undefined;
           type: TType;
         }
       : {
-          payload: PayloadForDefinition<HabitQueryRegistry[TType]>;
+          payload: PayloadForDefinition<AppQueryRegistry[TType]>;
           type: TType;
         }
     : { type: TType };
 
-export type HabitQuery = {
-  [TType in HabitQueryType]: QueryForType<TType>;
-}[HabitQueryType];
+export type AppQuery = {
+  [TType in AppQueryType]: QueryForType<TType>;
+}[AppQueryType];
 
-export type PayloadForQueryType<TType extends HabitQueryType> =
-  PayloadForDefinition<HabitQueryRegistry[TType]>;
+export type PayloadForAppQueryType<TType extends AppQueryType> =
+  PayloadForDefinition<AppQueryRegistry[TType]>;
 
-export type ResultForQueryType<TType extends HabitQueryType> =
-  HabitQueryRegistry[TType] extends
+export type ResultForAppQueryType<TType extends AppQueryType> =
+  AppQueryRegistry[TType] extends
     | EmptyQueryDefinition<infer TResult>
     | PayloadQueryDefinition<ZodType, infer TResult>
     ? TResult
     : never;
 
-export type HabitQueryResult = ResultForQueryType<HabitQueryType>;
+export type AppQueryResult = ResultForAppQueryType<AppQueryType>;
 
-export type ResultForQuery<Q extends HabitQuery> = ResultForQueryType<
+export type ResultForAppQuery<Q extends AppQuery> = ResultForAppQueryType<
   Q["type"]
 >;
 
-export function isHabitQueryType(type: string): type is HabitQueryType {
-  return Object.hasOwn(habitQueryRegistry, type);
+export function isAppQueryType(type: string): type is AppQueryType {
+  return Object.hasOwn(appQueryRegistry, type);
 }

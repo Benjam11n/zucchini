@@ -1,4 +1,4 @@
-import { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 
 import { getBootErrorDisplay } from "./boot-errors";
 
@@ -6,7 +6,7 @@ describe("getBootErrorDisplay()", () => {
   it("maps database errors to local data messaging", () => {
     expect(
       getBootErrorDisplay(
-        new HabitsIpcError({
+        new AppIpcError({
           code: "DATABASE_ERROR",
           message: "db failed",
         })
@@ -20,7 +20,7 @@ describe("getBootErrorDisplay()", () => {
   it("maps validation errors to stored data messaging", () => {
     expect(
       getBootErrorDisplay(
-        new HabitsIpcError({
+        new AppIpcError({
           code: "VALIDATION_ERROR",
           message: "bad data",
         })

@@ -6,7 +6,7 @@ import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
-import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
+import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   const { dayStatus = null, ...rest } = overrides;
@@ -211,7 +211,7 @@ describe("app store actions", () => {
       habitStreaksStale: true,
     } satisfies HabitStatusPatch);
 
-    const habitsApi = installMockHabitsApi({
+    const desktopApi = installMockDesktopApi({
       getFocusSessions: getFocusSessionsMock,
       getHabits: getHabitsMock,
       getHistory: getHistoryMock,
@@ -297,6 +297,7 @@ describe("app store actions", () => {
 
     return {
       actions: appActions,
+      desktopApi,
       getFocusSessionsMock,
       getHabitsMock,
       getHistoryDayMock,
@@ -307,7 +308,6 @@ describe("app store actions", () => {
       getHistorySummaryMock,
       getHistoryYearsMock,
       getWeeklyReviewOverviewMock,
-      habitsApi,
       stores: {
         useBootStore,
         useFocusStore,
@@ -494,7 +494,7 @@ describe("app store actions", () => {
   });
 
   it("optimistically updates the habit order before the reorder request resolves", async () => {
-    const { actions, habitsApi, stores } = await setup();
+    const { actions, desktopApi, stores } = await setup();
     const baseHabit = {
       ...createManagedHabit(1),
       completed: false,
@@ -518,7 +518,7 @@ describe("app store actions", () => {
     });
     const reorderRequest = createDeferred<TodayState>();
 
-    habitsApi.reorderHabits.mockImplementation(() => reorderRequest.promise);
+    desktopApi.reorderHabits.mockImplementation(() => reorderRequest.promise);
 
     stores.useTodayStore.setState({
       todayState: reorderedState,
@@ -544,10 +544,10 @@ describe("app store actions", () => {
   });
 
   it("optimistically toggles a habit before the authoritative refresh resolves", async () => {
-    const { actions, habitsApi, stores } = await setup();
+    const { actions, desktopApi, stores } = await setup();
     const pendingPatch = createDeferred<HabitStatusPatch>();
 
-    habitsApi.toggleHabit.mockImplementation(() => pendingPatch.promise);
+    desktopApi.toggleHabit.mockImplementation(() => pendingPatch.promise);
 
     const initialHabit = createTodayHabit();
     const initialTodayState = createTodayState({
@@ -588,11 +588,11 @@ describe("app store actions", () => {
   });
 
   it("bases rapid optimistic toggles on the current today state", async () => {
-    const { actions, habitsApi, stores } = await setup();
+    const { actions, desktopApi, stores } = await setup();
     const firstPatch = createDeferred<HabitStatusPatch>();
     const secondPatch = createDeferred<HabitStatusPatch>();
 
-    habitsApi.toggleHabit
+    desktopApi.toggleHabit
       .mockImplementationOnce(() => firstPatch.promise)
       .mockImplementationOnce(() => secondPatch.promise);
 
@@ -641,11 +641,11 @@ describe("app store actions", () => {
   });
 
   it("does not let older habit status responses overwrite newer clicks", async () => {
-    const { actions, habitsApi, stores } = await setup();
+    const { actions, desktopApi, stores } = await setup();
     const firstPatch = createDeferred<HabitStatusPatch>();
     const secondPatch = createDeferred<HabitStatusPatch>();
 
-    habitsApi.toggleHabit
+    desktopApi.toggleHabit
       .mockImplementationOnce(() => firstPatch.promise)
       .mockImplementationOnce(() => secondPatch.promise);
 
@@ -688,10 +688,10 @@ describe("app store actions", () => {
   });
 
   it("restores the previous today state when an optimistic toggle fails", async () => {
-    const { actions, habitsApi, stores } = await setup();
+    const { actions, desktopApi, stores } = await setup();
     const toggleError = new Error("toggle failed");
 
-    habitsApi.toggleHabit.mockRejectedValue(toggleError);
+    desktopApi.toggleHabit.mockRejectedValue(toggleError);
 
     const initialTodayState = createTodayState({
       habits: [

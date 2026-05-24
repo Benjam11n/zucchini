@@ -13,16 +13,16 @@ import type {
   PersistedFocusTimerState,
 } from "@/renderer/features/focus/focus.types";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
 interface FocusStoreState {
   focusSaveErrorMessage: string | null;
   focusSessions: FocusSession[];
-  focusSessionsLoadError: HabitsIpcError | null;
+  focusSessionsLoadError: AppIpcError | null;
   focusSessionsPhase: FocusSessionsPhase;
   hasLoadedFocusSessions: boolean;
   timerState: PersistedFocusTimerState;
@@ -67,8 +67,8 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => habitsClient.getFocusSessions(), {
-      mapError: toHabitsIpcError,
+    await runAsyncTask(() => appClient.getFocusSessions(), {
+      mapError: toAppIpcError,
       onError: (focusSessionsLoadError) => {
         set({
           focusSessionsLoadError,

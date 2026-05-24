@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import { arePersistedFocusTimerStatesEqual } from "@/shared/domain/focus-timer";
 
 function resolveRestoredTimerState(
@@ -30,7 +30,7 @@ export function useFocusTimerPersistence({
   const latestSaveRequestIdRef = useRef(0);
 
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       setHasHydrated(true);
       return;
     }
@@ -39,7 +39,7 @@ export function useFocusTimerPersistence({
 
     async function restoreTimerState() {
       try {
-        const restored = await habitsClient.getFocusTimerState();
+        const restored = await appClient.getFocusTimerState();
         if (cancelled) {
           return;
         }
@@ -75,11 +75,11 @@ export function useFocusTimerPersistence({
   }, [setTimerState]);
 
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
-    return window.habits.onFocusTimerStateChanged((nextTimerState) => {
+    return window.desktop.onFocusTimerStateChanged((nextTimerState) => {
       const resolvedTimerState = resolveRestoredTimerState(nextTimerState);
       persistedTimerStateRef.current = resolvedTimerState;
 
@@ -101,7 +101,7 @@ export function useFocusTimerPersistence({
       return;
     }
 
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
@@ -120,8 +120,7 @@ export function useFocusTimerPersistence({
 
     async function saveTimerState() {
       try {
-        const savedTimerState =
-          await habitsClient.saveFocusTimerState(timerState);
+        const savedTimerState = await appClient.saveFocusTimerState(timerState);
         if (cancelled || latestSaveRequestIdRef.current !== requestId) {
           return;
         }

@@ -12,7 +12,7 @@ export function useFocusWidgetSizeSync(widgetElement: HTMLElement | null) {
       animationFrame = 0;
       const width = Math.ceil(widgetElement.getBoundingClientRect().width);
       const height = Math.ceil(widgetElement.getBoundingClientRect().height);
-      void window.habits.resizeFocusWidget(width, height);
+      void window.desktop.resizeFocusWidget(width, height);
     };
 
     const scheduleSync = () => {

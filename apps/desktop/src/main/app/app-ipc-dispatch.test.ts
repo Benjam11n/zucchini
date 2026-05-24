@@ -1,7 +1,7 @@
-import { readHabitServiceQuery } from "@/main/features/habits/habits-ipc-dispatch";
+import { readAppServiceQuery } from "@/main/app/app-ipc-dispatch";
 import type { ApplicationService } from "@/main/ports/application-service";
 
-describe("readHabitServiceQuery()", () => {
+describe("readAppServiceQuery()", () => {
   it("dispatches the insights dashboard query", () => {
     const dashboard = {
       generatedAtDate: "2026-03-31",
@@ -56,7 +56,7 @@ describe("readHabitServiceQuery()", () => {
     } as unknown as ApplicationService;
 
     expect(
-      readHabitServiceQuery(service, {
+      readAppServiceQuery(service, {
         payload: { rangeDays: 90 },
         type: "insights.dashboard",
       })

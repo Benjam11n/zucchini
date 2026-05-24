@@ -19,11 +19,11 @@ import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import {
   HabitCategoryPreferencesProvider,
   getDefaultHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import {
@@ -156,7 +156,7 @@ export function FocusWidget() {
     await resetFocusTimer({
       clearFocusSaveError,
       pomodoroSettings: resolvedPomodoroSettings,
-      recordFocusSession: habitsClient.recordFocusSession,
+      recordFocusSession: appClient.recordFocusSession,
       setFocusSaveErrorMessage,
       setTimerState,
       timerState,
@@ -200,7 +200,7 @@ export function FocusWidget() {
   useFocusTimer({
     clearFocusSaveError,
     pomodoroSettings: resolvedPomodoroSettings,
-    recordFocusSession: habitsClient.recordFocusSession,
+    recordFocusSession: appClient.recordFocusSession,
     setFocusSaveErrorMessage,
   });
 

@@ -2,9 +2,9 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type { BackupRestorePreview } from "@/shared/contracts/api/habits-api";
+import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
-import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
+import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
 import { DataManagementSettingsCard } from "./data-management-settings-card";
 
@@ -62,10 +62,10 @@ function createRestorePreview(
   };
 }
 
-function setHabitsApi(
-  overrides: Partial<ReturnType<typeof installMockHabitsApi>> = {}
+function setDesktopApi(
+  overrides: Partial<ReturnType<typeof installMockDesktopApi>> = {}
 ) {
-  return installMockHabitsApi({
+  return installMockDesktopApi({
     chooseBackupForRestore: vi.fn(() => Promise.resolve(null)),
     clearData: vi.fn(() => Promise.resolve(true)),
     exportBackup: vi.fn(() => Promise.resolve("/tmp/zucchini-backup.db")),
@@ -107,7 +107,7 @@ describe("data management settings card", () => {
   });
 
   it("opens the local data folder from settings", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
 
     renderCard();
 
@@ -122,7 +122,7 @@ describe("data management settings card", () => {
   });
 
   it("exports a backup from settings", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
 
     renderCard();
 
@@ -139,7 +139,7 @@ describe("data management settings card", () => {
   });
 
   it("exports CSV data from settings", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
 
     renderCard();
 
@@ -156,7 +156,7 @@ describe("data management settings card", () => {
   });
 
   it("opens the latest auto backup restore preview", async () => {
-    const habits = setHabitsApi({
+    const habits = setDesktopApi({
       getLatestAutoBackupRestorePreview: vi.fn(() =>
         Promise.resolve(createRestorePreview())
       ),
@@ -180,7 +180,7 @@ describe("data management settings card", () => {
   });
 
   it("refreshes the latest auto backup preview each time", async () => {
-    const habits = setHabitsApi({
+    const habits = setDesktopApi({
       getLatestAutoBackupRestorePreview: vi
         .fn()
         .mockResolvedValueOnce(createRestorePreview({ fileName: "old.db" }))
@@ -200,7 +200,7 @@ describe("data management settings card", () => {
   });
 
   it("chooses a backup file and opens the restore preview", async () => {
-    setHabitsApi({
+    setDesktopApi({
       chooseBackupForRestore: vi.fn(() =>
         Promise.resolve(
           createRestorePreview({
@@ -223,7 +223,7 @@ describe("data management settings card", () => {
   });
 
   it("restores a backup from the preview dialog", async () => {
-    const habits = setHabitsApi({
+    const habits = setDesktopApi({
       getLatestAutoBackupRestorePreview: vi.fn(() =>
         Promise.resolve(createRestorePreview())
       ),
@@ -247,7 +247,7 @@ describe("data management settings card", () => {
   });
 
   it("shows the no-auto-backup state", async () => {
-    setHabitsApi({
+    setDesktopApi({
       getLatestAutoBackupRestorePreview: vi.fn(() => Promise.resolve(null)),
     });
 
@@ -260,7 +260,7 @@ describe("data management settings card", () => {
   });
 
   it("shows an error when backup preview fails", async () => {
-    setHabitsApi({
+    setDesktopApi({
       chooseBackupForRestore: vi.fn(() =>
         Promise.reject(new Error("invalid backup"))
       ),
@@ -276,7 +276,7 @@ describe("data management settings card", () => {
   });
 
   it("warns before clearing local data", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
     localStorage.setItem(
       "zucchini_last_state",
       JSON.stringify({ stale: true })
@@ -301,7 +301,7 @@ describe("data management settings card", () => {
   });
 
   it("updates auto backup cadence", () => {
-    setHabitsApi();
+    setDesktopApi();
     const onChange = vi.fn();
 
     renderCard({ onChange });
@@ -316,7 +316,7 @@ describe("data management settings card", () => {
   });
 
   it("opens the auto backup folder from settings", async () => {
-    const habits = setHabitsApi();
+    const habits = setDesktopApi();
 
     renderCard();
 

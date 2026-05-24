@@ -26,21 +26,21 @@ export function useFocusTimerEvents({
   const previousTimerStateRef = useRef(timerState);
 
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
-    return window.habits.onFocusSessionRecorded((focusSession) => {
+    return window.desktop.onFocusSessionRecorded((focusSession) => {
       useFocusStore.getState().prependFocusSession(focusSession);
     });
   }, []);
 
   useEffect(() => {
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
-    return window.habits.onFocusTimerActionRequested((request) => {
+    return window.desktop.onFocusTimerActionRequested((request) => {
       const currentTimerState = useFocusStore.getState().timerState;
 
       async function performRequestedAction() {
@@ -80,7 +80,7 @@ export function useFocusTimerEvents({
     const previousTimerState = previousTimerStateRef.current;
     previousTimerStateRef.current = timerState;
 
-    if (!window.habits) {
+    if (!window.desktop) {
       return;
     }
 
@@ -95,7 +95,7 @@ export function useFocusTimerEvents({
 
     async function showFocusWidget() {
       try {
-        await window.habits.showFocusWidget();
+        await window.desktop.showFocusWidget();
       } catch {
         // Re-opening the widget is best effort UI behavior.
       }

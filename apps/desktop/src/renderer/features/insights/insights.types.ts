@@ -1,5 +1,5 @@
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   InsightsDashboard,
   InsightsRangeDays,
@@ -9,7 +9,7 @@ export type InsightsPhase = AsyncPhase;
 
 export interface InsightsPageProps {
   dashboard: InsightsDashboard | null;
-  error: HabitsIpcError | null;
+  error: AppIpcError | null;
   phase: InsightsPhase;
   rangeDays: InsightsRangeDays;
   onRetryLoad: () => void;

@@ -10,10 +10,10 @@ import { create } from "zustand";
 
 import type { WeeklyReviewPhase } from "@/renderer/features/history/history.types";
 import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,
@@ -22,7 +22,7 @@ import type {
 interface WeeklyReviewStoreState {
   isWeeklyReviewSpotlightOpen: boolean;
   selectedWeeklyReview: WeeklyReview | null;
-  weeklyReviewError: HabitsIpcError | null;
+  weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
   dismissWeeklyReviewSpotlight: () => void;
@@ -69,9 +69,9 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
       }
 
       await runAsyncTask(
-        () => loadWeeklyReviewState(habitsClient, get().selectedWeeklyReview),
+        () => loadWeeklyReviewState(appClient, get().selectedWeeklyReview),
         {
-          mapError: toHabitsIpcError,
+          mapError: toAppIpcError,
           onError: (weeklyReviewError) => {
             set({
               selectedWeeklyReview: null,
@@ -107,8 +107,8 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAsyncTask(() => habitsClient.getWeeklyReview(weekStart), {
-        mapError: toHabitsIpcError,
+      await runAsyncTask(() => appClient.getWeeklyReview(weekStart), {
+        mapError: toAppIpcError,
         onError: (weeklyReviewError) => {
           set({
             weeklyReviewError,

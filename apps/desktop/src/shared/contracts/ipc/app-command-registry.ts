@@ -25,7 +25,7 @@ import {
   updateHabitTargetCountPayloadSchema,
   updateHabitWeekdaysPayloadSchema,
   windDownActionIdPayloadSchema,
-} from "./habits-schemas";
+} from "./app-schemas";
 
 interface PayloadCommandDefinition<TPayloadSchema extends ZodType, TResult> {
   payloadSchema: TPayloadSchema;
@@ -51,7 +51,7 @@ function emptyCommand<TResult>(): EmptyCommandDefinition<TResult> {
   return { payloadSchema: null };
 }
 
-export const habitCommandRegistry = {
+export const appCommandRegistry = {
   "focusQuotaGoal.archive": command<
     typeof focusQuotaGoalIdPayloadSchema,
     TodayState
@@ -150,43 +150,43 @@ export const habitCommandRegistry = {
   >(windDownActionIdPayloadSchema),
 } as const satisfies Record<string, CommandDefinition>;
 
-type HabitCommandRegistry = typeof habitCommandRegistry;
+type AppCommandRegistry = typeof appCommandRegistry;
 
-export type HabitCommandType = Extract<keyof HabitCommandRegistry, string>;
+export type AppCommandType = Extract<keyof AppCommandRegistry, string>;
 
 type PayloadForDefinition<TDefinition> =
   TDefinition extends PayloadCommandDefinition<infer TPayloadSchema, unknown>
     ? z.infer<TPayloadSchema>
     : never;
 
-type CommandForType<TType extends HabitCommandType> =
-  HabitCommandRegistry[TType] extends PayloadCommandDefinition<ZodType, unknown>
+type CommandForType<TType extends AppCommandType> =
+  AppCommandRegistry[TType] extends PayloadCommandDefinition<ZodType, unknown>
     ? {
-        payload: PayloadForDefinition<HabitCommandRegistry[TType]>;
+        payload: PayloadForDefinition<AppCommandRegistry[TType]>;
         type: TType;
       }
     : { type: TType };
 
-export type HabitCommand = {
-  [TType in HabitCommandType]: CommandForType<TType>;
-}[HabitCommandType];
+export type AppCommand = {
+  [TType in AppCommandType]: CommandForType<TType>;
+}[AppCommandType];
 
-export type PayloadForCommandType<TType extends HabitCommandType> =
-  PayloadForDefinition<HabitCommandRegistry[TType]>;
+export type PayloadForAppCommandType<TType extends AppCommandType> =
+  PayloadForDefinition<AppCommandRegistry[TType]>;
 
-export type ResultForCommandType<TType extends HabitCommandType> =
-  HabitCommandRegistry[TType] extends
+export type ResultForAppCommandType<TType extends AppCommandType> =
+  AppCommandRegistry[TType] extends
     | EmptyCommandDefinition<infer TResult>
     | PayloadCommandDefinition<ZodType, infer TResult>
     ? TResult
     : never;
 
-export type HabitCommandResult = ResultForCommandType<HabitCommandType>;
+export type AppCommandResult = ResultForAppCommandType<AppCommandType>;
 
-export type ResultForCommand<C extends HabitCommand> = ResultForCommandType<
+export type ResultForAppCommand<C extends AppCommand> = ResultForAppCommandType<
   C["type"]
 >;
 
-export function isHabitCommandType(type: string): type is HabitCommandType {
-  return Object.hasOwn(habitCommandRegistry, type);
+export function isAppCommandType(type: string): type is AppCommandType {
+  return Object.hasOwn(appCommandRegistry, type);
 }

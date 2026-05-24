@@ -15,7 +15,7 @@ import type {
   SettingsFieldErrors,
   SettingsSavePhase,
 } from "@/renderer/features/settings/settings.types";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -31,22 +31,22 @@ import type {
 import type { TodayState } from "@/shared/read-models/today-state";
 
 export interface AppControllerState {
-  bootError: HabitsIpcError | null;
+  bootError: AppIpcError | null;
   bootPhase: "error" | "loading" | "ready";
   contributionHistory: HistorySummaryDay[];
   focusSaveErrorMessage: string | null;
   focusSessions: FocusSession[];
-  focusSessionsLoadError: HabitsIpcError | null;
+  focusSessionsLoadError: AppIpcError | null;
   focusSessionsPhase: FocusSessionsPhase;
   hasLoadedFocusSessions: boolean;
   history: HistorySummaryDay[];
   historyDayByDate: Record<string, HistoryDay | undefined>;
   historyYears: number[];
-  historyLoadError: HabitsIpcError | null;
+  historyLoadError: AppIpcError | null;
   historySummary: HistorySummaryDay[];
   hasLoadedHistorySummary: boolean;
   insightsDashboard: InsightsDashboard | null;
-  insightsError: HabitsIpcError | null;
+  insightsError: AppIpcError | null;
   insightsPhase: "error" | "idle" | "loading" | "ready";
   insightsRangeDays: InsightsRangeDays;
   isHistoryLoading: boolean;
@@ -62,7 +62,7 @@ export interface AppControllerState {
   selectedHistoryYear: number | null;
   timerState: PersistedFocusTimerState;
   todayState: TodayState | null;
-  weeklyReviewError: HabitsIpcError | null;
+  weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
 }

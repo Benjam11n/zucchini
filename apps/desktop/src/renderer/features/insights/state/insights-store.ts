@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
+import { appClient } from "@/renderer/shared/lib/app-client";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
-import { toHabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   InsightsDashboard,
   InsightsRangeDays,
@@ -13,7 +13,7 @@ import type { InsightsPhase } from "../insights.types";
 
 interface InsightsStoreState {
   dashboard: InsightsDashboard | null;
-  error: HabitsIpcError | null;
+  error: AppIpcError | null;
   phase: InsightsPhase;
   rangeDays: InsightsRangeDays;
   loadDashboard: (options?: {
@@ -38,8 +38,8 @@ export const useInsightsStore = create<InsightsStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => habitsClient.getInsightsDashboard(rangeDays), {
-      mapError: toHabitsIpcError,
+    await runAsyncTask(() => appClient.getInsightsDashboard(rangeDays), {
+      mapError: toAppIpcError,
       onError: (error) => {
         set({
           error,

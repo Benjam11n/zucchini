@@ -11,7 +11,7 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 import type { TodayState } from "@/shared/read-models/today-state";
-import { installMockHabitsApi } from "@/test/fixtures/habits-api-mock";
+import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
 function createTodayState(overrides: Partial<TodayState> = {}): TodayState {
   const { dayStatus = null, ...rest } = overrides;
@@ -180,7 +180,7 @@ async function setupUseAppController({
     removeEventListener: vi.fn(),
   };
 
-  const habits = installMockHabitsApi({
+  const habits = installMockDesktopApi({
     archiveHabit: vi.fn().mockResolvedValue(todayState),
     claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
     claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),

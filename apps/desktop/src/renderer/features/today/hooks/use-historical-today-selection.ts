@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 
 export function useHistoricalTodaySelection(history: HistorySummaryDay[]) {
@@ -44,7 +44,7 @@ export function useHistoricalTodaySelection(history: HistorySummaryDay[]) {
 
     async function loadSelectedHistoryDay() {
       try {
-        const historyDay = await habitsClient.getHistoryDay(dateToLoad);
+        const historyDay = await appClient.getHistoryDay(dateToLoad);
 
         if (!isCurrent) {
           return;

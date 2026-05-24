@@ -11,9 +11,9 @@
  * @see buildTodayState for how the read-model is assembled.
  */
 import {
-  executeHabitServiceCommand,
-  readHabitServiceQuery,
-} from "@/main/features/habits/habits-ipc-dispatch";
+  executeAppServiceCommand,
+  readAppServiceQuery,
+} from "@/main/app/app-ipc-dispatch";
 import type { AppRepository } from "@/main/ports/app-repository";
 import type {
   ApplicationService,
@@ -24,11 +24,11 @@ import type {
   GoalFrequency,
   Habit,
   HabitCategory,
-  HabitCommand,
-  HabitCommandResult,
+  AppCommand,
+  AppCommandResult,
   HabitFrequency,
-  HabitQuery,
-  HabitQueryResult,
+  AppQuery,
+  AppQueryResult,
   HabitStatusPatch,
   HabitWeekday,
   HistoryDay,
@@ -69,12 +69,12 @@ export class AppApplicationService implements ApplicationService {
     this.runtime.initialize();
   }
 
-  execute(command: HabitCommand): HabitCommandResult {
-    return executeHabitServiceCommand(this, command);
+  execute(command: AppCommand): AppCommandResult {
+    return executeAppServiceCommand(this, command);
   }
 
-  read(query: HabitQuery): HabitQueryResult {
-    return readHabitServiceQuery(this, query);
+  read(query: AppQuery): AppQueryResult {
+    return readAppServiceQuery(this, query);
   }
 
   getHabits(): Habit[] {

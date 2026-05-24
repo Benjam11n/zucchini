@@ -8,12 +8,12 @@
  */
 import { create } from "zustand";
 
-import type { HabitsIpcError } from "@/shared/contracts/ipc/habits-errors";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 
 interface BootStoreState {
-  bootError: HabitsIpcError | null;
+  bootError: AppIpcError | null;
   bootPhase: "error" | "loading" | "ready";
-  setBootError: (error: HabitsIpcError | null) => void;
+  setBootError: (error: AppIpcError | null) => void;
   setBootPhase: (phase: BootStoreState["bootPhase"]) => void;
 }
 

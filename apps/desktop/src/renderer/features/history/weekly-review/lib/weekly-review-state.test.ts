@@ -55,17 +55,17 @@ function createOverview(
 describe("loadWeeklyReviewState()", () => {
   it("uses the latest review when nothing is selected", async () => {
     const latestReview = createReview("2026-03-02");
-    const habitsApi = {
+    const desktopApi = {
       getWeeklyReview: vi.fn(),
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(latestReview)),
     };
 
-    const result = await loadWeeklyReviewState(habitsApi, null);
+    const result = await loadWeeklyReviewState(desktopApi, null);
 
     expect(result.selectedWeeklyReview).toBe(latestReview);
-    expect(habitsApi.getWeeklyReview).not.toHaveBeenCalled();
+    expect(desktopApi.getWeeklyReview).not.toHaveBeenCalled();
   });
 
   it("replaces a selected latest week with the refreshed latest review object", async () => {
@@ -97,18 +97,18 @@ describe("loadWeeklyReviewState()", () => {
         sortOrder: 0,
       },
     ];
-    const habitsApi = {
+    const desktopApi = {
       getWeeklyReview: vi.fn(),
       getWeeklyReviewOverview: vi
         .fn()
         .mockResolvedValue(createOverview(freshLatestReview)),
     };
 
-    const result = await loadWeeklyReviewState(habitsApi, staleLatestReview);
+    const result = await loadWeeklyReviewState(desktopApi, staleLatestReview);
 
     expect(result.selectedWeeklyReview).toBe(freshLatestReview);
     expect(result.selectedWeeklyReview?.habitMetrics[0]?.name).toBe("New name");
-    expect(habitsApi.getWeeklyReview).not.toHaveBeenCalled();
+    expect(desktopApi.getWeeklyReview).not.toHaveBeenCalled();
   });
 
   it("refetches a selected non-latest week that still exists", async () => {
@@ -127,7 +127,7 @@ describe("loadWeeklyReviewState()", () => {
         sortOrder: 0,
       },
     ];
-    const habitsApi = {
+    const desktopApi = {
       getWeeklyReview: vi.fn().mockResolvedValue(selectedReview),
       getWeeklyReviewOverview: vi
         .fn()
@@ -135,11 +135,11 @@ describe("loadWeeklyReviewState()", () => {
     };
 
     const result = await loadWeeklyReviewState(
-      habitsApi,
+      desktopApi,
       createReview("2026-02-17")
     );
 
-    expect(habitsApi.getWeeklyReview).toHaveBeenCalledWith("2026-02-17");
+    expect(desktopApi.getWeeklyReview).toHaveBeenCalledWith("2026-02-17");
     expect(result.selectedWeeklyReview).toBe(selectedReview);
   });
 });

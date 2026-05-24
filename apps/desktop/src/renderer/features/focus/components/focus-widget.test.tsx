@@ -10,8 +10,8 @@ import {
   createRunningFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import type { HabitCommand } from "@/shared/contracts/ipc/habits-command-registry";
-import type { HabitQuery } from "@/shared/contracts/ipc/habits-query-registry";
+import type { AppCommand } from "@/shared/contracts/ipc/app-command-registry";
+import type { AppQuery } from "@/shared/contracts/ipc/app-query-registry";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import {
@@ -101,12 +101,12 @@ describe("focus widget", () => {
       value: closeSpy,
     });
 
-    Object.defineProperty(window, "habits", {
+    Object.defineProperty(window, "desktop", {
       configurable: true,
       value: {
         claimFocusTimerCycleCompletion: vi.fn().mockResolvedValue(true),
         claimFocusTimerLeadership: vi.fn().mockResolvedValue(true),
-        command: vi.fn((command: HabitCommand) => {
+        command: vi.fn((command: AppCommand) => {
           if (command.type === "focusSession.record") {
             return recordFocusSession(command.payload);
           }
@@ -123,7 +123,7 @@ describe("focus widget", () => {
         onFocusSessionRecorded: vi.fn(() => vi.fn()),
         onFocusTimerActionRequested: vi.fn(() => vi.fn()),
         onFocusTimerStateChanged: vi.fn(() => vi.fn()),
-        query: vi.fn((query: HabitQuery) => {
+        query: vi.fn((query: AppQuery) => {
           if (query.type === "focusTimer.getState") {
             return getFocusTimerState();
           }

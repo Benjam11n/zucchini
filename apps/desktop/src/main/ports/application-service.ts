@@ -1,11 +1,11 @@
 import type {
-  HabitCommand,
-  HabitCommandResult,
-} from "@/shared/contracts/ipc/habits-command-registry";
+  AppCommand,
+  AppCommandResult,
+} from "@/shared/contracts/ipc/app-command-registry";
 import type {
-  HabitQuery,
-  HabitQueryResult,
-} from "@/shared/contracts/ipc/habits-query-registry";
+  AppQuery,
+  AppQueryResult,
+} from "@/shared/contracts/ipc/app-query-registry";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import type {
   CreateFocusSessionInput,
@@ -35,8 +35,8 @@ import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 export interface ApplicationService {
-  execute(command: HabitCommand): HabitCommandResult;
-  read(query: HabitQuery): HabitQueryResult;
+  execute(command: AppCommand): AppCommandResult;
+  read(query: AppQuery): AppQueryResult;
   initialize(): void;
   getHabits(): Habit[];
   getTodayState(): TodayState;
@@ -112,11 +112,11 @@ export type {
   GoalFrequency,
   Habit,
   HabitCategory,
-  HabitCommand,
-  HabitCommandResult,
+  AppCommand,
+  AppCommandResult,
   HabitFrequency,
-  HabitQuery,
-  HabitQueryResult,
+  AppQuery,
+  AppQueryResult,
   HabitStatusPatch,
   HabitWeekday,
   HistoryDay,

@@ -1,9 +1,9 @@
 /**
  * IPC handler registration for the main process.
  *
- * Maps every IPC channel defined in `HABITS_IPC_CHANNELS` to a handler that
+ * Maps every IPC channel defined in `APP_IPC_CHANNELS` to a handler that
  * validates input, calls the appropriate service or coordinator method, and
- * wraps the result in a typed `HabitsIpcResponse`. Broadcast callbacks are
+ * wraps the result in a typed `AppIpcResponse`. Broadcast callbacks are
  * used for push events (focus session recorded, timer state changed).
  */
 import { ipcMain } from "electron";
@@ -20,8 +20,8 @@ import {
   validateFocusTimerLeaseTtl,
   validateFocusWidgetSize,
   validateBackupRestoreId,
-  validateHabitCommand,
-  validateHabitQuery,
+  validateAppCommand,
+  validateAppQuery,
   validateNotificationBody,
   validateNotificationIconFilename,
   validateNotificationTitle,
@@ -30,14 +30,14 @@ import type { ApplicationService } from "@/main/ports/application-service";
 import type {
   BackupRestorePreview,
   FocusTimerShortcutStatus,
-} from "@/shared/contracts/api/habits-api";
-import { HABITS_IPC_CHANNELS } from "@/shared/contracts/ipc/habits-channels";
+} from "@/shared/contracts/api/desktop-api";
+import { APP_IPC_CHANNELS } from "@/shared/contracts/ipc/app-channels";
 import type {
-  HabitCommand,
-  HabitCommandResult,
-} from "@/shared/contracts/ipc/habits-command-registry";
-import type { HabitsIpcResponse } from "@/shared/contracts/ipc/habits-errors";
-import type { HabitQueryResult } from "@/shared/contracts/ipc/habits-query-registry";
+  AppCommand,
+  AppCommandResult,
+} from "@/shared/contracts/ipc/app-command-registry";
+import type { AppIpcResponse } from "@/shared/contracts/ipc/app-errors";
+import type { AppQueryResult } from "@/shared/contracts/ipc/app-query-registry";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -74,7 +74,7 @@ function registerHandler<TArgs extends unknown[], TResult>(
 ): void {
   ipcMain.handle(
     channel,
-    async (_event, ...args: TArgs): Promise<HabitsIpcResponse<TResult>> => {
+    async (_event, ...args: TArgs): Promise<AppIpcResponse<TResult>> => {
       try {
         return {
           data: await handler(...args),
@@ -116,7 +116,7 @@ export function registerIpcHandlers({
     return todayState;
   }
 
-  function runCommand(command: HabitCommand): HabitCommandResult {
+  function runCommand(command: AppCommand): AppCommandResult {
     const result = service.execute(command);
 
     if (command.type === "focusSession.record") {
@@ -138,30 +138,29 @@ export function registerIpcHandlers({
     return result;
   }
 
-  registerHandler(HABITS_IPC_CHANNELS.command, (command: unknown) =>
-    runCommand(validateHabitCommand(command))
+  registerHandler(APP_IPC_CHANNELS.command, (command: unknown) =>
+    runCommand(validateAppCommand(command))
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.query,
-    (query: unknown): HabitQueryResult =>
-      service.read(validateHabitQuery(query))
+    APP_IPC_CHANNELS.query,
+    (query: unknown): AppQueryResult => service.read(validateAppQuery(query))
   );
 
-  registerHandler(HABITS_IPC_CHANNELS.getDesktopNotificationStatus, () =>
+  registerHandler(APP_IPC_CHANNELS.getDesktopNotificationStatus, () =>
     getDesktopNotificationStatus()
   );
-  registerHandler(HABITS_IPC_CHANNELS.getFocusTimerShortcutStatus, () =>
+  registerHandler(APP_IPC_CHANNELS.getFocusTimerShortcutStatus, () =>
     getFocusTimerShortcutStatus()
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.claimFocusTimerCycleCompletion,
+    APP_IPC_CHANNELS.claimFocusTimerCycleCompletion,
     (cycleId: unknown) =>
       focusTimerCoordinator.claimCycleCompletion(
         validateFocusTimerCycleId(cycleId)
       )
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.claimFocusTimerLeadership,
+    APP_IPC_CHANNELS.claimFocusTimerLeadership,
     (instanceId: unknown, ttlMs: unknown) =>
       focusTimerCoordinator.claimLeadership(
         validateFocusTimerInstanceId(instanceId),
@@ -169,43 +168,41 @@ export function registerIpcHandlers({
       )
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.releaseFocusTimerLeadership,
+    APP_IPC_CHANNELS.releaseFocusTimerLeadership,
     (instanceId: unknown) =>
       focusTimerCoordinator.releaseLeadership(
         validateFocusTimerInstanceId(instanceId)
       )
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.resizeFocusWidget,
+    APP_IPC_CHANNELS.resizeFocusWidget,
     (width: unknown, height: unknown) =>
       onResizeFocusWidget(
         validateFocusWidgetSize(width),
         validateFocusWidgetSize(height)
       )
   );
-  registerHandler(HABITS_IPC_CHANNELS.showFocusWidget, () =>
-    onShowFocusWidget()
-  );
-  registerHandler(HABITS_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
-  registerHandler(HABITS_IPC_CHANNELS.clearData, () => onClearData());
-  registerHandler(HABITS_IPC_CHANNELS.chooseBackupForRestore, () =>
+  registerHandler(APP_IPC_CHANNELS.showFocusWidget, () => onShowFocusWidget());
+  registerHandler(APP_IPC_CHANNELS.showMainWindow, () => onShowMainWindow());
+  registerHandler(APP_IPC_CHANNELS.clearData, () => onClearData());
+  registerHandler(APP_IPC_CHANNELS.chooseBackupForRestore, () =>
     onChooseBackupForRestore()
   );
-  registerHandler(HABITS_IPC_CHANNELS.getLatestAutoBackupRestorePreview, () =>
+  registerHandler(APP_IPC_CHANNELS.getLatestAutoBackupRestorePreview, () =>
     onGetLatestAutoBackupRestorePreview()
   );
-  registerHandler(HABITS_IPC_CHANNELS.openAutoBackupFolder, () =>
+  registerHandler(APP_IPC_CHANNELS.openAutoBackupFolder, () =>
     onOpenAutoBackupFolder()
   );
-  registerHandler(HABITS_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
-  registerHandler(HABITS_IPC_CHANNELS.exportBackup, () => onExportBackup());
-  registerHandler(HABITS_IPC_CHANNELS.exportCsvData, () => onExportCsvData());
-  registerHandler(HABITS_IPC_CHANNELS.importBackup, () => onImportBackup());
-  registerHandler(HABITS_IPC_CHANNELS.restoreBackup, (restoreId: unknown) =>
+  registerHandler(APP_IPC_CHANNELS.openDataFolder, () => onOpenDataFolder());
+  registerHandler(APP_IPC_CHANNELS.exportBackup, () => onExportBackup());
+  registerHandler(APP_IPC_CHANNELS.exportCsvData, () => onExportCsvData());
+  registerHandler(APP_IPC_CHANNELS.importBackup, () => onImportBackup());
+  registerHandler(APP_IPC_CHANNELS.restoreBackup, (restoreId: unknown) =>
     onRestoreBackup(validateBackupRestoreId(restoreId))
   );
   registerHandler(
-    HABITS_IPC_CHANNELS.showNotification,
+    APP_IPC_CHANNELS.showNotification,
     (title: unknown, body: unknown, iconFilename?: unknown) =>
       showDesktopNotification(
         validateNotificationTitle(title),

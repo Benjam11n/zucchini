@@ -4,7 +4,7 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import { habitsClient } from "@/renderer/shared/lib/habits-client";
+import { appClient } from "@/renderer/shared/lib/app-client";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function createSettingsActions() {
@@ -16,7 +16,7 @@ export function createSettingsActions() {
       useSettingsStore.getState().handleSettingsDraftChange(settingsDraft);
     },
     async handleUpdateSettings(settings: AppSettings) {
-      const nextSettings = await habitsClient.updateSettings(settings);
+      const nextSettings = await appClient.updateSettings(settings);
 
       useSettingsStore.setState({
         settingsDraft: nextSettings,

@@ -73,7 +73,7 @@ export function useTodayPopups({
 
     const showDesktopNotification = async () => {
       try {
-        await window.habits.showNotification(title, message, iconFilename);
+        await window.desktop.showNotification(title, message, iconFilename);
       } catch {
         // Desktop notifications are best-effort when the app is not frontmost.
       }
