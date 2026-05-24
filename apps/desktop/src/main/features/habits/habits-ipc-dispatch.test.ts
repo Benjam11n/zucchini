@@ -1,5 +1,5 @@
-import type { HabitsService } from "@/main/features/habits/habits-application-service";
 import { readHabitServiceQuery } from "@/main/features/habits/habits-ipc-dispatch";
+import type { ApplicationService } from "@/main/ports/application-service";
 
 describe("readHabitServiceQuery()", () => {
   it("dispatches the insights dashboard query", () => {
@@ -53,7 +53,7 @@ describe("readHabitServiceQuery()", () => {
     };
     const service = {
       getInsightsDashboard: vi.fn(() => dashboard),
-    } as unknown as HabitsService;
+    } as unknown as ApplicationService;
 
     expect(
       readHabitServiceQuery(service, {

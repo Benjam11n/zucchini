@@ -1,4 +1,4 @@
-import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
+import { AppApplicationService } from "@/main/app/application-service";
 import type {
   AppRepository,
   SettledHistoryOptions,
@@ -1004,7 +1004,7 @@ describe("habitService rollover", () => {
     repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
     repository.setStatusForDate("2026-03-07", new Map([[1, false]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1105,7 +1105,7 @@ describe("habitService rollover", () => {
       ])
     );
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1147,7 +1147,7 @@ describe("habitService rollover", () => {
     }
     repository.habits[0] = { ...habit, category: "productivity" };
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
@@ -1182,7 +1182,7 @@ describe("habitService rollover", () => {
     });
     repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1226,7 +1226,7 @@ describe("habitService rollover", () => {
     });
     repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1270,7 +1270,7 @@ describe("habitService rollover", () => {
     });
     repository.setStatusForDate("2026-03-09", new Map([[1, false]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1309,7 +1309,7 @@ describe("habitService rollover", () => {
     });
     repository.setStatusForDate("2026-03-09", new Map([[1, false]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1348,7 +1348,7 @@ describe("habitService rollover", () => {
     });
     repository.streak.lastEvaluatedDate = "2026-03-08";
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1362,7 +1362,7 @@ describe("habitService rollover", () => {
 describe("habit categories", () => {
   it("creates habits with the selected category", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1382,7 +1382,7 @@ describe("habit categories", () => {
 
   it("creates daily habits that are only due on selected weekdays", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1407,7 +1407,7 @@ describe("habit categories", () => {
 
   it("updates a habit category and returns refreshed state", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1419,7 +1419,7 @@ describe("habit categories", () => {
 
   it("updates a habit frequency and returns refreshed state", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1445,7 +1445,7 @@ describe("habit categories", () => {
       };
       repository.setHabitProgress("2026-03-08", 1, 2);
 
-      const service = new HabitsApplicationService(
+      const service = new AppApplicationService(
         repository,
         new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
       );
@@ -1476,7 +1476,7 @@ describe("habit categories", () => {
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
     repository.adjustHabitProgress("2026-03-08", 1, 1);
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1506,7 +1506,7 @@ describe("habit categories", () => {
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
     repository.adjustHabitProgress("2026-03-08", 1, 1);
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1535,7 +1535,7 @@ describe("habit categories", () => {
     };
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1564,7 +1564,7 @@ describe("habit categories", () => {
     };
     repository.setStatusForDate("2026-03-10", new Map([[1, true]]));
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1578,7 +1578,7 @@ describe("habit categories", () => {
 
   it("uses the default target count when none is provided for the new frequency", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1594,7 +1594,7 @@ describe("habit categories", () => {
   it("removes a daily habit from today when its weekday schedule no longer includes today", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-10", new Map([[1, false]]));
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -1620,7 +1620,7 @@ describe("habit categories", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1642,7 +1642,7 @@ describe("habit categories", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1661,7 +1661,7 @@ describe("habit pause", () => {
   it("pauses a habit, clears today's status, and excludes it from today", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]));
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1693,7 +1693,7 @@ describe("habit pause", () => {
       ...habit,
       pausedAt: "2026-03-08T08:00:00.000Z",
     };
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1738,7 +1738,7 @@ describe("habit pause", () => {
       habitId: 1,
       lastEvaluatedDate: "2026-03-05",
     });
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1755,13 +1755,13 @@ describe("habit pause", () => {
 
   it("uses closed pause periods when reading historical active days", () => {
     const repository = new FakeRepository();
-    const pauseService = new HabitsApplicationService(
+    const pauseService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-06", "2026-03-06T09:00:00.000Z")
     );
     pauseService.pauseHabit(1);
 
-    const resumeService = new HabitsApplicationService(
+    const resumeService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1806,7 +1806,7 @@ describe("habit carryovers", () => {
         [2, false],
       ])
     );
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1828,13 +1828,13 @@ describe("habit carryovers", () => {
   it("toggles carried-over habits without changing source-day progress", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-08", new Map([[1, false]]));
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
     service.moveUnfinishedHabitsToTomorrow();
 
-    const tomorrowService = new HabitsApplicationService(
+    const tomorrowService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-09", "2026-03-09T09:00:00.000Z")
     );
@@ -1853,7 +1853,7 @@ describe("habit carryovers", () => {
   it("clears carryovers when undoing a rescheduled day", () => {
     const repository = new FakeRepository();
     repository.setStatusForDate("2026-03-08", new Map([[1, false]]));
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1918,7 +1918,7 @@ describe("history retrieval", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1958,7 +1958,7 @@ describe("history retrieval", () => {
       streakCountAfterDay: 3,
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -1991,13 +1991,13 @@ describe("history retrieval", () => {
       timerSessionId: "quota-history-1",
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
     service.upsertFocusQuotaGoal("weekly", 300);
 
-    const nextDayService = new HabitsApplicationService(
+    const nextDayService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -2018,7 +2018,7 @@ describe("history retrieval", () => {
 
   it("rejects invalid focus quota targets instead of silently clamping them", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -2050,7 +2050,7 @@ describe("history retrieval", () => {
       });
     }
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -2100,7 +2100,7 @@ describe("history retrieval", () => {
       timerSessionId: "summary-year-focus",
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -2159,7 +2159,7 @@ describe("history retrieval", () => {
       sortOrder: 1,
     });
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -2194,7 +2194,7 @@ describe("history retrieval", () => {
       ])
     );
 
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
@@ -2211,7 +2211,7 @@ describe("history retrieval", () => {
 describe("focus sessions", () => {
   it("records a completed focus session", () => {
     const repository = new FakeRepository();
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -2239,7 +2239,7 @@ describe("focus sessions", () => {
       ...repository.settings,
       timezone: "UTC",
     };
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-09", "2026-03-08T09:00:00.000Z", "Asia/Singapore")
     );
@@ -2257,7 +2257,7 @@ describe("focus sessions", () => {
   });
 
   it("rejects invalid focus session payloads", () => {
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       new FakeRepository(),
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
@@ -2279,7 +2279,7 @@ describe("transaction error handling", () => {
   it("propagates transaction failures", () => {
     const repository = new FakeRepository();
     repository.failTransactionForLabel = "createHabit";
-    const service = new HabitsApplicationService(
+    const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );

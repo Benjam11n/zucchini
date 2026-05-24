@@ -1,4 +1,4 @@
-import type { HabitsService } from "@/main/features/habits/habits-application-service";
+import type { ApplicationService } from "@/main/ports/application-service";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
@@ -15,7 +15,7 @@ function assertNever(value: never): never {
 }
 
 function executeFocusQuotaGoalCommand(
-  service: HabitsService,
+  service: ApplicationService,
   command: Extract<HabitCommand, { type: `focusQuotaGoal.${string}` }>
 ): TodayState {
   switch (command.type) {
@@ -38,7 +38,7 @@ function executeFocusQuotaGoalCommand(
 }
 
 function executeHabitCommand(
-  service: HabitsService,
+  service: ApplicationService,
   command: Extract<HabitCommand, { type: `habit.${string}` }>
 ): HabitStatusPatch | TodayState {
   switch (command.type) {
@@ -110,7 +110,7 @@ function executeHabitCommand(
 }
 
 function executeWindDownCommand(
-  service: HabitsService,
+  service: ApplicationService,
   command: Extract<HabitCommand, { type: `windDown.${string}` }>
 ): TodayState {
   switch (command.type) {
@@ -136,7 +136,7 @@ function executeWindDownCommand(
 }
 
 export function executeHabitServiceCommand(
-  service: HabitsService,
+  service: ApplicationService,
   command: HabitCommand
 ): HabitCommandResult {
   if (command.type.startsWith("habit.")) {
@@ -192,7 +192,7 @@ export function executeHabitServiceCommand(
 }
 
 export function readHabitServiceQuery(
-  service: HabitsService,
+  service: ApplicationService,
   query: HabitQuery
 ): HabitQueryResult {
   switch (query.type) {

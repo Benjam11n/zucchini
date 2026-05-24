@@ -5,7 +5,7 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
-import { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
+import { AppApplicationService } from "@/main/app/application-service";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { HabitCategory, HabitFrequency } from "@/shared/domain/habit";
 import { getPreviousCompletedIsoWeek } from "@/shared/utils/date";
@@ -302,7 +302,7 @@ describeWithFixtureDatabase("test data generator", () => {
         "2026-03-14T10:30:00.000Z",
         "America/Los_Angeles"
       );
-      const service = new HabitsApplicationService(repository, clock);
+      const service = new AppApplicationService(repository, clock);
 
       const todayState = service.getTodayState();
       const history = service.getHistory(30);

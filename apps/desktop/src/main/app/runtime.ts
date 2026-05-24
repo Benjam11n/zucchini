@@ -1,10 +1,10 @@
+import { AppApplicationService } from "@/main/app/application-service";
 import type { RuntimeAppPort } from "@/main/app/ports";
 import { createAppTray } from "@/main/app/tray";
-import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
-import { HabitsApplicationService as HabitsApplicationServiceImpl } from "@/main/features/habits/habits-application-service";
 import { createReminderCoordinator } from "@/main/features/reminders/coordinator";
 import type { ReminderCoordinator } from "@/main/features/reminders/coordinator";
 import { SqliteAppRepository } from "@/main/infra/persistence/sqlite-app-repository";
+import type { ApplicationService } from "@/main/ports/application-service";
 /**
  * App runtime factory — creates and wires the long-lived main-process objects.
  *
@@ -21,7 +21,7 @@ import { buildLoginItemSettings } from "./lifecycle";
 export interface AppRuntime {
   reminders: ReminderCoordinator;
   repository: SqliteAppRepository;
-  service: HabitsApplicationService;
+  service: ApplicationService;
   tray: ReturnType<typeof createAppTray>;
 }
 
@@ -32,7 +32,7 @@ interface CreateAppRuntimeOptions {
   onOpenWindDown: () => void;
   onQuit: () => void;
   repository?: SqliteAppRepository;
-  service?: HabitsApplicationService;
+  service?: ApplicationService;
 }
 
 export function createAppRuntime({
@@ -46,7 +46,7 @@ export function createAppRuntime({
 }: CreateAppRuntimeOptions): AppRuntime {
   const repository = providedRepository ?? new SqliteAppRepository();
   const service =
-    providedService ?? new HabitsApplicationServiceImpl(repository, clock);
+    providedService ?? new AppApplicationService(repository, clock);
   const reminders = createReminderCoordinator({
     clock,
     onOpenWindDown,

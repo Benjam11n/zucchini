@@ -16,6 +16,7 @@ import {
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
 import type { AppRepository } from "@/main/ports/app-repository";
+import type { ApplicationService } from "@/main/ports/application-service";
 import type { HabitStatusPatch } from "@/shared/contracts/habit-status-patch";
 import type {
   HabitCommand,
@@ -31,9 +32,9 @@ import {
 } from "@/shared/contracts/habits-ipc-schema";
 import type { TodayState } from "@/shared/contracts/today-state";
 /**
- * Core application service for habit management.
+ * Core application service for user-facing app operations.
  *
- * Implements the {@link HabitsService} interface — the single entry point the
+ * Implements the {@link ApplicationService} interface — the single entry point the
  * IPC layer calls for every user-facing operation. Each method runs inside a
  * SQLite transaction, synchronizes rolling streak state on read paths, and
  * returns fresh `TodayState` snapshots so the renderer stays in sync.
@@ -107,76 +108,6 @@ interface HistoryRangeContext {
   todayState: TodayState;
 }
 
-export interface HabitsService {
-  execute(command: HabitCommand): HabitCommandResult;
-  read(query: HabitQuery): HabitQueryResult;
-  initialize(): void;
-  getHabits(): Habit[];
-  getTodayState(): TodayState;
-  moveUnfinishedHabitsToTomorrow(): TodayState;
-  setDayStatus(kind: DayStatusKind | null): TodayState;
-  toggleHabitCarryover(sourceDate: string, habitId: number): TodayState;
-  toggleSickDay(): TodayState;
-  toggleHabit(habitId: number): HabitStatusPatch;
-  incrementHabitProgress(habitId: number): HabitStatusPatch;
-  decrementHabitProgress(habitId: number): HabitStatusPatch;
-  pauseHabit(habitId: number): TodayState;
-  resumeHabit(habitId: number): TodayState;
-  getFocusSessions(limit?: number): FocusSession[];
-  recordFocusSession(input: CreateFocusSessionInput): FocusSession;
-  getPersistedFocusTimerState(): PersistedFocusTimerState | null;
-  savePersistedFocusTimerState(
-    state: PersistedFocusTimerState
-  ): PersistedFocusTimerState;
-  getHistory(limit?: number): HistoryDay[];
-  getHistoryForYear(year: number): HistoryDay[];
-  getHistoryDay(date: string): HistoryDay;
-  getHistorySummary(limit?: number): HistorySummaryDay[];
-  getHistorySummaryForYear(year: number): HistorySummaryDay[];
-  getHistorySummaryForMonth(year: number, month: number): HistorySummaryDay[];
-  getHistoryYears(): number[];
-  getWeeklyReviewOverview(): WeeklyReviewOverview;
-  getWeeklyReview(weekStart: string): WeeklyReview;
-  getInsightsDashboard(rangeDays?: InsightsRangeDays): InsightsDashboard;
-  getReminderRuntimeState(): ReminderRuntimeState;
-  updateSettings(settings: AppSettings): AppSettings;
-  saveReminderRuntimeState(state: ReminderRuntimeState): void;
-  getWindDownRuntimeState(): WindDownRuntimeState;
-  saveWindDownRuntimeState(state: WindDownRuntimeState): void;
-  createHabit(
-    name: string,
-    category: HabitCategory,
-    frequency: HabitFrequency,
-    selectedWeekdays?: HabitWeekday[] | null,
-    targetCount?: number | null
-  ): TodayState;
-  renameHabit(habitId: number, name: string): TodayState;
-  updateHabitCategory(habitId: number, category: HabitCategory): TodayState;
-  updateHabitFrequency(
-    habitId: number,
-    frequency: HabitFrequency,
-    targetCount?: number | null
-  ): TodayState;
-  updateHabitTargetCount(habitId: number, targetCount: number): TodayState;
-  updateHabitWeekdays(
-    habitId: number,
-    selectedWeekdays: HabitWeekday[] | null
-  ): TodayState;
-  upsertFocusQuotaGoal(
-    frequency: GoalFrequency,
-    targetMinutes: number
-  ): TodayState;
-  archiveFocusQuotaGoal(goalId: number): TodayState;
-  unarchiveFocusQuotaGoal(goalId: number): TodayState;
-  archiveHabit(habitId: number): TodayState;
-  unarchiveHabit(habitId: number): TodayState;
-  reorderHabits(habitIds: number[]): TodayState;
-  createWindDownAction(name: string): TodayState;
-  renameWindDownAction(actionId: number, name: string): TodayState;
-  deleteWindDownAction(actionId: number): TodayState;
-  toggleWindDownAction(actionId: number): TodayState;
-}
-
 function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
   const result = createFocusSessionInputSchema.safeParse(input);
   if (!result.success) {
@@ -194,7 +125,7 @@ function assertValidPersistedFocusTimerState(
   }
 }
 
-export class HabitsApplicationService implements HabitsService {
+export class AppApplicationService implements ApplicationService {
   private readonly repository: AppRepository;
   private readonly clock: Clock;
   private readonly todayReadModel: TodayReadModelService;
@@ -620,7 +551,7 @@ export class HabitsApplicationService implements HabitsService {
     const newestDate = includeToday
       ? todayState.date
       : (settledSummaries.at(-1)?.date ?? rangeEnd);
-    const focusMinutesByDate = HabitsApplicationService.buildFocusMinutesByDate(
+    const focusMinutesByDate = AppApplicationService.buildFocusMinutesByDate(
       this.repository.getFocusSessionsInRange(oldestDate, newestDate)
     );
     const historicalHabitsByDate =
@@ -778,7 +709,7 @@ export class HabitsApplicationService implements HabitsService {
       }
 
       const focusMinutes =
-        HabitsApplicationService.buildFocusMinutesByDate(
+        AppApplicationService.buildFocusMinutesByDate(
           this.repository.getFocusSessionsInRange(date, date)
         ).get(date) ?? 0;
       const habitsByDate = buildHistoricalHabitsByDate(
@@ -836,7 +767,7 @@ export class HabitsApplicationService implements HabitsService {
       settledHistoryOptions
     );
     const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
-    const focusMinutesByDate = HabitsApplicationService.buildFocusMinutesByDate(
+    const focusMinutesByDate = AppApplicationService.buildFocusMinutesByDate(
       this.repository.getFocusSessionsInRange(oldestDate, todayState.date)
     );
     const historicalHabitsByDate =

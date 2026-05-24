@@ -4,8 +4,8 @@ import path from "node:path";
 
 import type { App, BrowserWindow } from "electron";
 
-import type { HabitsApplicationService } from "@/main/features/habits/habits-application-service";
 import type { AppRepository } from "@/main/ports/app-repository";
+import type { ApplicationService } from "@/main/ports/application-service";
 import { addDays } from "@/shared/utils/date";
 
 interface ScreenshotModeConfig {
@@ -123,7 +123,7 @@ export function configureScreenshotUserDataPath(app: App): void {
 function seedMarketingHistory(
   repository: AppRepository,
   todayDate: string,
-  habits: ReturnType<HabitsApplicationService["getTodayState"]>["habits"]
+  habits: ReturnType<ApplicationService["getTodayState"]>["habits"]
 ): void {
   const dailyHabits = habits.filter((habit) => habit.frequency === "daily");
 
@@ -172,7 +172,7 @@ export function seedMarketingScreenshotData({
   service,
 }: {
   repository: AppRepository;
-  service: HabitsApplicationService;
+  service: ApplicationService;
 }): void {
   if (!isScreenshotMode() || service.getHabits().length > 0) {
     return;

@@ -9,7 +9,6 @@
 import { ipcMain } from "electron";
 
 import type { FocusTimerCoordinator } from "@/main/features/focus/timer-coordinator";
-import type { HabitsService } from "@/main/features/habits/habits-application-service";
 import {
   getDesktopNotificationStatus,
   showDesktopNotification,
@@ -27,6 +26,7 @@ import {
   validateNotificationIconFilename,
   validateNotificationTitle,
 } from "@/main/infra/ipc/validation";
+import type { ApplicationService } from "@/main/ports/application-service";
 import type {
   BackupRestorePreview,
   FocusTimerShortcutStatus,
@@ -63,7 +63,7 @@ interface RegisterIpcHandlersOptions {
   onRestoreBackup: (restoreId: string) => Promise<boolean>;
   onShowFocusWidget: () => void;
   onShowMainWindow: () => void;
-  service: HabitsService;
+  service: ApplicationService;
   onSettingsChanged: (settings: AppSettings) => void;
   onWindDownChanged?: (todayState: TodayState) => void;
 }
