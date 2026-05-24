@@ -13,7 +13,7 @@ export const releaseMetadata: ReleaseMetadata = {
   isFallback: false,
   macDownloadUrl:
     "https://github.com/Benjam11n/zucchini/releases/download/v0.1.2-beta.14/Zucchini-0.1.2-beta.14-arm64.dmg",
-  publishedAt: "2026-05-24T13:26:45Z",
+  publishedAt: "2026-05-24T14:02:41Z",
   releaseUrl:
     "https://github.com/Benjam11n/zucchini/releases/tag/v0.1.2-beta.14",
   tagName: "v0.1.2-beta.14",
