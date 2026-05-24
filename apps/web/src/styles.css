@@ -299,8 +299,14 @@ body {
   }
 
   .actions {
-    width: 100%;
-    max-width: 300px;
+    max-width: 100%;
+    align-items: center;
     flex-direction: column;
+  }
+
+  .actions .btn {
+    max-width: 100%;
+    justify-content: center;
+    width: fit-content;
   }
 }
