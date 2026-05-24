@@ -12,10 +12,10 @@ interface ReleaseMetadata {
 export const releaseMetadata: ReleaseMetadata = {
   isFallback: false,
   macDownloadUrl:
-    "https://github.com/Benjam11n/zucchini/releases/download/v0.1.2-beta.13/Zucchini-0.1.2-beta.13-arm64.dmg",
-  publishedAt: "2026-05-16T08:43:32Z",
+    "https://github.com/Benjam11n/zucchini/releases/download/v0.1.2-beta.14/Zucchini-0.1.2-beta.14-arm64.dmg",
+  publishedAt: "2026-05-24T13:26:45Z",
   releaseUrl:
-    "https://github.com/Benjam11n/zucchini/releases/tag/v0.1.2-beta.13",
-  tagName: "v0.1.2-beta.13",
-  version: "0.1.2-beta.13",
+    "https://github.com/Benjam11n/zucchini/releases/tag/v0.1.2-beta.14",
+  tagName: "v0.1.2-beta.14",
+  version: "0.1.2-beta.14",
 };
