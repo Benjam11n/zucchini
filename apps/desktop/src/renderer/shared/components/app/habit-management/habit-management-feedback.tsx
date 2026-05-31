@@ -32,13 +32,12 @@ export function HabitManagementFeedback({
   }
 
   return (
-    <div
+    <output
       aria-live="polite"
       className={cn(
         "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs",
         feedbackClassName
       )}
-      role="status"
     >
       <span>{feedback.message}</span>
       {undoAction ? (
@@ -51,6 +50,6 @@ export function HabitManagementFeedback({
           Undo
         </Button>
       ) : null}
-    </div>
+    </output>
   );
 }

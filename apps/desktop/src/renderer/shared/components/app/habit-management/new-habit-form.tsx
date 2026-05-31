@@ -254,13 +254,12 @@ export function NewHabitForm({
                 </div>
 
                 {creationFeedback ? (
-                  <p
+                  <output
                     aria-live="polite"
                     className="text-xs font-medium text-primary"
-                    role="status"
                   >
                     {creationFeedback}
-                  </p>
+                  </output>
                 ) : null}
 
                 <CollapsibleContent className="grid gap-3 border-t border-border/60 pt-3">

@@ -184,6 +184,7 @@ export function PomodoroSettingsFields({
             aria-invalid={
               fieldErrors.focusCyclesBeforeLongBreak ? true : undefined
             }
+            aria-label="Completed focus sessions before long break"
             id={`${idPrefix}-cycles`}
             className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             inputMode="numeric"

@@ -89,12 +89,11 @@ export function FocusQuotaSettingsCard({
           onSaveGoal={onUpsertFocusQuotaGoal}
         />
         {archivedGoalFeedback ? (
-          <div
+          <output
             aria-live="polite"
             className={cn(
               "flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs text-foreground"
             )}
-            role="status"
           >
             <span>
               Archived {archivedGoalFeedback.goalFrequencyLabel} focus quota.
@@ -121,7 +120,7 @@ export function FocusQuotaSettingsCard({
             >
               Undo
             </Button>
-          </div>
+          </output>
         ) : null}
       </CardContent>
     </Card>

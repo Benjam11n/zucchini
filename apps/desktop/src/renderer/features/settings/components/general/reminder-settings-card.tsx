@@ -283,6 +283,7 @@ export function ReminderSettingsCard({
                   aria-invalid={
                     fieldErrors.reminderSnoozeMinutes ? true : undefined
                   }
+                  aria-label="Reminder snooze length"
                   id="reminder-snooze"
                   className="h-8 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-center text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   min={1}
