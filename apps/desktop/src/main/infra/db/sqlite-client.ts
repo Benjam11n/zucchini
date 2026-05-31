@@ -199,6 +199,7 @@ interface BackupDatabaseHabitPreviewRow {
 }
 
 const BACKUP_HABIT_PREVIEW_LIMIT = 30;
+const SPREADSHEET_FORMULA_PREFIX_PATTERN = /^[=+\-@\t\r]/;
 
 type CsvCellValue = bigint | Buffer | null | number | string;
 type CsvRow = Record<string, CsvCellValue>;
@@ -212,9 +213,14 @@ function serializeCsvCell(value: CsvCellValue): string {
     return "";
   }
 
-  const text = Buffer.isBuffer(value)
-    ? value.toString("base64")
-    : String(value);
+  let text = Buffer.isBuffer(value) ? value.toString("base64") : String(value);
+
+  if (
+    typeof value === "string" &&
+    SPREADSHEET_FORMULA_PREFIX_PATTERN.test(text)
+  ) {
+    text = `'${text}`;
+  }
 
   if (!/[",\r\n]/.test(text)) {
     return text;

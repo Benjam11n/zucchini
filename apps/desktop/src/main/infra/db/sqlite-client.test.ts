@@ -524,4 +524,51 @@ describe("SqliteDatabaseClient.exportCsvData()", () => {
       "id,name\n1,Read\n"
     );
   });
+
+  it("neutralizes spreadsheet formulas in string cells", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        columnRowsByTable: {
+          habits: [{ name: "id" }, { name: "name" }, { name: "target_count" }],
+        },
+        rowsByTable: {
+          habits: [
+            {
+              id: 1,
+              name: '=IMPORTXML("https://example.com")',
+              target_count: 1,
+            },
+            { id: 2, name: "+SUM(1,2)", target_count: -5 },
+            { id: 3, name: "-formula", target_count: 3 },
+            { id: 4, name: "@cmd", target_count: 4 },
+            { id: 5, name: "\tindented", target_count: 5 },
+            { id: 6, name: "\rcarriage", target_count: 6 },
+          ],
+        },
+        tableRows: [{ name: "habits" }],
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: path.join(tempDir, "live.db"),
+    });
+
+    const exportPath = path.join(tempDir, "csv");
+    client.exportCsvData(exportPath);
+    client.close();
+
+    expect(fs.readFileSync(path.join(exportPath, "habits.csv"), "utf-8")).toBe(
+      [
+        "id,name,target_count",
+        '1,"\'=IMPORTXML(""https://example.com"")",1',
+        '2,"\'+SUM(1,2)",-5',
+        "3,'-formula,3",
+        "4,'@cmd,4",
+        "5,'\tindented,5",
+        '6,"\'\rcarriage",6',
+        "",
+      ].join("\n")
+    );
+  });
 });
