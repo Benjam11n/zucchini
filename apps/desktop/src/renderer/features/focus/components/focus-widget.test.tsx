@@ -22,31 +22,31 @@ import {
 
 import { FocusWidget } from "./focus-widget";
 
+function resetFocusStoreForTest() {
+  useFocusStore.setState({
+    focusSaveErrorMessage: null,
+    focusSessions: [],
+    focusSessionsLoadError: null,
+    focusSessionsPhase: "idle",
+    hasLoadedFocusSessions: false,
+    timerState: createIdleFocusTimerState(),
+  });
+}
+
+function dispatchShortcut(code: string, key: string) {
+  act(() => {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        code,
+        key,
+      })
+    );
+  });
+}
+
 describe("focus widget", () => {
-  function resetFocusStoreForTest() {
-    useFocusStore.setState({
-      focusSaveErrorMessage: null,
-      focusSessions: [],
-      focusSessionsLoadError: null,
-      focusSessionsPhase: "idle",
-      hasLoadedFocusSessions: false,
-      timerState: createIdleFocusTimerState(),
-    });
-  }
-
-  function dispatchShortcut(code: string, key: string) {
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          bubbles: true,
-          cancelable: true,
-          code,
-          key,
-        })
-      );
-    });
-  }
-
   function setupWidgetTest({
     persistedTimerState = null,
     renderWidget = true,

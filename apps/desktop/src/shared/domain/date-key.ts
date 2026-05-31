@@ -2,7 +2,7 @@
  * Common date utilities dealing with 'YYYY-MM-DD' date keys
  */
 
-const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 
 /**
  * Parses a 'YYYY-MM-DD' string into a local Date object.

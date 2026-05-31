@@ -1,6 +1,6 @@
 import { runChild } from "./run-child.mjs";
 
-const hasSpaceInCwd = /\s/.test(process.cwd());
+const hasSpaceInCwd = /\s/u.test(process.cwd());
 
 if (hasSpaceInCwd) {
   console.warn(

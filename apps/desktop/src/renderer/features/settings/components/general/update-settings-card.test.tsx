@@ -43,13 +43,15 @@ describe("update settings card", () => {
     render(<UpdateSettingsCard />);
 
     await expect(
-      screen.findByRole("button", { name: /check for updates/i })
+      screen.findByRole("button", { name: /check for updates/iu })
     ).resolves.toBeInTheDocument();
     expect(
       screen.getByText("Current version 0.1.1-beta.9.")
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /check for updates/iu })
+    );
 
     await waitFor(() => {
       expect(updater.checkForUpdates.mock.calls).toHaveLength(1);
@@ -62,10 +64,12 @@ describe("update settings card", () => {
     render(<UpdateSettingsCard />);
 
     await expect(
-      screen.findByRole("button", { name: /check for updates/i })
+      screen.findByRole("button", { name: /check for updates/iu })
     ).resolves.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /check for updates/iu })
+    );
 
     await waitFor(() => {
       expect(updater.checkForUpdates.mock.calls).toHaveLength(1);
@@ -109,10 +113,12 @@ describe("update settings card", () => {
     render(<UpdateSettingsCard />);
 
     await expect(
-      screen.findByRole("button", { name: /check for updates/i })
+      screen.findByRole("button", { name: /check for updates/iu })
     ).resolves.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /check for updates/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /check for updates/iu })
+    );
 
     await waitFor(() => {
       expect(updater.checkForUpdates.mock.calls).toHaveLength(1);

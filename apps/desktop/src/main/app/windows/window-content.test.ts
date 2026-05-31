@@ -70,7 +70,7 @@ describe("getWindowContentUrl()", () => {
     withDevServerUrl("http://127.0.0.1:5173/", () => {
       const url = getWindowContentUrl({ appIsPackaged: true });
 
-      expect(url).toMatch(/^file:\/\//);
+      expect(url).toMatch(/^file:\/\//u);
       expect(url).toContain("/dist/index.html");
     });
   });

@@ -45,7 +45,7 @@ describe("reminder settings card", () => {
     );
 
     await expect(
-      screen.findByText(/silenced by do not disturb/i)
+      screen.findByText(/silenced by do not disturb/iu)
     ).resolves.toBeInTheDocument();
   });
 
@@ -68,7 +68,7 @@ describe("reminder settings card", () => {
     });
 
     expect(
-      screen.queryByText(/desktop notifications are currently/i)
+      screen.queryByText(/desktop notifications are currently/iu)
     ).not.toBeInTheDocument();
   });
 
@@ -88,7 +88,7 @@ describe("reminder settings card", () => {
 
     await expect(
       screen.findByText(
-        /cannot verify desktop notification delivery on this platform/i
+        /cannot verify desktop notification delivery on this platform/iu
       )
     ).resolves.toBeInTheDocument();
   });
@@ -109,7 +109,7 @@ describe("reminder settings card", () => {
 
     await expect(
       screen.findByText(
-        /cannot verify desktop notification delivery right now/i
+        /cannot verify desktop notification delivery right now/iu
       )
     ).resolves.toBeInTheDocument();
   });
@@ -126,7 +126,7 @@ describe("reminder settings card", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("switch", { name: /enable reminder/i }));
+    fireEvent.click(screen.getByRole("switch", { name: /enable reminder/iu }));
 
     expect(onChange).toHaveBeenCalledWith({
       ...defaultSettings,

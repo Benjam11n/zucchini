@@ -130,14 +130,14 @@ function createMockDatabaseConstructor({
         ? vi.fn(() => tableRows)
         : vi.fn(() => {
             const tableName = statement.match(
-              /pragma table_info\("([^"]+)"\)/
+              /pragma table_info\("([^"]+)"\)/u
             )?.[1];
             if (tableName) {
               return columnRowsByTable[tableName] ?? DEFAULT_COLUMN_ROWS;
             }
 
             const selectedTableName = statement.match(
-              /select \* from "([^"]+)"/
+              /select \* from "([^"]+)"/u
             )?.[1];
 
             if (selectedTableName) {

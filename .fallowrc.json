@@ -3,7 +3,8 @@
   "entry": [
     "apps/desktop/scripts/**/*.{mjs,ts}",
     "apps/desktop/electron-builder.config.ts",
-    "apps/desktop/tsdown.config.mts"
+    "apps/desktop/tsdown.config.mts",
+    "oxlint.config.ts"
   ],
   "ignoreDependencies": ["shadcn"],
   "duplicates": {

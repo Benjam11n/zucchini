@@ -61,7 +61,7 @@ export function createDataManagementActions({
   }
 
   function buildPreImportBackupPath(): string {
-    const timestamp = clock.now().toISOString().replaceAll(/\D/g, "");
+    const timestamp = clock.now().toISOString().replaceAll(/\D/gu, "");
     return path.join(
       path.dirname(repository.getDatabasePath()),
       `zucchini-before-import-${timestamp}.db`

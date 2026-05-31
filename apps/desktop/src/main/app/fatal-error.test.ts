@@ -3,6 +3,33 @@ import {
   normalizeFatalError,
 } from "@/main/app/fatal-error";
 
+function createHarness({ isReady = true }: { isReady?: boolean } = {}) {
+  const app = {
+    exit: vi.fn(),
+    isReady: vi.fn(() => isReady),
+  };
+  const cleanup = vi.fn();
+  const dialog = {
+    showErrorBox: vi.fn(),
+  };
+  const log = {
+    error: vi.fn(),
+  };
+
+  return {
+    app,
+    cleanup,
+    dialog,
+    log,
+    reportFatalError: createFatalErrorReporter({
+      app,
+      cleanup,
+      dialog,
+      log,
+    }),
+  };
+}
+
 describe("normalizeFatalError()", () => {
   it("returns the original error when one is provided", () => {
     const error = new Error("boom");
@@ -24,33 +51,6 @@ describe("normalizeFatalError()", () => {
 });
 
 describe("createFatalErrorReporter()", () => {
-  function createHarness({ isReady = true }: { isReady?: boolean } = {}) {
-    const app = {
-      exit: vi.fn(),
-      isReady: vi.fn(() => isReady),
-    };
-    const cleanup = vi.fn();
-    const dialog = {
-      showErrorBox: vi.fn(),
-    };
-    const log = {
-      error: vi.fn(),
-    };
-
-    return {
-      app,
-      cleanup,
-      dialog,
-      log,
-      reportFatalError: createFatalErrorReporter({
-        app,
-        cleanup,
-        dialog,
-        log,
-      }),
-    };
-  }
-
   it("logs, shows an error dialog, cleans up, and exits for fatal errors", () => {
     const harness = createHarness();
     const error = new Error("boom");

@@ -98,7 +98,7 @@ const GLOBAL_SHORTCUT_KEYS = new Set([
 ]);
 const GLOBAL_SHORTCUT_UNSUPPORTED_TOKENS = new Set(["fn", "globe"]);
 const HABIT_CATEGORY_LABEL_MAX_LENGTH = 24;
-const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/iu;
 
 const DEFAULT_HABIT_CATEGORY_COLORS: Record<HabitCategory, string> = {
   fitness: "#FF2D55",
@@ -225,8 +225,8 @@ export function getPomodoroTimerSettings(
 function isSupportedGlobalShortcutKey(token: string): boolean {
   return (
     GLOBAL_SHORTCUT_KEYS.has(token) ||
-    /^[a-z0-9]$/i.test(token) ||
-    /^f([1-9]|1\d|2[0-4])$/i.test(token)
+    /^[a-z0-9]$/iu.test(token) ||
+    /^f([1-9]|1\d|2[0-4])$/iu.test(token)
   );
 }
 
@@ -318,7 +318,7 @@ export function isThemeMode(value: string): value is ThemeMode {
 }
 
 export function isValidReminderTime(value: string): boolean {
-  const match = value.match(/^(\d{2}):(\d{2})$/);
+  const match = value.match(/^(\d{2}):(\d{2})$/u);
   if (!match) {
     return false;
   }

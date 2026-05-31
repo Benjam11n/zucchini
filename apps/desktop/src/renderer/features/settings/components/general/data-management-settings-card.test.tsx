@@ -111,13 +111,13 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /open folder/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open folder/iu }));
 
     await waitFor(() => {
       expect(habits.openDataFolder.mock.calls).toHaveLength(1);
     });
     await expect(
-      screen.findByText(/opened zucchini in your file manager/i)
+      screen.findByText(/opened zucchini in your file manager/iu)
     ).resolves.toBeInTheDocument();
   });
 
@@ -126,14 +126,14 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /export backup/i }));
+    fireEvent.click(screen.getByRole("button", { name: /export backup/iu }));
 
     await waitFor(() => {
       expect(habits.exportBackup.mock.calls).toHaveLength(1);
     });
     await waitFor(() => {
       expect(
-        screen.getByText(/backup exported as zucchini-backup\.db/i)
+        screen.getByText(/backup exported as zucchini-backup\.db/iu)
       ).toBeInTheDocument();
     });
   });
@@ -143,14 +143,14 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /export csv/i }));
+    fireEvent.click(screen.getByRole("button", { name: /export csv/iu }));
 
     await waitFor(() => {
       expect(habits.exportCsvData.mock.calls).toHaveLength(1);
     });
     await waitFor(() => {
       expect(
-        screen.getByText(/csv export saved in zucchini-csv-export-20260330/i)
+        screen.getByText(/csv export saved in zucchini-csv-export-20260330/iu)
       ).toBeInTheDocument();
     });
   });
@@ -164,14 +164,14 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/iu }));
 
     await expect(
-      screen.findByText(/this replaces current local data/i)
+      screen.findByText(/this replaces current local data/iu)
     ).resolves.toBeInTheDocument();
     expect(habits.getLatestAutoBackupRestorePreview).toHaveBeenCalledOnce();
     expect(
-      screen.getByText(/zucchini-auto-20260330-120000\.db/i)
+      screen.getByText(/zucchini-auto-20260330-120000\.db/iu)
     ).toBeInTheDocument();
     expect(screen.getByText("Habits in backup")).toBeInTheDocument();
     expect(screen.getByText("Plan top task")).toBeInTheDocument();
@@ -189,13 +189,13 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
-    await expect(screen.findByText(/old\.db/i)).resolves.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/iu }));
+    await expect(screen.findByText(/old\.db/iu)).resolves.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /cancel/iu }));
 
-    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/iu }));
 
-    await expect(screen.findByText(/new\.db/i)).resolves.toBeInTheDocument();
+    await expect(screen.findByText(/new\.db/iu)).resolves.toBeInTheDocument();
     expect(habits.getLatestAutoBackupRestorePreview).toHaveBeenCalledTimes(2);
   });
 
@@ -214,12 +214,12 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /choose backup/i }));
+    fireEvent.click(screen.getByRole("button", { name: /choose backup/iu }));
 
     await expect(
-      screen.findByText(/manual-backup\.db/i)
+      screen.findByText(/manual-backup\.db/iu)
     ).resolves.toBeInTheDocument();
-    expect(screen.getByText(/chosen file/i)).toBeInTheDocument();
+    expect(screen.getByText(/chosen file/iu)).toBeInTheDocument();
   });
 
   it("restores a backup from the preview dialog", async () => {
@@ -232,10 +232,10 @@ describe("data management settings card", () => {
     renderCard();
 
     fireEvent.click(
-      await screen.findByRole("button", { name: /restore latest/i })
+      await screen.findByRole("button", { name: /restore latest/iu })
     );
     const restoreButton = await screen.findByRole("button", {
-      name: /restore and restart/i,
+      name: /restore and restart/iu,
     });
 
     expect(restoreButton).toBeEnabled();
@@ -252,10 +252,10 @@ describe("data management settings card", () => {
     });
 
     renderCard();
-    fireEvent.click(screen.getByRole("button", { name: /restore latest/i }));
+    fireEvent.click(screen.getByRole("button", { name: /restore latest/iu }));
 
     await waitFor(() => {
-      expect(screen.getAllByText(/no auto backup yet/i)).toHaveLength(2);
+      expect(screen.getAllByText(/no auto backup yet/iu)).toHaveLength(2);
     });
   });
 
@@ -268,10 +268,10 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /choose backup/i }));
+    fireEvent.click(screen.getByRole("button", { name: /choose backup/iu }));
 
     await expect(
-      screen.findByText(/invalid backup/i)
+      screen.findByText(/invalid backup/iu)
     ).resolves.toBeInTheDocument();
   });
 
@@ -284,14 +284,14 @@ describe("data management settings card", () => {
 
     renderCard();
 
-    fireEvent.click(screen.getByRole("button", { name: /clear data/i }));
+    fireEvent.click(screen.getByRole("button", { name: /clear data/iu }));
 
     await expect(
-      screen.findByText(/this permanently deletes local data/i)
+      screen.findByText(/this permanently deletes local data/iu)
     ).resolves.toBeInTheDocument();
 
     fireEvent.click(
-      screen.getByRole("button", { name: /clear data and restart/i })
+      screen.getByRole("button", { name: /clear data and restart/iu })
     );
 
     await waitFor(() => {
@@ -306,7 +306,7 @@ describe("data management settings card", () => {
 
     renderCard({ onChange });
 
-    fireEvent.change(screen.getByLabelText(/auto backup cadence/i), {
+    fireEvent.change(screen.getByLabelText(/auto backup cadence/iu), {
       target: { value: "daily" },
     });
 
@@ -321,7 +321,7 @@ describe("data management settings card", () => {
     renderCard();
 
     fireEvent.click(
-      screen.getByRole("button", { name: /open backup folder/i })
+      screen.getByRole("button", { name: /open backup folder/iu })
     );
 
     await waitFor(() => {

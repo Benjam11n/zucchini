@@ -25,9 +25,9 @@
   },
   "devDependencies": {
     "fallow": "^2.54.2",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.60.0",
-    "ultracite": "^7.4.3"
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
+    "ultracite": "^7.7.0"
   },
   "engines": {
     "node": "24.x",

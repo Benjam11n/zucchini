@@ -221,7 +221,7 @@ function resolveVersion(currentVersion, channel, explicitVersion) {
 
 function parseVersion(value) {
   const match =
-    /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<label>[0-9A-Za-z-]+)\.(?<number>\d+))?$/.exec(
+    /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<label>[0-9A-Za-z-]+)\.(?<number>\d+))?$/u.exec(
       value
     );
 

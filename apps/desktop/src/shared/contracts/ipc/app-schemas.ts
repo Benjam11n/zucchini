@@ -42,7 +42,7 @@ export const notificationBodySchema = z.string().trim().min(1).max(240);
 export const notificationIconFilenameSchema = z
   .string()
   .trim()
-  .regex(/^[a-z0-9._-]+$/i, {
+  .regex(/^[a-z0-9._-]+$/iu, {
     message: "Notification icon filename must be a simple asset filename.",
   })
   .optional();

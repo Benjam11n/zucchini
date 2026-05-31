@@ -2,7 +2,7 @@ import { defineConfig } from "tsdown";
 
 const shared = {
   deps: {
-    alwaysBundle: [/^drizzle-orm(\/.*)?$/, "effect", "zod"],
+    alwaysBundle: [/^drizzle-orm(\/.*)?$/u, "effect", "zod"],
     neverBundle: [
       "better-sqlite3",
       "electron",

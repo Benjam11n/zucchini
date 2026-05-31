@@ -239,10 +239,10 @@ describe("history page", () => {
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Misses")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Today Mar 10/ })
+      screen.getByRole("button", { name: /Today Mar 10/u })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/u })
     ).toBeInTheDocument();
   });
 
@@ -264,13 +264,13 @@ describe("history page", () => {
     renderHistoryPage();
 
     expect(
-      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/u })
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
     expect(
-      screen.queryByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+      screen.queryByRole("button", { name: /Select Tuesday, Mar 10, 2026/u })
     ).not.toBeInTheDocument();
   });
 
@@ -287,10 +287,10 @@ describe("history page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("March")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Today Mar 10/ })
+      screen.getByRole("button", { name: /Today Mar 10/u })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/u })
     ).toBeInTheDocument();
 
     fireEvent.click(
@@ -302,16 +302,16 @@ describe("history page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("February")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Sat Feb 14/ })
+      screen.getByRole("button", { name: /Sat Feb 14/u })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Today Mar 10/ })
+      screen.queryByRole("button", { name: /Today Mar 10/u })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Select Saturday, Feb 14, 2026/ })
+      screen.getByRole("button", { name: /Select Saturday, Feb 14, 2026/u })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/ })
+      screen.getByRole("button", { name: /Select Tuesday, Mar 10, 2026/u })
     ).toBeInTheDocument();
   }, 10_000);
 
@@ -328,7 +328,7 @@ describe("history page", () => {
       onSelectWeeklyReview,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Mon Mar 9/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Mon Mar 9/u }));
     expect(screen.getByText("Mar 9")).toBeInTheDocument();
     const [latestHistoryDay] = history;
 
@@ -388,7 +388,7 @@ describe("history page", () => {
     renderHistoryPage({ onLoadHistoryYears });
 
     expect(onLoadHistoryYears.mock.calls).toHaveLength(1);
-    expect(screen.getByRole("button", { name: /^2026$/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^2026$/u })).toBeInTheDocument();
   });
 
   it("loads weekly review data only after switching to review mode", () => {
@@ -412,7 +412,7 @@ describe("history page", () => {
       onSelectHistoryMonth,
     });
 
-    fireEvent.pointerDown(screen.getByRole("button", { name: /^2026$/ }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: /^2026$/u }));
     fireEvent.click(screen.getByRole("menuitem", { name: "2025" }));
 
     expect(onSelectHistoryMonth).toHaveBeenCalledWith(2025, 3);

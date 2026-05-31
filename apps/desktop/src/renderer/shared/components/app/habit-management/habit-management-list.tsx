@@ -20,7 +20,7 @@ const AUTO_SCROLL_MAX_STEP_PX = 18;
 function isScrollableElement(element: HTMLElement): boolean {
   const { overflowY } = window.getComputedStyle(element);
   return (
-    /(auto|overlay|scroll)/.test(overflowY) &&
+    /(auto|overlay|scroll)/u.test(overflowY) &&
     element.scrollHeight > element.clientHeight
   );
 }

@@ -63,7 +63,7 @@ describe("CategorySettingsCard", () => {
       },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Utensils/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Utensils/iu }));
     fireEvent.click(screen.getByLabelText("Use Apple icon for Nutrition"));
 
     expect(onChange).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe("CategorySettingsCard", () => {
 
     expect(screen.getByTitle("Change Fuel color")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Utensils/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Utensils/iu }));
     expect(
       screen.getByLabelText("Use Apple icon for Fuel")
     ).toBeInTheDocument();

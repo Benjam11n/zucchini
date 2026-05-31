@@ -24,15 +24,15 @@ function setupUpdaterMock() {
   });
 }
 
-describe("app shell", () => {
-  function renderAppShell(tab: AppTab = "today") {
-    return render(
-      <AppShell onTabChange={vi.fn()} tab={tab}>
-        <div data-testid="content">page content</div>
-      </AppShell>
-    );
-  }
+function renderAppShell(tab: AppTab = "today") {
+  return render(
+    <AppShell onTabChange={vi.fn()} tab={tab}>
+      <div data-testid="content">page content</div>
+    </AppShell>
+  );
+}
 
+describe("app shell", () => {
   it("renders all navigation tabs for both desktop and mobile layouts", () => {
     setupUpdaterMock();
     renderAppShell("today");

@@ -16,7 +16,7 @@ import { createDefaultFocusTimerShortcutSettings } from "@/shared/domain/setting
 import type { AppSettings } from "@/shared/domain/settings";
 
 function sanitizeIntegerInput(value: string): string {
-  return value.replaceAll(/\D/g, "").slice(0, 2);
+  return value.replaceAll(/\D/gu, "").slice(0, 2);
 }
 
 interface PomodoroSettingsFieldsProps {

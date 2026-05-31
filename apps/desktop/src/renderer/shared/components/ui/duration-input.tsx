@@ -4,7 +4,7 @@ import type { FocusEvent } from "react";
 import { cn } from "@/renderer/shared/lib/class-names";
 
 function sanitizeDurationPart(value: string): string {
-  return value.replaceAll(/\D/g, "").slice(0, 2);
+  return value.replaceAll(/\D/gu, "").slice(0, 2);
 }
 
 function padDurationPart(value: number): string {

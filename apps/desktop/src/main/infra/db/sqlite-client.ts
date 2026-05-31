@@ -199,7 +199,7 @@ interface BackupDatabaseHabitPreviewRow {
 }
 
 const BACKUP_HABIT_PREVIEW_LIMIT = 30;
-const SPREADSHEET_FORMULA_PREFIX_PATTERN = /^[=+\-@\t\r]/;
+const SPREADSHEET_FORMULA_PREFIX_PATTERN = /^[=+\-@\t\r]/u;
 
 type CsvCellValue = bigint | Buffer | null | number | string;
 type CsvRow = Record<string, CsvCellValue>;
@@ -222,7 +222,7 @@ function serializeCsvCell(value: CsvCellValue): string {
     text = `'${text}`;
   }
 
-  if (!/[",\r\n]/.test(text)) {
+  if (!/[",\r\n]/u.test(text)) {
     return text;
   }
 

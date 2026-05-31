@@ -190,6 +190,12 @@ const state: TodayState = {
   },
 };
 
+function getKeyboardRow(label: string): HTMLElement {
+  const row = screen.getByText(label).closest("[data-keyboard-row]");
+  expect(row).not.toBeNull();
+  return row as HTMLElement;
+}
+
 describe("today page", () => {
   beforeEach(() => {
     todayHistoryCarouselSpy.mockClear();
@@ -244,12 +250,6 @@ describe("today page", () => {
     );
 
     return handlers;
-  }
-
-  function getKeyboardRow(label: string): HTMLElement {
-    const row = screen.getByText(label).closest("[data-keyboard-row]");
-    expect(row).not.toBeNull();
-    return row as HTMLElement;
   }
 
   it("opens in-flow habit management from the daily checklist", () => {
@@ -319,7 +319,7 @@ describe("today page", () => {
     getHistoryDayMock.mockResolvedValue(historyDetailDay("2026-03-12"));
     const handlers = renderTodayPage(state, [historyDay("2026-03-12")]);
 
-    fireEvent.click(screen.getByRole("button", { name: /history carousel/i }));
+    fireEvent.click(screen.getByRole("button", { name: /history carousel/iu }));
 
     await waitFor(() => {
       expect(getHistoryDayMock).toHaveBeenCalledWith("2026-03-12");
@@ -347,7 +347,7 @@ describe("today page", () => {
     getHistoryDayMock.mockResolvedValue(historyDetailDay("2026-03-12"));
     renderTodayPage(state, [historyDay("2026-03-12")]);
 
-    fireEvent.click(screen.getByRole("button", { name: /history carousel/i }));
+    fireEvent.click(screen.getByRole("button", { name: /history carousel/iu }));
     expect(await screen.findByText("Historical planning")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Today" }));
@@ -585,7 +585,7 @@ describe("today page", () => {
     const handlers = renderTodayPage();
     const row = getKeyboardRow("Plan top task");
     await waitFor(() => expect(row).toHaveFocus());
-    const checkbox = screen.getByRole("checkbox", { name: /plan top task/i });
+    const checkbox = screen.getByRole("checkbox", { name: /plan top task/iu });
 
     fireEvent.keyDown(checkbox, { key: " " });
 
@@ -663,7 +663,7 @@ describe("today page", () => {
     const firstRow = getKeyboardRow("Plan top task");
     await waitFor(() => expect(firstRow).toHaveFocus());
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /plan top task/i }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /plan top task/iu }));
     fireEvent.keyDown(window, { key: "n" });
 
     expect(getKeyboardRow("Move")).toHaveFocus();

@@ -123,9 +123,9 @@ describe("focus session list", () => {
       .closest("[data-slot='card']") as HTMLElement;
 
     expect(sessionListCard).toHaveTextContent(
-      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*80 min session window[\s\S]*2 completed loops[\s\S]*Interrupted/
+      /2 completed loops today[\s\S]*70 focused minutes[\s\S]*80 min session window[\s\S]*2 completed loops[\s\S]*Interrupted/u
     );
-    expect(sessionListCard).toHaveTextContent(/Show details/);
+    expect(sessionListCard).toHaveTextContent(/Show details/u);
     expect(screen.getAllByLabelText("5 minute break")).toHaveLength(2);
     expect(screen.queryByText("5m gap")).not.toBeInTheDocument();
 
@@ -134,7 +134,7 @@ describe("focus session list", () => {
     const sessionCard = screen.getByTestId("focus-session-card");
 
     expect(sessionCard).toHaveTextContent(
-      /Hide details[\s\S]*25 min[\s\S]*5m gap[\s\S]*Partial · 20 min/
+      /Hide details[\s\S]*25 min[\s\S]*5m gap[\s\S]*Partial · 20 min/u
     );
   });
 

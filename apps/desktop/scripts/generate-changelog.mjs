@@ -138,7 +138,7 @@ function categorizeCommit(subject) {
 
   for (const [type, category] of COMMIT_CATEGORIES) {
     if (
-      new RegExp(`^${type}(\\(.+\\))?:`).test(normalized) ||
+      new RegExp(`^${type}(\\(.+\\))?:`, "u").test(normalized) ||
       normalized.startsWith(`${type} `)
     ) {
       return category;
@@ -149,7 +149,7 @@ function categorizeCommit(subject) {
 }
 
 function normalizeCommitSubject(subject) {
-  const stripped = subject.replace(/^[a-z]+(\(.+\))?:\s*/i, "");
+  const stripped = subject.replace(/^[a-z]+(\(.+\))?:\s*/iu, "");
 
   if (!stripped) {
     return subject;
@@ -221,10 +221,10 @@ function renderChangelog(nextReleaseNotes, currentVersion) {
     : existing.trimStart();
   const bodyWithoutCurrentVersion = body
     .replace(
-      new RegExp(`## ${escapeRegExp(currentVersion)} - .*?(?=\\n## |$)`, "s"),
+      new RegExp(`## ${escapeRegExp(currentVersion)} - .*?(?=\\n## |$)`, "su"),
       ""
     )
-    .replace(new RegExp(`^${escapeRegExp(intro)}\\n+`), "")
+    .replace(new RegExp(`^${escapeRegExp(intro)}\\n+`, "u"), "")
     .trimStart();
 
   return `${header}\n${nextReleaseNotes}\n${
@@ -250,5 +250,5 @@ function safeReadChangelog() {
 }
 
 function escapeRegExp(value) {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

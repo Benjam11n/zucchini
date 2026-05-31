@@ -8,7 +8,7 @@ import {
 import type { Habit } from "@/shared/domain/habit";
 
 export function getPathLabel(filePath: string): string {
-  return filePath.split(/[/\\]/).at(-1) ?? filePath;
+  return filePath.split(/[/\\]/u).at(-1) ?? filePath;
 }
 
 export function formatBackupSize(sizeBytes: number): string {

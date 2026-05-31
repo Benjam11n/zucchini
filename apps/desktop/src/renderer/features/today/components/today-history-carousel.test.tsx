@@ -53,8 +53,8 @@ describe("today history carousel", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: /wed/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /thu/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /wed/iu })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /thu/iu })).toBeInTheDocument();
   });
 
   it("renders nothing when no history is available", () => {
@@ -95,7 +95,7 @@ describe("today history carousel", () => {
       />
     );
 
-    const selectedButton = screen.getByRole("button", { name: /thu/i });
+    const selectedButton = screen.getByRole("button", { name: /thu/iu });
     fireEvent.click(selectedButton);
 
     expect(onSelectDate).toHaveBeenCalledWith("2026-03-12");

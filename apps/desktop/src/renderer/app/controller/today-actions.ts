@@ -136,48 +136,57 @@ function createOptimisticHabitStatusPatch(
   };
 }
 
+function syncSettingsDraftFromTodayState() {
+  const { todayState } = useTodayStore.getState();
+  const { settingsDraft } = useSettingsStore.getState();
+
+  useSettingsStore.setState({
+    settingsDraft: todayState?.settings ?? settingsDraft,
+  });
+}
+
+async function refreshWeeklyReviewOverview() {
+  if (useWeeklyReviewStore.getState().weeklyReviewPhase === "idle") {
+    return;
+  }
+
+  await useWeeklyReviewStore
+    .getState()
+    .loadWeeklyReviewOverview({ force: true });
+}
+
+const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
+  const todayState = nextTodayState ?? (await appClient.getTodayState());
+  const managedHabits = await appClient.getHabits();
+
+  applyTodayReloadResult({
+    managedHabits,
+    todayState,
+  });
+  resetInsightsIfLoaded();
+
+  if (options.refreshHistoryYears) {
+    await useHistoryStore.getState().loadHistoryYears({
+      force: true,
+      initialMonth: getDateKeyMonth(todayState.date),
+    });
+  }
+};
+
+async function applyTodayMutation(mutator: Promise<TodayState>) {
+  const nextTodayState = await mutator;
+  const managedHabits = await appClient.getHabits();
+  applyTodayState(nextTodayState, managedHabits);
+  refreshWeeklyReviewIfLoaded();
+  resetInsightsIfLoaded();
+  return nextTodayState;
+}
+
 export function createTodayActions({
   loadFocusSessions,
 }: {
   loadFocusSessions: (force?: boolean) => Promise<void>;
 }) {
-  function syncSettingsDraftFromTodayState() {
-    const { todayState } = useTodayStore.getState();
-    const { settingsDraft } = useSettingsStore.getState();
-
-    useSettingsStore.setState({
-      settingsDraft: todayState?.settings ?? settingsDraft,
-    });
-  }
-
-  async function refreshWeeklyReviewOverview() {
-    if (useWeeklyReviewStore.getState().weeklyReviewPhase === "idle") {
-      return;
-    }
-
-    await useWeeklyReviewStore
-      .getState()
-      .loadWeeklyReviewOverview({ force: true });
-  }
-
-  const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
-    const todayState = nextTodayState ?? (await appClient.getTodayState());
-    const managedHabits = await appClient.getHabits();
-
-    applyTodayReloadResult({
-      managedHabits,
-      todayState,
-    });
-    resetInsightsIfLoaded();
-
-    if (options.refreshHistoryYears) {
-      await useHistoryStore.getState().loadHistoryYears({
-        force: true,
-        initialMonth: getDateKeyMonth(todayState.date),
-      });
-    }
-  };
-
   async function refreshToday(mutator: Promise<TodayState>) {
     const nextTodayState = await mutator;
     await Promise.all([
@@ -189,15 +198,6 @@ export function createTodayActions({
   async function refreshForNewDay() {
     await reloadAll(undefined, { refreshHistoryYears: true });
     await refreshWeeklyReviewOverview();
-  }
-
-  async function applyTodayMutation(mutator: Promise<TodayState>) {
-    const nextTodayState = await mutator;
-    const managedHabits = await appClient.getHabits();
-    applyTodayState(nextTodayState, managedHabits);
-    refreshWeeklyReviewIfLoaded();
-    resetInsightsIfLoaded();
-    return nextTodayState;
   }
 
   async function applyHabitStatusMutation({
