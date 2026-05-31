@@ -32,6 +32,15 @@ describe("areAppSettingsEqual()", () => {
     ).toBeFalsy();
   });
 
+  it("returns false when only auto backup cadence differs", () => {
+    expect(
+      areAppSettingsEqual(baseSettings, {
+        ...baseSettings,
+        autoBackupCadence: "daily",
+      })
+    ).toBeFalsy();
+  });
+
   it("returns false when only one side is present", () => {
     expect(areAppSettingsEqual(baseSettings, null)).toBeFalsy();
   });

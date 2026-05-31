@@ -127,6 +127,35 @@ export interface HabitManagementListProps {
   recentArchivedHabit: RecentArchivedHabit | null;
 }
 
+function mergeReorderedFrequencySection(
+  habits: HabitManagementCardProps["habits"],
+  sectionHabits: HabitManagementCardProps["habits"]
+): HabitManagementCardProps["habits"] {
+  const [firstSectionHabit] = sectionHabits;
+
+  if (!firstSectionHabit) {
+    return habits;
+  }
+
+  const sectionFrequency = firstSectionHabit.frequency;
+  const remainingSectionHabits = [...sectionHabits];
+
+  return habits.map((habit, index) => {
+    if (habit.frequency !== sectionFrequency) {
+      return {
+        ...habit,
+        sortOrder: index,
+      };
+    }
+
+    const nextHabit = remainingSectionHabits.shift() ?? habit;
+    return {
+      ...nextHabit,
+      sortOrder: index,
+    };
+  });
+}
+
 export function HabitManagementList({
   dragState,
   expandedHabitId,
@@ -205,6 +234,12 @@ export function HabitManagementList({
   const habitSections: ((typeof HABIT_FREQUENCY_SECTIONS)[number] & {
     habits: typeof habits;
   })[] = [];
+
+  function handleSectionReorder(sectionHabits: typeof habits): Promise<void> {
+    return onReorderHabits(
+      mergeReorderedFrequencySection(habits, sectionHabits)
+    );
+  }
 
   for (const section of HABIT_FREQUENCY_SECTIONS) {
     const sectionHabits = habits.filter(
@@ -286,7 +321,7 @@ export function HabitManagementList({
                     onExpandedHabitChange={onExpandedHabitChange}
                     onPauseHabit={onPauseHabit}
                     onRenameHabit={onRenameHabit}
-                    onReorderHabits={onReorderHabits}
+                    onReorderHabits={handleSectionReorder}
                     onResumeHabit={onResumeHabit}
                     onUndoArchive={onUndoArchive}
                     onUpdateHabitCategory={onUpdateHabitCategory}
@@ -316,7 +351,7 @@ export function HabitManagementList({
                     onExpandedHabitChange={onExpandedHabitChange}
                     onPauseHabit={onPauseHabit}
                     onRenameHabit={onRenameHabit}
-                    onReorderHabits={onReorderHabits}
+                    onReorderHabits={handleSectionReorder}
                     onResumeHabit={onResumeHabit}
                     onUndoArchive={onUndoArchive}
                     onUpdateHabitCategory={onUpdateHabitCategory}

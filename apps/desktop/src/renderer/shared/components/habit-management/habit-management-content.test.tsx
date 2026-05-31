@@ -246,4 +246,38 @@ describe("habit management content", () => {
       screen.queryByText("Grouped habits by category order.")
     ).not.toBeInTheDocument();
   });
+
+  it("submits the full habit list when moving a habit within a frequency section", async () => {
+    const onReorderHabits = vi.fn().mockResolvedValue(42);
+    const habits = [
+      createHabit(1),
+      { ...createHabit(2), frequency: "weekly", sortOrder: 1, targetCount: 3 },
+      { ...createHabit(3), frequency: "weekly", sortOrder: 2, targetCount: 3 },
+      { ...createHabit(4), frequency: "monthly", sortOrder: 3, targetCount: 8 },
+    ] satisfies HabitWithStatus[];
+
+    render(
+      <HabitManagementContent
+        habits={habits}
+        onArchiveHabit={createAsyncMock()}
+        onCreateHabit={createAsyncMock()}
+        onRenameHabit={createAsyncMock()}
+        onReorderHabits={onReorderHabits}
+        onUnarchiveHabit={createAsyncMock()}
+        onUpdateHabitCategory={createAsyncMock()}
+        onUpdateHabitFrequency={createAsyncMock()}
+        onUpdateHabitTargetCount={createAsyncMock()}
+        onUpdateHabitWeekdays={createAsyncMock()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Move Habit 3 up" }));
+
+    await waitFor(() => {
+      expect(onReorderHabits).toHaveBeenCalled();
+    });
+    expect(
+      onReorderHabits.mock.calls[0]?.[0].map((habit: Habit) => habit.id)
+    ).toStrictEqual([1, 3, 2, 4]);
+  });
 });
