@@ -40,6 +40,7 @@ interface HistoryStoreState {
   isHistoryContributionLoading: boolean;
   isHistorySummaryLoading: boolean;
   loadingHistoryDayKey: string | null;
+  selectedHistoryMonthKey: string | null;
   selectedHistoryYear: number | null;
   cacheHistoryDay: (day: HistoryDay) => void;
   loadHistoryDay: (
@@ -78,6 +79,7 @@ function getInitialHistoryState(): Pick<
   | "isHistoryContributionLoading"
   | "isHistorySummaryLoading"
   | "loadingHistoryDayKey"
+  | "selectedHistoryMonthKey"
   | "selectedHistoryYear"
 > {
   return {
@@ -95,6 +97,7 @@ function getInitialHistoryState(): Pick<
     isHistoryLoading: false,
     isHistorySummaryLoading: false,
     loadingHistoryDayKey: null,
+    selectedHistoryMonthKey: null,
     selectedHistoryYear: null,
   };
 }
@@ -149,10 +152,16 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
     if (!options.force && cachedHistory) {
       set({
         history: cachedHistory,
+        selectedHistoryMonthKey: monthKey,
         selectedHistoryYear: year,
       });
       return;
     }
+
+    set({
+      selectedHistoryMonthKey: monthKey,
+      selectedHistoryYear: year,
+    });
 
     const currentMonthRequest = historyMonthRequests.get(monthKey);
     if (!options.force && currentMonthRequest) {
@@ -179,8 +188,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         onSuccess: (history) => {
           set((state) => ({
             history:
-              state.selectedHistoryYear === year ||
-              state.selectedHistoryYear === null
+              state.selectedHistoryMonthKey === monthKey
                 ? history
                 : state.history,
             historyLoadError: null,

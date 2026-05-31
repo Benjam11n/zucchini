@@ -179,12 +179,13 @@ describe("app store actions", () => {
           : []
       )
     );
-    const getHistorySummaryForMonthMock = vi.fn((year: number) =>
-      Promise.resolve(
-        year === 2026
-          ? [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
-          : []
-      )
+    const getHistorySummaryForMonthMock = vi.fn(
+      (year: number, _month: number) =>
+        Promise.resolve(
+          year === 2026
+            ? [createHistoryDay("2026-03-10"), createHistoryDay("2026-03-09")]
+            : []
+        )
     );
     const getHistoryYearsMock = vi.fn().mockResolvedValue([2026]);
     const getFocusSessionsMock = vi
@@ -277,6 +278,7 @@ describe("app store actions", () => {
       isHistoryLoading: false,
       isHistorySummaryLoading: false,
       loadingHistoryDayKey: null,
+      selectedHistoryMonthKey: null,
       selectedHistoryYear: null,
     });
     useSettingsStore.setState({
@@ -468,6 +470,43 @@ describe("app store actions", () => {
     expect(
       stores.useHistoryStore.getState().history.map((day) => day.date)
     ).toStrictEqual(["2025-03-31"]);
+  });
+
+  it("does not let stale same-year month responses replace the selected month", async () => {
+    const { actions, getHistorySummaryForMonthMock, stores } = await setup();
+    const marchRequest = createDeferred<HistoryDay[]>();
+    const aprilRequest = createDeferred<HistoryDay[]>();
+    getHistorySummaryForMonthMock.mockImplementation(
+      (_year: number, month: number) =>
+        month === 3 ? marchRequest.promise : aprilRequest.promise
+    );
+
+    const marchLoad = actions.selectHistoryMonth(2026, 3);
+    await vi.waitFor(() => {
+      expect(getHistorySummaryForMonthMock).toHaveBeenCalledWith(2026, 3);
+    });
+
+    const aprilLoad = actions.selectHistoryMonth(2026, 4);
+    await vi.waitFor(() => {
+      expect(getHistorySummaryForMonthMock).toHaveBeenCalledWith(2026, 4);
+    });
+
+    aprilRequest.resolve([createHistoryDay("2026-04-02")]);
+    await aprilLoad;
+    expect(
+      stores.useHistoryStore.getState().history.map((day) => day.date)
+    ).toStrictEqual(["2026-04-02"]);
+
+    marchRequest.resolve([createHistoryDay("2026-03-10")]);
+    await marchLoad;
+    expect(
+      stores.useHistoryStore.getState().history.map((day) => day.date)
+    ).toStrictEqual(["2026-04-02"]);
+    expect(
+      stores.useHistoryStore
+        .getState()
+        .historySummaryByMonth["2026-03"]?.map((day) => day.date)
+    ).toStrictEqual(["2026-03-10"]);
   });
 
   it("does not reload year summary after a structural habit mutation once history has been opened", async () => {
