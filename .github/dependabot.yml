@@ -1,5 +1,19 @@
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cronjob: "0 4 1,16 * *"
+      timezone: "Asia/Singapore"
+    commit-message:
+      prefix: "actions"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
