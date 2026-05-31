@@ -60,6 +60,17 @@ function createFakeClient() {
                     },
                   };
                 },
+                where() {
+                  return {
+                    get() {
+                      return rows.find(
+                        (row) =>
+                          row.timerSessionId === "timer-session-3" &&
+                          row.entryKind === "completed"
+                      );
+                    },
+                  };
+                },
               };
             },
           };
@@ -96,5 +107,25 @@ describe("focus session repository", () => {
     expect(sessions).toHaveLength(2);
     expect(sessions[0]?.completedAt).toBe("2026-03-08T11:25:00.000Z");
     expect(sessions[1]?.completedAt).toBe("2026-03-08T10:25:00.000Z");
+  });
+
+  it("returns an existing session instead of duplicating a timer completion", () => {
+    const repository = new SqliteFocusSessionRepository(
+      createFakeClient() as never
+    );
+    const input = {
+      completedAt: "2026-03-08T11:25:00.000Z",
+      completedDate: "2026-03-08",
+      durationSeconds: 1500,
+      entryKind: "completed" as const,
+      startedAt: "2026-03-08T11:00:00.000Z",
+      timerSessionId: "timer-session-3",
+    };
+
+    const firstSession = repository.insertSession(input);
+    const replayedSession = repository.insertSession(input);
+
+    expect(replayedSession).toStrictEqual(firstSession);
+    expect(repository.listRecentSessions(10)).toHaveLength(3);
   });
 });

@@ -36,6 +36,22 @@ interface MainProcessRuntimeOptions {
   shell: Shell;
 }
 
+interface ScreenshotDatabasePathOptions {
+  screenshotConfig: ReturnType<typeof getScreenshotModeConfig>;
+  screenshotMode: boolean;
+}
+
+export function resolveScreenshotDatabasePath({
+  screenshotConfig,
+  screenshotMode,
+}: ScreenshotDatabasePathOptions): string | null {
+  if (!screenshotMode) {
+    return null;
+  }
+
+  return screenshotConfig.databasePath;
+}
+
 export class MainProcessRuntime {
   private isQuitting = false;
   private trayEnabled = false;
@@ -91,10 +107,21 @@ export class MainProcessRuntime {
         this.options.logger
       );
 
-      const screenshotConfig = getScreenshotModeConfig();
-      const screenshotRepository = screenshotConfig.databasePath
+      const screenshotMode = isScreenshotMode();
+      const screenshotConfig = screenshotMode
+        ? getScreenshotModeConfig()
+        : null;
+      const screenshotDatabasePath = resolveScreenshotDatabasePath({
+        screenshotConfig: screenshotConfig ?? {
+          databasePath: null,
+          outputPath: null,
+          userDataPath: null,
+        },
+        screenshotMode,
+      });
+      const screenshotRepository = screenshotDatabasePath
         ? new SqliteAppRepository({
-            databasePath: screenshotConfig.databasePath,
+            databasePath: screenshotDatabasePath,
           })
         : null;
       const appRuntime = createAppRuntime({
@@ -185,7 +212,7 @@ export class MainProcessRuntime {
 
       const mainWindow = this.windowCoordinator.ensureMainWindow();
 
-      if (isScreenshotMode()) {
+      if (screenshotMode) {
         await captureMarketingScreenshot({
           app: this.options.app,
           log: this.options.logger,

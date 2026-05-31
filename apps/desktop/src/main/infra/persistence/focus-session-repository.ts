@@ -5,7 +5,7 @@
  * listing recent sessions (with optional limit), date-range queries,
  * and inserting new sessions with auto-generated IDs.
  */
-import { and, asc, desc, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 
 import { focusSessions } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
@@ -57,6 +57,22 @@ export class SqliteFocusSessionRepository {
 
   insertSession(input: CreateFocusSessionInput): FocusSession {
     return this.client.run("insertFocusSession", () => {
+      const existingRow = this.client
+        .getDrizzle()
+        .select()
+        .from(focusSessions)
+        .where(
+          and(
+            eq(focusSessions.timerSessionId, input.timerSessionId),
+            eq(focusSessions.entryKind, input.entryKind)
+          )
+        )
+        .get();
+
+      if (existingRow) {
+        return mapFocusSession(existingRow);
+      }
+
       const row = this.client
         .getDrizzle()
         .insert(focusSessions)
