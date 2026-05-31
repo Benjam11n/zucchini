@@ -290,6 +290,23 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
     );
   });
 
+  it("rejects sqlite files that contain unexpected user tables", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        tableRows: [...DEFAULT_TABLE_ROWS, { name: "../outside" }],
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: "/tmp/live.db",
+    });
+
+    expect(() => client.validateDatabase("/tmp/backup.db")).toThrow(
+      "Backup contains an unexpected table: ../outside"
+    );
+  });
+
   it("rejects sqlite files that are missing zucchini table columns", async () => {
     vi.doMock("better-sqlite3", () =>
       createMockDatabaseConstructor({
@@ -437,15 +454,14 @@ describe("SqliteDatabaseClient.exportCsvData()", () => {
     fs.rmSync(tempDir, { force: true, recursive: true });
   });
 
-  it("exports every user table as stable CSV files", async () => {
+  it("exports zucchini tables as stable CSV files", async () => {
     vi.doMock("better-sqlite3", () =>
       createMockDatabaseConstructor({
         columnRowsByTable: {
-          a_empty: [{ name: "name" }, { name: "count" }],
-          z_notes: [{ name: "id" }, { name: "note" }, { name: "optional" }],
+          day_status: [{ name: "id" }, { name: "note" }, { name: "optional" }],
         },
         rowsByTable: {
-          z_notes: [
+          day_status: [
             {
               id: 1,
               note: "plain",
@@ -458,7 +474,7 @@ describe("SqliteDatabaseClient.exportCsvData()", () => {
             },
           ],
         },
-        tableRows: [{ name: "a_empty" }, { name: "z_notes" }],
+        tableRows: [{ name: "day_status" }, { name: "z_notes" }],
       })
     );
 
@@ -471,15 +487,41 @@ describe("SqliteDatabaseClient.exportCsvData()", () => {
     client.exportCsvData(exportPath);
     client.close();
 
-    expect(fs.readdirSync(exportPath)).toStrictEqual([
-      "a_empty.csv",
-      "z_notes.csv",
-    ]);
-    expect(fs.readFileSync(path.join(exportPath, "a_empty.csv"), "utf-8")).toBe(
-      "name,count\n"
-    );
-    expect(fs.readFileSync(path.join(exportPath, "z_notes.csv"), "utf-8")).toBe(
+    expect(fs.readdirSync(exportPath)).toStrictEqual(["day_status.csv"]);
+    expect(
+      fs.readFileSync(path.join(exportPath, "day_status.csv"), "utf-8")
+    ).toBe(
       'id,note,optional\n1,plain,\n2,"comma, quote "" and\nnewline",value\n'
+    );
+  });
+
+  it("does not write csv files for crafted table names outside the export directory", async () => {
+    vi.doMock("better-sqlite3", () =>
+      createMockDatabaseConstructor({
+        columnRowsByTable: {
+          habits: [{ name: "id" }, { name: "name" }],
+        },
+        rowsByTable: {
+          "../outside": [{ value: "owned" }],
+          habits: [{ id: 1, name: "Read" }],
+        },
+        tableRows: [{ name: "../outside" }, { name: "habits" }],
+      })
+    );
+
+    const { SqliteDatabaseClient } = await import("./sqlite-client");
+    const client = new SqliteDatabaseClient({
+      databasePath: path.join(tempDir, "live.db"),
+    });
+
+    const exportPath = path.join(tempDir, "csv");
+    client.exportCsvData(exportPath);
+    client.close();
+
+    expect(fs.existsSync(path.join(tempDir, "outside.csv"))).toBe(false);
+    expect(fs.readdirSync(exportPath)).toStrictEqual(["habits.csv"]);
+    expect(fs.readFileSync(path.join(exportPath, "habits.csv"), "utf-8")).toBe(
+      "id,name\n1,Read\n"
     );
   });
 });

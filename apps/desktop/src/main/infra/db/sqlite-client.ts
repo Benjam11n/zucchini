@@ -137,6 +137,31 @@ const REQUIRED_BACKUP_SCHEMA = {
   wind_down_runtime_state: ["id", "last_reminder_sent_at"],
 } as const;
 
+const ZUCCHINI_TABLE_NAMES = [
+  "category_streak_state",
+  "daily_summary",
+  "day_status",
+  "focus_quota_goals",
+  "focus_sessions",
+  "focus_timer_state",
+  "habit_carryovers",
+  "habit_pause_periods",
+  "habit_period_status",
+  "habit_streak_state",
+  "habits",
+  "reminder_runtime_state",
+  "settings",
+  "streak_state",
+  "wind_down_action_status",
+  "wind_down_actions",
+  "wind_down_runtime_state",
+] as const;
+
+const ALLOWED_BACKUP_TABLE_NAME_SET = new Set<string>([
+  ...ZUCCHINI_TABLE_NAMES,
+  "__drizzle_migrations",
+]);
+
 interface TableInfoRow {
   name: string;
 }
@@ -200,6 +225,24 @@ function serializeCsvCell(value: CsvCellValue): string {
 
 function serializeCsvRow(values: CsvCellValue[]): string {
   return values.map(serializeCsvCell).join(",");
+}
+
+function buildContainedOutputPath(
+  destinationPath: string,
+  fileName: string
+): string {
+  const destinationDirectory = path.resolve(destinationPath);
+  const outputPath = path.resolve(destinationDirectory, fileName);
+  const relativeOutputPath = path.relative(destinationDirectory, outputPath);
+
+  if (
+    relativeOutputPath.startsWith("..") ||
+    path.isAbsolute(relativeOutputPath)
+  ) {
+    throw new Error(`CSV output path escapes export directory: ${fileName}`);
+  }
+
+  return outputPath;
 }
 
 function readCount(database: Database.Database, sql: string): number {
@@ -335,8 +378,13 @@ export class SqliteDatabaseClient {
         )
         .all() as TableInfoRow[];
 
-      for (const tableRow of tableRows) {
-        const tableName = tableRow.name;
+      const tableNames = new Set(tableRows.map((row) => row.name));
+
+      for (const tableName of ZUCCHINI_TABLE_NAMES) {
+        if (!tableNames.has(tableName)) {
+          continue;
+        }
+
         const columnRows = database
           .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
           .all() as TableInfoRow[];
@@ -354,7 +402,7 @@ export class SqliteDatabaseClient {
         ];
 
         fs.writeFileSync(
-          path.join(destinationPath, `${tableName}.csv`),
+          buildContainedOutputPath(destinationPath, `${tableName}.csv`),
           `${csvRows.join("\n")}\n`
         );
       }
@@ -383,6 +431,14 @@ export class SqliteDatabaseClient {
           )
           .all() as TableInfoRow[];
         const tableNames = new Set(tableRows.map((row) => row.name));
+
+        for (const tableName of tableNames) {
+          if (!ALLOWED_BACKUP_TABLE_NAME_SET.has(tableName)) {
+            throw new Error(
+              `Backup contains an unexpected table: ${tableName}.`
+            );
+          }
+        }
 
         for (const [tableName, requiredColumns] of Object.entries(
           REQUIRED_BACKUP_SCHEMA
