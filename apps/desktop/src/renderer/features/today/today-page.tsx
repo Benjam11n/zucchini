@@ -46,7 +46,7 @@ interface TodayPageProps extends Omit<
 
 const noopHabitMutation = () => Promise.resolve();
 
-function TodayPageComponent({
+export const TodayPage = memo(function TodayPage({
   hasLoadedHistorySummary,
   historySummary,
   managedHabits,
@@ -238,6 +238,4 @@ function TodayPageComponent({
       </div>
     </>
   );
-}
-
-export const TodayPage = memo(TodayPageComponent);
+});

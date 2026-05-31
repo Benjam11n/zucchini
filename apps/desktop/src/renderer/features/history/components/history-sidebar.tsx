@@ -5,7 +5,6 @@ import {
   Target,
   Timer,
 } from "lucide-react";
-import type { ElementType } from "react";
 
 import {
   formatFocusMinutes,
@@ -22,6 +21,9 @@ import { cn } from "@/renderer/shared/lib/class-names";
 import { formatDateKey } from "@/shared/domain/date-key";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
+import { SidebarMetric } from "./sidebar-metric";
+import { TrendLine } from "./trend-line";
+
 interface HistorySidebarProps {
   monthStats: HistoryMonthStats;
   nextDateKey: string | null;
@@ -30,94 +32,6 @@ interface HistorySidebarProps {
   todayDate: string;
   trendPoints: HistoryTrendPoint[];
   onSelectDate: (dateKey: string) => void;
-}
-
-function SidebarMetric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="size-3.5" />
-        {label}
-      </span>
-      <span className="font-medium text-foreground">{value}</span>
-    </div>
-  );
-}
-
-function TrendLine({ points }: { points: HistoryTrendPoint[] }) {
-  if (points.length === 0) {
-    return (
-      <div className="rounded-md border border-dashed border-border/60 px-3 py-8 text-center text-xs text-muted-foreground">
-        No trend yet
-      </div>
-    );
-  }
-
-  const getTrendCoordinate = (point: HistoryTrendPoint, index: number) => ({
-    x:
-      points.length === 1
-        ? 100
-        : Math.round((index / (points.length - 1)) * 200),
-    y: Math.round(90 - point.percent * 0.8),
-  });
-  const path = points
-    .map((point, index) => {
-      const { x, y } = getTrendCoordinate(point, index);
-
-      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
-    })
-    .join(" ");
-
-  return (
-    <svg
-      aria-label="Completion trend"
-      className="h-28 w-full overflow-visible"
-      role="img"
-      viewBox="0 0 200 100"
-    >
-      {[10, 30, 50, 70, 90].map((y) => (
-        <line
-          className="stroke-border/70"
-          key={y}
-          strokeDasharray="4 4"
-          x1="0"
-          x2="200"
-          y1={y}
-          y2={y}
-        />
-      ))}
-      <path
-        className="stroke-primary"
-        d={path}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="3"
-      />
-      {points.map((point, index) => {
-        const { x, y } = getTrendCoordinate(point, index);
-
-        return (
-          <circle
-            className="fill-background stroke-primary"
-            cx={x}
-            cy={y}
-            key={point.date}
-            r={index === points.length - 1 ? 3.5 : 2.5}
-            strokeWidth="2"
-          />
-        );
-      })}
-    </svg>
-  );
 }
 
 export function HistorySidebar({

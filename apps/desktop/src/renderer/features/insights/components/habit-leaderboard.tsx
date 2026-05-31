@@ -25,11 +25,11 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import type { InsightsHabitLeaderboardItem } from "@/shared/domain/insights";
 
-export function HabitLeaderboard({
-  habits,
-}: {
+interface HabitLeaderboardProps {
   habits: InsightsHabitLeaderboardItem[];
-}) {
+}
+
+export function HabitLeaderboard({ habits }: HabitLeaderboardProps) {
   return (
     <Card>
       <CardHeader>

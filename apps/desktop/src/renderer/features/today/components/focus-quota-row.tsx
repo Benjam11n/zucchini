@@ -8,7 +8,11 @@ import {
 } from "@/renderer/shared/lib/habit-row-interaction";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 
-export function FocusQuotaRow({ goal }: { goal: FocusQuotaGoalWithStatus }) {
+interface FocusQuotaRowProps {
+  goal: FocusQuotaGoalWithStatus;
+}
+
+export function FocusQuotaRow({ goal }: FocusQuotaRowProps) {
   const percentage = Math.min(
     Math.round((goal.completedMinutes / goal.targetMinutes) * 100),
     100

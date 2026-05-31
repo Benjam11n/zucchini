@@ -14,11 +14,11 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import type { InsightsWeeklyCompletion } from "@/shared/domain/insights";
 
-export function WeeklyCompletionChart({
-  weeks,
-}: {
+interface WeeklyCompletionChartProps {
   weeks: InsightsWeeklyCompletion[];
-}) {
+}
+
+export function WeeklyCompletionChart({ weeks }: WeeklyCompletionChartProps) {
   return (
     <Card className="min-h-[310px] lg:col-span-2">
       <CardHeader>

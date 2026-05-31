@@ -19,17 +19,19 @@ function sanitizeIntegerInput(value: string): string {
   return value.replaceAll(/\D/g, "").slice(0, 2);
 }
 
+interface PomodoroSettingsFieldsProps {
+  fieldErrors: Partial<Record<keyof AppSettings, string>>;
+  idPrefix: string;
+  onChange: (settings: AppSettings) => void;
+  settings: AppSettings;
+}
+
 export function PomodoroSettingsFields({
   fieldErrors,
   idPrefix,
   onChange,
   settings,
-}: {
-  fieldErrors: Partial<Record<keyof AppSettings, string>>;
-  idPrefix: string;
-  onChange: (settings: AppSettings) => void;
-  settings: AppSettings;
-}) {
+}: PomodoroSettingsFieldsProps) {
   const [cyclesInput, setCyclesInput] = useState(() =>
     settings.focusCyclesBeforeLongBreak.toString()
   );

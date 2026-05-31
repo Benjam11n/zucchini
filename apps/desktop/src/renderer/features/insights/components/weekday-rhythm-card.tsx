@@ -30,11 +30,11 @@ function getRhythmCellClassName(intensity: number): string {
   return "bg-muted/50 text-muted-foreground";
 }
 
-export function WeekdayRhythmCard({
-  rhythm,
-}: {
+interface WeekdayRhythmCardProps {
   rhythm: InsightsWeekdayRhythm;
-}) {
+}
+
+export function WeekdayRhythmCard({ rhythm }: WeekdayRhythmCardProps) {
   return (
     <Card>
       <CardHeader>

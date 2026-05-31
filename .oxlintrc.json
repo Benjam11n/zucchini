@@ -11,11 +11,10 @@
   ],
   "rules": {
     "func-style": "off",
-    "max-classes-per-file": "off",
     "max-statements": [
       "error",
       {
-        "max": 300
+        "max": 60
       }
     ],
     "react-perf/jsx-no-new-function-as-prop": "off",

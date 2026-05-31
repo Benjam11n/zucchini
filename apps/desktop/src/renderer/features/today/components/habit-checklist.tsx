@@ -48,7 +48,7 @@ type CategoryGroup = (typeof HABIT_CATEGORY_SLOTS)[number] & {
   habits: HabitWithStatus[];
 };
 
-function HabitChecklistComponent({
+export const HabitChecklist = memo(function HabitChecklist({
   habits,
   pausedHabits = [],
   onToggleHabit,
@@ -251,6 +251,4 @@ function HabitChecklistComponent({
       ) : null}
     </HabitListCard>
   );
-}
-
-export const HabitChecklist = memo(HabitChecklistComponent);
+});

@@ -2,11 +2,11 @@ import { Badge } from "@/renderer/shared/components/ui/badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { InsightsSmartInsight } from "@/shared/domain/insights";
 
-export function SmartInsightRow({
-  insight,
-}: {
+interface SmartInsightRowProps {
   insight: InsightsSmartInsight;
-}) {
+}
+
+export function SmartInsightRow({ insight }: SmartInsightRowProps) {
   let severityLabel = "Note";
   if (insight.severity === "warning") {
     severityLabel = "Watch";

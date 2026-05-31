@@ -29,7 +29,7 @@ function formatInsightsDate(dateKey: string): string {
   );
 }
 
-function InsightsPageComponent({
+export const InsightsPage = memo(function InsightsPage({
   dashboard,
   error,
   phase,
@@ -114,6 +114,4 @@ function InsightsPageComponent({
       </div>
     </TooltipProvider>
   );
-}
-
-export const InsightsPage = memo(InsightsPageComponent);
+});

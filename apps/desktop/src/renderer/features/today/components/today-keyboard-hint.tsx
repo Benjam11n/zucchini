@@ -30,7 +30,9 @@ function getHintItems(hint: TodayKeyboardHintValue): HintItem[] {
   return hint.kind === "periodic" ? PERIODIC_HINT : CHECKLIST_HINT;
 }
 
-function TodayKeyboardHintComponent({ hint }: TodayKeyboardHintProps) {
+export const TodayKeyboardHint = memo(function TodayKeyboardHint({
+  hint,
+}: TodayKeyboardHintProps) {
   return (
     <AnimatePresence>
       {hint ? (
@@ -68,6 +70,4 @@ function TodayKeyboardHintComponent({ hint }: TodayKeyboardHintProps) {
       ) : null}
     </AnimatePresence>
   );
-}
-
-export const TodayKeyboardHint = memo(TodayKeyboardHintComponent);
+});

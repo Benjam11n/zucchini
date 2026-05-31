@@ -31,7 +31,7 @@ import { appClient } from "@/renderer/shared/lib/app-client";
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";
 
-function FocusPageComponent({
+export const FocusPage = memo(function FocusPage({
   fieldErrors,
   focusSaveErrorMessage,
   phase,
@@ -163,6 +163,4 @@ function FocusPageComponent({
       </Dialog>
     </div>
   );
-}
-
-export const FocusPage = memo(FocusPageComponent);
+});

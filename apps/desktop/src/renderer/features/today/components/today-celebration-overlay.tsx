@@ -207,7 +207,7 @@ const CONFETTI_PIECES = [
   },
 ] as const;
 
-function TodayCelebrationOverlayComponent({
+export const TodayCelebrationOverlay = memo(function TodayCelebrationOverlay({
   celebration,
 }: TodayCelebrationOverlayProps) {
   return (
@@ -282,6 +282,4 @@ function TodayCelebrationOverlayComponent({
       </AnimatePresence>
     </LazyMotion>
   );
-}
-
-export const TodayCelebrationOverlay = memo(TodayCelebrationOverlayComponent);
+});

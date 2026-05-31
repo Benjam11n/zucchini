@@ -15,7 +15,11 @@ import {
 } from "@/renderer/shared/components/ui/tooltip";
 import type { InsightsDashboard } from "@/shared/domain/insights";
 
-export function MomentumCard({ dashboard }: { dashboard: InsightsDashboard }) {
+interface MomentumCardProps {
+  dashboard: InsightsDashboard;
+}
+
+export function MomentumCard({ dashboard }: MomentumCardProps) {
   return (
     <Card className="min-h-[310px]">
       <CardHeader>

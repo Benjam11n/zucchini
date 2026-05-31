@@ -24,6 +24,10 @@ interface ContributionCalendarCell {
   totalCount: number;
 }
 
+interface ContributionSquareProps {
+  cell: ContributionCalendarCell;
+}
+
 const CONTRIBUTION_INTENSITY_CLASSNAMES: Record<ContributionIntensity, string> =
   {
     0: "border-border/60 bg-transparent",
@@ -47,11 +51,7 @@ function getContributionSquareClassName(
   return CONTRIBUTION_INTENSITY_CLASSNAMES[cell.intensity];
 }
 
-export function ContributionSquare({
-  cell,
-}: {
-  cell: ContributionCalendarCell;
-}) {
+export function ContributionSquare({ cell }: ContributionSquareProps) {
   const completionLabel =
     cell.totalCount === 0
       ? "No daily habits tracked"

@@ -101,13 +101,15 @@ function getTickLabels(segments: RoadmapSegment[]): {
   ];
 }
 
+interface PomodoroRoadmapCardProps {
+  settings: PomodoroTimerSettings;
+  timerState: PersistedFocusTimerState;
+}
+
 export function PomodoroRoadmapCard({
   settings,
   timerState,
-}: {
-  settings: PomodoroTimerSettings;
-  timerState: PersistedFocusTimerState;
-}) {
+}: PomodoroRoadmapCardProps) {
   const segments = createRoadmapSegments(settings);
   const activeKey = getActiveSegmentKey(
     timerState,

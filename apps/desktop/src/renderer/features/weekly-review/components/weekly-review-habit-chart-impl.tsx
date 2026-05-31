@@ -2,98 +2,18 @@ import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/compone
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/weekly-review/lib/weekly-review-habit-chart";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/renderer/shared/components/ui/tooltip";
-import { cn } from "@/renderer/shared/lib/class-names";
+import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
 import {
   getHabitCategoryLabel,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import { formatDateKey } from "@/shared/domain/date-key";
-import type {
-  WeeklyReviewHabitHeatmapCell,
-  WeeklyReviewHabitHeatmapCellStatus,
-  WeeklyReviewHabitHeatmapRow,
-} from "@/shared/domain/weekly-review";
+import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
+
+import { EmptyHeatmapState } from "./empty-heatmap-state";
+import { HeatmapCell } from "./heatmap-cell";
 
 interface WeeklyReviewHabitChartImplProps {
   heatmapRows: WeeklyReviewHabitHeatmapRow[];
-}
-
-const STATUS_LABELS = {
-  complete: "Complete",
-  missed: "Missed",
-  "not-scheduled": "Not scheduled",
-  partial: "Partial",
-} satisfies Record<WeeklyReviewHabitHeatmapCellStatus, string>;
-
-function getHeatmapCellClassName(
-  status: WeeklyReviewHabitHeatmapCellStatus
-): string {
-  if (status === "complete") {
-    return "bg-primary text-primary-foreground";
-  }
-
-  if (status === "partial") {
-    return "bg-primary/35 text-foreground";
-  }
-
-  if (status === "missed") {
-    return "bg-destructive/18 text-destructive";
-  }
-
-  return "border border-dashed border-border/60 bg-muted/35 text-muted-foreground";
-}
-
-function getCellTooltip(
-  habitName: string,
-  cell: WeeklyReviewHabitHeatmapCell
-): string {
-  const dateLabel = formatDateKey(
-    cell.date,
-    { day: "numeric", month: "short", weekday: "long" },
-    "en-US"
-  );
-
-  return `${habitName} · ${dateLabel} · ${STATUS_LABELS[cell.status]}`;
-}
-
-function HeatmapCell({
-  cell,
-  habitName,
-}: {
-  cell: WeeklyReviewHabitHeatmapCell;
-  habitName: string;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          aria-label={getCellTooltip(habitName, cell)}
-          className={cn(
-            "size-7 rounded-md",
-            getHeatmapCellClassName(cell.status)
-          )}
-          role="img"
-        />
-      </TooltipTrigger>
-      <TooltipContent side="top">
-        {getCellTooltip(habitName, cell)}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-function EmptyHeatmapState() {
-  return (
-    <div className="rounded-md border border-dashed border-border/60 bg-background/40 px-4 py-6 text-sm text-muted-foreground">
-      No daily habit activity for this week.
-    </div>
-  );
 }
 
 export function WeeklyReviewHabitChartImpl({

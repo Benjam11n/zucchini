@@ -9,11 +9,11 @@ import type { InsightsSmartInsight } from "@/shared/domain/insights";
 
 import { SmartInsightRow } from "./smart-insight-row";
 
-export function SmartInsightsCard({
-  insights,
-}: {
+interface SmartInsightsCardProps {
   insights: InsightsSmartInsight[];
-}) {
+}
+
+export function SmartInsightsCard({ insights }: SmartInsightsCardProps) {
   return (
     <Card className="min-h-[310px]">
       <CardHeader>
