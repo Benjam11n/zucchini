@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 
+import { ContributionSquare } from "@/renderer/features/history/components/contribution-square";
 import {
   buildContributionWeeks,
   formatContributionLabel,
 } from "@/renderer/features/history/lib/history-contributions";
-import { ContributionSquare } from "@/renderer/shared/components/contribution-square";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistorySummaryDay } from "@/shared/domain/history";

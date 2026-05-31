@@ -9,8 +9,8 @@ import { useEffect } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
 import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
-import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/history/weekly-review/lib/weekly-review-spotlight";
-import { readLastSeenWeeklyReviewStart } from "@/renderer/features/history/weekly-review/lib/weekly-review-storage";
+import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/weekly-review/lib/weekly-review-spotlight";
+import { readLastSeenWeeklyReviewStart } from "@/renderer/features/weekly-review/lib/weekly-review-storage";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { toDateKey } from "@/shared/domain/date-key";
 import type { AppSettings } from "@/shared/domain/settings";

@@ -1,4 +1,4 @@
-import { WeeklyReviewChartCard } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-card";
+import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/components/weekly-review-chart-card";
 import { BarChart } from "@/renderer/shared/components/ui/bar-chart";
 import { ChartContainer } from "@/renderer/shared/components/ui/chart-container";
 import { ChartTooltipContent } from "@/renderer/shared/components/ui/chart-tooltip-content";

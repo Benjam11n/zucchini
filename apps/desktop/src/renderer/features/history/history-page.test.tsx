@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as WeeklyReviewHeroCardModule from "@/renderer/features/history/weekly-review/components/weekly-review-hero-card";
+import type * as WeeklyReviewHeroCardModule from "@/renderer/features/weekly-review/components/weekly-review-hero-card";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
@@ -81,26 +81,26 @@ vi.mock<typeof TabsModule>(
 );
 
 vi.mock(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-daily-cadence-chart"),
+  import("@/renderer/features/weekly-review/components/weekly-review-daily-cadence-chart"),
   () => ({
     WeeklyReviewDailyCadenceChart: () => <div>daily cadence chart</div>,
   })
 );
 vi.mock(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-habit-chart"),
+  import("@/renderer/features/weekly-review/components/weekly-review-habit-chart"),
   () => ({ WeeklyReviewHabitChart: () => <div>habit chart</div> })
 );
 vi.mock(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-most-missed-card"),
+  import("@/renderer/features/weekly-review/components/weekly-review-most-missed-card"),
   () => ({ WeeklyReviewMostMissedCard: () => <div>most missed card</div> })
 );
 vi.mock(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-trend-chart"),
+  import("@/renderer/features/weekly-review/components/weekly-review-trend-chart"),
   () => ({ WeeklyReviewTrendChart: () => <div>trend chart</div> })
 );
 
 vi.mock<typeof WeeklyReviewHeroCardModule>(
-  import("@/renderer/features/history/weekly-review/components/weekly-review-hero-card"),
+  import("@/renderer/features/weekly-review/components/weekly-review-hero-card"),
   () => ({
     WeeklyReviewHeroCard: ({ review }: { review: WeeklyReview }) => (
       <div data-testid="weekly-review-hero">{review.weekStart}</div>

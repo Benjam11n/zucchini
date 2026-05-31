@@ -2,10 +2,10 @@ import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar";
-import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
-import type { HistoryViewModel } from "@/renderer/features/history/use-history-view-state";
-import { WeeklyReviewSpotlightBanner } from "@/renderer/features/history/weekly-review/components/weekly-review-spotlight-banner";
+import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
+import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
+import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 
 function getRightSidebar({

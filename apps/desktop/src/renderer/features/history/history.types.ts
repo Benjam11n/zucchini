@@ -16,7 +16,7 @@ import type {
   WeeklyReviewOverview,
 } from "@/shared/domain/weekly-review";
 
-import type { HistoryViewModel } from "./use-history-view-state";
+import type { HistoryViewModel } from "./hooks/use-history-view-state";
 
 export type WeeklyReviewPhase = AsyncPhase;
 

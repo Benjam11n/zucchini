@@ -1,8 +1,8 @@
 import { ListTodo } from "lucide-react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
-import { HabitManagementContent } from "@/renderer/shared/components/habit-management/habit-management-content";
-import type { HabitManagementCardProps } from "@/renderer/shared/components/habit-management/habit-management.types";
+import { HabitManagementContent } from "@/renderer/shared/components/app/habit-management/habit-management-content";
+import type { HabitManagementCardProps } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 
 export function HabitManagementCard({

@@ -1,8 +1,8 @@
 import { m } from "framer-motion";
 import { useEffect, useState } from "react";
 
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
-import { HistoryStatusBadge } from "@/renderer/shared/components/history-status/history-status-badge";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring";
+import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
 import {
   Carousel,
   CarouselContent,

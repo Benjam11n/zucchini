@@ -1,5 +1,5 @@
-import { WeeklyReviewChartCard } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-card";
-import { buildWeeklyReviewHabitChartState } from "@/renderer/features/history/weekly-review/lib/weekly-review-habit-chart";
+import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/components/weekly-review-chart-card";
+import { buildWeeklyReviewHabitChartState } from "@/renderer/features/weekly-review/lib/weekly-review-habit-chart";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
 import {

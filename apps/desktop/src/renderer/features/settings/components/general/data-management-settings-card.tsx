@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
-import { getHabitCadenceSummary } from "@/renderer/shared/components/habit-management/habit-cadence-summary";
+import { getHabitCadenceSummary } from "@/renderer/shared/components/app/habit-management/habit-cadence-summary";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {

@@ -3,7 +3,7 @@ import {
   getDailyCompletionPercent,
   getDailyMissCount,
 } from "@/renderer/features/history/lib/history-timeline";
-import { HistoryStatusBadge } from "@/renderer/shared/components/history-status/history-status-badge";
+import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { formatDateKey } from "@/shared/domain/date-key";

@@ -9,7 +9,7 @@
 import { create } from "zustand";
 
 import type { WeeklyReviewPhase } from "@/renderer/features/history/history.types";
-import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
+import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
 import { appClient } from "@/renderer/shared/lib/app-client";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
 import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";

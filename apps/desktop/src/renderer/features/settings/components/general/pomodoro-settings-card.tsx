@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
-import { PomodoroSettingsFields } from "@/renderer/shared/components/pomodoro-settings/pomodoro-settings-fields";
+import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import type { FocusTimerShortcutStatus } from "@/shared/contracts/api/desktop-api";
 

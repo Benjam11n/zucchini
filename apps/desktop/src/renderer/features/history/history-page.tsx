@@ -14,7 +14,7 @@ import type { HistoryViewMode } from "@/renderer/features/history/components/his
 import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
 import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
-import { useHistoryViewState } from "@/renderer/features/history/use-history-view-state";
+import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
 import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
 import {

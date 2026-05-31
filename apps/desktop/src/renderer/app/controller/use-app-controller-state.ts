@@ -11,10 +11,10 @@ import { useBootStore } from "@/renderer/app/state/boot-store";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
-import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 
 import { useTabStoreSelector } from "./use-tab-store-selector";
 

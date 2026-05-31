@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
-import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   DropdownMenu,
@@ -35,7 +35,7 @@ import {
   getRecentConsistencySummary,
   getTodayCompletion,
   getWeekCompletionSeries,
-} from "../today-sidebar-metrics";
+} from "../lib/today-sidebar-metrics";
 
 interface TodaySidebarProps {
   history: HistorySummaryDay[];

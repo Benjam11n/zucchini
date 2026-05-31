@@ -1,8 +1,8 @@
 import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
-import { THEME_OPTIONS } from "@/renderer/features/settings/components/appearance/theme-options";
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { THEME_OPTIONS } from "@/renderer/features/settings/lib/theme-options";
 import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { cn } from "@/renderer/shared/lib/class-names";

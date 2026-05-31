@@ -1,4 +1,4 @@
-import { ACTIVITY_RING_ORDER } from "@/renderer/shared/components/activity-ring/constants";
+import { ACTIVITY_RING_ORDER } from "@/renderer/shared/components/app/activity-ring/constants";
 import type { Habit } from "@/shared/domain/habit";
 
 type DropPosition = "after" | "before";

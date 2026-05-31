@@ -248,7 +248,7 @@ describe("app store actions", () => {
     const { useHistoryStore } =
       await import("@/renderer/features/history/state/history-store");
     const { useWeeklyReviewStore } =
-      await import("@/renderer/features/history/weekly-review/state/weekly-review-store");
+      await import("@/renderer/features/weekly-review/state/weekly-review-store");
     const { useSettingsStore } =
       await import("@/renderer/features/settings/state/settings-store");
     const { useTodayStore } =

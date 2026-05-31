@@ -2,8 +2,8 @@ import type { AppControllerState } from "@/renderer/app/controller/app-controlle
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { writeLastSeenWeeklyReviewStart } from "@/renderer/features/history/weekly-review/lib/weekly-review-storage";
 import type { SettingsFieldErrors } from "@/renderer/features/settings/settings.types";
+import { writeLastSeenWeeklyReviewStart } from "@/renderer/features/weekly-review/lib/weekly-review-storage";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
 import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 

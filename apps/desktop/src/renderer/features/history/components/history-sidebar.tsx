@@ -15,7 +15,7 @@ import type {
   HistoryMonthStats,
   HistoryTrendPoint,
 } from "@/renderer/features/history/lib/history-timeline";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/activity-ring";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";

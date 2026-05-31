@@ -9,10 +9,10 @@
 import type { AppTab } from "@/renderer/app/app.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
 import { useHistoryStore } from "@/renderer/features/history/state/history-store";
-import { useWeeklyReviewStore } from "@/renderer/features/history/weekly-review/state/weekly-review-store";
 import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
+import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 import { appClient } from "@/renderer/shared/lib/app-client";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type { DayStatusKind } from "@/shared/domain/day-status";

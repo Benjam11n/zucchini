@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
 import { HistoryPage } from "@/renderer/features/history/history-page";
-import type { HistoryViewModel } from "@/renderer/features/history/use-history-view-state";
+import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 

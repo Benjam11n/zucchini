@@ -1,6 +1,6 @@
 import { m } from "framer-motion";
 
-import { HISTORY_STATUS_UI } from "@/renderer/shared/components/history-status/history-status-ui";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/history-status-ui";
 import {
   Tooltip,
   TooltipContent,

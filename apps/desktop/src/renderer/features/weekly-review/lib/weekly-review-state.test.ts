@@ -1,4 +1,4 @@
-import { loadWeeklyReviewState } from "@/renderer/features/history/weekly-review/lib/weekly-review-state";
+import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
 import type {
   WeeklyReview,
   WeeklyReviewOverview,

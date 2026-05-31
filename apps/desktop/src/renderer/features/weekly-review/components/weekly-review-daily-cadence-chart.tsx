@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 
-import { WeeklyReviewChartFallback } from "@/renderer/features/history/weekly-review/components/weekly-review-chart-fallback";
+import { WeeklyReviewChartFallback } from "@/renderer/features/weekly-review/components/weekly-review-chart-fallback";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewDailyCadenceChartProps {
