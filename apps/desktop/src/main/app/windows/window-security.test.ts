@@ -26,7 +26,11 @@ function withDevServerUrl(url: string | null, run: () => void) {
   try {
     run();
   } finally {
-    process.env["VITE_DEV_SERVER_URL"] = originalEnv;
+    if (originalEnv === undefined) {
+      delete process.env["VITE_DEV_SERVER_URL"];
+    } else {
+      process.env["VITE_DEV_SERVER_URL"] = originalEnv;
+    }
   }
 }
 
@@ -48,7 +52,7 @@ describe("configureWindowSecurity()", () => {
           },
         },
       } as never,
-      { productionAppUrl }
+      { appIsPackaged: false, productionAppUrl }
     );
 
     return { willNavigateHandler, windowOpenHandler };
@@ -89,6 +93,42 @@ describe("configureWindowSecurity()", () => {
       const event = navigateTo("http://localhost:5173/index.html");
 
       expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+  });
+
+  it("blocks navigation to Vite dev server URL when the app is packaged", () => {
+    withDevServerUrl("http://localhost:5173", () => {
+      let willNavigateHandler: WillNavigateHandler | null = null;
+      configureWindowSecurity(
+        {
+          webContents: {
+            on(_event: string, handler: WillNavigateHandler) {
+              willNavigateHandler = handler;
+            },
+            setWindowOpenHandler() {},
+          },
+        } as never,
+        { appIsPackaged: true, productionAppUrl: PRODUCTION_APP_URL }
+      );
+
+      expect(willNavigateHandler).not.toBeNull();
+      if (!willNavigateHandler) {
+        throw new Error("Expected will-navigate handler to be registered.");
+      }
+
+      const handler = willNavigateHandler as WillNavigateHandler;
+      const event = { preventDefault: vi.fn() };
+      handler(event, "http://localhost:5173/index.html");
+
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
+  });
+
+  it("blocks navigation to non-loopback Vite dev server URL", () => {
+    withDevServerUrl("https://example.com:5173", () => {
+      const event = navigateTo("https://example.com:5173/index.html");
+
+      expect(event.preventDefault).toHaveBeenCalled();
     });
   });
 

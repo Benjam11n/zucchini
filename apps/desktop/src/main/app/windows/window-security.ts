@@ -7,7 +7,10 @@
  */
 import type { BrowserWindow } from "electron";
 
+import { getTrustedDevServerUrl } from "./window-content";
+
 interface ConfigureWindowSecurityOptions {
+  appIsPackaged: boolean;
   productionAppUrl: string;
 }
 
@@ -26,10 +29,18 @@ function isTrustedDevServerUrl(url: string, devServerUrl: string): boolean {
   }
 }
 
-function isTrustedAppUrl(url: string, productionAppUrl: string): boolean {
-  const devServerUrl = process.env["VITE_DEV_SERVER_URL"];
+function isTrustedAppUrl({
+  appIsPackaged,
+  productionAppUrl,
+  url,
+}: {
+  appIsPackaged: boolean;
+  productionAppUrl: string;
+  url: string;
+}): boolean {
+  const devServerUrl = getTrustedDevServerUrl({ appIsPackaged });
   if (devServerUrl) {
-    return isTrustedDevServerUrl(url, devServerUrl);
+    return isTrustedDevServerUrl(url, devServerUrl.toString());
   }
 
   try {
@@ -41,12 +52,12 @@ function isTrustedAppUrl(url: string, productionAppUrl: string): boolean {
 
 export function configureWindowSecurity(
   win: BrowserWindow,
-  { productionAppUrl }: ConfigureWindowSecurityOptions
+  { appIsPackaged, productionAppUrl }: ConfigureWindowSecurityOptions
 ): void {
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
 
   win.webContents.on("will-navigate", (event, url) => {
-    if (isTrustedAppUrl(url, productionAppUrl)) {
+    if (isTrustedAppUrl({ appIsPackaged, productionAppUrl, url })) {
       return;
     }
 

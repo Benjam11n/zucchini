@@ -8,7 +8,7 @@
  */
 import path from "node:path";
 
-import { BrowserWindow } from "electron";
+import { BrowserWindow, app } from "electron";
 
 import {
   FOCUS_WIDGET_DEFAULT_HEIGHT,
@@ -62,6 +62,7 @@ export function createFocusWidgetWindow({
   } satisfies Electron.BrowserWindowConstructorOptions;
   const window = new BrowserWindow(windowOptions);
   configureWindowSecurity(window, {
+    appIsPackaged: app.isPackaged,
     productionAppUrl: getProductionAppUrl("?view=widget"),
   });
 
@@ -80,6 +81,7 @@ export function createFocusWidgetWindow({
   window.on("closed", onClosed);
 
   loadWindowContent({
+    appIsPackaged: app.isPackaged,
     errorMessage: "Failed to load the focus widget window.",
     search: "?view=widget",
     window,

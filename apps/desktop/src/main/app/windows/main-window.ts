@@ -7,7 +7,7 @@
  */
 import path from "node:path";
 
-import { BrowserWindow } from "electron";
+import { BrowserWindow, app } from "electron";
 
 import { getProductionAppUrl, loadWindowContent } from "./window-content";
 import { configureWindowSecurity } from "./window-security";
@@ -56,6 +56,7 @@ export function createMainWindow({
   } satisfies Electron.BrowserWindowConstructorOptions;
   const window = new BrowserWindow(windowOptions);
   configureWindowSecurity(window, {
+    appIsPackaged: app.isPackaged,
     productionAppUrl: getProductionAppUrl(),
   });
 
@@ -77,6 +78,7 @@ export function createMainWindow({
   }
 
   loadWindowContent({
+    appIsPackaged: app.isPackaged,
     errorMessage: "Failed to load the main window.",
     window,
   });
