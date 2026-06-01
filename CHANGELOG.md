@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.15 - 2026-06-01
+
+Changes since `v0.1.2-beta.14`.
+
+### Fixes
+
+- Allow electron imports in ci tests
+- Install electron binary in ci
+- Rebuild electron binary in ci
+- Align carryover habit rows
+- Exclude today from insights periods
+- Resolve react doctor warnings
+- Improve settings control labels
+- Persist backup cadence and full habit reorder
+- Ignore stale history month responses
+- Prevent screenshot db and focus session replays
+- Neutralize CSV formula exports
+- Restrict dev renderer origins
+- Constrain CSV export table paths
+- Refresh republished beta metadata
+
+### Refactors
+
+- Align renderer conventions
+- Centralize today optimistic rollback
+- Simplify today mutation handlers
+- Route today history loading through store
+- Share renderer ipc action runner
+- Share renderer store load lifecycle
+- Standardize renderer ipc actions
+- Align shared app components
+- Standardize renderer architecture
+- Standardize renderer component files
+- Organize renderer feature ownership
+
+### Maintenance
+
+- Align quality conventions
+- Update lint tooling
+
+### Other
+
+- Mock weekly review boundary
+- Harden workflow permissions and action pins
+
 ## 0.1.2-beta.14 - 2026-05-24
 
 Changes since `v0.1.2-beta.13`.
