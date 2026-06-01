@@ -15,8 +15,6 @@ import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 import { appClient } from "@/renderer/shared/lib/app-client";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
-import type { DayStatusKind } from "@/shared/domain/day-status";
-import type { GoalFrequency } from "@/shared/domain/goal";
 import type {
   Habit,
   HabitCategory,
@@ -200,6 +198,22 @@ export function createTodayActions({
     await refreshWeeklyReviewOverview();
   }
 
+  function applyTodayCommand<TArgs extends unknown[]>(
+    run: (...args: TArgs) => Promise<TodayState>
+  ) {
+    return async (...args: TArgs) => {
+      await applyTodayMutation(run(...args));
+    };
+  }
+
+  function refreshTodayCommand<TArgs extends unknown[]>(
+    run: (...args: TArgs) => Promise<TodayState>
+  ) {
+    return async (...args: TArgs) => {
+      await refreshToday(run(...args));
+    };
+  }
+
   async function applyHabitStatusMutation({
     habitId,
     mutationKind,
@@ -253,12 +267,10 @@ export function createTodayActions({
   // oxlint-disable-next-line eslint/sort-keys
   return {
     applyTodayMutation,
-    async handleArchiveFocusQuotaGoal(goalId: number) {
-      await applyTodayMutation(appClient.archiveFocusQuotaGoal(goalId));
-    },
-    async handleArchiveHabit(habitId: number) {
-      await applyTodayMutation(appClient.archiveHabit(habitId));
-    },
+    handleArchiveFocusQuotaGoal: applyTodayCommand(
+      appClient.archiveFocusQuotaGoal
+    ),
+    handleArchiveHabit: applyTodayCommand(appClient.archiveHabit),
     async handleCreateHabit(
       name: string,
       category: HabitCategory,
@@ -277,9 +289,9 @@ export function createTodayActions({
       );
       syncSettingsDraftFromTodayState();
     },
-    async handleCreateWindDownAction(name: string) {
-      await applyTodayMutation(appClient.createWindDownAction(name));
-    },
+    handleCreateWindDownAction: applyTodayCommand(
+      appClient.createWindDownAction
+    ),
     async handleDecrementHabitProgress(habitId: number) {
       await applyHabitStatusMutation({
         habitId,
@@ -287,9 +299,9 @@ export function createTodayActions({
         run: () => appClient.decrementHabitProgress(habitId),
       });
     },
-    async handleDeleteWindDownAction(actionId: number) {
-      await applyTodayMutation(appClient.deleteWindDownAction(actionId));
-    },
+    handleDeleteWindDownAction: applyTodayCommand(
+      appClient.deleteWindDownAction
+    ),
     async handleIncrementHabitProgress(habitId: number) {
       await applyHabitStatusMutation({
         habitId,
@@ -297,15 +309,11 @@ export function createTodayActions({
         run: () => appClient.incrementHabitProgress(habitId),
       });
     },
-    async handleRenameHabit(habitId: number, name: string) {
-      await applyTodayMutation(appClient.renameHabit(habitId, name));
-    },
-    async handlePauseHabit(habitId: number) {
-      await applyTodayMutation(appClient.pauseHabit(habitId));
-    },
-    async handleRenameWindDownAction(actionId: number, name: string) {
-      await applyTodayMutation(appClient.renameWindDownAction(actionId, name));
-    },
+    handleRenameHabit: applyTodayCommand(appClient.renameHabit),
+    handlePauseHabit: applyTodayCommand(appClient.pauseHabit),
+    handleRenameWindDownAction: applyTodayCommand(
+      appClient.renameWindDownAction
+    ),
     async handleReorderHabits(nextHabits: Habit[]) {
       const previousTodayState = useTodayStore.getState().todayState;
       const previousManagedHabits = useTodayStore.getState().managedHabits;
@@ -364,62 +372,30 @@ export function createTodayActions({
         run: () => appClient.toggleHabit(habitId),
       });
     },
-    async handleToggleHabitCarryover(sourceDate: string, habitId: number) {
-      await refreshToday(appClient.toggleHabitCarryover(sourceDate, habitId));
-    },
-    async handleToggleSickDay() {
-      await refreshToday(appClient.toggleSickDay());
-    },
-    async handleSetDayStatus(kind: DayStatusKind | null) {
-      await refreshToday(appClient.setDayStatus(kind));
-    },
-    async handleToggleWindDownAction(actionId: number) {
-      await refreshToday(appClient.toggleWindDownAction(actionId));
-    },
-    async handleUnarchiveFocusQuotaGoal(goalId: number) {
-      await applyTodayMutation(appClient.unarchiveFocusQuotaGoal(goalId));
-    },
-    async handleUnarchiveHabit(habitId: number) {
-      await applyTodayMutation(appClient.unarchiveHabit(habitId));
-    },
-    async handleResumeHabit(habitId: number) {
-      await applyTodayMutation(appClient.resumeHabit(habitId));
-    },
-    async handleUpsertFocusQuotaGoal(
-      frequency: GoalFrequency,
-      targetMinutes: number
-    ) {
-      await refreshToday(
-        appClient.upsertFocusQuotaGoal(frequency, targetMinutes)
-      );
-    },
-    async handleUpdateHabitCategory(habitId: number, category: HabitCategory) {
-      await applyTodayMutation(
-        appClient.updateHabitCategory(habitId, category)
-      );
-    },
-    async handleUpdateHabitFrequency(
-      habitId: number,
-      frequency: HabitFrequency,
-      targetCount: number | null = null
-    ) {
-      await applyTodayMutation(
-        appClient.updateHabitFrequency(habitId, frequency, targetCount)
-      );
-    },
-    async handleUpdateHabitTargetCount(habitId: number, targetCount: number) {
-      await applyTodayMutation(
-        appClient.updateHabitTargetCount(habitId, targetCount)
-      );
-    },
-    async handleUpdateHabitWeekdays(
-      habitId: number,
-      selectedWeekdays: HabitWeekday[] | null
-    ) {
-      await applyTodayMutation(
-        appClient.updateHabitWeekdays(habitId, selectedWeekdays)
-      );
-    },
+    handleToggleHabitCarryover: refreshTodayCommand(
+      appClient.toggleHabitCarryover
+    ),
+    handleToggleSickDay: refreshTodayCommand(appClient.toggleSickDay),
+    handleSetDayStatus: refreshTodayCommand(appClient.setDayStatus),
+    handleToggleWindDownAction: refreshTodayCommand(
+      appClient.toggleWindDownAction
+    ),
+    handleUnarchiveFocusQuotaGoal: applyTodayCommand(
+      appClient.unarchiveFocusQuotaGoal
+    ),
+    handleUnarchiveHabit: applyTodayCommand(appClient.unarchiveHabit),
+    handleResumeHabit: applyTodayCommand(appClient.resumeHabit),
+    handleUpsertFocusQuotaGoal: refreshTodayCommand(
+      appClient.upsertFocusQuotaGoal
+    ),
+    handleUpdateHabitCategory: applyTodayCommand(appClient.updateHabitCategory),
+    handleUpdateHabitFrequency: applyTodayCommand(
+      appClient.updateHabitFrequency
+    ),
+    handleUpdateHabitTargetCount: applyTodayCommand(
+      appClient.updateHabitTargetCount
+    ),
+    handleUpdateHabitWeekdays: applyTodayCommand(appClient.updateHabitWeekdays),
     refreshForNewDay,
     reloadAll,
     setSystemTheme(systemTheme: "dark" | "light") {
