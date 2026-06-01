@@ -63,7 +63,6 @@ export function HeatmapCell({ cell, habitName }: HeatmapCellProps) {
             "size-7 rounded-md",
             getHeatmapCellClassName(cell.status)
           )}
-          role="img"
         />
       </TooltipTrigger>
       <TooltipContent side="top">

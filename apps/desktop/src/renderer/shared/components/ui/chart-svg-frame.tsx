@@ -60,7 +60,6 @@ export function ChartSvgFrame({
       <svg
         aria-label={ariaLabel}
         className="h-full w-full overflow-visible"
-        role="img"
         viewBox={`0 0 ${size.width} ${size.height}`}
       >
         {children({ size })}

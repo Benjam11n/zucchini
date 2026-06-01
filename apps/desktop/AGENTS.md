@@ -33,6 +33,10 @@
   `src/renderer/features/<feature>` may import its own feature folder,
   `src/renderer/shared`, and `src/shared`. Cross-feature imports require review
   before they land.
+- If one renderer feature owns a full workflow surface, keep its components in
+  that feature and let other features import only the top-level composition
+  component when needed. Do not import another feature's internal cards,
+  charts, stores, or hooks from a sibling feature.
 - When multiple renderer features need the same UI or pure helper, move only the
   neutral reusable piece into `src/renderer/shared`. Do not move
   feature-specific workflow, state, copy, or side effects into shared just to

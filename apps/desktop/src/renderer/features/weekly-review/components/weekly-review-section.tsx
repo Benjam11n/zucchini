@@ -1,4 +1,3 @@
-import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/weekly-review/components/weekly-review-daily-cadence-chart";
 import { WeeklyReviewHabitChart } from "@/renderer/features/weekly-review/components/weekly-review-habit-chart";
 import { WeeklyReviewHeroCard } from "@/renderer/features/weekly-review/components/weekly-review-hero-card";
@@ -12,6 +11,20 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
+import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
+import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
+import type {
+  WeeklyReview,
+  WeeklyReviewOverview,
+} from "@/shared/domain/weekly-review";
+
+interface WeeklyReviewSectionProps {
+  onSelectWeeklyReview: (weekStart: string) => void;
+  selectedWeeklyReview: WeeklyReview | null;
+  weeklyReviewError: AppIpcError | null;
+  weeklyReviewOverview: WeeklyReviewOverview | null;
+  weeklyReviewPhase: AsyncPhase;
+}
 
 export function WeeklyReviewSection({
   onSelectWeeklyReview,
@@ -19,14 +32,7 @@ export function WeeklyReviewSection({
   weeklyReviewError,
   weeklyReviewOverview,
   weeklyReviewPhase,
-}: Pick<
-  HistoryPageProps,
-  | "onSelectWeeklyReview"
-  | "selectedWeeklyReview"
-  | "weeklyReviewError"
-  | "weeklyReviewOverview"
-  | "weeklyReviewPhase"
->) {
+}: WeeklyReviewSectionProps) {
   const review =
     selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
 

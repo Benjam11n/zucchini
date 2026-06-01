@@ -132,16 +132,15 @@ function Carousel({
 
   return (
     <CarouselContext.Provider value={contextValue}>
-      <div
+      <section
         onKeyDownCapture={handleKeyDown}
         className={cn("relative min-w-0 max-w-full", className)}
-        role="region"
         aria-roledescription="carousel"
         data-slot="carousel"
         {...props}
       >
         {children}
-      </div>
+      </section>
     </CarouselContext.Provider>
   );
 }
@@ -172,7 +171,6 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
 
   return (
     <div
-      role="group"
       aria-roledescription="slide"
       data-slot="carousel-item"
       className={cn(

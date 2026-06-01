@@ -74,7 +74,6 @@ function ChartPointMarkers({
           onMouseEnter={() => onActiveIndexChange(index)}
           onMouseLeave={() => onActiveIndexChange(null)}
           r={4}
-          role="img"
           tabIndex={0}
         />
       ))}

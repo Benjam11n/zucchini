@@ -3,7 +3,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as WeeklyReviewHeroCardModule from "@/renderer/features/weekly-review/components/weekly-review-hero-card";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
@@ -99,7 +98,7 @@ vi.mock(
   () => ({ WeeklyReviewTrendChart: () => <div>trend chart</div> })
 );
 
-vi.mock<typeof WeeklyReviewHeroCardModule>(
+vi.mock(
   import("@/renderer/features/weekly-review/components/weekly-review-hero-card"),
   () => ({
     WeeklyReviewHeroCard: ({ review }: { review: WeeklyReview }) => (

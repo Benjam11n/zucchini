@@ -68,15 +68,19 @@ async function readDesktopVersion() {
   return typeof packageJson.version === "string" ? packageJson.version : null;
 }
 
-async function fetchLatestPublishedRelease() {
+function createGitHubHeaders() {
   const token = process.env["GITHUB_TOKEN"] ?? process.env["GH_TOKEN"];
+  return {
+    Accept: "application/vnd.github+json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    "User-Agent": "zucchini-web-build",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+async function fetchGitHubReleases() {
   const response = await fetch(githubApiUrl, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      "User-Agent": "zucchini-web-build",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
+    headers: createGitHubHeaders(),
     signal: AbortSignal.timeout(8000),
   });
 
@@ -85,16 +89,25 @@ async function fetchLatestPublishedRelease() {
   }
 
   const releases = await response.json();
-
   if (!Array.isArray(releases)) {
     throw new TypeError("GitHub releases response was not an array.");
   }
 
+  return releases;
+}
+
+function findLatestPublishedRelease(releases) {
   const latestRelease = releases.find((release) => !release.draft);
 
   if (!latestRelease?.tag_name || !latestRelease.html_url) {
     throw new Error("No published GitHub release found.");
   }
+
+  return latestRelease;
+}
+
+async function fetchLatestPublishedRelease() {
+  const latestRelease = findLatestPublishedRelease(await fetchGitHubReleases());
 
   return {
     isFallback: false,

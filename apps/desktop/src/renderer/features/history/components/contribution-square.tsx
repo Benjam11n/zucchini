@@ -78,7 +78,6 @@ export function ContributionSquare({ cell }: ContributionSquareProps) {
             getContributionSquareClassName(cell),
             cell.isToday && "ring-1 ring-ring/60 ring-offset-1 ring-offset-card"
           )}
-          role="img"
           tabIndex={0}
           whileHover={hoverLift}
           whileTap={tapPress}

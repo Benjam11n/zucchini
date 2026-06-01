@@ -2,7 +2,6 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -200,12 +199,6 @@ describe("today page", () => {
   beforeEach(() => {
     todayHistoryCarouselSpy.mockClear();
     getHistoryDayMock.mockReset();
-    useHistoryStore.setState({
-      historyDayByDate: {},
-      historyLoadError: null,
-      isHistoryDayLoading: false,
-      loadingHistoryDayKey: null,
-    });
   });
 
   function renderTodayPage(

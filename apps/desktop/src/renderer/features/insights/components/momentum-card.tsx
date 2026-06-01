@@ -32,7 +32,6 @@ export function MomentumCard({ dashboard }: MomentumCardProps) {
                 <Info
                   aria-label="Momentum score details"
                   className="size-3.5 text-muted-foreground"
-                  role="img"
                 />
               </TooltipTrigger>
               <TooltipContent className="max-w-72 leading-relaxed">

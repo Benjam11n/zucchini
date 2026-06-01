@@ -234,7 +234,6 @@ export function TodaySidebar({
           <div
             aria-label={`Today completion ${todayCompletion.percent}%`}
             className="relative grid size-36 place-items-center"
-            role="img"
           >
             <HabitActivityRingGlyph
               categoryProgress={categoryProgress}
@@ -280,7 +279,6 @@ export function TodaySidebar({
             <div
               aria-label={`${consistency.completedDays} of ${consistency.totalDays} days complete`}
               className="grid grid-cols-10 gap-1"
-              role="img"
             >
               {consistency.days.map((day) => (
                 <span

@@ -32,7 +32,6 @@ export function TrendLine({ points }: TrendLineProps) {
     <svg
       aria-label="Completion trend"
       className="h-28 w-full overflow-visible"
-      role="img"
       viewBox="0 0 200 100"
     >
       {[10, 30, 50, 70, 90].map((y) => (

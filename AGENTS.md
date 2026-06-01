@@ -19,7 +19,9 @@
 
 ## Stable Workflow Rules
 
-- Use Node 24.x for this repository so local behavior matches CI.
+- Use Node 24.x for this repository so local behavior matches CI. The repo has
+  `.nvmrc`; when `nvm` is available, run
+  `source "$HOME/.nvm/nvm.sh" && nvm use` before validation commands.
 - Run commands from the repository root with `pnpm`.
 - Prefer the root wrapper scripts when they exist:
   `pnpm run dev:desktop`, `pnpm run dev:web`, `pnpm run build:desktop`,
@@ -53,6 +55,8 @@
 
 ## Code Quality Defaults
 
+- Keep root Node config and scripts ESM-compatible. The root package is
+  `"type": "module"`, and root scripts should use `.mjs` or native ESM syntax.
 - Optimize for maintainability and readability first.
 - Prefer straightforward control flow and explicit names.
 - Keep modules narrow in scope and responsibility.
@@ -64,6 +68,9 @@
   `apps/desktop/src/renderer/shared/components/ui` and default theme tokens
   from `apps/desktop/src/renderer/globals.css` before introducing bespoke
   styling or arbitrary Tailwind values.
+- Prefer semantic markup and accessible labels over lint suppression. Do not add
+  broad a11y lint disables for `role` warnings unless the semantic alternative
+  is impossible and the reason is documented next to the exception.
 
 ## UI Defaults
 

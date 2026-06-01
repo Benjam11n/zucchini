@@ -74,7 +74,6 @@ function ChartBarSeries({
             onFocus={() => onActiveIndexChange(index)}
             onMouseEnter={() => onActiveIndexChange(index)}
             onMouseLeave={() => onActiveIndexChange(null)}
-            role="img"
             rx={radius}
             tabIndex={0}
             width={barWidth}

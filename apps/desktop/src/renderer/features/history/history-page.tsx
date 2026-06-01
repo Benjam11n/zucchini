@@ -12,9 +12,9 @@ import { HistoryMobileSummaryDialog } from "@/renderer/features/history/componen
 import { HistoryPageHeader } from "@/renderer/features/history/components/history-page-header";
 import type { HistoryViewMode } from "@/renderer/features/history/components/history-page-header";
 import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
-import { WeeklyReviewSection } from "@/renderer/features/history/components/weekly-review-section";
 import type { HistoryPageProps } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
+import { WeeklyReviewSection } from "@/renderer/features/weekly-review/components/weekly-review-section";
 import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
 import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
 import {

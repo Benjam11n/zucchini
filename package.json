@@ -5,6 +5,7 @@
     "apps/desktop",
     "apps/web"
   ],
+  "type": "module",
   "scripts": {
     "preinstall": "node scripts/check-node-version.mjs",
     "dev:desktop": "pnpm --dir apps/desktop dev",
