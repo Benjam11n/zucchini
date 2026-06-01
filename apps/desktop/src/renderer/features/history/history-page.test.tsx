@@ -3,6 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
+import type * as WeeklyReviewSectionModule from "@/renderer/features/weekly-review/components/weekly-review-section";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
@@ -79,31 +80,31 @@ vi.mock<typeof TabsModule>(
   }
 );
 
-vi.mock(
-  import("@/renderer/features/weekly-review/components/weekly-review-daily-cadence-chart"),
+vi.mock<typeof WeeklyReviewSectionModule>(
+  import("@/renderer/features/weekly-review/components/weekly-review-section"),
   () => ({
-    WeeklyReviewDailyCadenceChart: () => <div>daily cadence chart</div>,
-  })
-);
-vi.mock(
-  import("@/renderer/features/weekly-review/components/weekly-review-habit-chart"),
-  () => ({ WeeklyReviewHabitChart: () => <div>habit chart</div> })
-);
-vi.mock(
-  import("@/renderer/features/weekly-review/components/weekly-review-most-missed-card"),
-  () => ({ WeeklyReviewMostMissedCard: () => <div>most missed card</div> })
-);
-vi.mock(
-  import("@/renderer/features/weekly-review/components/weekly-review-trend-chart"),
-  () => ({ WeeklyReviewTrendChart: () => <div>trend chart</div> })
-);
+    WeeklyReviewSection: ({
+      selectedWeeklyReview,
+      weeklyReviewError,
+      weeklyReviewOverview,
+      weeklyReviewPhase,
+    }) => {
+      const review =
+        selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
 
-vi.mock(
-  import("@/renderer/features/weekly-review/components/weekly-review-hero-card"),
-  () => ({
-    WeeklyReviewHeroCard: ({ review }: { review: WeeklyReview }) => (
-      <div data-testid="weekly-review-hero">{review.weekStart}</div>
-    ),
+      if (weeklyReviewPhase === "loading" && !review) {
+        return <div>Building weekly review…</div>;
+      }
+
+      return (
+        <div>
+          {weeklyReviewError ? <div>{weeklyReviewError.message}</div> : null}
+          {review ? (
+            <div data-testid="weekly-review-hero">{review.weekStart}</div>
+          ) : null}
+        </div>
+      );
+    },
   })
 );
 
