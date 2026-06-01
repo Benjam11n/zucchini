@@ -102,6 +102,8 @@ jobs:
         run: pnpm --dir apps/desktop typecheck
 
       - name: Run desktop tests
+        env:
+          ELECTRON_OVERRIDE_DIST_PATH: /tmp
         run: pnpm run test:desktop
 
   web-checks:

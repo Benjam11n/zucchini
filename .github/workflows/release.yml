@@ -47,6 +47,8 @@ jobs:
         run: pnpm --dir apps/desktop audit:ci
 
       - name: Run tests
+        env:
+          ELECTRON_OVERRIDE_DIST_PATH: /tmp
         run: pnpm --dir apps/desktop test
 
       - name: Rebuild native desktop dependencies
