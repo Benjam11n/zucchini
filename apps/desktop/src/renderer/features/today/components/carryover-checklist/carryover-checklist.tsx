@@ -1,21 +1,19 @@
 import { CalendarPlus } from "lucide-react";
+import { useMemo } from "react";
 
 import { getCarryoverKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
-import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
-import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
-import { cn } from "@/renderer/shared/lib/class-names";
+import {
+  HabitListCard,
+  HabitListItem,
+  HabitListRows,
+} from "@/renderer/shared/components/ui/habit-list";
 import {
   getHabitCategoryPresentation,
   useHabitCategoryPreferences,
 } from "@/renderer/shared/lib/habit-category-presentation";
-import {
-  HABIT_COMPLETION_POP_CLASSNAME,
-  HABIT_ROW_BASE_CLASSNAME,
-  HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
-  HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
-  HABIT_ROW_INTERACTIVE_CLASSNAME,
-} from "@/renderer/shared/lib/habit-row-interaction";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
+import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
+import type { HabitCategory } from "@/shared/domain/habit";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 
 interface CarryoverChecklistProps {
@@ -33,6 +31,45 @@ export function CarryoverChecklist({
   const completedCount = carryovers.filter(
     (carryover) => carryover.completed
   ).length;
+  const carryoversByCategory = useMemo(() => {
+    const groupedCarryovers = Object.fromEntries(
+      HABIT_CATEGORY_SLOTS.map((category) => [
+        category.value,
+        {
+          carryovers: [] as HabitCarryover[],
+          completedCount: 0,
+        },
+      ])
+    ) as Record<
+      HabitCategory,
+      {
+        carryovers: HabitCarryover[];
+        completedCount: number;
+      }
+    >;
+
+    for (const carryover of carryovers) {
+      const group = groupedCarryovers[carryover.category];
+      group.carryovers.push(carryover);
+
+      if (carryover.completed) {
+        group.completedCount += 1;
+      }
+    }
+
+    return HABIT_CATEGORY_SLOTS.flatMap((category) => {
+      const group = groupedCarryovers[category.value];
+
+      return group.carryovers.length > 0
+        ? [
+            {
+              ...category,
+              ...group,
+            },
+          ]
+        : [];
+    });
+  }, [carryovers]);
 
   if (carryovers.length === 0) {
     return null;
@@ -46,71 +83,53 @@ export function CarryoverChecklist({
       progressValue={Math.round((completedCount / carryovers.length) * 100)}
       title="Carried over"
     >
-      <div className="grid gap-px">
-        {carryovers.map((carryover) => {
-          const presentation = getHabitCategoryPresentation(
-            carryover.category,
-            categoryPreferences
-          );
-          const CarryoverIcon = presentation.icon;
-          const keyboardRowId = getCarryoverKeyboardRowId(
-            carryover.sourceDate,
-            carryover.id
-          );
+      {carryoversByCategory.map((category) => {
+        const presentation = getHabitCategoryPresentation(
+          category.value,
+          categoryPreferences
+        );
+        const CategoryIcon = presentation.icon;
 
-          return (
-            <label
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5",
-                HABIT_ROW_BASE_CLASSNAME,
-                carryover.completed
-                  ? "text-muted-foreground/50"
-                  : HABIT_ROW_INTERACTIVE_CLASSNAME
-              )}
-              htmlFor={`carryover-${carryover.sourceDate}-${carryover.id}`}
-              key={`${carryover.sourceDate}-${carryover.id}`}
-              {...getKeyboardRowProps?.(keyboardRowId)}
-            >
-              <Checkbox
-                checked={carryover.completed}
-                className={cn(
-                  "size-4 shrink-0 rounded-full border-2",
-                  HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
-                  HABIT_COMPLETION_POP_CLASSNAME
-                )}
-                id={`carryover-${carryover.sourceDate}-${carryover.id}`}
-                onCheckedChange={() =>
-                  onToggleCarryover(carryover.sourceDate, carryover.id)
-                }
-                style={{
-                  backgroundColor: carryover.completed
-                    ? presentation.color
-                    : undefined,
-                  borderColor: presentation.color,
-                  color: carryover.completed ? "#fff" : undefined,
-                }}
-              />
-              <CarryoverIcon
-                className="size-3.5 shrink-0 opacity-70"
+        return (
+          <div key={category.value} className="grid gap-1">
+            <div className="flex items-center gap-2 px-0.5 pb-1">
+              <CategoryIcon
+                className="size-3 shrink-0 opacity-60"
                 style={{ color: presentation.accentTextColor }}
               />
               <span
-                className={cn(
-                  "min-w-0 flex-1 truncate text-sm transition-all duration-150",
-                  carryover.completed
-                    ? "line-through decoration-muted-foreground/30"
-                    : HABIT_ROW_CONTENT_INTERACTION_CLASSNAME
-                )}
+                className="text-[0.68rem] uppercase tracking-wide"
+                style={{ color: presentation.accentTextColor }}
               >
-                {carryover.name}
-              </span>
-              <span className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80">
                 {presentation.label}
               </span>
-            </label>
-          );
-        })}
-      </div>
+              <span className="ml-auto text-[0.68rem] tabular-nums text-muted-foreground/60">
+                {category.completedCount}/{category.carryovers.length}
+              </span>
+            </div>
+            <HabitListRows>
+              {category.carryovers.map((carryover) => {
+                const keyboardRowId = getCarryoverKeyboardRowId(
+                  carryover.sourceDate,
+                  carryover.id
+                );
+
+                return (
+                  <HabitListItem
+                    habit={carryover}
+                    inputId={`carryover-${carryover.sourceDate}-${carryover.id}`}
+                    key={`${carryover.sourceDate}-${carryover.id}`}
+                    keyboardRowProps={getKeyboardRowProps?.(keyboardRowId)}
+                    onToggle={() =>
+                      onToggleCarryover(carryover.sourceDate, carryover.id)
+                    }
+                  />
+                );
+              })}
+            </HabitListRows>
+          </div>
+        );
+      })}
     </HabitListCard>
   );
 }

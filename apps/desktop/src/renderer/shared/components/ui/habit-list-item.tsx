@@ -36,6 +36,7 @@ interface HabitListItemStreak {
 interface HabitListItemProps {
   disabled?: boolean;
   habit: HabitWithStatus;
+  inputId?: string;
   keyboardRowProps?: KeyboardRowProps | undefined;
   muted?: boolean;
   onToggle?: ((habitId: number) => void) | undefined;
@@ -178,6 +179,7 @@ function getLabelStateClassName({
 function HabitListItemComponent({
   disabled = false,
   habit,
+  inputId = `habit-${habit.id}`,
   keyboardRowProps,
   muted = false,
   onToggle,
@@ -205,7 +207,7 @@ function HabitListItemComponent({
   return (
     <m.label
       animate={HABIT_ITEM_ANIMATE}
-      htmlFor={isInteractive ? `habit-${habit.id}` : undefined}
+      htmlFor={isInteractive ? inputId : undefined}
       initial={HABIT_ITEM_INITIAL}
       className={cn(
         "flex items-center gap-3 px-3 py-2.5",
@@ -230,7 +232,7 @@ function HabitListItemComponent({
           muted && "opacity-45 grayscale"
         )}
         disabled={disabled}
-        id={`habit-${habit.id}`}
+        id={inputId}
         onCheckedChange={() => {
           if (isInteractive) {
             onToggle?.(habit.id);
