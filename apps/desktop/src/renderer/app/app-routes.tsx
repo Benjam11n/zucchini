@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
@@ -14,6 +14,9 @@ import { HistoryPage } from "@/renderer/features/history/history-page";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
+import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
+
+const EMPTY_FOCUS_QUOTA_GOALS: FocusQuotaGoalWithStatus[] = [];
 
 const FocusPage = lazy(async () => {
   const module = await import("@/renderer/features/focus/focus-page");
@@ -92,6 +95,36 @@ function HistoryRoute({
 }
 
 function FocusRoute({ actions, state }: ReadyAppController) {
+  const pageActions = useMemo(() => buildFocusPageActions(actions), [actions]);
+  const viewModel = useMemo(
+    () => ({
+      fieldErrors: state.settingsFieldErrors,
+      focusQuotaGoals:
+        state.todayState.focusQuotaGoals ?? EMPTY_FOCUS_QUOTA_GOALS,
+      focusSaveErrorMessage: state.focusSaveErrorMessage,
+      phase: state.focusSessionsPhase,
+      sessions: state.focusSessions,
+      sessionsLoadError: state.focusSessionsLoadError,
+      settings: state.settingsDraft ?? state.todayState.settings,
+      settingsSavePhase: state.settingsSavePhase,
+      timerState: state.timerState,
+      todayDate: state.todayState.date,
+    }),
+    [
+      state.focusSaveErrorMessage,
+      state.focusSessions,
+      state.focusSessionsLoadError,
+      state.focusSessionsPhase,
+      state.settingsDraft,
+      state.settingsFieldErrors,
+      state.settingsSavePhase,
+      state.timerState,
+      state.todayState.date,
+      state.todayState.focusQuotaGoals,
+      state.todayState.settings,
+    ]
+  );
+
   return (
     <Suspense
       fallback={
@@ -101,26 +134,37 @@ function FocusRoute({ actions, state }: ReadyAppController) {
         />
       }
     >
-      <FocusPage
-        actions={buildFocusPageActions(actions)}
-        viewModel={{
-          fieldErrors: state.settingsFieldErrors,
-          focusQuotaGoals: state.todayState.focusQuotaGoals ?? [],
-          focusSaveErrorMessage: state.focusSaveErrorMessage,
-          phase: state.focusSessionsPhase,
-          sessions: state.focusSessions,
-          sessionsLoadError: state.focusSessionsLoadError,
-          settings: state.settingsDraft ?? state.todayState.settings,
-          settingsSavePhase: state.settingsSavePhase,
-          timerState: state.timerState,
-          todayDate: state.todayState.date,
-        }}
-      />
+      <FocusPage actions={pageActions} viewModel={viewModel} />
     </Suspense>
   );
 }
 
 function SettingsRoute({ actions, state }: ReadyAppController) {
+  const pageActions = useMemo(
+    () => buildSettingsPageActions(actions),
+    [actions]
+  );
+  const viewModel = useMemo(
+    () => ({
+      fieldErrors: state.settingsFieldErrors,
+      focusQuotaGoals:
+        state.todayState.focusQuotaGoals ?? EMPTY_FOCUS_QUOTA_GOALS,
+      habits: state.managedHabits,
+      saveErrorMessage: state.settingsSaveErrorMessage,
+      savePhase: state.settingsSavePhase,
+      settings: state.settingsDraft ?? state.todayState.settings,
+    }),
+    [
+      state.managedHabits,
+      state.settingsDraft,
+      state.settingsFieldErrors,
+      state.settingsSaveErrorMessage,
+      state.settingsSavePhase,
+      state.todayState.focusQuotaGoals,
+      state.todayState.settings,
+    ]
+  );
+
   return (
     <Suspense
       fallback={
@@ -130,22 +174,31 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
         />
       }
     >
-      <SettingsPage
-        actions={buildSettingsPageActions(actions)}
-        viewModel={{
-          fieldErrors: state.settingsFieldErrors,
-          focusQuotaGoals: state.todayState.focusQuotaGoals ?? [],
-          habits: state.managedHabits,
-          saveErrorMessage: state.settingsSaveErrorMessage,
-          savePhase: state.settingsSavePhase,
-          settings: state.settingsDraft ?? state.todayState.settings,
-        }}
-      />
+      <SettingsPage actions={pageActions} viewModel={viewModel} />
     </Suspense>
   );
 }
 
 function InsightsRoute({ actions, state }: ReadyAppController) {
+  const pageActions = useMemo(
+    () => buildInsightsPageActions(actions),
+    [actions]
+  );
+  const viewModel = useMemo(
+    () => ({
+      dashboard: state.insightsDashboard,
+      error: state.insightsError,
+      phase: state.insightsPhase,
+      rangeDays: state.insightsRangeDays,
+    }),
+    [
+      state.insightsDashboard,
+      state.insightsError,
+      state.insightsPhase,
+      state.insightsRangeDays,
+    ]
+  );
+
   return (
     <Suspense
       fallback={
@@ -155,15 +208,7 @@ function InsightsRoute({ actions, state }: ReadyAppController) {
         />
       }
     >
-      <InsightsPage
-        actions={buildInsightsPageActions(actions)}
-        viewModel={{
-          dashboard: state.insightsDashboard,
-          error: state.insightsError,
-          phase: state.insightsPhase,
-          rangeDays: state.insightsRangeDays,
-        }}
-      />
+      <InsightsPage actions={pageActions} viewModel={viewModel} />
     </Suspense>
   );
 }

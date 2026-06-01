@@ -86,12 +86,6 @@ export function HistoryPage({
     loadYears();
   }, [loadYears]);
 
-  useEffect(() => {
-    if (!(isNarrowHistoryLayout && historyMode === "timeline")) {
-      setIsMobileSummaryOpen(false);
-    }
-  }, [historyMode, isNarrowHistoryLayout]);
-
   const visibleMonthRange = useMemo(
     () => getMonthRange(visibleMonth),
     [visibleMonth]
@@ -194,6 +188,10 @@ export function HistoryPage({
         onValueChange={(value) => {
           const nextMode = value as HistoryViewMode;
           setHistoryMode(nextMode);
+
+          if (nextMode !== "timeline") {
+            setIsMobileSummaryOpen(false);
+          }
 
           if (nextMode === "review") {
             loadOverview();
