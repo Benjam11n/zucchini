@@ -180,6 +180,21 @@ async function applyTodayMutation(mutator: Promise<TodayState>) {
   return nextTodayState;
 }
 
+async function runOptimisticMutation<TResult>(
+  run: () => Promise<TResult>,
+  rollback: () => void,
+  shouldRollback = () => true
+): Promise<TResult> {
+  try {
+    return await run();
+  } catch (error) {
+    if (shouldRollback()) {
+      rollback();
+    }
+    throw error;
+  }
+}
+
 export function createTodayActions({
   loadFocusSessions,
 }: {
@@ -244,23 +259,21 @@ export function createTodayActions({
       }
     }
 
-    try {
-      const confirmedPatch = await run();
-      if (isLatestHabitStatusMutation(habitId, mutationVersion)) {
-        applyHabitStatusPatch(confirmedPatch);
-        resetInsightsIfLoaded();
-      }
-    } catch (error) {
-      if (
-        previousHabit &&
-        previousTodayState &&
-        isLatestHabitStatusMutation(habitId, mutationVersion)
-      ) {
+    const confirmedPatch = await runOptimisticMutation(
+      run,
+      () => {
         useTodayStore.setState({
           todayState: previousTodayState,
         });
-      }
-      throw error;
+      },
+      () =>
+        Boolean(previousHabit && previousTodayState) &&
+        isLatestHabitStatusMutation(habitId, mutationVersion)
+    );
+
+    if (isLatestHabitStatusMutation(habitId, mutationVersion)) {
+      applyHabitStatusPatch(confirmedPatch);
+      resetInsightsIfLoaded();
     }
   }
 
@@ -323,17 +336,18 @@ export function createTodayActions({
         todayState: reorderVisibleTodayHabits(nextHabits, previousTodayState),
       });
 
-      try {
-        await applyTodayMutation(
-          appClient.reorderHabits(nextHabits.map((habit) => habit.id))
-        );
-      } catch (error) {
-        useTodayStore.setState({
-          managedHabits: previousManagedHabits,
-          todayState: previousTodayState,
-        });
-        throw error;
-      }
+      await runOptimisticMutation(
+        () =>
+          applyTodayMutation(
+            appClient.reorderHabits(nextHabits.map((habit) => habit.id))
+          ),
+        () => {
+          useTodayStore.setState({
+            managedHabits: previousManagedHabits,
+            todayState: previousTodayState,
+          });
+        }
+      );
     },
     handleTabChange(nextTab: AppTab) {
       useUiStore.getState().setTab(nextTab);
