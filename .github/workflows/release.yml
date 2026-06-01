@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Rebuild Electron binary
-        run: pnpm rebuild electron
+      - name: Install Electron binary
+        run: pnpm --dir apps/desktop exec node node_modules/electron/install.js
 
       - name: Audit dependencies
         run: pnpm --dir apps/desktop audit:ci
