@@ -38,6 +38,9 @@ export function buildTodayPageActions(
       toggleCarryover: actions.handleToggleHabitCarryover,
       toggleHabit: actions.handleToggleHabit,
     },
+    history: {
+      loadDay: actions.handleLoadHistoryDay,
+    },
   };
 }
 

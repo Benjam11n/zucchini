@@ -14,6 +14,9 @@ export interface TodayPageActions {
     toggleCarryover: (sourceDate: string, habitId: number) => void;
     toggleHabit: (habitId: number) => void;
   };
+  history: {
+    loadDay: (date: string) => void;
+  };
 }
 
 export interface PersistedTodayUiState {

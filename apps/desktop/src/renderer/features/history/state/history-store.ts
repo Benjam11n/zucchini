@@ -41,7 +41,6 @@ interface HistoryStoreState {
   loadingHistoryDayKey: string | null;
   selectedHistoryMonthKey: string | null;
   selectedHistoryYear: number | null;
-  cacheHistoryDay: (day: HistoryDay) => void;
   loadHistoryDay: (
     date: string,
     options?: { force?: boolean }
@@ -103,14 +102,6 @@ function getInitialHistoryState(): Pick<
 
 export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
   ...getInitialHistoryState(),
-  cacheHistoryDay: (day) => {
-    set((state) => ({
-      historyDayByDate: {
-        ...state.historyDayByDate,
-        [day.date]: day,
-      },
-    }));
-  },
   loadHistoryDay: async (date, options = {}) => {
     if (!options.force && get().historyDayByDate[date]) {
       return;

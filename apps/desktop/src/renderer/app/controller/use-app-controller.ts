@@ -89,6 +89,7 @@ function buildControllerActions({
     handleGetLatestAutoBackupRestorePreview:
       actions.handleGetLatestAutoBackupRestorePreview,
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
+    handleLoadHistoryDay: actions.loadHistoryDay,
     handleLoadHistoryYears: actions.loadHistoryYears,
     handleLoadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     handleOpenAutoBackupFolder: actions.handleOpenAutoBackupFolder,

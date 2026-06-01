@@ -13,6 +13,9 @@ export function createHistoryActions() {
     dismissWeeklyReviewSpotlight() {
       useWeeklyReviewStore.getState().dismissWeeklyReviewSpotlight();
     },
+    async loadHistoryDay(date: string) {
+      await useHistoryStore.getState().loadHistoryDay(date);
+    },
     async loadHistoryMonth(year: number, month: number) {
       await useHistoryStore.getState().loadHistoryMonth(year, month);
     },

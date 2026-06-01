@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { appClient } from "@/renderer/shared/lib/app-client";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 
-export function useHistoricalTodaySelection(history: HistorySummaryDay[]) {
+interface UseHistoricalTodaySelectionInput {
+  history: HistorySummaryDay[];
+  historyDayByDate: Record<string, HistoryDay | undefined>;
+  isHistoryDayLoading: boolean;
+  loadHistoryDay: (date: string) => void;
+  loadingHistoryDayKey: string | null;
+}
+
+export function useHistoricalTodaySelection({
+  history,
+  historyDayByDate,
+  isHistoryDayLoading,
+  loadHistoryDay,
+  loadingHistoryDayKey,
+}: UseHistoricalTodaySelectionInput) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [historyDayByDate, setHistoryDayByDate] = useState<
-    Record<string, HistoryDay | undefined>
-  >({});
-  const [loadingDate, setLoadingDate] = useState<string | null>(null);
   const selectableDates = useMemo(
     () => new Set(history.map((day) => day.date)),
     [history]
@@ -38,40 +47,16 @@ export function useHistoricalTodaySelection(history: HistorySummaryDay[]) {
       return;
     }
 
-    let isCurrent = true;
-    const dateToLoad = selectedDate;
-    setLoadingDate(dateToLoad);
-
-    async function loadSelectedHistoryDay() {
-      try {
-        const historyDay = await appClient.getHistoryDay(dateToLoad);
-
-        if (!isCurrent) {
-          return;
-        }
-
-        setHistoryDayByDate((current) => ({
-          ...current,
-          [dateToLoad]: historyDay,
-        }));
-      } finally {
-        if (isCurrent) {
-          setLoadingDate(null);
-        }
-      }
-    }
-
-    void loadSelectedHistoryDay();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [selectableDates, selectedDate, selectedDay]);
+    void loadHistoryDay(selectedDate);
+  }, [loadHistoryDay, selectableDates, selectedDate, selectedDay]);
 
   return {
     handleClearSelection,
     handleSelectDate,
-    isLoading: selectedDate !== null && loadingDate === selectedDate,
+    isLoading:
+      selectedDate !== null &&
+      isHistoryDayLoading &&
+      loadingHistoryDayKey === selectedDate,
     selectedDate,
     selectedDay,
   };

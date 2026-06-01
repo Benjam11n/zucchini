@@ -12,7 +12,7 @@ import type { TodayState } from "@/shared/read-models/today-state";
 import { TodayPage } from "./today-page";
 
 const todayHistoryCarouselSpy = vi.hoisted(() => vi.fn());
-const getHistoryDayMock = vi.hoisted(() => vi.fn());
+const loadHistoryDayMock = vi.hoisted(() => vi.fn());
 
 vi.mock<typeof TodayHistoryCarouselModule>(
   import("@/renderer/features/today/components/today-history-carousel"),
@@ -28,17 +28,6 @@ vi.mock<typeof TodayHistoryCarouselModule>(
     },
   })
 );
-
-vi.mock(import("@/renderer/shared/lib/app-client"), async (importOriginal) => {
-  const actual = await importOriginal();
-
-  return {
-    appClient: {
-      ...actual.appClient,
-      getHistoryDay: getHistoryDayMock,
-    },
-  };
-});
 
 vi.mock(import("@/renderer/features/today/hooks/use-today-popups"), () => ({
   useTodayPopups: vi.fn(),
@@ -198,13 +187,16 @@ function getKeyboardRow(label: string): HTMLElement {
 describe("today page", () => {
   beforeEach(() => {
     todayHistoryCarouselSpy.mockClear();
-    getHistoryDayMock.mockReset();
+    loadHistoryDayMock.mockReset();
   });
 
   function renderTodayPage(
     todayState: TodayState = state,
     historySummary: HistorySummaryDay[] = history,
     options: {
+      historyDayByDate?: Record<string, HistoryDay | undefined>;
+      isHistoryDayLoading?: boolean;
+      loadingHistoryDayKey?: string | null;
       managedHabits?: Habit[];
       onResumeHabit?: (habitId: number) => Promise<void>;
     } = {}
@@ -237,10 +229,16 @@ describe("today page", () => {
             updateHabitTargetCount: vi.fn(() => Promise.resolve()),
             updateHabitWeekdays: vi.fn(() => Promise.resolve()),
           },
+          history: {
+            loadDay: loadHistoryDayMock,
+          },
         }}
         viewModel={{
           hasLoadedHistorySummary: true,
+          historyDayByDate: options.historyDayByDate ?? {},
           historySummary,
+          isHistoryDayLoading: options.isHistoryDayLoading ?? false,
+          loadingHistoryDayKey: options.loadingHistoryDayKey ?? null,
           managedHabits: options.managedHabits ?? managedHabits,
           state: todayState,
         }}
@@ -310,18 +308,19 @@ describe("today page", () => {
     renderTodayPage(state, [historyDay("2026-03-12")]);
 
     expect(screen.queryByText("Historical planning")).toBeNull();
-    expect(getHistoryDayMock).not.toHaveBeenCalled();
+    expect(loadHistoryDayMock).not.toHaveBeenCalled();
   });
 
   it("loads a selected carousel day into an inline read-only Today-style view", async () => {
-    getHistoryDayMock.mockResolvedValue(historyDetailDay("2026-03-12"));
-    const handlers = renderTodayPage(state, [historyDay("2026-03-12")]);
+    const handlers = renderTodayPage(state, [historyDay("2026-03-12")], {
+      historyDayByDate: {
+        "2026-03-12": historyDetailDay("2026-03-12"),
+      },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /history carousel/iu }));
 
-    await waitFor(() => {
-      expect(getHistoryDayMock).toHaveBeenCalledWith("2026-03-12");
-    });
+    expect(loadHistoryDayMock).not.toHaveBeenCalled();
     expect(await screen.findByText("Historical planning")).toBeInTheDocument();
     expect(screen.getByText("Historical stretch")).toBeInTheDocument();
     expect(screen.getByText("Historical weekly review")).toBeInTheDocument();
@@ -342,8 +341,11 @@ describe("today page", () => {
   });
 
   it("returns from inline history to the current Today view", async () => {
-    getHistoryDayMock.mockResolvedValue(historyDetailDay("2026-03-12"));
-    renderTodayPage(state, [historyDay("2026-03-12")]);
+    renderTodayPage(state, [historyDay("2026-03-12")], {
+      historyDayByDate: {
+        "2026-03-12": historyDetailDay("2026-03-12"),
+      },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /history carousel/iu }));
     expect(await screen.findByText("Historical planning")).toBeInTheDocument();

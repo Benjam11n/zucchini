@@ -25,14 +25,17 @@ import type { TodayPageActions } from "@/renderer/features/today/today.types";
 import { Button } from "@/renderer/shared/components/ui/button";
 import type { Habit } from "@/shared/domain/habit";
 import { isHabitPaused } from "@/shared/domain/habit";
-import type { HistorySummaryDay } from "@/shared/domain/history";
+import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 const noopHabitMutation = () => Promise.resolve();
 
 interface TodayPageViewModel {
   hasLoadedHistorySummary: boolean;
+  historyDayByDate: Record<string, HistoryDay | undefined>;
   historySummary: HistorySummaryDay[];
+  isHistoryDayLoading: boolean;
+  loadingHistoryDayKey: string | null;
   managedHabits: Habit[];
   state: TodayState;
 }
@@ -46,8 +49,15 @@ export const TodayPage = memo(function TodayPage({
   actions,
   viewModel,
 }: TodayPageProps) {
-  const { hasLoadedHistorySummary, historySummary, managedHabits, state } =
-    viewModel;
+  const {
+    hasLoadedHistorySummary,
+    historyDayByDate,
+    historySummary,
+    isHistoryDayLoading,
+    loadingHistoryDayKey,
+    managedHabits,
+    state,
+  } = viewModel;
   const habitManagementActions = actions.habits;
   const resumeHabit = habitManagementActions.resumeHabit ?? noopHabitMutation;
   const { completedDailyHabitCount, dailyHabits, periodicHabits } = useMemo(
@@ -68,9 +78,13 @@ export const TodayPage = memo(function TodayPage({
     () => historySummary.filter((day) => day.date < state.date),
     [historySummary, state.date]
   );
-  const historicalTodaySelection = useHistoricalTodaySelection(
-    historicalHistorySummary
-  );
+  const historicalTodaySelection = useHistoricalTodaySelection({
+    history: historicalHistorySummary,
+    historyDayByDate,
+    isHistoryDayLoading,
+    loadHistoryDay: actions.history.loadDay,
+    loadingHistoryDayKey,
+  });
   const isViewingHistoricalDay = historicalTodaySelection.selectedDate !== null;
   useTodayPopups({
     completedCount: streakEligibleCompletedCount,

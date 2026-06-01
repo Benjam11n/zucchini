@@ -37,7 +37,10 @@ function TodayRoute({ actions, state }: ReadyAppController) {
       actions={buildTodayPageActions(actions)}
       viewModel={{
         hasLoadedHistorySummary: state.hasLoadedHistorySummary,
+        historyDayByDate: state.historyDayByDate,
         historySummary: state.historySummary,
+        isHistoryDayLoading: state.isHistoryDayLoading,
+        loadingHistoryDayKey: state.loadingHistoryDayKey,
         managedHabits: state.managedHabits,
         state: state.todayState,
       }}
