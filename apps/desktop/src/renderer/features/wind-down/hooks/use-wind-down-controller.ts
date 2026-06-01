@@ -1,26 +1,14 @@
 import { useState } from "react";
 
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { useAppIpcActionRunner } from "@/renderer/shared/hooks/use-app-ipc-action-runner";
 
 export function useWindDownController(actions: WindDownPageActions) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  async function runWindDownAction(task: () => Promise<void>) {
-    let didSucceed = false;
-
-    await runAppIpcTask(task, {
-      onError: (error) => {
-        setErrorMessage(error.message);
-      },
-      onSuccess: () => {
-        didSucceed = true;
-        setErrorMessage(null);
-      },
-    });
-
-    return didSucceed;
-  }
+  const runWindDownAction = useAppIpcActionRunner({
+    onError: setErrorMessage,
+    onSuccess: () => setErrorMessage(null),
+  });
 
   return {
     actions: {

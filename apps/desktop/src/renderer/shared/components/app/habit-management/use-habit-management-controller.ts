@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useAppIpcActionRunner } from "@/renderer/shared/hooks/use-app-ipc-action-runner";
 import { sortHabitListByCategory } from "@/renderer/shared/lib/reorder-habits";
 import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type {
@@ -11,7 +12,6 @@ import type {
 
 import type { HabitManagementContentProps } from "./habit-management-content/habit-management-content";
 import { useCreatedHabitExpansion } from "./hooks/use-created-habit-expansion";
-import { useHabitActionRunner } from "./hooks/use-habit-action-runner";
 import { useHabitArchiveUndo } from "./hooks/use-habit-archive-undo";
 import { useHabitDragReorder } from "./hooks/use-habit-drag-reorder";
 import { useHabitManagementFeedback } from "./hooks/use-habit-management-feedback";
@@ -52,7 +52,7 @@ export function useHabitManagementController({
     habits,
     setExpandedHabitId,
   });
-  const runHabitAction = useHabitActionRunner({
+  const runHabitAction = useAppIpcActionRunner({
     onError: showErrorFeedback,
   });
 
@@ -62,15 +62,11 @@ export function useHabitManagementController({
       return;
     }
 
-    await runHabitAction({
-      task: () => renameHabit(habitId, name),
-    });
+    await runHabitAction(() => renameHabit(habitId, name));
   }
 
   async function saveHabitChanges(task: () => Promise<void>) {
-    await runHabitAction({
-      task,
-    });
+    await runHabitAction(task);
   }
 
   async function handleUpdateHabitCategory(
@@ -116,7 +112,7 @@ export function useHabitManagementController({
     frequency: HabitFrequency,
     index: number
   ) {
-    await runHabitAction({
+    await runHabitAction(() => archiveHabit(habitId), {
       onSuccess: () => {
         archiveUndo.show({
           frequency,
@@ -128,20 +124,15 @@ export function useHabitManagementController({
           setExpandedHabitId(null);
         }
       },
-      task: () => archiveHabit(habitId),
     });
   }
 
   async function handlePauseHabit(habitId: number, _habitName: string) {
-    await runHabitAction({
-      task: () => pauseHabit(habitId),
-    });
+    await runHabitAction(() => pauseHabit(habitId));
   }
 
   async function handleResumeHabit(habitId: number, _habitName: string) {
-    await runHabitAction({
-      task: () => resumeHabit(habitId),
-    });
+    await runHabitAction(() => resumeHabit(habitId));
   }
 
   async function handleUndoArchive() {
@@ -150,11 +141,10 @@ export function useHabitManagementController({
       return;
     }
 
-    await runHabitAction({
+    await runHabitAction(() => unarchiveHabit(archivedHabit.habitId), {
       onSuccess: () => {
         archiveUndo.clear();
       },
-      task: () => unarchiveHabit(archivedHabit.habitId),
     });
   }
 
@@ -164,16 +154,13 @@ export function useHabitManagementController({
       return;
     }
 
-    await runHabitAction({
+    await runHabitAction(() => reorderHabits(previousHabits), {
       onSuccess: clearFeedback,
-      task: () => reorderHabits(previousHabits),
     });
   }
 
   async function handleReorderHabits(nextHabits: Habit[]) {
-    await runHabitAction({
-      task: () => reorderHabits(nextHabits),
-    });
+    await runHabitAction(() => reorderHabits(nextHabits));
   }
 
   const { dragState, handleDrop, setDragState } = useHabitDragReorder({
@@ -188,11 +175,10 @@ export function useHabitManagementController({
       return;
     }
 
-    await runHabitAction({
+    await runHabitAction(() => reorderHabits(nextHabits), {
       onSuccess: () => {
         showAutoSortFeedback(habits);
       },
-      task: () => reorderHabits(nextHabits),
     });
   }
 
@@ -204,15 +190,17 @@ export function useHabitManagementController({
     targetCount?: number | null
   ) {
     const trimmedName = name.trim();
-    await runHabitAction({
-      onSuccess: () => {
-        if (trimmedName) {
-          setPendingCreatedHabitName(trimmedName);
-        }
-      },
-      task: () =>
+    await runHabitAction(
+      () =>
         createHabit(name, category, frequency, selectedWeekdays, targetCount),
-    });
+      {
+        onSuccess: () => {
+          if (trimmedName) {
+            setPendingCreatedHabitName(trimmedName);
+          }
+        },
+      }
+    );
   }
 
   return {
