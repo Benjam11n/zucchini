@@ -2,7 +2,7 @@
 
 import { cn } from "@/renderer/shared/lib/class-names";
 
-import type { ActivityRingGlyphProps } from "./types";
+import type { ActivityRingGlyphProps } from "../lib/types";
 
 export function ActivityRingGlyph({
   activities,

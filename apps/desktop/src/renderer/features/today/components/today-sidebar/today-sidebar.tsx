@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring";
-import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/history-status-ui";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   DropdownMenu,

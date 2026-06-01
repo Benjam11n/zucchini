@@ -1,7 +1,7 @@
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import { createDefaultHabitCategoryPreferences } from "@/shared/domain/settings";
 
-import { buildHabitActivityData } from "./build-habit-activity-data";
+import { buildHabitActivityData } from "../lib/build-habit-activity-data";
 import { ACTIVITY_RING_SIZES } from "./constants";
 
 describe("buildHabitActivityData()", () => {

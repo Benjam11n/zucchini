@@ -1,7 +1,7 @@
 import {
   getHistoryStatusLabel,
   HISTORY_STATUS_UI,
-} from "@/renderer/shared/components/app/history-status/history-status-ui";
+} from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 
 describe("history status UI", () => {
   it("keeps labels centralized for all history status badges", () => {

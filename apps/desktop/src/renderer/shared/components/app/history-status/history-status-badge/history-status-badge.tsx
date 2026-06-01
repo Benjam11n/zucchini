@@ -1,7 +1,7 @@
 import {
   getHistoryStatusLabel,
   HISTORY_STATUS_UI,
-} from "@/renderer/shared/components/app/history-status/history-status-ui";
+} from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";

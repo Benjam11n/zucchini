@@ -2,9 +2,9 @@
 
 import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
 
-import { ActivityRingGlyph } from "./activity-ring-glyph";
-import { buildHabitActivityData } from "./build-habit-activity-data";
-import type { HabitActivityRingProps } from "./types";
+import { ActivityRingGlyph } from "../activity-ring-glyph";
+import { buildHabitActivityData } from "../lib/build-habit-activity-data";
+import type { HabitActivityRingProps } from "../lib/types";
 
 export function HabitActivityRingGlyph({
   categoryProgress,

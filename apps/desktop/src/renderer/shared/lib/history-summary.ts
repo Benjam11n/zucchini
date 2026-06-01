@@ -1,4 +1,4 @@
-import { getHistoryStatusLabel } from "@/renderer/shared/components/app/history-status/history-status-ui";
+import { getHistoryStatusLabel } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import type { DailySummary } from "@/shared/domain/streak";
 

@@ -2,7 +2,7 @@ import { ArrowRight, ListChecks } from "lucide-react";
 import { useMemo } from "react";
 
 import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
-import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/history-status-ui";
+import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {

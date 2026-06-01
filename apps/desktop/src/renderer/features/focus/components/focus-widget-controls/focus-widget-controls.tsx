@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, SkipForward, X } from "lucide-react";
 import type { CSSProperties } from "react";
 
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { Button } from "@/renderer/shared/components/ui/button";
 
 const NO_DRAG_REGION_STYLE = {
