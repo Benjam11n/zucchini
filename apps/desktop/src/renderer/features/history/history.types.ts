@@ -20,22 +20,29 @@ import type { HistoryViewModel } from "./hooks/use-history-view-state";
 
 export type WeeklyReviewPhase = AsyncPhase;
 
-export interface HistoryPageProps {
+export interface HistoryPageActions {
+  history: {
+    loadYears: () => void;
+    navigateToToday: () => void;
+    selectMonth: (year: number, month: number) => void;
+  };
+  weeklyReview: {
+    loadOverview: () => void;
+    select: (weekStart: string) => void;
+  };
+}
+
+export interface HistoryPageViewModel {
   contributionHistory: HistorySummaryDay[];
   history: HistorySummaryDay[];
   historyYears: number[];
   historyLoadError: AppIpcError | null;
-  onLoadHistoryYears: () => void;
-  onNavigateToToday: () => void;
-  onSelectHistoryMonth: (year: number, month: number) => void;
-  onLoadWeeklyReviewOverview: () => void;
   todayDate: string;
   selectedHistoryYear: number | null;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
-  onSelectWeeklyReview: (weekStart: string) => void;
   viewModel?: HistoryViewModel;
 }
 

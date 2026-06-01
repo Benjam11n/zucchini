@@ -13,9 +13,9 @@ import type { AppControllerState } from "@/renderer/app/controller/app-controlle
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
+  validateAppSettings,
 } from "@/renderer/features/settings/lib/settings-form";
 import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { appSettingsSchema } from "@/shared/domain/schemas/settings";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function useSettingsAutosave({
@@ -75,10 +75,10 @@ export function useSettingsAutosave({
       return;
     }
 
-    const validationResult = appSettingsSchema.safeParse(draft);
+    const validationResult = validateAppSettings(draft);
     if (!validationResult.success) {
       setSettingsValidationErrors(
-        mapSettingsValidationErrors(validationResult.error.issues)
+        mapSettingsValidationErrors(validationResult.issues)
       );
       setSettingsSaveErrorMessage(null);
       setSettingsSavePhase("invalid");

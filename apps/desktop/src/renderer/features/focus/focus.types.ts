@@ -1,22 +1,20 @@
 /**
  * Focus page type definitions.
  *
- * Re-exports focus timer domain types and defines the `FocusPageProps`
- * interface consumed by the focus page component. Also includes the
- * `FocusTodaySummary` type for daily completion stats.
+ * Re-exports focus timer domain types and defines focus page action/view-model
+ * contracts. Component prop types live beside their component.
  */
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
-import type { SettingsSavePhase } from "@/renderer/shared/types/settings";
-import type { FocusSession } from "@/shared/domain/focus-session";
+import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
 import type {
   FocusBreakVariant,
   PersistedCompletedBreakState,
   PersistedFocusTimerState,
 } from "@/shared/domain/focus-timer";
-import type {
-  FocusQuotaGoalWithStatus,
-  GoalFrequency,
-} from "@/shared/domain/goal";
+import type { GoalFrequency } from "@/shared/domain/goal";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export type FocusSessionsPhase = AsyncPhase;
@@ -31,23 +29,19 @@ export interface FocusTodaySummary {
   totalMinutes: number;
 }
 
-export interface FocusPageProps {
-  focusSaveErrorMessage: string | null;
-  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
-  fieldErrors: Partial<Record<keyof AppSettings, string>>;
-  phase: FocusSessionsPhase;
-  sessions: FocusSession[];
-  sessionsLoadError: Error | null;
-  settings: AppSettings;
-  settingsSavePhase: SettingsSavePhase;
-  timerState: PersistedFocusTimerState;
-  todayDate: string;
-  onArchiveFocusQuotaGoal?: (goalId: number) => Promise<void>;
-  onChangeSettings: (settings: AppSettings) => void;
-  onShowWidget: () => Promise<void>;
-  onUpsertFocusQuotaGoal?: (
-    frequency: GoalFrequency,
-    targetMinutes: number
-  ) => Promise<void>;
-  onRetryLoad: () => Promise<void>;
+export interface FocusPageActions {
+  focusQuotaGoals?: {
+    archive: (goalId: number) => Promise<void>;
+    upsert: (frequency: GoalFrequency, targetMinutes: number) => Promise<void>;
+  };
+  focusTimer: {
+    recordSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
+    showWidget: () => Promise<void>;
+  };
+  sessions: {
+    retryLoad: () => Promise<void>;
+  };
+  settings: {
+    change: (settings: AppSettings) => void;
+  };
 }

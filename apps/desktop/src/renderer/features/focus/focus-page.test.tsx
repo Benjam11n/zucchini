@@ -34,18 +34,29 @@ function FocusPageHarness() {
 
   return (
     <FocusPage
-      fieldErrors={{}}
-      focusSaveErrorMessage={null}
-      phase="ready"
-      sessions={[]}
-      sessionsLoadError={null}
-      settings={settings}
-      settingsSavePhase="idle"
-      timerState={timerState}
-      todayDate="2026-03-08"
-      onChangeSettings={vi.fn()}
-      onShowWidget={vi.fn()}
-      onRetryLoad={vi.fn()}
+      actions={{
+        focusTimer: {
+          recordSession: vi.fn(() => Promise.resolve({} as never)),
+          showWidget: vi.fn(),
+        },
+        sessions: {
+          retryLoad: vi.fn(),
+        },
+        settings: {
+          change: vi.fn(),
+        },
+      }}
+      viewModel={{
+        fieldErrors: {},
+        focusSaveErrorMessage: null,
+        phase: "ready",
+        sessions: [],
+        sessionsLoadError: null,
+        settings,
+        settingsSavePhase: "idle",
+        timerState,
+        todayDate: "2026-03-08",
+      }}
     />
   );
 }

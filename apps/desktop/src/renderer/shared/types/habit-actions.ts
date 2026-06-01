@@ -5,34 +5,34 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-export interface HabitMutationActions {
-  onArchiveHabit: (habitId: number) => Promise<void>;
-  onCreateHabit: (
+export interface HabitManagementActions {
+  archiveHabit: (habitId: number) => Promise<void>;
+  createHabit: (
     name: string,
     category: HabitCategory,
     frequency: HabitFrequency,
     selectedWeekdays?: HabitWeekday[] | null,
     targetCount?: number | null
   ) => Promise<void>;
-  onRenameHabit: (habitId: number, name: string) => Promise<void>;
-  onPauseHabit: (habitId: number) => Promise<void>;
-  onReorderHabits: (habits: Habit[]) => Promise<void>;
-  onResumeHabit: (habitId: number) => Promise<void>;
-  onUnarchiveHabit: (habitId: number) => Promise<void>;
-  onUpdateHabitCategory: (
+  pauseHabit?: (habitId: number) => Promise<void>;
+  renameHabit: (habitId: number, name: string) => Promise<void>;
+  reorderHabits: (habits: Habit[]) => Promise<void>;
+  resumeHabit?: (habitId: number) => Promise<void>;
+  unarchiveHabit: (habitId: number) => Promise<void>;
+  updateHabitCategory: (
     habitId: number,
     category: HabitCategory
   ) => Promise<void>;
-  onUpdateHabitFrequency: (
+  updateHabitFrequency: (
     habitId: number,
     frequency: HabitFrequency,
     targetCount?: number | null
   ) => Promise<void>;
-  onUpdateHabitTargetCount: (
+  updateHabitTargetCount: (
     habitId: number,
     targetCount: number
   ) => Promise<void>;
-  onUpdateHabitWeekdays: (
+  updateHabitWeekdays: (
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ) => Promise<void>;

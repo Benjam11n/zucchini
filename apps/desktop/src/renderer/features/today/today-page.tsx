@@ -21,52 +21,35 @@ import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-c
 import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";
 import { useTodayPopups } from "@/renderer/features/today/hooks/use-today-popups";
 import { splitTodayHabits } from "@/renderer/features/today/lib/split-today-habits";
+import type { TodayPageActions } from "@/renderer/features/today/today.types";
 import { Button } from "@/renderer/shared/components/ui/button";
-import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
-import { isHabitPaused } from "@/shared/domain/habit";
 import type { Habit } from "@/shared/domain/habit";
+import { isHabitPaused } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { TodayState } from "@/shared/read-models/today-state";
 
-interface TodayPageProps extends Omit<
-  HabitMutationActions,
-  "onPauseHabit" | "onResumeHabit"
-> {
+const noopHabitMutation = () => Promise.resolve();
+
+interface TodayPageViewModel {
   hasLoadedHistorySummary: boolean;
   historySummary: HistorySummaryDay[];
   managedHabits: Habit[];
-  onDecrementHabitProgress: (habitId: number) => void;
-  onIncrementHabitProgress: (habitId: number) => void;
-  onPauseHabit?: HabitMutationActions["onPauseHabit"];
-  onResumeHabit?: HabitMutationActions["onResumeHabit"];
-  onToggleHabitCarryover: (sourceDate: string, habitId: number) => void;
   state: TodayState;
-  onToggleHabit: (habitId: number) => void;
 }
 
-const noopHabitMutation = () => Promise.resolve();
+interface TodayPageProps {
+  actions: TodayPageActions;
+  viewModel: TodayPageViewModel;
+}
 
 export const TodayPage = memo(function TodayPage({
-  hasLoadedHistorySummary,
-  historySummary,
-  managedHabits,
-  onArchiveHabit,
-  onCreateHabit,
-  onDecrementHabitProgress,
-  onIncrementHabitProgress,
-  onToggleHabitCarryover,
-  onPauseHabit = noopHabitMutation,
-  onRenameHabit,
-  onResumeHabit = noopHabitMutation,
-  onReorderHabits,
-  onUnarchiveHabit,
-  state,
-  onToggleHabit,
-  onUpdateHabitCategory,
-  onUpdateHabitFrequency,
-  onUpdateHabitTargetCount,
-  onUpdateHabitWeekdays,
+  actions,
+  viewModel,
 }: TodayPageProps) {
+  const { hasLoadedHistorySummary, historySummary, managedHabits, state } =
+    viewModel;
+  const habitManagementActions = actions.habits;
+  const resumeHabit = habitManagementActions.resumeHabit ?? noopHabitMutation;
   const { completedDailyHabitCount, dailyHabits, periodicHabits } = useMemo(
     () => splitTodayHabits(state.habits),
     [state.habits]
@@ -109,10 +92,10 @@ export const TodayPage = memo(function TodayPage({
     keyboardHint,
   } = useTodayKeyboardRows({
     dailyHabits,
-    onDecrementHabitProgress,
-    onIncrementHabitProgress,
-    onToggleHabit,
-    onToggleHabitCarryover,
+    onDecrementHabitProgress: habitManagementActions.decrementProgress,
+    onIncrementHabitProgress: habitManagementActions.incrementProgress,
+    onToggleHabit: habitManagementActions.toggleHabit,
+    onToggleHabitCarryover: habitManagementActions.toggleCarryover,
     periodicHabits,
     state,
   });
@@ -159,18 +142,8 @@ export const TodayPage = memo(function TodayPage({
                 emptyMessage="No daily habits yet. Create one to start building momentum."
                 emptyAction={
                   <TodayHabitManagerDialog
+                    actions={habitManagementActions}
                     habits={managedHabits}
-                    onArchiveHabit={onArchiveHabit}
-                    onCreateHabit={onCreateHabit}
-                    onPauseHabit={onPauseHabit}
-                    onRenameHabit={onRenameHabit}
-                    onReorderHabits={onReorderHabits}
-                    onResumeHabit={onResumeHabit}
-                    onUnarchiveHabit={onUnarchiveHabit}
-                    onUpdateHabitCategory={onUpdateHabitCategory}
-                    onUpdateHabitFrequency={onUpdateHabitFrequency}
-                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
-                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
                     trigger={
                       <Button size="sm" type="button" variant="outline">
                         <Plus className="size-4" />
@@ -181,25 +154,15 @@ export const TodayPage = memo(function TodayPage({
                 }
                 headerActions={
                   <TodayHabitManagerDialog
+                    actions={habitManagementActions}
                     habits={managedHabits}
-                    onArchiveHabit={onArchiveHabit}
-                    onCreateHabit={onCreateHabit}
-                    onPauseHabit={onPauseHabit}
-                    onRenameHabit={onRenameHabit}
-                    onReorderHabits={onReorderHabits}
-                    onResumeHabit={onResumeHabit}
-                    onUnarchiveHabit={onUnarchiveHabit}
-                    onUpdateHabitCategory={onUpdateHabitCategory}
-                    onUpdateHabitFrequency={onUpdateHabitFrequency}
-                    onUpdateHabitTargetCount={onUpdateHabitTargetCount}
-                    onUpdateHabitWeekdays={onUpdateHabitWeekdays}
                   />
                 }
                 habits={dailyHabits}
                 pausedHabits={pausedHabits}
                 isPaused={state.dayStatus !== null}
                 getKeyboardRowProps={getRowProps}
-                onResumeHabit={onResumeHabit}
+                onResumeHabit={resumeHabit}
                 onToggleHabit={handleToggleDailyHabit}
                 {...(state.habitStreaks
                   ? { habitStreaks: state.habitStreaks }
@@ -228,7 +191,9 @@ export const TodayPage = memo(function TodayPage({
                   focusQuotaGoals={state.focusQuotaGoals ?? []}
                   habits={periodicHabits}
                   getKeyboardRowProps={getRowProps}
-                  onDecrementHabitProgress={onDecrementHabitProgress}
+                  onDecrementHabitProgress={
+                    habitManagementActions.decrementProgress
+                  }
                   onIncrementHabitProgress={handleIncrementPeriodicHabit}
                 />
               </section>

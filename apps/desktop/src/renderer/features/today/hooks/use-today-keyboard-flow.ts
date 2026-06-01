@@ -16,7 +16,7 @@ export interface TodayKeyboardRow {
   onToggle?: (() => void) | undefined;
 }
 
-export interface TodayKeyboardHint {
+export interface TodayKeyboardHintValue {
   kind: TodayKeyboardRowKind;
   rowId: string;
 }

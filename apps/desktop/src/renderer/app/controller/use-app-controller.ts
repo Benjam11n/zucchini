@@ -87,6 +87,7 @@ function buildControllerActions({
     handleLoadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
     handleOpenWindDown: actions.handleOpenWindDown,
     handlePauseHabit: actions.handlePauseHabit,
+    handleRecordFocusSession: actions.recordFocusSession,
     handleRenameHabit: actions.handleRenameHabit,
     handleRenameWindDownAction: actions.handleRenameWindDownAction,
     handleReorderHabits: actions.handleReorderHabits,

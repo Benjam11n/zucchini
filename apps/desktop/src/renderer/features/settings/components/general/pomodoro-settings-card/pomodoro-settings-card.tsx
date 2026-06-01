@@ -1,0 +1,89 @@
+import { TimerReset } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import type {
+  SettingsPageActions,
+  SettingsPageViewModel,
+} from "@/renderer/features/settings/settings.types";
+import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
+import type { FocusTimerShortcutStatus } from "@/shared/contracts/api/desktop-api";
+
+interface PomodoroSettingsCardProps {
+  fieldErrors: SettingsPageViewModel["fieldErrors"];
+  onChange: SettingsPageActions["settings"]["change"];
+  settings: SettingsPageViewModel["settings"];
+}
+
+export function PomodoroSettingsCard({
+  fieldErrors,
+  onChange,
+  settings,
+}: PomodoroSettingsCardProps) {
+  const [shortcutStatus, setShortcutStatus] =
+    useState<FocusTimerShortcutStatus | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadShortcutStatus() {
+      try {
+        const nextStatus = await window.desktop.getFocusTimerShortcutStatus();
+
+        if (!cancelled) {
+          setShortcutStatus(nextStatus);
+        }
+      } catch {
+        if (!cancelled) {
+          setShortcutStatus(null);
+        }
+      }
+    }
+
+    loadShortcutStatus();
+
+    const unsubscribe =
+      window.desktop.onFocusTimerShortcutStatusChanged(setShortcutStatus);
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  const shortcutWarnings = shortcutStatus
+    ? [shortcutStatus.toggle, shortcutStatus.reset].filter(
+        (registration) => registration.errorMessage
+      )
+    : [];
+
+  return (
+    <Card>
+      <SettingsCardHeader
+        description="Adjust timer lengths and review global keyboard shortcuts."
+        icon={TimerReset}
+        title="Pomodoro"
+      />
+      <CardContent>
+        {shortcutWarnings.map((registration) => (
+          <p
+            key={registration.accelerator}
+            className="mb-3 text-sm text-amber-700 dark:text-amber-300"
+          >
+            {registration.errorMessage}
+            {registration.activeAccelerator
+              ? ` Still active: ${registration.activeAccelerator}.`
+              : ""}
+          </p>
+        ))}
+        <PomodoroSettingsFields
+          fieldErrors={fieldErrors}
+          idPrefix="settings-pomodoro"
+          onChange={onChange}
+          settings={settings}
+        />
+      </CardContent>
+    </Card>
+  );
+}

@@ -209,9 +209,6 @@ describe("today page", () => {
       onResumeHabit?: (habitId: number) => Promise<void>;
     } = {}
   ) {
-    const optionalProps = options.onResumeHabit
-      ? { onResumeHabit: options.onResumeHabit }
-      : {};
     const handlers = {
       handleDecrementHabitProgress: vi.fn(),
       handleIncrementHabitProgress: vi.fn(),
@@ -221,24 +218,32 @@ describe("today page", () => {
 
     render(
       <TodayPage
-        hasLoadedHistorySummary
-        historySummary={historySummary}
-        managedHabits={options.managedHabits ?? managedHabits}
-        onArchiveHabit={vi.fn(() => Promise.resolve())}
-        onCreateHabit={vi.fn(() => Promise.resolve())}
-        onRenameHabit={vi.fn(() => Promise.resolve())}
-        onReorderHabits={vi.fn(() => Promise.resolve())}
-        onUnarchiveHabit={vi.fn(() => Promise.resolve())}
-        state={todayState}
-        onDecrementHabitProgress={handlers.handleDecrementHabitProgress}
-        onIncrementHabitProgress={handlers.handleIncrementHabitProgress}
-        onToggleHabit={handlers.handleToggleHabit}
-        onToggleHabitCarryover={handlers.handleToggleHabitCarryover}
-        onUpdateHabitCategory={vi.fn(() => Promise.resolve())}
-        onUpdateHabitFrequency={vi.fn(() => Promise.resolve())}
-        onUpdateHabitTargetCount={vi.fn(() => Promise.resolve())}
-        onUpdateHabitWeekdays={vi.fn(() => Promise.resolve())}
-        {...optionalProps}
+        actions={{
+          habits: {
+            archiveHabit: vi.fn(() => Promise.resolve()),
+            createHabit: vi.fn(() => Promise.resolve()),
+            decrementProgress: handlers.handleDecrementHabitProgress,
+            incrementProgress: handlers.handleIncrementHabitProgress,
+            renameHabit: vi.fn(() => Promise.resolve()),
+            reorderHabits: vi.fn(() => Promise.resolve()),
+            ...(options.onResumeHabit
+              ? { resumeHabit: options.onResumeHabit }
+              : {}),
+            toggleCarryover: handlers.handleToggleHabitCarryover,
+            toggleHabit: handlers.handleToggleHabit,
+            unarchiveHabit: vi.fn(() => Promise.resolve()),
+            updateHabitCategory: vi.fn(() => Promise.resolve()),
+            updateHabitFrequency: vi.fn(() => Promise.resolve()),
+            updateHabitTargetCount: vi.fn(() => Promise.resolve()),
+            updateHabitWeekdays: vi.fn(() => Promise.resolve()),
+          },
+        }}
+        viewModel={{
+          hasLoadedHistorySummary: true,
+          historySummary,
+          managedHabits: options.managedHabits ?? managedHabits,
+          state: todayState,
+        }}
       />
     );
 

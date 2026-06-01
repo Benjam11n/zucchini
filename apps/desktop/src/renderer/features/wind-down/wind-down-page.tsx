@@ -1,98 +1,32 @@
-import { useForm } from "@tanstack/react-form";
 import { LazyMotion, domAnimation, m } from "framer-motion";
-import { Archive, MoonStar, Pencil, Plus } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { z } from "zod";
+import { MoonStar } from "lucide-react";
 
-import { Button } from "@/renderer/shared/components/ui/button";
-import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
-import {
-  HabitListEmptyState,
-  HabitListCard,
-  HabitListItemActions,
-  HabitListItem,
-  HabitListRows,
-} from "@/renderer/shared/components/ui/habit-list";
-import { Input } from "@/renderer/shared/components/ui/input";
+import { WindDownActionForm } from "@/renderer/features/wind-down/components/wind-down-action-form";
+import { WindDownActionRows } from "@/renderer/features/wind-down/components/wind-down-action-rows";
+import { useWindDownController } from "@/renderer/features/wind-down/hooks/use-wind-down-controller";
+import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
+import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
-import type { HabitWithStatus } from "@/shared/domain/habit";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
 import type { TodayState } from "@/shared/read-models/today-state";
 
-interface WindDownPageProps {
-  onCreateAction: (name: string) => Promise<void>;
-  onDeleteAction: (actionId: number) => Promise<void>;
-  onRenameAction: (actionId: number, name: string) => Promise<void>;
-  onToggleAction: (actionId: number) => void;
+interface WindDownPageViewModel {
   state: TodayState;
 }
 
-async function runAction(action: () => Promise<void>): Promise<void> {
-  try {
-    await action();
-  } catch {
-    // Errors are surfaced by the app shell state.
-  }
+interface WindDownPageProps {
+  actions: WindDownPageActions;
+  viewModel: WindDownPageViewModel;
 }
 
-const newActionSchema = z.object({
-  name: z.string().trim().min(1, "Action name is required."),
-});
-
-export function WindDownPage({
-  onCreateAction,
-  onDeleteAction,
-  onRenameAction,
-  onToggleAction,
-  state,
-}: WindDownPageProps) {
+export function WindDownPage({ actions, viewModel }: WindDownPageProps) {
+  const { actions: controllerActions, errorMessage } =
+    useWindDownController(actions);
+  const { state } = viewModel;
   const windDown = state.windDown ?? buildEmptyWindDownState(state.date);
-  const [editingActionId, setEditingActionId] = useState<number | null>(null);
-  const [editingName, setEditingName] = useState("");
-  const activeEditingInput = useRef<HTMLInputElement | null>(null);
-  const newActionForm = useForm({
-    defaultValues: {
-      name: "",
-    },
-    onSubmit: async ({ value }) => {
-      await runAction(() => onCreateAction(value.name.trim()));
-      newActionForm.reset();
-    },
-    validators: {
-      onSubmit: newActionSchema,
-    },
-  });
-  const handleEditingInputRef = useCallback((node: HTMLInputElement | null) => {
-    if (!node || node === activeEditingInput.current) {
-      return;
-    }
-
-    activeEditingInput.current = node;
-    node.focus();
-    node.select();
-  }, []);
-  const windDownChecklistHabits = useMemo(
-    () =>
-      windDown.actions.map(
-        (action) =>
-          ({
-            category: "productivity",
-            completed: action.completed,
-            completedCount: action.completed ? 1 : 0,
-            createdAt: action.createdAt,
-            frequency: "daily",
-            id: action.id,
-            isArchived: false,
-            name: action.name,
-            sortOrder: action.sortOrder,
-            targetCount: 1,
-          }) satisfies HabitWithStatus
-      ),
-    [windDown.actions]
-  );
 
   return (
     <LazyMotion features={domAnimation}>
@@ -116,137 +50,20 @@ export function WindDownPage({
             title="Wind Down"
           >
             <div className="space-y-4">
-              <form
-                className="flex flex-col gap-3 sm:flex-row"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  await newActionForm.handleSubmit();
-                }}
-              >
-                <newActionForm.Field name="name">
-                  {(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <>
-                        <Input
-                          aria-invalid={isInvalid}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => {
-                            field.handleChange(event.currentTarget.value);
-                          }}
-                          placeholder="Read a book..."
-                          value={field.state.value}
-                        />
-                        <newActionForm.Subscribe
-                          selector={(formState) => ({
-                            isSubmitting: formState.isSubmitting,
-                            name: formState.values.name,
-                          })}
-                        >
-                          {(formState) => (
-                            <Button
-                              disabled={
-                                formState.isSubmitting ||
-                                formState.name.trim().length === 0
-                              }
-                              type="submit"
-                            >
-                              <Plus className="size-4" />
-                              Add action
-                            </Button>
-                          )}
-                        </newActionForm.Subscribe>
-                      </>
-                    );
-                  }}
-                </newActionForm.Field>
-              </form>
-
-              {windDownChecklistHabits.length === 0 ? (
-                <HabitListEmptyState>
-                  No wind down actions yet.
-                </HabitListEmptyState>
-              ) : (
-                <HabitListRows>
-                  {windDownChecklistHabits.map((action) => {
-                    const isEditing = editingActionId === action.id;
-
-                    return isEditing ? (
-                      <div key={action.id} className="rounded-md px-3 py-2.5">
-                        <Input
-                          onBlur={async () => {
-                            const trimmedName = editingName.trim();
-                            if (trimmedName) {
-                              await runAction(() =>
-                                onRenameAction(action.id, trimmedName)
-                              );
-                            }
-                            setEditingActionId(null);
-                          }}
-                          onChange={(event) =>
-                            setEditingName(event.currentTarget.value)
-                          }
-                          onKeyDown={async (event) => {
-                            if (event.key === "Enter") {
-                              event.preventDefault();
-                              const trimmedName = editingName.trim();
-                              if (trimmedName) {
-                                await runAction(() =>
-                                  onRenameAction(action.id, trimmedName)
-                                );
-                              }
-                              setEditingActionId(null);
-                            }
-                          }}
-                          ref={handleEditingInputRef}
-                          value={editingName}
-                        />
-                      </div>
-                    ) : (
-                      <HabitListItem
-                        key={action.id}
-                        habit={action}
-                        onToggle={onToggleAction}
-                        trailingActions={
-                          <HabitListItemActions>
-                            <Button
-                              onClick={(event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                setEditingActionId(action.id);
-                                setEditingName(action.name);
-                              }}
-                              size="icon-xs"
-                              type="button"
-                              variant="ghost"
-                            >
-                              <Pencil className="size-3.5" />
-                              <span className="sr-only">
-                                Edit {action.name}
-                              </span>
-                            </Button>
-                            <ConfirmIconButton
-                              confirmLabel={`Confirm delete ${action.name}`}
-                              icon={<Archive className="size-3.5" />}
-                              idleLabel={`Delete ${action.name}`}
-                              onConfirm={async () => {
-                                await runAction(() =>
-                                  onDeleteAction(action.id)
-                                );
-                              }}
-                              resetKey={action.id}
-                              size="icon-xs"
-                              variant="destructive"
-                            />
-                          </HabitListItemActions>
-                        }
-                      />
-                    );
-                  })}
-                </HabitListRows>
-              )}
+              {errorMessage ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/8 px-3 py-2 text-sm text-destructive">
+                  {errorMessage}
+                </div>
+              ) : null}
+              <WindDownActionForm
+                onCreateAction={controllerActions.windDown.createAction}
+              />
+              <WindDownActionRows
+                actions={windDown.actions}
+                onDeleteAction={controllerActions.windDown.deleteAction}
+                onRenameAction={controllerActions.windDown.renameAction}
+                onToggleAction={controllerActions.windDown.toggleAction}
+              />
             </div>
           </HabitListCard>
         </m.section>

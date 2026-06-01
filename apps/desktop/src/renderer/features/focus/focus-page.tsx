@@ -7,7 +7,10 @@ import { VisuallyHidden } from "radix-ui";
  */
 import { memo, useState } from "react";
 
-import type { FocusPageProps } from "@/renderer/features/focus/focus.types";
+import type {
+  FocusPageActions,
+  FocusSessionsPhase,
+} from "@/renderer/features/focus/focus.types";
 import { useFocusTimerActions } from "@/renderer/features/focus/hooks/use-focus-timer-actions";
 import { resetFocusTimerSession } from "@/renderer/features/focus/lib/focus-timer-session";
 import {
@@ -26,31 +29,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
-import { appClient } from "@/renderer/shared/lib/app-client";
+import type { SettingsSavePhase } from "@/renderer/shared/types/settings";
+import type { FocusSession } from "@/shared/domain/focus-session";
+import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
+import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
+import type { AppSettings } from "@/shared/domain/settings";
 
 import { FocusSessionList } from "./components/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card";
 
+interface FocusPageViewModel {
+  focusSaveErrorMessage: string | null;
+  focusQuotaGoals?: FocusQuotaGoalWithStatus[];
+  fieldErrors: Partial<Record<keyof AppSettings, string>>;
+  phase: FocusSessionsPhase;
+  sessions: FocusSession[];
+  sessionsLoadError: Error | null;
+  settings: AppSettings;
+  settingsSavePhase: SettingsSavePhase;
+  timerState: PersistedFocusTimerState;
+  todayDate: string;
+}
+
+interface FocusPageProps {
+  actions: FocusPageActions;
+  viewModel: FocusPageViewModel;
+}
+
 export const FocusPage = memo(function FocusPage({
-  fieldErrors,
-  focusSaveErrorMessage,
-  phase,
-  sessions,
-  sessionsLoadError,
-  settings,
-  timerState,
-  todayDate,
-  onChangeSettings,
-  onShowWidget,
-  onRetryLoad,
+  actions,
+  viewModel,
 }: FocusPageProps) {
+  const {
+    fieldErrors,
+    focusSaveErrorMessage,
+    phase,
+    sessions,
+    sessionsLoadError,
+    settings,
+    timerState,
+    todayDate,
+  } = viewModel;
   const { clearFocusSaveError, setFocusSaveErrorMessage, setTimerState } =
     useFocusTimerActions();
   const [isPomodoroDialogOpen, setIsPomodoroDialogOpen] = useState(false);
   const defaultFocusDurationMs = getPomodoroFocusDurationMs(settings);
 
-  const handleSettingsChange = (nextSettings: FocusPageProps["settings"]) => {
-    onChangeSettings(nextSettings);
+  const handleSettingsChange = (nextSettings: AppSettings) => {
+    actions.settings.change(nextSettings);
 
     if (timerState.status === "idle" && timerState.phase === "focus") {
       setTimerState(
@@ -66,7 +92,7 @@ export const FocusPage = memo(function FocusPage({
     await resetFocusTimerSession({
       clearFocusSaveError,
       focusDurationMs: defaultFocusDurationMs,
-      recordFocusSession: appClient.recordFocusSession,
+      recordFocusSession: actions.focusTimer.recordSession,
       setFocusSaveErrorMessage,
       setTimerState,
       timerState,
@@ -122,7 +148,7 @@ export const FocusPage = memo(function FocusPage({
           onPause={() => setTimerState(pauseFocusTimerState(timerState))}
           onReset={handleReset}
           onResume={() => setTimerState(resumeFocusTimerState(timerState))}
-          onShowWidget={onShowWidget}
+          onShowWidget={actions.focusTimer.showWidget}
           onSkipBreak={handleSkipBreak}
           onStart={handleStart}
         />
@@ -133,7 +159,7 @@ export const FocusPage = memo(function FocusPage({
         sessionsLoadError={sessionsLoadError}
         timerState={timerState}
         todayDate={todayDate}
-        onRetryLoad={onRetryLoad}
+        onRetryLoad={actions.sessions.retryLoad}
       />
 
       <Dialog

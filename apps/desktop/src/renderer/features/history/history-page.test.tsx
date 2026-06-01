@@ -13,6 +13,7 @@ import type {
 import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
 
 import { HistoryPage } from "./history-page";
+import type { HistoryPageActions, HistoryPageViewModel } from "./history.types";
 
 vi.mock(import("framer-motion"), (importOriginal) =>
   createFramerMotionMock(importOriginal)
@@ -193,27 +194,52 @@ function createWeeklyReviewOverview(): WeeklyReviewOverview {
   };
 }
 
-function renderHistoryPage(
-  props: Partial<ComponentProps<typeof HistoryPage>> = {}
-) {
+type HistoryPageTestProps = Partial<HistoryPageViewModel> & {
+  actions?: HistoryPageActions;
+  onLoadHistoryYears?: () => void;
+  onLoadWeeklyReviewOverview?: () => void;
+  onSelectHistoryMonth?: (year: number, month: number) => void;
+  onSelectWeeklyReview?: (weekStart: string) => void;
+};
+
+function renderHistoryPage(props: HistoryPageTestProps = {}) {
+  const {
+    actions,
+    onLoadHistoryYears = vi.fn(),
+    onLoadWeeklyReviewOverview = vi.fn(),
+    onSelectHistoryMonth = vi.fn(),
+    onSelectWeeklyReview = vi.fn(),
+    ...viewModelProps
+  } = props;
+
   return render(
     <HistoryPage
-      contributionHistory={[createHistoryDay("2026-03-10")]}
-      history={[createHistoryDay("2026-03-10")]}
-      historyLoadError={null}
-      historyYears={[2026]}
-      onLoadHistoryYears={vi.fn()}
-      onLoadWeeklyReviewOverview={vi.fn()}
-      onNavigateToToday={vi.fn()}
-      onSelectHistoryMonth={vi.fn()}
-      onSelectWeeklyReview={vi.fn()}
-      selectedHistoryYear={2026}
-      selectedWeeklyReview={null}
-      todayDate="2026-03-10"
-      weeklyReviewError={null}
-      weeklyReviewOverview={null}
-      weeklyReviewPhase="idle"
-      {...props}
+      actions={
+        actions ?? {
+          history: {
+            loadYears: onLoadHistoryYears,
+            navigateToToday: vi.fn(),
+            selectMonth: onSelectHistoryMonth,
+          },
+          weeklyReview: {
+            loadOverview: onLoadWeeklyReviewOverview,
+            select: onSelectWeeklyReview,
+          },
+        }
+      }
+      viewModel={{
+        contributionHistory: [createHistoryDay("2026-03-10")],
+        history: [createHistoryDay("2026-03-10")],
+        historyLoadError: null,
+        historyYears: [2026],
+        selectedHistoryYear: 2026,
+        selectedWeeklyReview: null,
+        todayDate: "2026-03-10",
+        weeklyReviewError: null,
+        weeklyReviewOverview: null,
+        weeklyReviewPhase: "idle",
+        ...viewModelProps,
+      }}
     />
   );
 }
@@ -338,21 +364,29 @@ describe("history page", () => {
 
     rerender(
       <HistoryPage
-        contributionHistory={[latestHistoryDay]}
-        history={[latestHistoryDay]}
-        historyLoadError={null}
-        historyYears={[2026]}
-        onLoadHistoryYears={vi.fn()}
-        onLoadWeeklyReviewOverview={vi.fn()}
-        onNavigateToToday={vi.fn()}
-        onSelectHistoryMonth={vi.fn()}
-        onSelectWeeklyReview={onSelectWeeklyReview}
-        selectedHistoryYear={2026}
-        selectedWeeklyReview={null}
-        todayDate="2026-03-10"
-        weeklyReviewError={null}
-        weeklyReviewOverview={null}
-        weeklyReviewPhase="idle"
+        actions={{
+          history: {
+            loadYears: vi.fn(),
+            navigateToToday: vi.fn(),
+            selectMonth: vi.fn(),
+          },
+          weeklyReview: {
+            loadOverview: vi.fn(),
+            select: onSelectWeeklyReview,
+          },
+        }}
+        viewModel={{
+          contributionHistory: [latestHistoryDay],
+          history: [latestHistoryDay],
+          historyLoadError: null,
+          historyYears: [2026],
+          selectedHistoryYear: 2026,
+          selectedWeeklyReview: null,
+          todayDate: "2026-03-10",
+          weeklyReviewError: null,
+          weeklyReviewOverview: null,
+          weeklyReviewPhase: "idle",
+        }}
       />
     );
 

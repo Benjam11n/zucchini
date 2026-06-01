@@ -2,6 +2,14 @@ import { lazy, Suspense } from "react";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
+import {
+  buildFocusPageActions,
+  buildHistoryPageActions,
+  buildInsightsPageActions,
+  buildSettingsPageActions,
+  buildTodayPageActions,
+  buildWindDownPageActions,
+} from "@/renderer/app/route-page-props";
 import { HistoryPage } from "@/renderer/features/history/history-page";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
@@ -26,25 +34,13 @@ const InsightsPage = lazy(async () => {
 function TodayRoute({ actions, state }: ReadyAppController) {
   return (
     <TodayPage
-      hasLoadedHistorySummary={state.hasLoadedHistorySummary}
-      historySummary={state.historySummary}
-      managedHabits={state.managedHabits}
-      onArchiveHabit={actions.handleArchiveHabit}
-      onCreateHabit={actions.handleCreateHabit}
-      onDecrementHabitProgress={actions.handleDecrementHabitProgress}
-      onIncrementHabitProgress={actions.handleIncrementHabitProgress}
-      onPauseHabit={actions.handlePauseHabit}
-      onRenameHabit={actions.handleRenameHabit}
-      onReorderHabits={actions.handleReorderHabits}
-      onResumeHabit={actions.handleResumeHabit}
-      onUnarchiveHabit={actions.handleUnarchiveHabit}
-      state={state.todayState}
-      onToggleHabitCarryover={actions.handleToggleHabitCarryover}
-      onToggleHabit={actions.handleToggleHabit}
-      onUpdateHabitCategory={actions.handleUpdateHabitCategory}
-      onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
-      onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
-      onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
+      actions={buildTodayPageActions(actions)}
+      viewModel={{
+        hasLoadedHistorySummary: state.hasLoadedHistorySummary,
+        historySummary: state.historySummary,
+        managedHabits: state.managedHabits,
+        state: state.todayState,
+      }}
     />
   );
 }
@@ -52,11 +48,8 @@ function TodayRoute({ actions, state }: ReadyAppController) {
 function WindDownRoute({ actions, state }: ReadyAppController) {
   return (
     <WindDownPage
-      onCreateAction={actions.handleCreateWindDownAction}
-      onDeleteAction={actions.handleDeleteWindDownAction}
-      onRenameAction={actions.handleRenameWindDownAction}
-      onToggleAction={actions.handleToggleWindDownAction}
-      state={state.todayState}
+      actions={buildWindDownPageActions(actions)}
+      viewModel={{ state: state.todayState }}
     />
   );
 }
@@ -76,22 +69,20 @@ function HistoryRoute({
       }
     >
       <HistoryPage
-        history={state.history}
-        contributionHistory={state.contributionHistory}
-        historyYears={state.historyYears}
-        historyLoadError={state.historyLoadError}
-        onLoadWeeklyReviewOverview={actions.handleLoadWeeklyReviewOverview}
-        onLoadHistoryYears={actions.handleLoadHistoryYears}
-        onNavigateToToday={() => actions.handleTabChange("today")}
-        onSelectHistoryMonth={actions.handleSelectHistoryMonth}
-        todayDate={state.todayState.date}
-        selectedHistoryYear={state.selectedHistoryYear}
-        onSelectWeeklyReview={actions.handleWeeklyReviewSelect}
-        selectedWeeklyReview={state.selectedWeeklyReview}
-        weeklyReviewError={state.weeklyReviewError}
-        weeklyReviewOverview={state.weeklyReviewOverview}
-        weeklyReviewPhase={state.weeklyReviewPhase}
-        {...(historyViewModel ? { viewModel: historyViewModel } : {})}
+        actions={buildHistoryPageActions(actions)}
+        viewModel={{
+          contributionHistory: state.contributionHistory,
+          history: state.history,
+          historyLoadError: state.historyLoadError,
+          historyYears: state.historyYears,
+          selectedHistoryYear: state.selectedHistoryYear,
+          selectedWeeklyReview: state.selectedWeeklyReview,
+          todayDate: state.todayState.date,
+          weeklyReviewError: state.weeklyReviewError,
+          weeklyReviewOverview: state.weeklyReviewOverview,
+          weeklyReviewPhase: state.weeklyReviewPhase,
+          ...(historyViewModel ? { viewModel: historyViewModel } : {}),
+        }}
       />
     </Suspense>
   );
@@ -108,21 +99,19 @@ function FocusRoute({ actions, state }: ReadyAppController) {
       }
     >
       <FocusPage
-        fieldErrors={state.settingsFieldErrors}
-        focusSaveErrorMessage={state.focusSaveErrorMessage}
-        focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
-        phase={state.focusSessionsPhase}
-        sessions={state.focusSessions}
-        sessionsLoadError={state.focusSessionsLoadError}
-        settings={state.settingsDraft ?? state.todayState.settings}
-        settingsSavePhase={state.settingsSavePhase}
-        timerState={state.timerState}
-        todayDate={state.todayState.date}
-        onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
-        onChangeSettings={actions.handleSettingsDraftChange}
-        onShowWidget={actions.handleShowFocusWidget}
-        onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
-        onRetryLoad={actions.handleRetryFocusLoad}
+        actions={buildFocusPageActions(actions)}
+        viewModel={{
+          fieldErrors: state.settingsFieldErrors,
+          focusQuotaGoals: state.todayState.focusQuotaGoals ?? [],
+          focusSaveErrorMessage: state.focusSaveErrorMessage,
+          phase: state.focusSessionsPhase,
+          sessions: state.focusSessions,
+          sessionsLoadError: state.focusSessionsLoadError,
+          settings: state.settingsDraft ?? state.todayState.settings,
+          settingsSavePhase: state.settingsSavePhase,
+          timerState: state.timerState,
+          todayDate: state.todayState.date,
+        }}
       />
     </Suspense>
   );
@@ -139,28 +128,15 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
       }
     >
       <SettingsPage
-        fieldErrors={state.settingsFieldErrors}
-        focusQuotaGoals={state.todayState.focusQuotaGoals ?? []}
-        habits={state.managedHabits}
-        settings={state.settingsDraft ?? state.todayState.settings}
-        saveErrorMessage={state.settingsSaveErrorMessage}
-        savePhase={state.settingsSavePhase}
-        onArchiveHabit={actions.handleArchiveHabit}
-        onArchiveFocusQuotaGoal={actions.handleArchiveFocusQuotaGoal}
-        onChange={actions.handleSettingsDraftChange}
-        onCreateHabit={actions.handleCreateHabit}
-        onOpenWindDown={actions.handleOpenWindDown}
-        onPauseHabit={actions.handlePauseHabit}
-        onRenameHabit={actions.handleRenameHabit}
-        onReorderHabits={actions.handleReorderHabits}
-        onResumeHabit={actions.handleResumeHabit}
-        onUpsertFocusQuotaGoal={actions.handleUpsertFocusQuotaGoal}
-        onUnarchiveHabit={actions.handleUnarchiveHabit}
-        onUnarchiveFocusQuotaGoal={actions.handleUnarchiveFocusQuotaGoal}
-        onUpdateHabitCategory={actions.handleUpdateHabitCategory}
-        onUpdateHabitFrequency={actions.handleUpdateHabitFrequency}
-        onUpdateHabitTargetCount={actions.handleUpdateHabitTargetCount}
-        onUpdateHabitWeekdays={actions.handleUpdateHabitWeekdays}
+        actions={buildSettingsPageActions(actions)}
+        viewModel={{
+          fieldErrors: state.settingsFieldErrors,
+          focusQuotaGoals: state.todayState.focusQuotaGoals ?? [],
+          habits: state.managedHabits,
+          saveErrorMessage: state.settingsSaveErrorMessage,
+          savePhase: state.settingsSavePhase,
+          settings: state.settingsDraft ?? state.todayState.settings,
+        }}
       />
     </Suspense>
   );
@@ -177,12 +153,13 @@ function InsightsRoute({ actions, state }: ReadyAppController) {
       }
     >
       <InsightsPage
-        dashboard={state.insightsDashboard}
-        error={state.insightsError}
-        phase={state.insightsPhase}
-        rangeDays={state.insightsRangeDays}
-        onRetryLoad={actions.handleRetryInsightsLoad}
-        onSelectRangeDays={actions.handleSelectInsightsRangeDays}
+        actions={buildInsightsPageActions(actions)}
+        viewModel={{
+          dashboard: state.insightsDashboard,
+          error: state.insightsError,
+          phase: state.insightsPhase,
+          rangeDays: state.insightsRangeDays,
+        }}
       />
     </Suspense>
   );

@@ -16,7 +16,11 @@ import { UpdateSettingsCard } from "@/renderer/features/settings/components/gene
 import { WindDownSettingsCard } from "@/renderer/features/settings/components/general/wind-down-settings-card";
 import { CategorySettingsCard } from "@/renderer/features/settings/components/habits/category-settings-card";
 import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
-import type { SettingsPageProps } from "@/renderer/features/settings/settings.types";
+import { getSettingsSaveStatus } from "@/renderer/features/settings/lib/settings-save-status";
+import type {
+  SettingsPageActions,
+  SettingsPageViewModel,
+} from "@/renderer/features/settings/settings.types";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Tabs,
@@ -29,36 +33,14 @@ import {
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
 
-function getSaveStatus(savePhase: SettingsPageProps["savePhase"]) {
-  if (savePhase === "pending") {
-    return { text: "Unsaved changes", variant: "outline" as const };
-  }
-
-  if (savePhase === "invalid") {
-    return {
-      text: "Fix highlighted settings",
-      variant: "destructive" as const,
-    };
-  }
-
-  if (savePhase === "saving") {
-    return { text: "Saving...", variant: "secondary" as const };
-  }
-
-  if (savePhase === "saved") {
-    // Hide immediately when saved, instead of showing a lingering "Saved" label
-    return null;
-  }
-
-  if (savePhase === "error") {
-    return { text: "Save failed", variant: "destructive" as const };
-  }
-
-  return null;
+interface SettingsPageProps {
+  actions: SettingsPageActions;
+  viewModel: SettingsPageViewModel;
 }
 
 export function SettingsPage(props: SettingsPageProps) {
-  const currentSaveStatus = getSaveStatus(props.savePhase);
+  const { actions, viewModel } = props;
+  const currentSaveStatus = getSettingsSaveStatus(viewModel.savePhase);
 
   return (
     <LazyMotion features={domAnimation}>
@@ -84,12 +66,12 @@ export function SettingsPage(props: SettingsPageProps) {
                   {currentSaveStatus.text}
                 </Badge>
               </m.div>
-              {props.savePhase === "error" ? (
+              {viewModel.savePhase === "error" ? (
                 <m.p
                   layout
                   className="px-2 text-sm font-medium text-destructive"
                 >
-                  {props.saveErrorMessage}
+                  {viewModel.saveErrorMessage}
                 </m.p>
               ) : null}
             </m.div>
@@ -121,14 +103,14 @@ export function SettingsPage(props: SettingsPageProps) {
           <TabsContent value="general">
             <m.div className="grid gap-6" variants={staggerItemVariants}>
               <ReminderSettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                settings={props.settings}
+                fieldErrors={viewModel.fieldErrors}
+                onChange={actions.settings.change}
+                settings={viewModel.settings}
               />
               <UpdateSettingsCard />
               <DataManagementSettingsCard
-                onChange={props.onChange}
-                settings={props.settings}
+                onChange={actions.settings.change}
+                settings={viewModel.settings}
               />
             </m.div>
           </TabsContent>
@@ -136,9 +118,9 @@ export function SettingsPage(props: SettingsPageProps) {
           <TabsContent value="pomodoro">
             <m.section variants={staggerItemVariants}>
               <PomodoroSettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                settings={props.settings}
+                fieldErrors={viewModel.fieldErrors}
+                onChange={actions.settings.change}
+                settings={viewModel.settings}
               />
             </m.section>
           </TabsContent>
@@ -146,9 +128,9 @@ export function SettingsPage(props: SettingsPageProps) {
           <TabsContent value="appearance">
             <m.section variants={staggerItemVariants}>
               <AppearanceSettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                settings={props.settings}
+                fieldErrors={viewModel.fieldErrors}
+                onChange={actions.settings.change}
+                settings={viewModel.settings}
               />
             </m.section>
           </TabsContent>
@@ -156,35 +138,25 @@ export function SettingsPage(props: SettingsPageProps) {
           <TabsContent value="desktop">
             <m.div className="grid gap-6" variants={staggerItemVariants}>
               <WindDownSettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                onOpenWindDown={props.onOpenWindDown}
-                settings={props.settings}
+                fieldErrors={viewModel.fieldErrors}
+                onChange={actions.settings.change}
+                onOpenWindDown={actions.openWindDown}
+                settings={viewModel.settings}
               />
               <CategorySettingsCard
-                fieldErrors={props.fieldErrors}
-                onChange={props.onChange}
-                settings={props.settings}
+                fieldErrors={viewModel.fieldErrors}
+                onChange={actions.settings.change}
+                settings={viewModel.settings}
               />
               <HabitManagementCard
-                habits={props.habits}
-                onArchiveHabit={props.onArchiveHabit}
-                onCreateHabit={props.onCreateHabit}
-                onPauseHabit={props.onPauseHabit}
-                onRenameHabit={props.onRenameHabit}
-                onReorderHabits={props.onReorderHabits}
-                onResumeHabit={props.onResumeHabit}
-                onUnarchiveHabit={props.onUnarchiveHabit}
-                onUpdateHabitCategory={props.onUpdateHabitCategory}
-                onUpdateHabitFrequency={props.onUpdateHabitFrequency}
-                onUpdateHabitTargetCount={props.onUpdateHabitTargetCount}
-                onUpdateHabitWeekdays={props.onUpdateHabitWeekdays}
+                actions={actions.habits}
+                habits={viewModel.habits}
               />
               <FocusQuotaSettingsCard
-                focusQuotaGoals={props.focusQuotaGoals}
-                onArchiveFocusQuotaGoal={props.onArchiveFocusQuotaGoal}
-                onUnarchiveFocusQuotaGoal={props.onUnarchiveFocusQuotaGoal}
-                onUpsertFocusQuotaGoal={props.onUpsertFocusQuotaGoal}
+                focusQuotaGoals={viewModel.focusQuotaGoals}
+                onArchiveFocusQuotaGoal={actions.focusQuotaGoals.archive}
+                onUnarchiveFocusQuotaGoal={actions.focusQuotaGoals.unarchive}
+                onUpsertFocusQuotaGoal={actions.focusQuotaGoals.upsert}
               />
             </m.div>
           </TabsContent>

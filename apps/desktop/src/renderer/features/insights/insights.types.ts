@@ -7,11 +7,16 @@ import type {
 
 export type InsightsPhase = AsyncPhase;
 
-export interface InsightsPageProps {
+export interface InsightsPageActions {
+  insights: {
+    retryLoad: () => void;
+    selectRangeDays: (rangeDays: InsightsRangeDays) => void;
+  };
+}
+
+export interface InsightsPageViewModel {
   dashboard: InsightsDashboard | null;
   error: AppIpcError | null;
   phase: InsightsPhase;
   rangeDays: InsightsRangeDays;
-  onRetryLoad: () => void;
-  onSelectRangeDays: (rangeDays: InsightsRangeDays) => void;
 }

@@ -1,0 +1,349 @@
+// @vitest-environment jsdom
+
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
+
+import type { HabitWeekday, HabitWithStatus } from "@/shared/domain/habit";
+import { createFramerMotionMock } from "@/test/fixtures/framer-motion-mock";
+
+import type * as CategorySelectorModule from "../habit-category-selector/habit-category-selector";
+import type * as FrequencySelectorModule from "../habit-frequency-selector/habit-frequency-selector";
+import type * as WeekdaySelectorModule from "../habit-weekday-selector/habit-weekday-selector";
+import { HabitRowEditor } from "./habit-row-editor";
+
+vi.mock(import("framer-motion"), (importOriginal) =>
+  createFramerMotionMock(importOriginal)
+);
+
+vi.mock<typeof CategorySelectorModule>(
+  import("../habit-category-selector/habit-category-selector"),
+  () => ({
+    HabitCategorySelector: ({
+      onChange,
+    }: {
+      onChange: (category: "fitness" | "nutrition" | "productivity") => void;
+    }) => (
+      <button onClick={() => onChange("nutrition")} type="button">
+        Nutrition
+      </button>
+    ),
+  })
+);
+
+vi.mock<typeof FrequencySelectorModule>(
+  import("../habit-frequency-selector/habit-frequency-selector"),
+  () => ({
+    HabitFrequencySelector: ({
+      onChange,
+    }: {
+      onChange: (frequency: "daily" | "monthly" | "weekly") => void;
+    }) => (
+      <button onClick={() => onChange("weekly")} type="button">
+        Weekly
+      </button>
+    ),
+  })
+);
+
+vi.mock<typeof WeekdaySelectorModule>(
+  import("../habit-weekday-selector/habit-weekday-selector"),
+  () => ({
+    HabitWeekdaySelector: ({
+      onChange,
+    }: {
+      onChange: (selectedWeekdays: HabitWeekday[] | null) => void;
+    }) => (
+      <button onClick={() => onChange([1, 3, 5])} type="button">
+        Weekdays
+      </button>
+    ),
+  })
+);
+
+function createHabit(
+  id: number,
+  overrides: Partial<HabitWithStatus> = {}
+): HabitWithStatus {
+  return {
+    category: "productivity",
+    completed: false,
+    createdAt: "2026-03-01T00:00:00.000Z",
+    frequency: "daily",
+    id,
+    isArchived: false,
+    name: `Habit ${id}`,
+    sortOrder: id - 1,
+    ...overrides,
+  };
+}
+
+function renderHabitRowEditor(
+  overrides: Partial<ComponentProps<typeof HabitRowEditor>> = {}
+) {
+  const habits = [createHabit(1), createHabit(2), createHabit(3)];
+  const [, defaultHabit] = habits;
+
+  if (!defaultHabit) {
+    throw new Error("Expected a default habit for the row editor test.");
+  }
+
+  return render(
+    <HabitRowEditor
+      dragState={null}
+      habit={defaultHabit}
+      habits={habits}
+      index={1}
+      isExpanded={false}
+      onArchiveHabit={vi.fn().mockResolvedValue(42)}
+      onPauseHabit={vi.fn().mockResolvedValue(42)}
+      onDragEnd={vi.fn()}
+      onDragOver={vi.fn()}
+      onDragStart={vi.fn()}
+      onDrop={vi.fn()}
+      onExpandedChange={vi.fn()}
+      onRenameHabit={vi.fn().mockResolvedValue(42)}
+      onReorderHabits={vi.fn().mockResolvedValue(42)}
+      onResumeHabit={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
+      onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
+      {...overrides}
+    />
+  );
+}
+
+describe("habit row editor", () => {
+  it("renders a compact summary when collapsed", () => {
+    renderHabitRowEditor({
+      habit: createHabit(2, {
+        category: "nutrition",
+        name: "Fish oil",
+        selectedWeekdays: [1, 2, 3, 4, 5],
+      }),
+    });
+
+    expect(screen.getByText("Fish oil")).toBeInTheDocument();
+    expect(screen.getByText("Nutrition")).toBeInTheDocument();
+    expect(screen.getByText("Weekdays")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("Fish oil")).not.toBeInTheDocument();
+  });
+
+  it("toggles expansion through the summary row trigger", () => {
+    const onExpandedChange = vi.fn();
+
+    renderHabitRowEditor({
+      habit: createHabit(2, { name: "Deep work" }),
+      onExpandedChange,
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Expand habit details for Deep work",
+      })
+    );
+
+    expect(onExpandedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("forwards category, frequency, weekday, and archive actions when expanded", async () => {
+    const onArchiveHabit = vi.fn().mockResolvedValue(42);
+    const onPauseHabit = vi.fn().mockResolvedValue(42);
+    const onRenameHabit = vi.fn().mockResolvedValue(42);
+    const onReorderHabits = vi.fn().mockResolvedValue(42);
+    const onResumeHabit = vi.fn().mockResolvedValue(42);
+    const onUpdateHabitCategory = vi.fn().mockResolvedValue(42);
+    const onUpdateHabitFrequency = vi.fn().mockResolvedValue(42);
+    const onUpdateHabitWeekdays = vi.fn().mockResolvedValue(42);
+    const habits = [createHabit(2)];
+    const [renderedHabit] = habits;
+
+    if (!renderedHabit) {
+      throw new Error("Expected a habit to render the expanded row editor.");
+    }
+
+    render(
+      <HabitRowEditor
+        dragState={null}
+        habit={renderedHabit}
+        habits={habits}
+        index={0}
+        isExpanded
+        onArchiveHabit={onArchiveHabit}
+        onPauseHabit={onPauseHabit}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
+        onExpandedChange={vi.fn()}
+        onRenameHabit={onRenameHabit}
+        onReorderHabits={onReorderHabits}
+        onResumeHabit={onResumeHabit}
+        onUpdateHabitCategory={onUpdateHabitCategory}
+        onUpdateHabitFrequency={onUpdateHabitFrequency}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitWeekdays={onUpdateHabitWeekdays}
+      />
+    );
+
+    const nameInput = screen.getByDisplayValue("Habit 2");
+    fireEvent.change(nameInput, {
+      target: { value: "Deep work block" },
+    });
+    expect(nameInput).toHaveValue("Deep work block");
+
+    fireEvent.click(screen.getByRole("button", { name: "Nutrition" }));
+    fireEvent.click(screen.getByRole("button", { name: "Weekly" }));
+    fireEvent.click(screen.getByRole("button", { name: "Weekdays" }));
+    fireEvent.click(screen.getByRole("button", { name: "Archive Habit 2" }));
+    expect(onArchiveHabit).not.toHaveBeenCalledWith(2);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Confirm archive Habit 2" })
+    );
+
+    expect(onUpdateHabitCategory).toHaveBeenCalledWith(2, "nutrition");
+    expect(onUpdateHabitFrequency).toHaveBeenCalledWith(2, "weekly", 1);
+    expect(onUpdateHabitWeekdays).toHaveBeenCalledWith(2, [1, 3, 5]);
+    await waitFor(() => {
+      expect(onArchiveHabit).toHaveBeenCalledWith(2);
+    });
+  });
+
+  it("shows an inline error and skips rename when the habit name is too long", async () => {
+    const onRenameHabit = vi.fn().mockResolvedValue(42);
+
+    renderHabitRowEditor({
+      habit: createHabit(2),
+      isExpanded: true,
+      onRenameHabit,
+    });
+
+    const nameInput = screen.getByLabelText("Name");
+
+    fireEvent.change(nameInput, {
+      target: { value: "a".repeat(121) },
+    });
+
+    expect(
+      screen.getByText("Habit names must be 120 characters or fewer.")
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    fireEvent.keyDown(nameInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(onRenameHabit).not.toHaveBeenCalled();
+    });
+  });
+
+  it("reorders habits upward and downward using the computed list", () => {
+    const onReorderHabits = vi.fn().mockResolvedValue(42);
+    const habits = [createHabit(1), createHabit(2), createHabit(3)];
+    const [, middleHabit] = habits;
+
+    if (!middleHabit) {
+      throw new Error("Expected a middle habit for the reorder test.");
+    }
+
+    render(
+      <HabitRowEditor
+        dragState={null}
+        habit={middleHabit}
+        habits={habits}
+        index={1}
+        isExpanded={false}
+        onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onPauseHabit={vi.fn().mockResolvedValue(42)}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
+        onExpandedChange={vi.fn()}
+        onRenameHabit={vi.fn().mockResolvedValue(42)}
+        onReorderHabits={onReorderHabits}
+        onResumeHabit={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Move Habit 2 up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Move Habit 2 down" }));
+
+    expect(
+      onReorderHabits.mock.calls[0]?.[0].map(
+        (reorderedHabit: HabitWithStatus) => reorderedHabit.id
+      )
+    ).toStrictEqual([2, 1, 3]);
+    expect(
+      onReorderHabits.mock.calls[1]?.[0].map(
+        (reorderedHabit: HabitWithStatus) => reorderedHabit.id
+      )
+    ).toStrictEqual([1, 3, 2]);
+  });
+
+  it("pauses and resumes habits from the row header", async () => {
+    const onPauseHabit = vi.fn().mockResolvedValue(42);
+    const onResumeHabit = vi.fn().mockResolvedValue(42);
+
+    const { unmount } = renderHabitRowEditor({
+      habit: createHabit(2),
+      onPauseHabit,
+      onResumeHabit,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause Habit 2" }));
+
+    await waitFor(() => {
+      expect(onPauseHabit).toHaveBeenCalledWith(2);
+    });
+
+    unmount();
+    renderHabitRowEditor({
+      habit: createHabit(2, { pausedAt: "2026-03-08T09:00:00.000Z" }),
+      onPauseHabit,
+      onResumeHabit,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Resume Habit 2" }));
+
+    await waitFor(() => {
+      expect(onResumeHabit).toHaveBeenCalledWith(2);
+    });
+  });
+
+  it("disables the upward reorder control for the first habit", () => {
+    render(
+      <HabitRowEditor
+        dragState={null}
+        habit={createHabit(1)}
+        habits={[createHabit(1), createHabit(2)]}
+        index={0}
+        isExpanded={false}
+        onArchiveHabit={vi.fn().mockResolvedValue(42)}
+        onPauseHabit={vi.fn().mockResolvedValue(42)}
+        onDragEnd={vi.fn()}
+        onDragOver={vi.fn()}
+        onDragStart={vi.fn()}
+        onDrop={vi.fn()}
+        onExpandedChange={vi.fn()}
+        onRenameHabit={vi.fn().mockResolvedValue(42)}
+        onReorderHabits={vi.fn().mockResolvedValue(42)}
+        onResumeHabit={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitCategory={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitFrequency={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitTargetCount={vi.fn().mockResolvedValue(42)}
+        onUpdateHabitWeekdays={vi.fn().mockResolvedValue(42)}
+      />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Move Habit 1 up" })
+    ).toBeDisabled();
+  });
+});

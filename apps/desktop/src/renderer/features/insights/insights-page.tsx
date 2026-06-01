@@ -11,45 +11,39 @@ import { SmartInsightsCard } from "@/renderer/features/insights/components/smart
 import { SummaryMetricCard } from "@/renderer/features/insights/components/summary-metric-card";
 import { WeekdayRhythmCard } from "@/renderer/features/insights/components/weekday-rhythm-card";
 import { WeeklyCompletionChart } from "@/renderer/features/insights/components/weekly-completion-chart";
-import type { InsightsPageProps } from "@/renderer/features/insights/insights.types";
+import type {
+  InsightsPageActions,
+  InsightsPageViewModel,
+} from "@/renderer/features/insights/insights.types";
+import { formatInsightsDate } from "@/renderer/features/insights/lib/insights-format";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
-import { formatDateKey } from "@/shared/domain/date-key";
 
-function formatInsightsDate(dateKey: string): string {
-  return formatDateKey(
-    dateKey,
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    },
-    "en-US"
-  );
+interface InsightsPageProps {
+  actions: InsightsPageActions;
+  viewModel: InsightsPageViewModel;
 }
 
 export const InsightsPage = memo(function InsightsPage({
-  dashboard,
-  error,
-  phase,
-  rangeDays,
-  onRetryLoad,
-  onSelectRangeDays,
+  actions,
+  viewModel,
 }: InsightsPageProps) {
+  const { dashboard, error, phase, rangeDays } = viewModel;
+  const { retryLoad, selectRangeDays } = actions.insights;
   if (phase === "loading" && !dashboard) {
     return <InsightsLoadingState />;
   }
 
   if (phase === "error" && !dashboard) {
-    return <InsightsErrorState error={error} onRetryLoad={onRetryLoad} />;
+    return <InsightsErrorState error={error} onRetryLoad={retryLoad} />;
   }
 
   if (!dashboard || dashboard.isEmpty) {
     return (
       <InsightsEmptyState
-        onRetryLoad={onRetryLoad}
-        onSelectRangeDays={onSelectRangeDays}
+        onRetryLoad={retryLoad}
+        onSelectRangeDays={selectRangeDays}
         rangeDays={rangeDays}
       />
     );
@@ -70,11 +64,11 @@ export const InsightsPage = memo(function InsightsPage({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <RangeSelector
-              onSelectRangeDays={onSelectRangeDays}
+              onSelectRangeDays={selectRangeDays}
               rangeDays={rangeDays}
             />
             <Button
-              onClick={onRetryLoad}
+              onClick={retryLoad}
               size="sm"
               type="button"
               variant="outline"

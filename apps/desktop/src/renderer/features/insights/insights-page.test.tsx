@@ -107,18 +107,32 @@ function createDashboard(
   };
 }
 
+function renderInsightsPage({
+  dashboard = createDashboard(),
+  onRetryLoad = vi.fn(),
+  onSelectRangeDays = vi.fn(),
+} = {}) {
+  render(
+    <InsightsPage
+      actions={{
+        insights: {
+          retryLoad: onRetryLoad,
+          selectRangeDays: onSelectRangeDays,
+        },
+      }}
+      viewModel={{
+        dashboard,
+        error: null,
+        phase: "ready",
+        rangeDays: 30,
+      }}
+    />
+  );
+}
+
 describe("InsightsPage", () => {
   it("renders summary cards and dashboard widgets", () => {
-    render(
-      <InsightsPage
-        dashboard={createDashboard()}
-        error={null}
-        onSelectRangeDays={vi.fn()}
-        phase="ready"
-        rangeDays={30}
-        onRetryLoad={vi.fn()}
-      />
-    );
+    renderInsightsPage();
 
     expect(
       screen.getByRole("heading", { name: "Insights" })
@@ -138,16 +152,7 @@ describe("InsightsPage", () => {
   it("selects a new insights range", () => {
     const onSelectRangeDays = vi.fn();
 
-    render(
-      <InsightsPage
-        dashboard={createDashboard()}
-        error={null}
-        onRetryLoad={vi.fn()}
-        onSelectRangeDays={onSelectRangeDays}
-        phase="ready"
-        rangeDays={30}
-      />
-    );
+    renderInsightsPage({ onSelectRangeDays });
 
     fireEvent.click(screen.getByRole("button", { name: "90d" }));
 
@@ -155,16 +160,7 @@ describe("InsightsPage", () => {
   });
 
   it("renders the weekday rhythm chart", () => {
-    render(
-      <InsightsPage
-        dashboard={createDashboard()}
-        error={null}
-        onSelectRangeDays={vi.fn()}
-        phase="ready"
-        rangeDays={30}
-        onRetryLoad={vi.fn()}
-      />
-    );
+    renderInsightsPage();
 
     expect(screen.getByText("Weekday rhythm")).toBeInTheDocument();
     expect(screen.getByText("Completion timing")).toBeInTheDocument();
@@ -172,16 +168,7 @@ describe("InsightsPage", () => {
   });
 
   it("renders an empty state when no insights exist", () => {
-    render(
-      <InsightsPage
-        dashboard={createDashboard({ isEmpty: true })}
-        error={null}
-        onSelectRangeDays={vi.fn()}
-        phase="ready"
-        rangeDays={30}
-        onRetryLoad={vi.fn()}
-      />
-    );
+    renderInsightsPage({ dashboard: createDashboard({ isEmpty: true }) });
 
     expect(
       screen.getByRole("heading", { name: "No insights yet" })

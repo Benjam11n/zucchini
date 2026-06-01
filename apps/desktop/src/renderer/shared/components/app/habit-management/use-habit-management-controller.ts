@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import {
-  reorderHabitListByDropPosition,
-  sortHabitListByCategory,
-} from "@/renderer/shared/lib/reorder-habits";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { sortHabitListByCategory } from "@/renderer/shared/lib/reorder-habits";
+import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type {
   Habit,
   HabitCategory,
@@ -13,157 +9,52 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-import type {
-  HabitDragState,
-  HabitFeedback,
-  RecentArchivedHabit,
-} from "./habit-management-content.types";
-import type { HabitManagementCardProps } from "./habit-management.types";
+import type { HabitManagementContentProps } from "./habit-management-content/habit-management-content";
+import { useCreatedHabitExpansion } from "./hooks/use-created-habit-expansion";
+import { useHabitActionRunner } from "./hooks/use-habit-action-runner";
+import { useHabitArchiveUndo } from "./hooks/use-habit-archive-undo";
+import { useHabitDragReorder } from "./hooks/use-habit-drag-reorder";
+import { useHabitManagementFeedback } from "./hooks/use-habit-management-feedback";
 
-const UNDO_TIMEOUT_MS = 5000;
-
-const noopPauseAction: NonNullable<
-  HabitManagementCardProps["onPauseHabit"]
-> = () => Promise.resolve();
+const noopPauseAction: NonNullable<HabitManagementActions["pauseHabit"]> = () =>
+  Promise.resolve();
 const noopResumeAction: NonNullable<
-  HabitManagementCardProps["onResumeHabit"]
+  HabitManagementActions["resumeHabit"]
 > = () => Promise.resolve();
-
-function clearTimeoutRef(timeoutRef: { current: number | null }) {
-  if (timeoutRef.current !== null) {
-    window.clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
-  }
-}
 
 export function useHabitManagementController({
+  actions,
   habits,
-  onArchiveHabit,
-  onCreateHabit,
-  onPauseHabit = noopPauseAction,
-  onRenameHabit,
-  onReorderHabits,
-  onResumeHabit = noopResumeAction,
-  onUnarchiveHabit,
-  onUpdateHabitCategory,
-  onUpdateHabitFrequency,
-  onUpdateHabitTargetCount,
-  onUpdateHabitWeekdays,
-}: HabitManagementCardProps) {
+}: HabitManagementContentProps) {
+  const {
+    archiveHabit,
+    createHabit,
+    pauseHabit = noopPauseAction,
+    renameHabit,
+    reorderHabits,
+    resumeHabit = noopResumeAction,
+    unarchiveHabit,
+    updateHabitCategory,
+    updateHabitFrequency,
+    updateHabitTargetCount,
+    updateHabitWeekdays,
+  } = actions;
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<HabitFeedback>(null);
-  const [dragState, setDragState] = useState<HabitDragState>(null);
-  const [recentArchivedHabit, setRecentArchivedHabit] =
-    useState<RecentArchivedHabit | null>(null);
-  const [pendingCreatedHabitName, setPendingCreatedHabitName] = useState<
-    string | null
-  >(null);
-  const [autoSortUndoHabits, setAutoSortUndoHabits] = useState<Habit[] | null>(
-    null
-  );
-  const feedbackTimeoutRef = useRef<number | null>(null);
-  const archivedHabitTimeoutRef = useRef<number | null>(null);
-
-  useEffect(
-    () => () => {
-      clearTimeoutRef(feedbackTimeoutRef);
-      clearTimeoutRef(archivedHabitTimeoutRef);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!pendingCreatedHabitName) {
-      return;
-    }
-
-    const createdHabit = habits.find(
-      (habit) => habit.name === pendingCreatedHabitName
-    );
-    if (!createdHabit) {
-      return;
-    }
-
-    setExpandedHabitId(createdHabit.id);
-    setPendingCreatedHabitName(null);
-  }, [habits, pendingCreatedHabitName]);
-
-  function setFeedbackWithTimeout(
-    nextFeedback: HabitFeedback,
-    timeoutMs?: number
-  ) {
-    clearTimeoutRef(feedbackTimeoutRef);
-    setAutoSortUndoHabits(null);
-    setFeedback(nextFeedback);
-
-    if (!nextFeedback || timeoutMs === undefined) {
-      return;
-    }
-
-    feedbackTimeoutRef.current = window.setTimeout(() => {
-      setFeedback((current) =>
-        current?.kind === nextFeedback.kind ? null : current
-      );
-      feedbackTimeoutRef.current = null;
-    }, timeoutMs);
-  }
-
-  function showErrorFeedback(message: string) {
-    setFeedbackWithTimeout({
-      kind: "error",
-      message,
-    });
-  }
-
-  function setArchivedHabitWithTimeout(
-    nextArchivedHabit: RecentArchivedHabit | null
-  ) {
-    clearTimeoutRef(archivedHabitTimeoutRef);
-    setRecentArchivedHabit(nextArchivedHabit);
-
-    if (!nextArchivedHabit) {
-      return;
-    }
-
-    archivedHabitTimeoutRef.current = window.setTimeout(() => {
-      setRecentArchivedHabit((current) =>
-        current?.habitId === nextArchivedHabit.habitId ? null : current
-      );
-      archivedHabitTimeoutRef.current = null;
-    }, UNDO_TIMEOUT_MS);
-  }
-
-  function showAutoSortFeedback(previousHabits: Habit[]) {
-    clearTimeoutRef(feedbackTimeoutRef);
-    setAutoSortUndoHabits(previousHabits);
-    setFeedback({
-      kind: "auto-sorted",
-      message: "Grouped habits by category order.",
-    });
-    feedbackTimeoutRef.current = window.setTimeout(() => {
-      setFeedback((current) =>
-        current?.kind === "auto-sorted" ? null : current
-      );
-      setAutoSortUndoHabits(null);
-      feedbackTimeoutRef.current = null;
-    }, UNDO_TIMEOUT_MS);
-  }
-
-  async function runHabitAction({
-    onSuccess,
-    task,
-  }: {
-    onSuccess?: () => void | Promise<void>;
-    task: () => Promise<void>;
-  }) {
-    await runAsyncTask(task, {
-      mapError: toAppIpcError,
-      onError: (error) => {
-        showErrorFeedback(error.message);
-      },
-      ...(onSuccess ? { onSuccess } : {}),
-    });
-  }
+  const {
+    clearFeedback,
+    consumeAutoSortUndoHabits,
+    feedback,
+    showAutoSortFeedback,
+    showErrorFeedback,
+  } = useHabitManagementFeedback();
+  const archiveUndo = useHabitArchiveUndo();
+  const { setPendingCreatedHabitName } = useCreatedHabitExpansion({
+    habits,
+    setExpandedHabitId,
+  });
+  const runHabitAction = useHabitActionRunner({
+    onError: showErrorFeedback,
+  });
 
   async function handleRenameHabit(habitId: number, name: string) {
     const trimmedName = name.trim();
@@ -172,7 +63,7 @@ export function useHabitManagementController({
     }
 
     await runHabitAction({
-      task: () => onRenameHabit(habitId, name),
+      task: () => renameHabit(habitId, name),
     });
   }
 
@@ -187,7 +78,7 @@ export function useHabitManagementController({
     category: HabitCategory,
     _habitName: string
   ) {
-    await saveHabitChanges(() => onUpdateHabitCategory(habitId, category));
+    await saveHabitChanges(() => updateHabitCategory(habitId, category));
   }
 
   async function handleUpdateHabitFrequency(
@@ -197,7 +88,7 @@ export function useHabitManagementController({
     _habitName: string
   ) {
     await saveHabitChanges(() =>
-      onUpdateHabitFrequency(habitId, frequency, targetCount)
+      updateHabitFrequency(habitId, frequency, targetCount)
     );
   }
 
@@ -206,9 +97,7 @@ export function useHabitManagementController({
     targetCount: number,
     _habitName: string
   ) {
-    await saveHabitChanges(() =>
-      onUpdateHabitTargetCount(habitId, targetCount)
-    );
+    await saveHabitChanges(() => updateHabitTargetCount(habitId, targetCount));
   }
 
   async function handleUpdateHabitWeekdays(
@@ -217,7 +106,7 @@ export function useHabitManagementController({
     _habitName: string
   ) {
     await saveHabitChanges(() =>
-      onUpdateHabitWeekdays(habitId, selectedWeekdays)
+      updateHabitWeekdays(habitId, selectedWeekdays)
     );
   }
 
@@ -229,7 +118,7 @@ export function useHabitManagementController({
   ) {
     await runHabitAction({
       onSuccess: () => {
-        setArchivedHabitWithTimeout({
+        archiveUndo.show({
           frequency,
           habitId,
           habitName,
@@ -239,60 +128,58 @@ export function useHabitManagementController({
           setExpandedHabitId(null);
         }
       },
-      task: () => onArchiveHabit(habitId),
+      task: () => archiveHabit(habitId),
     });
   }
 
   async function handlePauseHabit(habitId: number, _habitName: string) {
     await runHabitAction({
-      task: () => onPauseHabit(habitId),
+      task: () => pauseHabit(habitId),
     });
   }
 
   async function handleResumeHabit(habitId: number, _habitName: string) {
     await runHabitAction({
-      task: () => onResumeHabit(habitId),
+      task: () => resumeHabit(habitId),
     });
   }
 
   async function handleUndoArchive() {
-    if (!recentArchivedHabit) {
+    const archivedHabit = archiveUndo.consume();
+    if (!archivedHabit) {
       return;
     }
 
-    const archivedHabit = recentArchivedHabit;
-    clearTimeoutRef(archivedHabitTimeoutRef);
     await runHabitAction({
       onSuccess: () => {
-        setArchivedHabitWithTimeout(null);
+        archiveUndo.clear();
       },
-      task: () => onUnarchiveHabit(archivedHabit.habitId),
+      task: () => unarchiveHabit(archivedHabit.habitId),
     });
   }
 
   async function handleUndoAutoSort() {
-    if (feedback?.kind !== "auto-sorted" || !autoSortUndoHabits) {
+    const previousHabits = consumeAutoSortUndoHabits();
+    if (!previousHabits) {
       return;
     }
 
-    const previousHabits = autoSortUndoHabits;
-    clearTimeoutRef(feedbackTimeoutRef);
     await runHabitAction({
-      onSuccess: () => {
-        setAutoSortUndoHabits(null);
-        setFeedback(null);
-      },
-      task: () => onReorderHabits(previousHabits),
+      onSuccess: clearFeedback,
+      task: () => reorderHabits(previousHabits),
     });
   }
 
-  async function handleReorderHabits(
-    nextHabits: HabitManagementCardProps["habits"]
-  ) {
+  async function handleReorderHabits(nextHabits: Habit[]) {
     await runHabitAction({
-      task: () => onReorderHabits(nextHabits),
+      task: () => reorderHabits(nextHabits),
     });
   }
+
+  const { dragState, handleDrop, setDragState } = useHabitDragReorder({
+    habits,
+    onReorderHabits: handleReorderHabits,
+  });
 
   async function handleAutoSort() {
     const nextHabits = sortHabitListByCategory(habits);
@@ -305,7 +192,7 @@ export function useHabitManagementController({
       onSuccess: () => {
         showAutoSortFeedback(habits);
       },
-      task: () => onReorderHabits(nextHabits),
+      task: () => reorderHabits(nextHabits),
     });
   }
 
@@ -324,34 +211,8 @@ export function useHabitManagementController({
         }
       },
       task: () =>
-        onCreateHabit(name, category, frequency, selectedWeekdays, targetCount),
+        createHabit(name, category, frequency, selectedWeekdays, targetCount),
     });
-  }
-
-  async function handleDrop(
-    draggedHabitId: number | null,
-    targetHabitId: number,
-    position: "after" | "before"
-  ) {
-    const resolvedDraggedHabitId = draggedHabitId ?? dragState?.draggedHabitId;
-
-    if (!resolvedDraggedHabitId) {
-      return;
-    }
-
-    const nextHabits = reorderHabitListByDropPosition(
-      habits,
-      resolvedDraggedHabitId,
-      targetHabitId,
-      position
-    );
-    setDragState(null);
-
-    if (nextHabits === habits) {
-      return;
-    }
-
-    await handleReorderHabits(nextHabits);
   }
 
   return {
@@ -372,7 +233,7 @@ export function useHabitManagementController({
     handleUpdateHabitFrequency,
     handleUpdateHabitTargetCount,
     handleUpdateHabitWeekdays,
-    recentArchivedHabit,
+    recentArchivedHabit: archiveUndo.value,
     setDragState,
     setExpandedHabitId,
   };

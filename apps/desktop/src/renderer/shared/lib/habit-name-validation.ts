@@ -1,13 +1,13 @@
-import { habitNameSchema } from "@/shared/domain/schemas/habit";
-
 export function getHabitNameError(name: string): string | null {
-  const result = habitNameSchema.safeParse(name);
+  const trimmedName = name.trim();
 
-  if (result.success) {
-    return null;
+  if (trimmedName.length === 0) {
+    return "Habit names cannot be empty.";
   }
 
-  const [issue] = result.error.issues;
+  if (trimmedName.length > 120) {
+    return "Habit names must be 120 characters or fewer.";
+  }
 
-  return issue?.message ?? "Habit names must be valid.";
+  return null;
 }

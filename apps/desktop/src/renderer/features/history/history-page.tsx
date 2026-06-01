@@ -10,9 +10,11 @@ import { useEffect, useMemo, useState } from "react";
 import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph";
 import { HistoryMobileSummaryDialog } from "@/renderer/features/history/components/history-mobile-summary-dialog";
 import { HistoryPageHeader } from "@/renderer/features/history/components/history-page-header";
-import type { HistoryViewMode } from "@/renderer/features/history/components/history-page-header";
 import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
-import type { HistoryPageProps } from "@/renderer/features/history/history.types";
+import type {
+  HistoryPageActions,
+  HistoryPageViewModel,
+} from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import { WeeklyReviewSection } from "@/renderer/features/weekly-review/components/weekly-review-section";
 import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
@@ -30,23 +32,32 @@ import {
   parseDateKey,
 } from "@/shared/domain/date-key";
 
+interface HistoryPageProps {
+  actions: HistoryPageActions;
+  viewModel: HistoryPageViewModel;
+}
+
+type HistoryViewMode = "review" | "timeline";
+
 export function HistoryPage({
-  contributionHistory,
-  history,
-  historyYears,
-  historyLoadError,
-  onLoadHistoryYears,
-  onLoadWeeklyReviewOverview,
-  onSelectHistoryMonth,
-  todayDate,
-  selectedHistoryYear,
-  onSelectWeeklyReview,
-  selectedWeeklyReview,
-  weeklyReviewError,
-  weeklyReviewOverview,
-  weeklyReviewPhase,
-  viewModel,
+  actions,
+  viewModel: pageViewModel,
 }: HistoryPageProps) {
+  const {
+    contributionHistory,
+    history,
+    historyYears,
+    historyLoadError,
+    todayDate,
+    selectedHistoryYear,
+    selectedWeeklyReview,
+    weeklyReviewError,
+    weeklyReviewOverview,
+    weeklyReviewPhase,
+    viewModel,
+  } = pageViewModel;
+  const { loadYears, selectMonth } = actions.history;
+  const { loadOverview, select: selectWeeklyReview } = actions.weeklyReview;
   const [historyMode, setHistoryMode] = useState<HistoryViewMode>("timeline");
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   const localViewModel = useHistoryViewState({
@@ -72,8 +83,8 @@ export function HistoryPage({
     viewState.visibleMonth ?? parseDateKey(`${viewState.selectedYear}-01-01`);
 
   useEffect(() => {
-    onLoadHistoryYears();
-  }, [onLoadHistoryYears]);
+    loadYears();
+  }, [loadYears]);
 
   useEffect(() => {
     if (!(isNarrowHistoryLayout && historyMode === "timeline")) {
@@ -131,7 +142,7 @@ export function HistoryPage({
       selectedYear: nextMonth.getFullYear(),
       visibleMonth: nextMonth,
     }));
-    onSelectHistoryMonth(nextMonth.getFullYear(), nextMonth.getMonth() + 1);
+    selectMonth(nextMonth.getFullYear(), nextMonth.getMonth() + 1);
     if (isNarrowHistoryLayout) {
       setIsMobileSummaryOpen(true);
     }
@@ -154,7 +165,7 @@ export function HistoryPage({
       visibleMonth: nextMonth,
     }));
 
-    onSelectHistoryMonth(nextYear, nextMonth.getMonth() + 1);
+    selectMonth(nextYear, nextMonth.getMonth() + 1);
   };
   const selectHistoryYear = (year: number) => {
     const fallbackDate =
@@ -165,7 +176,7 @@ export function HistoryPage({
       selectedYear: year,
       visibleMonth: fallbackDate ? parseDateKey(fallbackDate) : undefined,
     });
-    onSelectHistoryMonth(
+    selectMonth(
       year,
       fallbackDate ? getDateKeyMonth(fallbackDate) : visibleMonth.getMonth() + 1
     );
@@ -185,7 +196,7 @@ export function HistoryPage({
           setHistoryMode(nextMode);
 
           if (nextMode === "review") {
-            onLoadWeeklyReviewOverview();
+            loadOverview();
           }
         }}
         value={historyMode}
@@ -238,7 +249,7 @@ export function HistoryPage({
           <TabsContent value={"review" satisfies HistoryViewMode}>
             <m.section variants={staggerItemVariants}>
               <WeeklyReviewSection
-                onSelectWeeklyReview={onSelectWeeklyReview}
+                onSelectWeeklyReview={selectWeeklyReview}
                 selectedWeeklyReview={selectedWeeklyReview}
                 weeklyReviewError={weeklyReviewError}
                 weeklyReviewOverview={weeklyReviewOverview}

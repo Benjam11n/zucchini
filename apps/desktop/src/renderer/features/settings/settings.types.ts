@@ -1,4 +1,4 @@
-import type { HabitMutationActions } from "@/renderer/shared/types/habit-actions";
+import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type {
   SettingsFieldErrors,
   SettingsSavePhase,
@@ -19,19 +19,24 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 export type { SettingsFieldErrors, SettingsSavePhase };
 
-export interface SettingsPageProps extends HabitMutationActions {
+export interface SettingsPageActions {
+  focusQuotaGoals: {
+    archive: (goalId: number) => Promise<void>;
+    unarchive: (goalId: number) => Promise<void>;
+    upsert: (frequency: GoalFrequency, targetMinutes: number) => Promise<void>;
+  };
+  habits: HabitManagementActions;
+  openWindDown: () => void;
+  settings: {
+    change: (settings: AppSettings) => void;
+  };
+}
+
+export interface SettingsPageViewModel {
   fieldErrors: SettingsFieldErrors;
   focusQuotaGoals: FocusQuotaGoalWithStatus[];
   habits: Habit[];
   settings: AppSettings;
   saveErrorMessage: string | null;
   savePhase: SettingsSavePhase;
-  onChange: (settings: AppSettings) => void;
-  onOpenWindDown: () => void;
-  onArchiveFocusQuotaGoal: (goalId: number) => Promise<void>;
-  onUnarchiveFocusQuotaGoal: (goalId: number) => Promise<void>;
-  onUpsertFocusQuotaGoal: (
-    frequency: GoalFrequency,
-    targetMinutes: number
-  ) => Promise<void>;
 }

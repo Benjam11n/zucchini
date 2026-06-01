@@ -29,6 +29,30 @@
 - Keep business logic in `src/main` or `src/shared`.
 - Keep renderer code focused on presentation, interaction flow, and local UI
   state.
+- Standardize renderer pages around explicit props shaped as
+  `{ viewModel, actions }`. The app route layer maps controller state/actions
+  into those feature-specific contracts.
+- Group page actions by user intent or capability, for example
+  `actions.habits.createHabit` or `actions.weeklyReview.select`. Avoid long
+  flat callback lists on page components.
+- Page components should compose feature sections and pass typed models/actions
+  down. Move nontrivial derived data, formatters, validators, mappers, and
+  adapters out of `.tsx` files into feature `lib` modules.
+- Keep component prop interfaces in the same file as the component. Use
+  feature `*.types.ts` files for shared action contracts, view models, domain
+  aliases, and non-component types only.
+- Prefer component folders for renderer feature components:
+  `component-name/component-name.tsx` with `component-name/index.tsx`.
+  The `index.tsx` file should export only the component. Keep that component's
+  tests, local types, local utils, and small component-only helpers in the same
+  folder. Use broader workflow folders only when several tightly related
+  private components form one surface.
+- Use feature controller hooks for repeated local interaction orchestration.
+  Keep only truly ephemeral UI state directly in components, such as open
+  dialogs, draft inputs, active tabs, and focused rows.
+- Expected service/IPC errors should be caught at the controller/store edge or
+  in a feature controller hook that owns local feedback. Do not add empty
+  component-level `catch {}` blocks for shell-managed errors.
 - Keep renderer feature dependencies one-way and explicit: a file in
   `src/renderer/features/<feature>` may import its own feature folder,
   `src/renderer/shared`, and `src/shared`. Cross-feature imports require review

@@ -1,8 +1,7 @@
-import type { ZodIssue } from "zod";
-
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
+  validateAppSettings,
 } from "@/renderer/features/settings/lib/settings-form";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
@@ -84,10 +83,32 @@ describe("mapSettingsValidationErrors()", () => {
         message: "Second",
         path: ["timezone"],
       },
-    ] as ZodIssue[];
+    ];
 
     expect(mapSettingsValidationErrors(issues)).toStrictEqual({
       timezone: "First",
+    });
+  });
+});
+
+describe("validateAppSettings()", () => {
+  it("returns success for valid settings", () => {
+    expect(validateAppSettings(baseSettings).success).toBeTruthy();
+  });
+
+  it("returns field issues for invalid settings", () => {
+    const result = validateAppSettings({
+      ...baseSettings,
+      focusLongBreakSeconds: 60,
+      focusShortBreakSeconds: 120,
+      reminderTime: "25:99",
+    });
+
+    expect(result.success).toBeFalsy();
+    expect(mapSettingsValidationErrors(result.issues)).toStrictEqual({
+      focusLongBreakSeconds:
+        "Long break duration must be greater than or equal to short break duration.",
+      reminderTime: "Reminder time must use HH:MM 24-hour format.",
     });
   });
 });

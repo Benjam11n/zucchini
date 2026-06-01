@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 
-import type { HistoryPageProps } from "@/renderer/features/history/history.types";
+import type { HistoryPageViewModel } from "@/renderer/features/history/history.types";
 import {
   getHistoryMonthDays,
   getHistoryMonthStats,
@@ -22,7 +22,7 @@ interface HistoryViewState {
 }
 
 function createInitialHistoryViewState(
-  history: HistoryPageProps["history"],
+  history: HistoryPageViewModel["history"],
   selectedHistoryYear: number | null,
   todayDate: string
 ): HistoryViewState {
@@ -43,7 +43,7 @@ export function useHistoryViewState({
   selectedHistoryYear,
   todayDate,
 }: Pick<
-  HistoryPageProps,
+  HistoryPageViewModel,
   "history" | "historyYears" | "selectedHistoryYear" | "todayDate"
 >) {
   const [viewState, setViewState] = useState<HistoryViewState>(() =>
