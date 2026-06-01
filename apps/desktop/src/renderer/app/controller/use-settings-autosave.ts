@@ -15,7 +15,7 @@ import {
   mapSettingsValidationErrors,
   validateAppSettings,
 } from "@/renderer/features/settings/lib/settings-form";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function useSettingsAutosave({
@@ -92,7 +92,7 @@ export function useSettingsAutosave({
     }
 
     const timer = setTimeout(() => {
-      void runAsyncTask(() => handleUpdateSettings(validationResult.data), {
+      void runAppIpcTask(() => handleUpdateSettings(validationResult.data), {
         onError: () => {
           setSettingsSavePhase("error");
           setSettingsSaveErrorMessage(

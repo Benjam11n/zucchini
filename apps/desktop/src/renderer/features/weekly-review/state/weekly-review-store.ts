@@ -10,9 +10,8 @@ import { create } from "zustand";
 
 import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   WeeklyReview,
@@ -68,10 +67,9 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAsyncTask(
+      await runAppIpcTask(
         () => loadWeeklyReviewState(appClient, get().selectedWeeklyReview),
         {
-          mapError: toAppIpcError,
           onError: (weeklyReviewError) => {
             set({
               selectedWeeklyReview: null,
@@ -107,8 +105,7 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAsyncTask(() => appClient.getWeeklyReview(weekStart), {
-        mapError: toAppIpcError,
+      await runAppIpcTask(() => appClient.getWeeklyReview(weekStart), {
         onError: (weeklyReviewError) => {
           set({
             weeklyReviewError,

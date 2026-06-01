@@ -1,8 +1,7 @@
 import { useState } from "react";
 
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 
 export function useWindDownController(actions: WindDownPageActions) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -10,8 +9,7 @@ export function useWindDownController(actions: WindDownPageActions) {
   async function runWindDownAction(task: () => Promise<void>) {
     let didSucceed = false;
 
-    await runAsyncTask(task, {
-      mapError: toAppIpcError,
+    await runAppIpcTask(task, {
       onError: (error) => {
         setErrorMessage(error.message);
       },

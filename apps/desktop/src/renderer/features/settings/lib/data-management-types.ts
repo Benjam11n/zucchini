@@ -6,3 +6,5 @@ export type DataAction =
   | "open"
   | "restore"
   | null;
+
+export type AutoBackupAction = "openAutoFolder" | null;

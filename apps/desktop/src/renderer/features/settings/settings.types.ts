@@ -3,6 +3,7 @@ import type {
   SettingsFieldErrors,
   SettingsSavePhase,
 } from "@/renderer/shared/types/settings";
+import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import type {
   FocusQuotaGoalWithStatus,
   GoalFrequency,
@@ -20,6 +21,16 @@ import type { AppSettings } from "@/shared/domain/settings";
 export type { SettingsFieldErrors, SettingsSavePhase };
 
 export interface SettingsPageActions {
+  dataManagement: {
+    chooseBackupForRestore: () => Promise<BackupRestorePreview | null>;
+    clearData: () => Promise<boolean>;
+    exportBackup: () => Promise<string | null>;
+    exportCsvData: () => Promise<string | null>;
+    getLatestAutoBackupRestorePreview: () => Promise<BackupRestorePreview | null>;
+    openAutoBackupFolder: () => Promise<string>;
+    openDataFolder: () => Promise<string>;
+    restoreBackup: (restoreId: string) => Promise<boolean>;
+  };
   focusQuotaGoals: {
     archive: (goalId: number) => Promise<void>;
     unarchive: (goalId: number) => Promise<void>;

@@ -1,8 +1,7 @@
 import { create } from "zustand";
 
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   InsightsDashboard,
@@ -38,8 +37,7 @@ export const useInsightsStore = create<InsightsStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => appClient.getInsightsDashboard(rangeDays), {
-      mapError: toAppIpcError,
+    await runAppIpcTask(() => appClient.getInsightsDashboard(rangeDays), {
       onError: (error) => {
         set({
           error,

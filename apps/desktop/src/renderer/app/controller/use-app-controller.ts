@@ -70,6 +70,8 @@ function buildControllerActions({
   return {
     handleArchiveFocusQuotaGoal: actions.handleArchiveFocusQuotaGoal,
     handleArchiveHabit: actions.handleArchiveHabit,
+    handleChooseBackupForRestore: actions.handleChooseBackupForRestore,
+    handleClearData: actions.handleClearData,
     handleCloseWindDown: actions.handleCloseWindDown,
     handleCreateHabit: actions.handleCreateHabit,
     handleCreateWindDownAction: actions.handleCreateWindDownAction,
@@ -82,15 +84,22 @@ function buildControllerActions({
 
       actions.dismissWeeklyReviewSpotlight();
     },
+    handleExportBackup: actions.handleExportBackup,
+    handleExportCsvData: actions.handleExportCsvData,
+    handleGetLatestAutoBackupRestorePreview:
+      actions.handleGetLatestAutoBackupRestorePreview,
     handleIncrementHabitProgress: actions.handleIncrementHabitProgress,
     handleLoadHistoryYears: actions.loadHistoryYears,
     handleLoadWeeklyReviewOverview: actions.loadWeeklyReviewOverview,
+    handleOpenAutoBackupFolder: actions.handleOpenAutoBackupFolder,
+    handleOpenDataFolder: actions.handleOpenDataFolder,
     handleOpenWindDown: actions.handleOpenWindDown,
     handlePauseHabit: actions.handlePauseHabit,
     handleRecordFocusSession: actions.recordFocusSession,
     handleRenameHabit: actions.handleRenameHabit,
     handleRenameWindDownAction: actions.handleRenameWindDownAction,
     handleReorderHabits: actions.handleReorderHabits,
+    handleRestoreBackup: actions.handleRestoreBackup,
     handleResumeHabit: actions.handleResumeHabit,
     handleRetryBoot: actions.retryBoot,
     handleRetryFocusLoad: async () => {

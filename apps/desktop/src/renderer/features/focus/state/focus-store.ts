@@ -14,8 +14,7 @@ import type {
 } from "@/renderer/features/focus/focus.types";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
@@ -67,8 +66,7 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => appClient.getFocusSessions(), {
-      mapError: toAppIpcError,
+    await runAppIpcTask(() => appClient.getFocusSessions(), {
       onError: (focusSessionsLoadError) => {
         set({
           focusSessionsLoadError,

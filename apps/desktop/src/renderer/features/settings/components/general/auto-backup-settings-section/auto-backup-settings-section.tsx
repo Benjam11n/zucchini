@@ -1,5 +1,4 @@
 import { FolderOpen } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
@@ -11,46 +10,21 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import type { AppSettings, AutoBackupCadence } from "@/shared/domain/settings";
 
-import { getPathLabel } from "../../../lib/data-management-format";
-
-type AutoBackupAction = "openAutoFolder";
+import type { AutoBackupAction } from "../../../lib/data-management-types";
 
 interface AutoBackupSettingsSectionProps {
+  activeAction: AutoBackupAction;
   onChange: (settings: AppSettings) => void;
-  onErrorMessage: (message: string | null) => void;
-  onFeedbackMessage: (message: string | null) => void;
+  onOpenAutoBackupFolder: () => void | Promise<void>;
   settings: AppSettings;
 }
 
 export function AutoBackupSettingsSection({
+  activeAction,
   onChange,
-  onErrorMessage,
-  onFeedbackMessage,
+  onOpenAutoBackupFolder,
   settings,
 }: AutoBackupSettingsSectionProps) {
-  const [activeAutoBackupAction, setActiveAutoBackupAction] =
-    useState<AutoBackupAction | null>(null);
-
-  async function runAutoBackupAction(
-    action: AutoBackupAction,
-    execute: () => Promise<void>
-  ): Promise<void> {
-    setActiveAutoBackupAction(action);
-    onErrorMessage(null);
-
-    try {
-      await execute();
-    } catch (error) {
-      onErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Zucchini could not finish the auto backup action."
-      );
-    } finally {
-      setActiveAutoBackupAction(null);
-    }
-  }
-
   return (
     <ItemGroup className="gap-0">
       <Item className="py-2">
@@ -88,14 +62,9 @@ export function AutoBackupSettingsSection({
         </ItemContent>
         <ItemActions className="flex-wrap justify-end">
           <Button
-            disabled={activeAutoBackupAction !== null}
+            disabled={activeAction !== null}
             onClick={() => {
-              void runAutoBackupAction("openAutoFolder", async () => {
-                const openedPath = await window.desktop.openAutoBackupFolder();
-                onFeedbackMessage(
-                  `Opened ${getPathLabel(openedPath)} in your file manager.`
-                );
-              });
+              void onOpenAutoBackupFolder();
             }}
             size="sm"
             variant="outline"

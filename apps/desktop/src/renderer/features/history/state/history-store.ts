@@ -7,8 +7,7 @@
 import { create } from "zustand";
 
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -117,8 +116,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => appClient.getHistoryDay(date), {
-      mapError: toAppIpcError,
+    await runAppIpcTask(() => appClient.getHistoryDay(date), {
       onError: (historyLoadError) => {
         set({
           historyLoadError,
@@ -169,10 +167,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const historyMonthRequest = runAsyncTask(
+    const historyMonthRequest = runAppIpcTask(
       () => appClient.getHistorySummaryForMonth(year, month),
       {
-        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,
@@ -218,8 +215,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAsyncTask(() => appClient.getHistorySummary(limit), {
-      mapError: toAppIpcError,
+    await runAppIpcTask(() => appClient.getHistorySummary(limit), {
       onError: (historyLoadError) => {
         set({
           hasLoadedHistorySummary: true,
@@ -262,10 +258,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const historyYearRequest = runAsyncTask(
+    const historyYearRequest = runAppIpcTask(
       () => appClient.getHistorySummaryForYear(year),
       {
-        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,
@@ -326,10 +321,9 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const nextHistoryYearsRequest = runAsyncTask(
+    const nextHistoryYearsRequest = runAppIpcTask(
       () => appClient.getHistoryYears(),
       {
-        mapError: toAppIpcError,
         onError: (historyLoadError) => {
           set({
             historyLoadError,

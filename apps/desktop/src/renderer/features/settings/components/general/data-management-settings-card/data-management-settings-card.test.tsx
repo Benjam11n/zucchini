@@ -6,6 +6,7 @@ import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
+import type { SettingsPageActions } from "../../../settings.types";
 import { DataManagementSettingsCard } from "./data-management-settings-card";
 
 const storage = new Map<string, string>();
@@ -85,12 +86,31 @@ function setDesktopApi(
 
 function renderCard(
   options: {
+    actions?: Partial<SettingsPageActions["dataManagement"]>;
     onChange?: (settings: ReturnType<typeof createDefaultAppSettings>) => void;
   } = {}
 ) {
   const settings = createDefaultAppSettings("Asia/Singapore");
+  const actions = {
+    chooseBackupForRestore: () => window.desktop.chooseBackupForRestore(),
+    clearData: () => {
+      localStorage.removeItem("zucchini_last_state");
+      return window.desktop.clearData();
+    },
+    exportBackup: () => window.desktop.exportBackup(),
+    exportCsvData: () => window.desktop.exportCsvData(),
+    getLatestAutoBackupRestorePreview: () =>
+      window.desktop.getLatestAutoBackupRestorePreview(),
+    openAutoBackupFolder: () => window.desktop.openAutoBackupFolder(),
+    openDataFolder: () => window.desktop.openDataFolder(),
+    restoreBackup: (restoreId: string) =>
+      window.desktop.restoreBackup(restoreId),
+    ...options.actions,
+  } satisfies SettingsPageActions["dataManagement"];
+
   return render(
     <DataManagementSettingsCard
+      actions={actions}
       onChange={options.onChange ?? vi.fn()}
       settings={settings}
     />

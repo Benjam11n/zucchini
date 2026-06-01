@@ -1,5 +1,4 @@
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
+import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
 
 interface RunHabitActionInput {
   onSuccess?: () => void | Promise<void>;
@@ -15,8 +14,7 @@ export function useHabitActionRunner({ onError }: UseHabitActionRunnerInput) {
     onSuccess,
     task,
   }: RunHabitActionInput) {
-    await runAsyncTask(task, {
-      mapError: toAppIpcError,
+    await runAppIpcTask(task, {
       onError: (error) => {
         onError(error.message);
       },

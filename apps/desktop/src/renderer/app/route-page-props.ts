@@ -95,6 +95,17 @@ export function buildSettingsPageActions(
   actions: ControllerActions
 ): SettingsPageActions {
   return {
+    dataManagement: {
+      chooseBackupForRestore: actions.handleChooseBackupForRestore,
+      clearData: actions.handleClearData,
+      exportBackup: actions.handleExportBackup,
+      exportCsvData: actions.handleExportCsvData,
+      getLatestAutoBackupRestorePreview:
+        actions.handleGetLatestAutoBackupRestorePreview,
+      openAutoBackupFolder: actions.handleOpenAutoBackupFolder,
+      openDataFolder: actions.handleOpenDataFolder,
+      restoreBackup: actions.handleRestoreBackup,
+    },
     focusQuotaGoals: {
       archive: actions.handleArchiveFocusQuotaGoal,
       unarchive: actions.handleUnarchiveFocusQuotaGoal,

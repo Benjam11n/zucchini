@@ -109,6 +109,7 @@ export function SettingsPage(props: SettingsPageProps) {
               />
               <UpdateSettingsCard />
               <DataManagementSettingsCard
+                actions={actions.dataManagement}
                 onChange={actions.settings.change}
                 settings={viewModel.settings}
               />

@@ -8,7 +8,7 @@
  */
 type MaybePromise<T> = Promise<T> | T;
 
-interface RunAsyncTaskOptions<TResult, THandledError> {
+export interface RunAsyncTaskOptions<TResult, THandledError> {
   mapError?: (error: unknown) => THandledError;
   onError?: (
     error: THandledError,
