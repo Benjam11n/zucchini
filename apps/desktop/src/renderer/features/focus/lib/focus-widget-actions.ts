@@ -1,5 +1,5 @@
-import { appClient } from "@/renderer/shared/lib/app-client";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 
 export const focusWidgetActions = {
-  recordFocusSession: appClient.recordFocusSession,
+  recordFocusSession: useFocusStore.getState().recordFocusSession,
 };

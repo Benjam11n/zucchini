@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { ItemGroup } from "@/renderer/shared/components/ui/item";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import type { SettingsPageActions } from "../../../settings.types";
+import type { SettingsPageActions } from "../../settings.types";
 import { AutoBackupSettingsSection } from "../auto-backup-settings-section";
 import { DataActionItem } from "../data-action-item";
 import { DestructiveDataDialog } from "../destructive-data-dialog";

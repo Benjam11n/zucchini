@@ -1,7 +1,8 @@
 import {
-  formatFocusMinutes,
-  getFocusMinutesLabel,
-} from "@/renderer/features/focus/lib/focus-session-format";
+  getTimelineSegmentAriaLabel,
+  getTimelineSegmentClassName,
+  getTimelineSegmentTooltip,
+} from "@/renderer/features/focus/lib/focus-run-timeline-view";
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 import {
   Tooltip,
@@ -10,57 +11,6 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatIsoTime } from "@/shared/domain/date-key";
-
-function formatSessionTime(value: string): string {
-  return formatIsoTime(value);
-}
-
-function getTimelineSegmentClassName(
-  segment: FocusHistorySessionView["timelineSegments"][number]
-): string {
-  if (segment.kind === "break") {
-    return "bg-amber-400/80 focus-visible:ring-amber-500/60";
-  }
-
-  if (segment.kind === "pause") {
-    return "bg-slate-400/70 focus-visible:ring-slate-500/60";
-  }
-
-  if (segment.entryKind === "partial") {
-    return "bg-primary/45 focus-visible:ring-primary/50";
-  }
-
-  return "bg-primary/85 focus-visible:ring-primary/60";
-}
-
-function getTimelineSegmentAriaLabel(
-  segment: FocusHistorySessionView["timelineSegments"][number]
-): string {
-  if (segment.kind === "break") {
-    return `${segment.durationMinutes} minute break`;
-  }
-
-  if (segment.kind === "pause") {
-    return `${segment.durationMinutes} minute pause`;
-  }
-
-  return `${segment.entryKind === "partial" ? "Partial " : ""}${formatSessionTime(segment.startedAt)} to ${formatSessionTime(segment.completedAt)}, ${getFocusMinutesLabel(formatFocusMinutes(segment.durationSeconds))}`;
-}
-
-function getTimelineSegmentTooltip(
-  segment: FocusHistorySessionView["timelineSegments"][number]
-): string {
-  if (segment.kind === "break") {
-    return `${segment.durationMinutes} min break`;
-  }
-
-  if (segment.kind === "pause") {
-    return `${segment.durationMinutes} min paused`;
-  }
-
-  return `${segment.entryKind === "partial" ? "Partial · " : ""}${formatSessionTime(segment.startedAt)} - ${formatSessionTime(segment.completedAt)} · ${formatFocusMinutes(segment.durationSeconds)} min`;
-}
 
 interface FocusRunTimelineProps {
   session: FocusHistorySessionView;

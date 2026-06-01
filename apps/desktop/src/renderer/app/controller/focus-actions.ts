@@ -1,5 +1,4 @@
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { appClient } from "@/renderer/shared/lib/app-client";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 
 export function createFocusActions() {
@@ -10,10 +9,8 @@ export function createFocusActions() {
     async loadFocusSessions(force = false) {
       await useFocusStore.getState().loadFocusSessions(force);
     },
-    async recordFocusSession(input: CreateFocusSessionInput) {
-      const focusSession = await appClient.recordFocusSession(input);
-      useFocusStore.getState().setFocusSaveErrorMessage(null);
-      return focusSession;
+    recordFocusSession(input: CreateFocusSessionInput) {
+      return useFocusStore.getState().recordFocusSession(input);
     },
     setFocusSaveErrorMessage(message: string | null) {
       useFocusStore.getState().setFocusSaveErrorMessage(message);

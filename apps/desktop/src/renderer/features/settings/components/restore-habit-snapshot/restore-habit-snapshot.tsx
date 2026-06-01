@@ -2,7 +2,7 @@ import { getHabitCadenceSummary } from "@/renderer/shared/components/app/habit-m
 import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 
-import { toRestoreSnapshotHabit } from "../../../lib/data-management-format";
+import { toRestoreSnapshotHabit } from "../../lib/data-management-format";
 
 interface RestoreHabitSnapshotProps {
   preview: BackupRestorePreview;

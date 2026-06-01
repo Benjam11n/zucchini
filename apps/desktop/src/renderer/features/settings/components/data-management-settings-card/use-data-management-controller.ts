@@ -6,8 +6,8 @@ import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import type {
   AutoBackupAction,
   DataAction,
-} from "../../../lib/data-management-types";
-import type { SettingsPageActions } from "../../../settings.types";
+} from "../../lib/data-management-types";
+import type { SettingsPageActions } from "../../settings.types";
 
 interface UseDataManagementControllerInput {
   actions: SettingsPageActions["dataManagement"];

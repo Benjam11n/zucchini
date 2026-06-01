@@ -10,7 +10,7 @@ import {
 } from "@/renderer/shared/components/ui/item";
 import type { AppSettings, AutoBackupCadence } from "@/shared/domain/settings";
 
-import type { AutoBackupAction } from "../../../lib/data-management-types";
+import type { AutoBackupAction } from "../../lib/data-management-types";
 
 interface AutoBackupSettingsSectionProps {
   activeAction: AutoBackupAction;

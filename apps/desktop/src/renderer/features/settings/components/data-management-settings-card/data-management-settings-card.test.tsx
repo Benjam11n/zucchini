@@ -6,7 +6,7 @@ import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
-import type { SettingsPageActions } from "../../../settings.types";
+import type { SettingsPageActions } from "../../settings.types";
 import { DataManagementSettingsCard } from "./data-management-settings-card";
 
 const storage = new Map<string, string>();

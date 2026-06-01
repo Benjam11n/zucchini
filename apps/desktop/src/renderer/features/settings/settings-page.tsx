@@ -7,15 +7,15 @@ import { Bell, ListTodo, Palette, TimerReset } from "lucide-react";
  * It groups app preferences, reminder controls, appearance options, and habit
  * management into one place while surfacing the current save state.
  */
-import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance/appearance-settings-card";
-import { FocusQuotaSettingsCard } from "@/renderer/features/settings/components/focus/focus-quota-settings-card";
-import { DataManagementSettingsCard } from "@/renderer/features/settings/components/general/data-management-settings-card";
-import { PomodoroSettingsCard } from "@/renderer/features/settings/components/general/pomodoro-settings-card";
-import { ReminderSettingsCard } from "@/renderer/features/settings/components/general/reminder-settings-card";
-import { UpdateSettingsCard } from "@/renderer/features/settings/components/general/update-settings-card";
-import { WindDownSettingsCard } from "@/renderer/features/settings/components/general/wind-down-settings-card";
-import { CategorySettingsCard } from "@/renderer/features/settings/components/habits/category-settings-card";
-import { HabitManagementCard } from "@/renderer/features/settings/components/habits/habit-management-card";
+import { AppearanceSettingsCard } from "@/renderer/features/settings/components/appearance-settings-card";
+import { CategorySettingsCard } from "@/renderer/features/settings/components/category-settings-card";
+import { DataManagementSettingsCard } from "@/renderer/features/settings/components/data-management-settings-card";
+import { FocusQuotaSettingsCard } from "@/renderer/features/settings/components/focus-quota-settings-card";
+import { HabitManagementCard } from "@/renderer/features/settings/components/habit-management-card";
+import { PomodoroSettingsCard } from "@/renderer/features/settings/components/pomodoro-settings-card";
+import { ReminderSettingsCard } from "@/renderer/features/settings/components/reminder-settings-card";
+import { UpdateSettingsCard } from "@/renderer/features/settings/components/update-settings-card";
+import { WindDownSettingsCard } from "@/renderer/features/settings/components/wind-down-settings-card";
 import { getSettingsSaveStatus } from "@/renderer/features/settings/lib/settings-save-status";
 import type {
   SettingsPageActions,

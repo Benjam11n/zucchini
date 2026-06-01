@@ -35,29 +35,44 @@ const InsightsPage = lazy(async () => {
 });
 
 function TodayRoute({ actions, state }: ReadyAppController) {
-  return (
-    <TodayPage
-      actions={buildTodayPageActions(actions)}
-      viewModel={{
-        hasLoadedHistorySummary: state.hasLoadedHistorySummary,
-        historyDayByDate: state.historyDayByDate,
-        historySummary: state.historySummary,
-        isHistoryDayLoading: state.isHistoryDayLoading,
-        loadingHistoryDayKey: state.loadingHistoryDayKey,
-        managedHabits: state.managedHabits,
-        state: state.todayState,
-      }}
-    />
+  const pageActions = useMemo(() => buildTodayPageActions(actions), [actions]);
+  const viewModel = useMemo(
+    () => ({
+      hasLoadedHistorySummary: state.hasLoadedHistorySummary,
+      historyDayByDate: state.historyDayByDate,
+      historySummary: state.historySummary,
+      isHistoryDayLoading: state.isHistoryDayLoading,
+      loadingHistoryDayKey: state.loadingHistoryDayKey,
+      managedHabits: state.managedHabits,
+      state: state.todayState,
+    }),
+    [
+      state.hasLoadedHistorySummary,
+      state.historyDayByDate,
+      state.historySummary,
+      state.isHistoryDayLoading,
+      state.loadingHistoryDayKey,
+      state.managedHabits,
+      state.todayState,
+    ]
   );
+
+  return <TodayPage actions={pageActions} viewModel={viewModel} />;
 }
 
 function WindDownRoute({ actions, state }: ReadyAppController) {
-  return (
-    <WindDownPage
-      actions={buildWindDownPageActions(actions)}
-      viewModel={{ state: state.todayState }}
-    />
+  const pageActions = useMemo(
+    () => buildWindDownPageActions(actions),
+    [actions]
   );
+  const viewModel = useMemo(
+    () => ({
+      state: state.todayState,
+    }),
+    [state.todayState]
+  );
+
+  return <WindDownPage actions={pageActions} viewModel={viewModel} />;
 }
 
 function HistoryRoute({
@@ -65,6 +80,39 @@ function HistoryRoute({
   historyViewModel,
   state,
 }: ReadyAppController & { historyViewModel?: HistoryViewModel }) {
+  const pageActions = useMemo(
+    () => buildHistoryPageActions(actions),
+    [actions]
+  );
+  const viewModel = useMemo(
+    () => ({
+      contributionHistory: state.contributionHistory,
+      history: state.history,
+      historyLoadError: state.historyLoadError,
+      historyYears: state.historyYears,
+      selectedHistoryYear: state.selectedHistoryYear,
+      selectedWeeklyReview: state.selectedWeeklyReview,
+      todayDate: state.todayState.date,
+      weeklyReviewError: state.weeklyReviewError,
+      weeklyReviewOverview: state.weeklyReviewOverview,
+      weeklyReviewPhase: state.weeklyReviewPhase,
+      ...(historyViewModel ? { viewModel: historyViewModel } : {}),
+    }),
+    [
+      historyViewModel,
+      state.contributionHistory,
+      state.history,
+      state.historyLoadError,
+      state.historyYears,
+      state.selectedHistoryYear,
+      state.selectedWeeklyReview,
+      state.todayState.date,
+      state.weeklyReviewError,
+      state.weeklyReviewOverview,
+      state.weeklyReviewPhase,
+    ]
+  );
+
   return (
     <Suspense
       fallback={
@@ -74,22 +122,7 @@ function HistoryRoute({
         />
       }
     >
-      <HistoryPage
-        actions={buildHistoryPageActions(actions)}
-        viewModel={{
-          contributionHistory: state.contributionHistory,
-          history: state.history,
-          historyLoadError: state.historyLoadError,
-          historyYears: state.historyYears,
-          selectedHistoryYear: state.selectedHistoryYear,
-          selectedWeeklyReview: state.selectedWeeklyReview,
-          todayDate: state.todayState.date,
-          weeklyReviewError: state.weeklyReviewError,
-          weeklyReviewOverview: state.weeklyReviewOverview,
-          weeklyReviewPhase: state.weeklyReviewPhase,
-          ...(historyViewModel ? { viewModel: historyViewModel } : {}),
-        }}
-      />
+      <HistoryPage actions={pageActions} viewModel={viewModel} />
     </Suspense>
   );
 }

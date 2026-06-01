@@ -16,7 +16,11 @@ import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-t
 import { appClient } from "@/renderer/shared/lib/app-client";
 import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
-import type { FocusSession } from "@/shared/domain/focus-session";
+import type {
+  CreateFocusSessionInput,
+  FocusSession,
+} from "@/shared/domain/focus-session";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface FocusStoreState {
   focusSaveErrorMessage: string | null;
@@ -26,8 +30,14 @@ interface FocusStoreState {
   hasLoadedFocusSessions: boolean;
   timerState: PersistedFocusTimerState;
   clearFocusSaveError: () => void;
+  getTodaySnapshot: () => Promise<TodayState>;
   loadFocusSessions: (force?: boolean) => Promise<void>;
   prependFocusSession: (focusSession: FocusSession) => void;
+  recordFocusSession: (input: CreateFocusSessionInput) => Promise<FocusSession>;
+  restoreFocusTimerState: () => Promise<PersistedFocusTimerState | null>;
+  saveFocusTimerState: (
+    timerState: PersistedFocusTimerState
+  ) => Promise<PersistedFocusTimerState>;
   setFocusSaveErrorMessage: (message: string | null) => void;
   setTimerState: (timerState: PersistedFocusTimerState) => void;
 }
@@ -58,6 +68,7 @@ function getInitialFocusState(): Pick<
 export const useFocusStore = create<FocusStoreState>()((set, get) => ({
   ...getInitialFocusState(),
   clearFocusSaveError: () => set({ focusSaveErrorMessage: null }),
+  getTodaySnapshot: () => appClient.getTodayState(),
   loadFocusSessions: async (force = false) => {
     if (
       get().focusSessionsPhase === "loading" ||
@@ -93,6 +104,14 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
         ? state.focusSessions
         : [focusSession, ...state.focusSessions].slice(0, 30),
     })),
+  recordFocusSession: async (input) => {
+    const focusSession = await appClient.recordFocusSession(input);
+    set({ focusSaveErrorMessage: null });
+    return focusSession;
+  },
+  restoreFocusTimerState: () => appClient.getFocusTimerState(),
+  saveFocusTimerState: (timerState) =>
+    appClient.saveFocusTimerState(timerState),
   setFocusSaveErrorMessage: (focusSaveErrorMessage) =>
     set({ focusSaveErrorMessage }),
   setTimerState: (timerState) => set({ timerState }),

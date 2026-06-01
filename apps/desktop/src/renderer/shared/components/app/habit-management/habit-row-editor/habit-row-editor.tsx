@@ -1,6 +1,6 @@
 import { m } from "framer-motion";
 import type { DragEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import {
   Collapsible,
@@ -17,9 +17,9 @@ import { hoverLift, microTransition } from "@/renderer/shared/lib/motion";
 import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
-import { DropIndicator } from "../drop-indicator";
-import { HabitDetailsForm } from "../habit-details-form";
-import { HabitRowHeader } from "../habit-row-header";
+import { DropIndicator } from "../drop-indicator/drop-indicator";
+import { HabitDetailsForm } from "../habit-details-form/habit-details-form";
+import { HabitRowHeader } from "../habit-row-header/habit-row-header";
 
 type HabitRowDragState = {
   draggedHabitId: number;
@@ -71,9 +71,11 @@ export function HabitRowEditor({
   onUpdateHabitWeekdays,
 }: HabitRowEditorProps) {
   const categoryPreferences = useHabitCategoryPreferences();
-  const [draftName, setDraftName] = useState(habit.name);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const lastCommittedNameRef = useRef(habit.name);
+  const [draftState, setDraftState] = useState(() => ({
+    draftName: habit.name,
+    habitId: habit.id,
+    nameError: null as string | null,
+  }));
   const categoryPresentation = getHabitCategoryPresentation(
     habit.category,
     categoryPreferences
@@ -84,33 +86,34 @@ export function HabitRowEditor({
   const showDropAfter =
     dragState?.overHabitId === habit.id && dragState.position === "after";
 
-  useEffect(() => {
-    setDraftName(habit.name);
-    setNameError(null);
-    lastCommittedNameRef.current = habit.name;
-  }, [habit.id, habit.name]);
+  if (draftState.habitId !== habit.id) {
+    setDraftState({
+      draftName: habit.name,
+      habitId: habit.id,
+      nameError: null,
+    });
+  }
 
   async function handleRenameCommit(nextName: string): Promise<void> {
-    if (nextName === lastCommittedNameRef.current) {
+    if (nextName === habit.name) {
       return;
     }
 
     const trimmedName = nextName.trim();
     const nextNameError = getHabitNameError(trimmedName);
     if (nextNameError) {
-      setNameError(nextNameError);
+      setDraftState((current) => ({
+        ...current,
+        nameError: nextNameError,
+      }));
       return;
     }
 
-    const previousName = lastCommittedNameRef.current;
-
-    try {
-      await onRenameHabit(habit.id, nextName);
-      setNameError(null);
-      lastCommittedNameRef.current = nextName;
-    } catch {
-      setDraftName(previousName);
-    }
+    await onRenameHabit(habit.id, nextName);
+    setDraftState((current) => ({
+      ...current,
+      nameError: null,
+    }));
   }
 
   return (
@@ -151,16 +154,20 @@ export function HabitRowEditor({
 
           <CollapsibleContent>
             <HabitDetailsForm
-              draftName={draftName}
+              draftName={draftState.draftName}
               habit={habit}
-              nameError={nameError}
+              nameError={draftState.nameError}
               onRenameCommit={handleRenameCommit}
               onUpdateHabitCategory={onUpdateHabitCategory}
               onUpdateHabitFrequency={onUpdateHabitFrequency}
               onUpdateHabitTargetCount={onUpdateHabitTargetCount}
               onUpdateHabitWeekdays={onUpdateHabitWeekdays}
-              setDraftName={setDraftName}
-              setNameError={setNameError}
+              setDraftName={(draftName) =>
+                setDraftState((current) => ({ ...current, draftName }))
+              }
+              setNameError={(nameError) =>
+                setDraftState((current) => ({ ...current, nameError }))
+              }
             />
           </CollapsibleContent>
         </Item>

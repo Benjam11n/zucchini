@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { appClient } from "@/renderer/shared/lib/app-client";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 const SNAPSHOT_REFRESH_MS = 30 * 1000;
@@ -13,7 +13,9 @@ export function useFocusWidgetSnapshot() {
 
     const loadSnapshot = async () => {
       try {
-        const nextTodayState = await appClient.getTodayState();
+        const nextTodayState = await useFocusStore
+          .getState()
+          .getTodaySnapshot();
         if (!disposed) {
           setTodayState(nextTodayState);
         }

@@ -79,11 +79,7 @@ export function FocusQuotaSettingsCard({
                   return;
                 }
 
-                try {
-                  await onUnarchiveFocusQuotaGoal(archivedGoal.goalId);
-                } catch {
-                  archivedGoalUndo.show(archivedGoal);
-                }
+                await onUnarchiveFocusQuotaGoal(archivedGoal.goalId);
               }}
               type="button"
               variant="secondary"

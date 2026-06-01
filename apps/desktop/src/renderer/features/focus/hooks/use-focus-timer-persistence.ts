@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { appClient } from "@/renderer/shared/lib/app-client";
 import { arePersistedFocusTimerStatesEqual } from "@/shared/domain/focus-timer";
 
 function resolveRestoredTimerState(
@@ -39,7 +38,9 @@ export function useFocusTimerPersistence({
 
     async function restoreTimerState() {
       try {
-        const restored = await appClient.getFocusTimerState();
+        const restored = await useFocusStore
+          .getState()
+          .restoreFocusTimerState();
         if (cancelled) {
           return;
         }
@@ -120,7 +121,9 @@ export function useFocusTimerPersistence({
 
     async function saveTimerState() {
       try {
-        const savedTimerState = await appClient.saveFocusTimerState(timerState);
+        const savedTimerState = await useFocusStore
+          .getState()
+          .saveFocusTimerState(timerState);
         if (cancelled || latestSaveRequestIdRef.current !== requestId) {
           return;
         }

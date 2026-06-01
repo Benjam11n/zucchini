@@ -1,44 +1,22 @@
 import { ChevronDown } from "lucide-react";
 import { useId, useState } from "react";
 
+import {
+  formatSessionRangeLabel,
+  formatSessionWindow,
+  getRunCounts,
+} from "@/renderer/features/focus/lib/focus-run-card-view";
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatIsoDateTime, formatIsoTime } from "@/shared/domain/date-key";
 
-import { FocusRunBadges } from "../focus-run-badges";
-import { FocusRunDetails } from "../focus-run-details";
-import { FocusRunSummary } from "../focus-run-summary";
-import { FocusRunTimeline } from "../focus-run-timeline";
-
-function formatSessionRangeLabel(
-  startedAt: string,
-  completedAt: string
-): string {
-  const dateLabel = formatIsoDateTime(completedAt, {
-    day: "numeric",
-    month: "short",
-  });
-
-  return `${dateLabel}, ${formatIsoTime(startedAt)} - ${formatIsoTime(completedAt)}`;
-}
-
-function formatSessionWindow(sessionSpanMinutes: number): string {
-  return `${sessionSpanMinutes} min session window`;
-}
+import { FocusRunBadges } from "../focus-run-badges/focus-run-badges";
+import { FocusRunDetails } from "../focus-run-details/focus-run-details";
+import { FocusRunSummary } from "../focus-run-summary/focus-run-summary";
+import { FocusRunTimeline } from "../focus-run-timeline/focus-run-timeline";
 
 interface FocusRunCardProps {
   session: FocusHistorySessionView;
-}
-
-function getRunCounts(session: FocusHistorySessionView) {
-  return {
-    breakCount: session.idleGapMinutesBetweenEntries.filter((gap) => gap > 0)
-      .length,
-    pauseCount: session.timelineSegments.filter(
-      (segment) => segment.kind === "pause"
-    ).length,
-  };
 }
 
 export function FocusRunCard({ session }: FocusRunCardProps) {

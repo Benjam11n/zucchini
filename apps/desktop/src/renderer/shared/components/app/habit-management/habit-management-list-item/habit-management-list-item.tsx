@@ -1,5 +1,5 @@
 import type { HabitManagementListProps } from "../habit-management-list/habit-management-list";
-import { HabitRowEditor } from "../habit-row-editor";
+import { HabitRowEditor } from "../habit-row-editor/habit-row-editor";
 import { HABIT_DRAG_DATA_TYPE } from "../lib/habit-drag-data";
 import { getHabitDropPosition } from "../lib/habit-drag-utils";
 

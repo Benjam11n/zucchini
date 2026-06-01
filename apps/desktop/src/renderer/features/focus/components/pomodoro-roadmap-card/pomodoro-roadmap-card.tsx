@@ -1,105 +1,13 @@
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
+import {
+  ACTIVE_SEGMENT_CLASS,
+  createRoadmapSegments,
+  formatRoadmapDuration,
+  getActiveSegmentKey,
+  getTickLabels,
+  SEGMENT_TONE_CLASS,
+} from "@/renderer/features/focus/lib/pomodoro-roadmap-view";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
-
-interface RoadmapSegment {
-  durationMs: number;
-  key: string;
-  label: string;
-  tone: "focus" | "longBreak" | "shortBreak";
-}
-
-const SEGMENT_TONE_CLASS = {
-  focus: "bg-emerald-400/90",
-  longBreak: "bg-orange-400/90",
-  shortBreak: "bg-amber-400/90",
-} as const;
-
-const ACTIVE_SEGMENT_CLASS = {
-  focus: "ring-2 ring-emerald-200/80",
-  longBreak: "ring-2 ring-orange-200/80",
-  shortBreak: "ring-2 ring-amber-200/80",
-} as const;
-
-function formatDuration(durationMs: number): string {
-  const totalMinutes = Math.round(durationMs / 60_000);
-  return `${totalMinutes}m`;
-}
-
-function createRoadmapSegments(
-  settings: PomodoroTimerSettings
-): RoadmapSegment[] {
-  const segments: RoadmapSegment[] = [];
-
-  for (
-    let focusIndex = 1;
-    focusIndex <= settings.focusCyclesBeforeLongBreak;
-    focusIndex += 1
-  ) {
-    segments.push({
-      durationMs: settings.focusDefaultDurationSeconds * 1000,
-      key: `focus-${focusIndex}`,
-      label: `Focus ${focusIndex}`,
-      tone: "focus",
-    });
-
-    if (focusIndex < settings.focusCyclesBeforeLongBreak) {
-      segments.push({
-        durationMs: settings.focusShortBreakSeconds * 1000,
-        key: `short-break-${focusIndex}`,
-        label: "Short break",
-        tone: "shortBreak",
-      });
-    }
-  }
-
-  segments.push({
-    durationMs: settings.focusLongBreakSeconds * 1000,
-    key: "long-break",
-    label: "Long break",
-    tone: "longBreak",
-  });
-
-  return segments;
-}
-
-function getActiveSegmentKey(
-  timerState: PersistedFocusTimerState,
-  focusCyclesBeforeLongBreak: number
-): string {
-  if (timerState.phase === "break") {
-    if (timerState.breakVariant === "long") {
-      return "long-break";
-    }
-
-    return `short-break-${timerState.completedFocusCycles}`;
-  }
-
-  return `focus-${Math.min(
-    timerState.completedFocusCycles + 1,
-    focusCyclesBeforeLongBreak
-  )}`;
-}
-
-function getTickLabels(segments: RoadmapSegment[]): {
-  key: string;
-  label: string;
-}[] {
-  let elapsedMs = 0;
-
-  return [
-    {
-      key: "tick-start",
-      label: "0m",
-    },
-    ...segments.map((segment) => {
-      elapsedMs += segment.durationMs;
-      return {
-        key: `tick-${elapsedMs}`,
-        label: formatDuration(elapsedMs),
-      };
-    }),
-  ];
-}
 
 interface PomodoroRoadmapCardProps {
   settings: PomodoroTimerSettings;
@@ -126,14 +34,14 @@ export function PomodoroRoadmapCard({
       <div className="overflow-hidden rounded-xl border border-border/60 bg-background/40 p-2.5">
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="text-sm font-semibold text-foreground">
-            Total set: {formatDuration(totalSetDurationMs)}
+            Total set: {formatRoadmapDuration(totalSetDurationMs)}
           </p>
         </div>
 
         <div className="flex h-5 items-stretch overflow-hidden rounded-xl bg-muted/20">
           {segments.map((segment) => (
             <div
-              aria-label={`${segment.label} ${formatDuration(segment.durationMs)}`}
+              aria-label={`${segment.label} ${formatRoadmapDuration(segment.durationMs)}`}
               className={`min-w-2 self-stretch ${SEGMENT_TONE_CLASS[segment.tone]} ${
                 segment.key === activeKey
                   ? ACTIVE_SEGMENT_CLASS[segment.tone]
@@ -143,7 +51,7 @@ export function PomodoroRoadmapCard({
               style={{
                 width: `${(segment.durationMs / totalSetDurationMs) * 100}%`,
               }}
-              title={`${segment.label} · ${formatDuration(segment.durationMs)}`}
+              title={`${segment.label} · ${formatRoadmapDuration(segment.durationMs)}`}
             />
           ))}
         </div>

@@ -14,8 +14,8 @@ import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import {
   formatBackupDate,
   formatBackupSize,
-} from "../../../lib/data-management-format";
-import type { DataAction } from "../../../lib/data-management-types";
+} from "../../lib/data-management-format";
+import type { DataAction } from "../../lib/data-management-types";
 import { RestoreHabitSnapshot } from "../restore-habit-snapshot";
 
 interface RestoreBackupDialogProps {

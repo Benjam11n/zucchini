@@ -8,6 +8,12 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
+import {
+  DAY_STATUS_COPY,
+  formatDays,
+  formatWeekBarLabel,
+  getBarClassName,
+} from "@/renderer/features/today/lib/today-sidebar-view";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -43,61 +49,11 @@ interface TodaySidebarProps {
   onSetDayStatus: (kind: DayStatusKind | null) => void;
 }
 
-const DAY_STATUS_COPY: Record<
-  DayStatusKind,
-  {
-    icon: typeof HeartPulse;
-    iconClassName: string;
-    label: string;
-    message: string;
-  }
-> = {
-  rescheduled: {
-    icon: CalendarPlus,
-    iconClassName: "text-emerald-600 dark:text-emerald-400",
-    label: "Moved",
-    message: "Unfinished habits carried over.",
-  },
-  rest: {
-    icon: Pause,
-    iconClassName: "text-sky-600 dark:text-sky-400",
-    label: "Rest day",
-    message: "Habits paused.",
-  },
-  sick: {
-    icon: HeartPulse,
-    iconClassName: "text-amber-600 dark:text-amber-400",
-    label: "Sick day",
-    message: "Streak preserved.",
-  },
+const DAY_STATUS_ICON: Record<DayStatusKind, typeof HeartPulse> = {
+  rescheduled: CalendarPlus,
+  rest: Pause,
+  sick: HeartPulse,
 };
-
-function getBarClassName(percent: number): string {
-  if (percent === 100) {
-    return "bg-primary";
-  }
-
-  if (percent > 0) {
-    return "bg-primary/60";
-  }
-
-  return "bg-muted";
-}
-
-function formatDays(value: number): string {
-  return value === 1 ? "1 day" : `${value} days`;
-}
-
-function formatWeekBarLabel(day: {
-  completed: number;
-  date: string;
-  percent: number;
-  total: number;
-}): string {
-  return day.total === 0
-    ? `${day.date}: no daily habits tracked`
-    : `${day.date}: ${day.completed} of ${day.total} daily habits complete`;
-}
 
 export function TodaySidebar({
   history,
@@ -107,7 +63,7 @@ export function TodaySidebar({
   const { dayStatus } = state;
   const dayStatusCopy = dayStatus ? DAY_STATUS_COPY[dayStatus] : null;
   const dayStatusUi = dayStatus ? HISTORY_STATUS_UI[dayStatus] : null;
-  const DayStatusIcon = dayStatusCopy?.icon;
+  const DayStatusIcon = dayStatus ? DAY_STATUS_ICON[dayStatus] : null;
   const todayMetricsState = useMemo(
     () => ({
       date: state.date,
