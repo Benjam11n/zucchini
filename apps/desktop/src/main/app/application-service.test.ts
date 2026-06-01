@@ -2187,7 +2187,7 @@ describe("history retrieval", () => {
       targetCount: 1,
     });
     repository.setStatusForDate(
-      "2026-03-10",
+      "2026-03-09",
       new Map([
         [1, true],
         [2, true],

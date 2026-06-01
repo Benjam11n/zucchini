@@ -81,7 +81,7 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.isEmpty).toBe(true);
     expect(dashboard.summary.completed.value).toBe("0");
     expect(dashboard.momentum.score).toBeGreaterThanOrEqual(0);
-    expect(dashboard.weeklyCompletion).toHaveLength(5);
+    expect(dashboard.weeklyCompletion).toHaveLength(6);
   });
 
   it("uses the selected range for the current period", () => {
@@ -99,7 +99,8 @@ describe("buildInsightsDashboard()", () => {
     });
 
     expect(dashboard.period).toMatchObject({
-      currentStart: "2026-03-25",
+      currentEnd: "2026-03-30",
+      currentStart: "2026-03-24",
       label: "Last 7 days",
     });
     expect(dashboard.summary.completed.value).toBe("1");
@@ -109,7 +110,7 @@ describe("buildInsightsDashboard()", () => {
   it("does not show the empty state when only focus data exists", () => {
     const dashboard = buildInsightsDashboard({
       dailySummaries: [],
-      focusSessions: [createFocusSession("2026-03-31", 1500)],
+      focusSessions: [createFocusSession("2026-03-30", 1500)],
       habitStatuses: [],
       nowDate: "2026-03-31",
       streak,
@@ -142,9 +143,9 @@ describe("buildInsightsDashboard()", () => {
       timezone: "UTC",
     });
 
-    expect(dashboard.summary.completed.value).toBe("0");
+    expect(dashboard.summary.completed.value).toBe("3");
     expect(dashboard.summary.focus.value).toBe("1h 30m");
-    expect(dashboard.summary.perfectDays.value).toBe("0");
+    expect(dashboard.summary.perfectDays.value).toBe("1");
     expect(dashboard.summary.savedStreaks.value).toBe("1");
   });
 
@@ -283,7 +284,7 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.habitLeaderboard[0]).toMatchObject({
       completionRate: 100,
       name: "Fitness",
-      trend: [100, 100, 100, 100, 100],
+      trend: [100, 100, 100, 100],
     });
   });
 
@@ -293,7 +294,7 @@ describe("buildInsightsDashboard()", () => {
       dailySummaries: [],
       focusSessions: [],
       habitStatuses: [
-        createStatus(1, "2026-03-31", 1, {
+        createStatus(1, "2026-03-30", 1, {
           name: "Active",
           sortOrder: 1,
         }),

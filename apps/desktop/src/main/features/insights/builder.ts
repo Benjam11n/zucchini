@@ -657,7 +657,8 @@ export function buildInsightsDashboard({
   timezone,
 }: BuildInsightsDashboardOptions): InsightsDashboard {
   const currentRangeDays = normalizeRangeDays(rangeDays);
-  const currentStart = addDays(nowDate, -(currentRangeDays - 1));
+  const currentEnd = addDays(nowDate, -1);
+  const currentStart = addDays(currentEnd, -(currentRangeDays - 1));
   const previousStart = addDays(currentStart, -currentRangeDays);
   const previousEnd = addDays(currentStart, -1);
   const activeHabitStatuses = filterActiveHabitStatuses(
@@ -665,7 +666,8 @@ export function buildInsightsDashboard({
     activeHabitIds
   );
   const currentStatuses = activeHabitStatuses.filter(
-    (status) => status.periodEnd >= currentStart && status.periodEnd <= nowDate
+    (status) =>
+      status.periodEnd >= currentStart && status.periodEnd <= currentEnd
   );
   const previousStatuses = activeHabitStatuses.filter(
     (status) =>
@@ -677,7 +679,8 @@ export function buildInsightsDashboard({
   const previousRate = toRate(previousTotals.completed, previousTotals.total);
   const currentFocusSessions = focusSessions.filter(
     (session) =>
-      session.completedDate >= currentStart && session.completedDate <= nowDate
+      session.completedDate >= currentStart &&
+      session.completedDate <= currentEnd
   );
   const previousFocusSessions = focusSessions.filter(
     (session) =>
@@ -685,7 +688,7 @@ export function buildInsightsDashboard({
       session.completedDate <= previousEnd
   );
   const currentSummaries = dailySummaries.filter(
-    (summary) => summary.date >= currentStart && summary.date <= nowDate
+    (summary) => summary.date >= currentStart && summary.date <= currentEnd
   );
   const previousSummaries = dailySummaries.filter(
     (summary) => summary.date >= previousStart && summary.date <= previousEnd
@@ -704,7 +707,11 @@ export function buildInsightsDashboard({
   const previousSavedStreaks = previousSummaries.filter(
     (summary) => summary.freezeUsed
   ).length;
-  const sparkline = buildSparkline(activeHabitStatuses, currentStart, nowDate);
+  const sparkline = buildSparkline(
+    activeHabitStatuses,
+    currentStart,
+    currentEnd
+  );
   const momentum = buildMomentum({
     currentRate,
     previousRate,
@@ -718,7 +725,7 @@ export function buildInsightsDashboard({
           (status) => status.periodEnd >= start && status.periodEnd <= end
         )
       ).completed,
-    nowDate,
+    nowDate: currentEnd,
     periodStart: currentStart,
   });
   const focusTrend = buildMetricTrend({
@@ -729,7 +736,7 @@ export function buildInsightsDashboard({
             session.completedDate >= start && session.completedDate <= end
         )
       ),
-    nowDate,
+    nowDate: currentEnd,
     periodStart: currentStart,
   });
   const perfectDayTrend = buildMetricTrend({
@@ -738,7 +745,7 @@ export function buildInsightsDashboard({
         (summary) =>
           summary.date >= start && summary.date <= end && summary.allCompleted
       ).length,
-    nowDate,
+    nowDate: currentEnd,
     periodStart: currentStart,
   });
   const savedStreakTrend = buildMetricTrend({
@@ -747,7 +754,7 @@ export function buildInsightsDashboard({
         (summary) =>
           summary.date >= start && summary.date <= end && summary.freezeUsed
       ).length,
-    nowDate,
+    nowDate: currentEnd,
     periodStart: currentStart,
   });
 
@@ -756,7 +763,7 @@ export function buildInsightsDashboard({
     habitLeaderboard: buildHabitLeaderboard(
       activeHabitStatuses,
       currentStart,
-      nowDate
+      currentEnd
     ),
     isEmpty:
       currentTotals.total === 0 &&
@@ -764,14 +771,14 @@ export function buildInsightsDashboard({
       currentFocusSessions.length === 0,
     momentum,
     period: {
-      currentEnd: nowDate,
+      currentEnd,
       currentStart,
       label: formatRangeLabel(currentRangeDays),
     },
     smartInsights: buildSmartInsights({
       currentRate,
       currentStart,
-      nowDate,
+      nowDate: currentEnd,
       previousRate,
       rangeDays: currentRangeDays,
       statuses: activeHabitStatuses,
@@ -808,13 +815,13 @@ export function buildInsightsDashboard({
     weekdayRhythm: buildWeekdayRhythm(
       currentStatuses,
       currentStart,
-      nowDate,
+      currentEnd,
       timezone
     ),
     weeklyCompletion: buildWeeklyCompletion(
       currentStatuses,
       currentStart,
-      nowDate
+      currentEnd
     ),
   };
 }

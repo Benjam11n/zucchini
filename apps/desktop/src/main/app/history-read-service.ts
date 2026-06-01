@@ -439,7 +439,8 @@ export class HistoryReadService extends ApplicationServiceSlice {
     return this.withSyncedRead("getInsightsDashboard", () => {
       const today = this.getTodayKey();
       const requestedRangeDays = rangeDays ?? 30;
-      const rangeStart = addDays(today, -(requestedRangeDays * 2 - 1));
+      const rangeEnd = addDays(today, -1);
+      const rangeStart = addDays(rangeEnd, -(requestedRangeDays * 2 - 1));
       const activeHabitIds = new Set(
         this.repository.getHabits().map((habit) => habit.id)
       );
@@ -448,15 +449,15 @@ export class HistoryReadService extends ApplicationServiceSlice {
         activeHabitIds,
         dailySummaries: this.repository.getDailySummariesInRange(
           rangeStart,
-          today
+          rangeEnd
         ),
         focusSessions: this.repository.getFocusSessionsInRange(
           rangeStart,
-          today
+          rangeEnd
         ),
         habitStatuses: this.repository.getHabitPeriodStatusesEndingInRange(
           rangeStart,
-          today
+          rangeEnd
         ),
         nowDate: today,
         rangeDays: requestedRangeDays,
