@@ -14,7 +14,7 @@ import type {
 } from "@/renderer/features/focus/focus.types";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
@@ -66,27 +66,23 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
       return;
     }
 
-    await runAppIpcTask(() => appClient.getFocusSessions(), {
-      onError: (focusSessionsLoadError) => {
-        set({
-          focusSessionsLoadError,
-          focusSessionsPhase: "error",
-        });
+    await runStoreLoad<FocusStoreState, FocusSession[]>({
+      error: (focusSessionsLoadError) => ({
+        focusSessionsLoadError,
+        focusSessionsPhase: "error",
+      }),
+      loading: {
+        focusSessionsLoadError: null,
+        focusSessionsPhase: "loading",
       },
-      onStart: () => {
-        set({
-          focusSessionsLoadError: null,
-          focusSessionsPhase: "loading",
-        });
-      },
-      onSuccess: (focusSessions) => {
-        set({
-          focusSessions,
-          focusSessionsLoadError: null,
-          focusSessionsPhase: "ready",
-          hasLoadedFocusSessions: true,
-        });
-      },
+      set,
+      success: (focusSessions) => ({
+        focusSessions,
+        focusSessionsLoadError: null,
+        focusSessionsPhase: "ready",
+        hasLoadedFocusSessions: true,
+      }),
+      task: () => appClient.getFocusSessions(),
     });
   },
   prependFocusSession: (focusSession: FocusSession) =>

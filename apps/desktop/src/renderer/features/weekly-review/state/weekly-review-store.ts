@@ -10,7 +10,7 @@ import { create } from "zustand";
 
 import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
@@ -67,33 +67,30 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAppIpcTask(
-        () => loadWeeklyReviewState(appClient, get().selectedWeeklyReview),
-        {
-          onError: (weeklyReviewError) => {
-            set({
-              selectedWeeklyReview: null,
-              weeklyReviewError,
-              weeklyReviewOverview: null,
-              weeklyReviewPhase: "error",
-            });
-          },
-          onStart: () => {
-            set({
-              weeklyReviewError: null,
-              weeklyReviewPhase: "loading",
-            });
-          },
-          onSuccess: (weeklyReviewState) => {
-            set({
-              selectedWeeklyReview: weeklyReviewState.selectedWeeklyReview,
-              weeklyReviewError: null,
-              weeklyReviewOverview: weeklyReviewState.overview,
-              weeklyReviewPhase: "ready",
-            });
-          },
-        }
-      );
+      await runStoreLoad<
+        WeeklyReviewStoreState,
+        Awaited<ReturnType<typeof loadWeeklyReviewState>>
+      >({
+        error: (weeklyReviewError) => ({
+          selectedWeeklyReview: null,
+          weeklyReviewError,
+          weeklyReviewOverview: null,
+          weeklyReviewPhase: "error",
+        }),
+        loading: {
+          weeklyReviewError: null,
+          weeklyReviewPhase: "loading",
+        },
+        set,
+        success: (weeklyReviewState) => ({
+          selectedWeeklyReview: weeklyReviewState.selectedWeeklyReview,
+          weeklyReviewError: null,
+          weeklyReviewOverview: weeklyReviewState.overview,
+          weeklyReviewPhase: "ready",
+        }),
+        task: () =>
+          loadWeeklyReviewState(appClient, get().selectedWeeklyReview),
+      });
     },
     openWeeklyReviewSpotlight: () =>
       set({
@@ -105,26 +102,22 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
         return;
       }
 
-      await runAppIpcTask(() => appClient.getWeeklyReview(weekStart), {
-        onError: (weeklyReviewError) => {
-          set({
-            weeklyReviewError,
-            weeklyReviewPhase: "error",
-          });
+      await runStoreLoad<WeeklyReviewStoreState, WeeklyReview>({
+        error: (weeklyReviewError) => ({
+          weeklyReviewError,
+          weeklyReviewPhase: "error",
+        }),
+        loading: {
+          weeklyReviewError: null,
+          weeklyReviewPhase: "loading",
         },
-        onStart: () => {
-          set({
-            weeklyReviewError: null,
-            weeklyReviewPhase: "loading",
-          });
-        },
-        onSuccess: (selectedWeeklyReview) => {
-          set({
-            selectedWeeklyReview,
-            weeklyReviewError: null,
-            weeklyReviewPhase: "ready",
-          });
-        },
+        set,
+        success: (selectedWeeklyReview) => ({
+          selectedWeeklyReview,
+          weeklyReviewError: null,
+          weeklyReviewPhase: "ready",
+        }),
+        task: () => appClient.getWeeklyReview(weekStart),
       });
     },
   })

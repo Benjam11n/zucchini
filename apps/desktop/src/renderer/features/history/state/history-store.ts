@@ -7,7 +7,7 @@
 import { create } from "zustand";
 
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -116,32 +116,28 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAppIpcTask(() => appClient.getHistoryDay(date), {
-      onError: (historyLoadError) => {
-        set({
-          historyLoadError,
-          isHistoryDayLoading: false,
-          loadingHistoryDayKey: null,
-        });
+    await runStoreLoad({
+      error: (historyLoadError) => ({
+        historyLoadError,
+        isHistoryDayLoading: false,
+        loadingHistoryDayKey: null,
+      }),
+      loading: {
+        historyLoadError: null,
+        isHistoryDayLoading: true,
+        loadingHistoryDayKey: date,
       },
-      onStart: () => {
-        set({
-          historyLoadError: null,
-          isHistoryDayLoading: true,
-          loadingHistoryDayKey: date,
-        });
-      },
-      onSuccess: (historyDay) => {
-        set((state) => ({
-          historyDayByDate: {
-            ...state.historyDayByDate,
-            [date]: historyDay,
-          },
-          historyLoadError: null,
-          isHistoryDayLoading: false,
-          loadingHistoryDayKey: null,
-        }));
-      },
+      set,
+      success: (historyDay) => (state) => ({
+        historyDayByDate: {
+          ...state.historyDayByDate,
+          [date]: historyDay,
+        },
+        historyLoadError: null,
+        isHistoryDayLoading: false,
+        loadingHistoryDayKey: null,
+      }),
+      task: () => appClient.getHistoryDay(date),
     });
   },
   loadHistoryMonth: async (year, month, options = {}) => {
@@ -167,38 +163,29 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const historyMonthRequest = runAppIpcTask(
-      () => appClient.getHistorySummaryForMonth(year, month),
-      {
-        onError: (historyLoadError) => {
-          set({
-            historyLoadError,
-            isHistoryLoading: false,
-          });
+    const historyMonthRequest = runStoreLoad({
+      error: (historyLoadError) => ({
+        historyLoadError,
+        isHistoryLoading: false,
+      }),
+      loading: {
+        historyLoadError: null,
+        isHistoryLoading: true,
+      },
+      set,
+      success: (history) => (state) => ({
+        history:
+          state.selectedHistoryMonthKey === monthKey ? history : state.history,
+        historyLoadError: null,
+        historySummaryByMonth: {
+          ...state.historySummaryByMonth,
+          [monthKey]: history,
         },
-        onStart: () => {
-          set({
-            historyLoadError: null,
-            isHistoryLoading: true,
-          });
-        },
-        onSuccess: (history) => {
-          set((state) => ({
-            history:
-              state.selectedHistoryMonthKey === monthKey
-                ? history
-                : state.history,
-            historyLoadError: null,
-            historySummaryByMonth: {
-              ...state.historySummaryByMonth,
-              [monthKey]: history,
-            },
-            isHistoryLoading: false,
-            selectedHistoryYear: state.selectedHistoryYear ?? year,
-          }));
-        },
-      }
-    );
+        isHistoryLoading: false,
+        selectedHistoryYear: state.selectedHistoryYear ?? year,
+      }),
+      task: () => appClient.getHistorySummaryForMonth(year, month),
+    });
 
     historyMonthRequests.set(monthKey, historyMonthRequest);
 
@@ -215,28 +202,24 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    await runAppIpcTask(() => appClient.getHistorySummary(limit), {
-      onError: (historyLoadError) => {
-        set({
-          hasLoadedHistorySummary: true,
-          historyLoadError,
-          isHistorySummaryLoading: false,
-        });
+    await runStoreLoad({
+      error: (historyLoadError) => ({
+        hasLoadedHistorySummary: true,
+        historyLoadError,
+        isHistorySummaryLoading: false,
+      }),
+      loading: {
+        historyLoadError: null,
+        isHistorySummaryLoading: true,
       },
-      onStart: () => {
-        set({
-          historyLoadError: null,
-          isHistorySummaryLoading: true,
-        });
-      },
-      onSuccess: (historySummary) => {
-        set({
-          hasLoadedHistorySummary: true,
-          historyLoadError: null,
-          historySummary,
-          isHistorySummaryLoading: false,
-        });
-      },
+      set,
+      success: (historySummary) => ({
+        hasLoadedHistorySummary: true,
+        historyLoadError: null,
+        historySummary,
+        isHistorySummaryLoading: false,
+      }),
+      task: () => appClient.getHistorySummary(limit),
     });
   },
   loadHistoryYear: async (year, options = {}) => {
@@ -258,38 +241,31 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const historyYearRequest = runAppIpcTask(
-      () => appClient.getHistorySummaryForYear(year),
-      {
-        onError: (historyLoadError) => {
-          set({
-            historyLoadError,
-            isHistoryContributionLoading: false,
-          });
+    const historyYearRequest = runStoreLoad({
+      error: (historyLoadError) => ({
+        historyLoadError,
+        isHistoryContributionLoading: false,
+      }),
+      loading: {
+        historyLoadError: null,
+        isHistoryContributionLoading: true,
+      },
+      set,
+      success: (history) => (state) => ({
+        contributionHistory:
+          state.selectedHistoryYear === year
+            ? history
+            : state.contributionHistory,
+        historyLoadError: null,
+        historySummaryByYear: {
+          ...state.historySummaryByYear,
+          [year]: history,
         },
-        onStart: () => {
-          set({
-            historyLoadError: null,
-            isHistoryContributionLoading: true,
-          });
-        },
-        onSuccess: (history) => {
-          set((state) => ({
-            contributionHistory:
-              state.selectedHistoryYear === year
-                ? history
-                : state.contributionHistory,
-            historyLoadError: null,
-            historySummaryByYear: {
-              ...state.historySummaryByYear,
-              [year]: history,
-            },
-            isHistoryContributionLoading: false,
-            selectedHistoryYear: state.selectedHistoryYear ?? year,
-          }));
-        },
-      }
-    );
+        isHistoryContributionLoading: false,
+        selectedHistoryYear: state.selectedHistoryYear ?? year,
+      }),
+      task: () => appClient.getHistorySummaryForYear(year),
+    });
 
     historyYearRequests.set(year, historyYearRequest);
 
@@ -321,52 +297,50 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       return;
     }
 
-    const nextHistoryYearsRequest = runAppIpcTask(
-      () => appClient.getHistoryYears(),
-      {
-        onError: (historyLoadError) => {
-          set({
-            historyLoadError,
-            isHistoryLoading: false,
-          });
-        },
-        onStart: () => {
-          set({
-            historyLoadError: null,
-            isHistoryLoading: true,
-          });
-        },
-        onSuccess: async (historyYears) => {
-          const currentSelectedYear = get().selectedHistoryYear;
-          const selectedHistoryYear =
-            currentSelectedYear && historyYears.includes(currentSelectedYear)
-              ? currentSelectedYear
-              : (historyYears[0] ?? null);
+    const nextHistoryYearsRequest = runStoreLoad({
+      error: (historyLoadError) => ({
+        historyLoadError,
+        isHistoryLoading: false,
+      }),
+      loading: {
+        historyLoadError: null,
+        isHistoryLoading: true,
+      },
+      set,
+      success: async (historyYears) => {
+        const currentSelectedYear = get().selectedHistoryYear;
+        const selectedHistoryYear =
+          currentSelectedYear && historyYears.includes(currentSelectedYear)
+            ? currentSelectedYear
+            : (historyYears[0] ?? null);
 
-          set({
-            historyLoadError: null,
-            historyYears,
-            isHistoryLoading: false,
-            selectedHistoryYear,
-          });
+        const nextState = {
+          historyLoadError: null,
+          historyYears,
+          isHistoryLoading: false,
+          selectedHistoryYear,
+        };
 
-          if (selectedHistoryYear !== null) {
-            void get().loadHistoryYear(selectedHistoryYear, options);
-            const todayMonth =
-              options.initialMonth ??
-              getDateKeyMonth(
-                get().historySummary[0]?.date ??
-                  new Date().toISOString().slice(0, 10)
-              );
-            await get().loadHistoryMonth(
-              selectedHistoryYear,
-              todayMonth,
-              options.force === undefined ? {} : { force: options.force }
+        set(nextState);
+
+        if (selectedHistoryYear !== null) {
+          void get().loadHistoryYear(selectedHistoryYear, options);
+          const todayMonth =
+            options.initialMonth ??
+            getDateKeyMonth(
+              get().historySummary[0]?.date ??
+                new Date().toISOString().slice(0, 10)
             );
-          }
-        },
-      }
-    );
+          await get().loadHistoryMonth(
+            selectedHistoryYear,
+            todayMonth,
+            options.force === undefined ? {} : { force: options.force }
+          );
+        }
+        return {};
+      },
+      task: () => appClient.getHistoryYears(),
+    });
 
     historyYearsRequest = nextHistoryYearsRequest;
 

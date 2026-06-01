@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import { appClient } from "@/renderer/shared/lib/app-client";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   InsightsDashboard,
@@ -37,27 +37,23 @@ export const useInsightsStore = create<InsightsStoreState>()((set, get) => ({
       return;
     }
 
-    await runAppIpcTask(() => appClient.getInsightsDashboard(rangeDays), {
-      onError: (error) => {
-        set({
-          error,
-          phase: "error",
-        });
+    await runStoreLoad<InsightsStoreState, InsightsDashboard>({
+      error: (error) => ({
+        error,
+        phase: "error",
+      }),
+      loading: {
+        error: null,
+        phase: "loading",
       },
-      onStart: () => {
-        set({
-          error: null,
-          phase: "loading",
-        });
-      },
-      onSuccess: (dashboard) => {
-        set({
-          dashboard,
-          error: null,
-          phase: "ready",
-          rangeDays,
-        });
-      },
+      set,
+      success: (dashboard) => ({
+        dashboard,
+        error: null,
+        phase: "ready",
+        rangeDays,
+      }),
+      task: () => appClient.getInsightsDashboard(rangeDays),
     });
   },
   phase: "idle",
