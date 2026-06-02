@@ -45,7 +45,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check dead code
-        uses: fallow-rs/fallow@7bfd0beaff18fc6f706622746991f2d8bc9bfc5e
+        uses: fallow-rs/fallow@71cefac7af05f17732482241c7671a401707cc9d
         with:
           command: dead-code
           format: sarif
@@ -55,7 +55,7 @@ jobs:
           max-annotations: 50
 
       - name: Check duplication
-        uses: fallow-rs/fallow@7bfd0beaff18fc6f706622746991f2d8bc9bfc5e
+        uses: fallow-rs/fallow@71cefac7af05f17732482241c7671a401707cc9d
         with:
           command: dupes
           format: json
