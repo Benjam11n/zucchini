@@ -101,16 +101,11 @@ export function FocusQuotaGoalForm({
             variant={archiveButtonVariant}
           />
         ) : null}
-        <form.Subscribe
-          selector={(formState) => ({
-            isSubmitting: formState.isSubmitting,
-            minutes: formState.values.minutes,
-          })}
-        >
+        <form.Subscribe>
           {(state) => (
             <Button
               className="h-9 px-3"
-              disabled={state.isSubmitting || state.minutes === ""}
+              disabled={state.isSubmitting || state.values.minutes === ""}
               type="submit"
             >
               {goal ? "Save" : "Add"}

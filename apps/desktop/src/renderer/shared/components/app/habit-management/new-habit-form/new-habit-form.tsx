@@ -183,20 +183,14 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
                       </p>
                     ) : null}
                   </div>
-                  <form.Subscribe
-                    selector={(state) => ({
-                      isNameValid: !getHabitNameError(state.values.name.trim()),
-                      isSubmitting: state.isSubmitting,
-                      name: state.values.name,
-                    })}
-                  >
+                  <form.Subscribe>
                     {(state) => (
                       <Button
                         className="h-10 px-4"
                         disabled={
                           state.isSubmitting ||
-                          state.name.trim().length === 0 ||
-                          !state.isNameValid
+                          state.values.name.trim().length === 0 ||
+                          Boolean(getHabitNameError(state.values.name.trim()))
                         }
                         type="submit"
                       >
@@ -210,8 +204,8 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
             </form.Field>
           </div>
 
-          <form.Subscribe selector={(state) => state.values}>
-            {(values) => (
+          <form.Subscribe>
+            {(state) => (
               <>
                 <div className="grid gap-3 md:grid-cols-2">
                   <form.Field name="category">
@@ -245,13 +239,15 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
                             field.handleChange(value);
                             form.setFieldValue(
                               "selectedWeekdays",
-                              value === "daily" ? values.selectedWeekdays : null
+                              value === "daily"
+                                ? state.values.selectedWeekdays
+                                : null
                             );
                             form.setFieldValue(
                               "targetCount",
                               normalizeHabitTargetCount(
                                 value,
-                                values.targetCount
+                                state.values.targetCount
                               )
                             );
                           }}
@@ -273,7 +269,7 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
 
                 <CollapsibleContent className="grid gap-3 border-t border-border/60 pt-3">
                   <div className="grid gap-3 md:grid-cols-2">
-                    {values.frequency === "daily" ? (
+                    {state.values.frequency === "daily" ? (
                       <form.Field name="selectedWeekdays">
                         {(field) => (
                           <div className="grid gap-2">
@@ -300,7 +296,7 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
                             <HabitTargetCountStepper
                               compact
                               frequency={
-                                values.frequency as Exclude<
+                                state.values.frequency as Exclude<
                                   HabitFrequency,
                                   "daily"
                                 >
@@ -308,7 +304,7 @@ export function NewHabitForm({ actions }: NewHabitFormProps) {
                               onChange={(value) => {
                                 field.handleChange(
                                   normalizeHabitTargetCount(
-                                    values.frequency,
+                                    state.values.frequency,
                                     value
                                   )
                                 );
