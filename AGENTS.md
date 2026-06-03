@@ -1,92 +1,46 @@
 # AGENTS.md
 
-## Workspace Overview
+## Scope
 
-- Zucchini is a lightweight pnpm workspace monorepo.
-- `apps/desktop` contains the Electron desktop app.
-- `apps/web` contains the public marketing and download site.
-- Keep the two apps separate unless shared code is clearly justified.
+- Zucchini is a local-first habit tracker built as an Electron desktop app.
+- Zucchini is a pnpm monorepo.
+- `apps/desktop` = Electron app. See `apps/desktop/AGENTS.md`.
+- `apps/web` = marketing/download site. See `apps/web/AGENTS.md`.
+- Keep apps separate. Do not share code unless duplication becomes real maintenance cost.
 
-## Communication Defaults
+## Communication
 
-- Use the `caveman` skill by default for user-facing responses in this
-  workspace.
-- Default intensity is `ultra`.
-- If the user explicitly asks for normal writing, formal writing, or more
-  explanation, suspend `caveman` until the request is complete.
-- Keep code, commit messages, PR text, and other durable project artifacts in
-  normal style unless the user explicitly asks otherwise.
+- Use `caveman` skill for user-facing replies. Default intensity: `ultra`.
+- Suspend caveman when user asks for normal/formal/more detailed writing.
+- Keep code, commits, PR text, docs, and durable artifacts normal.
 
-## Stable Workflow Rules
+## Workflow
 
-- Use Node 24.x for this repository so local behavior matches CI. The repo has
-  `.nvmrc`; when `nvm` is available, run
-  `source "$HOME/.nvm/nvm.sh" && nvm use` before validation commands.
-- Run commands from the repository root with `pnpm`.
-- Prefer the root wrapper scripts when they exist:
-  `pnpm run dev:desktop`, `pnpm run dev:web`, `pnpm run build:desktop`,
-  `pnpm run build:web`, `pnpm run check`.
-- Use Fallow from the repository root:
-  `pnpm run fallow`, `pnpm run fallow:dead-code`,
-  `pnpm run fallow:dupes`, `pnpm run fallow:health`, and
-  `pnpm run fallow:audit`.
-- `pnpm run check` includes lint, Fallow dead-code, Fallow dupes, desktop
-  typecheck, desktop tests, and the web build. Treat all of those as required
-  checks before finalizing meaningful changes.
-- Treat Fallow output as codebase intelligence first. Do not auto-delete or
-  auto-fix findings without checking ownership, dynamic loading, and build
-  boundaries.
-- Never start a development server unless the user explicitly asks for it.
-- Before finalizing code changes, run `pnpm run format`.
-- After meaningful changes, run the relevant validation commands for the app
-  you touched.
+- Use Node from `.nvmrc`: `source "$HOME/.nvm/nvm.sh" && nvm use` when available.
+- Run commands from repo root with `pnpm`.
+- Prefer root scripts: `dev:desktop`, `dev:web`, `build:desktop`, `build:web`, `check`.
+- Do not start dev servers unless user explicitly asks.
+- Before finalizing code changes: `pnpm run format`.
+- After meaningful changes: run relevant validation; for broad changes run `pnpm run check`.
 
-## Monorepo Practices
+## Checks
 
-- Keep app responsibilities clear:
-  desktop product logic stays in `apps/desktop`;
-  website code stays in `apps/web`.
-- Do not couple the web app to Electron runtime assumptions.
-- Do not extract shared packages early. Duplicate small pieces first and only
-  extract when duplication becomes real maintenance cost.
+- `pnpm run check` = lint, Fallow dead-code, Fallow dupes, desktop typecheck, desktop tests, web build.
+- Treat Fallow as intelligence. Do not delete/fix findings without checking ownership, dynamic loading, and app boundaries.
+
+## Code Defaults
+
+- Root package is ESM: use `.mjs` or native ESM for root scripts/config.
 - Prefer small, typed, direct changes over broad refactors.
-- Avoid over-engineering. Add abstraction only when it removes clear repeated
-  complexity.
-
-## Code Quality Defaults
-
-- Keep root Node config and scripts ESM-compatible. The root package is
-  `"type": "module"`, and root scripts should use `.mjs` or native ESM syntax.
-- Optimize for maintainability and readability first.
-- Prefer straightforward control flow and explicit names.
-- Keep modules narrow in scope and responsibility.
 - Avoid barrel files and broad re-export layers.
-- Make invalid states hard to represent with explicit types and boundary
-  validation.
-- Keep side effects at system edges and keep pure logic easy to test.
-- For desktop renderer UI, prefer existing shadcn-based components in
-  `apps/desktop/src/renderer/shared/components/ui` and default theme tokens
-  from `apps/desktop/src/renderer/globals.css` before introducing bespoke
-  styling or arbitrary Tailwind values.
-- Prefer semantic markup and accessible labels over lint suppression. Do not add
-  broad a11y lint disables for `role` warnings unless the semantic alternative
-  is impossible and the reason is documented next to the exception.
+- Keep invalid states hard to represent with explicit types and boundary validation.
+- Keep side effects at system edges; keep pure logic easy to test.
+- Do not keep shims or backward-compatibility code only for backward compatibility.
+- Prefer semantic markup and accessible labels over lint suppression.
 
 ## UI Defaults
 
-- Prefer a clean, minimal, modern UI over decorative or overly expressive
-  layouts.
-- Use as few cards as possible. Do not wrap every section in a card by default.
-- Reduce click count and interaction steps wherever practical.
-- Favor obvious primary actions, inline controls, and simple flows over nested
-  menus, extra confirmations, or multi-step wizards.
-- Keep visual hierarchy sharp: fewer surfaces, more spacing discipline, and
-  clear typography.
-- Remove non-essential UI elements if they do not help the user complete the
-  task faster.
-
-## App Guides
-
-- See [apps/desktop/AGENTS.md](./apps/desktop/AGENTS.md) for desktop-specific
-  rules.
-- See [apps/web/AGENTS.md](./apps/web/AGENTS.md) for web-specific rules.
+- Clean, minimal, modern UI.
+- Few cards; no card-wrapping every section.
+- Fewer clicks, obvious primary actions, inline controls.
+- Use existing desktop shadcn UI and theme tokens before bespoke styling.
