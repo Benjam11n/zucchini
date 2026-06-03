@@ -150,12 +150,7 @@ export function buildContributionWeeks(
 }
 
 export function formatContributionLabel(cell: ContributionCell): string {
-  const dateLabel = formatDateKey(cell.date, {
-    day: "numeric",
-    month: "short",
-    weekday: "long",
-    year: "numeric",
-  });
+  const dateLabel = formatDateKey(cell.date, "fullDateWithDayLong");
 
   if (!cell.summary) {
     return `${dateLabel}: no tracked data`;

@@ -110,10 +110,7 @@ export function HistoryPage({
     () => getYearRange(viewState.selectedYear),
     [viewState.selectedYear]
   );
-  const visibleMonthLabel = formatDate(visibleMonth, {
-    month: "long",
-    year: "numeric",
-  });
+  const visibleMonthLabel = formatDate(visibleMonth, "monthYear");
   const canShowPreviousMonth =
     visibleMonth.getMonth() > 0 ||
     availableYears.includes(visibleMonth.getFullYear() - 1);

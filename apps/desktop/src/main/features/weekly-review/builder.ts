@@ -47,16 +47,8 @@ function toRate(completed: number, total: number): number {
 }
 
 function getWeekLabel(weekStart: string, weekEnd: string): string {
-  const startLabel = formatDateKey(
-    weekStart,
-    { day: "numeric", month: "short" },
-    "en-US"
-  );
-  const endLabel = formatDateKey(
-    weekEnd,
-    { day: "numeric", month: "short" },
-    "en-US"
-  );
+  const startLabel = formatDateKey(weekStart, "shortDate", "en-US");
+  const endLabel = formatDateKey(weekEnd, "shortDate", "en-US");
 
   return `${startLabel} - ${endLabel}`;
 }
@@ -107,12 +99,8 @@ function getDayPoint(
     completedHabitCount,
     completionRate,
     date,
-    label: formatDateKey(
-      date,
-      { day: "numeric", month: "short", weekday: "long" },
-      "en-US"
-    ),
-    shortLabel: formatDateKey(date, { weekday: "short" }, "en-US"),
+    label: formatDateKey(date, "shortDateWithDayLong", "en-US"),
+    shortLabel: formatDateKey(date, "shortWeekday", "en-US"),
     status,
     trackedHabitCount,
   };
@@ -250,7 +238,7 @@ function buildHabitHeatmapRows(
         return {
           date,
           status: cellStatus,
-          weekdayLabel: formatDateKey(date, { weekday: "short" }, "en-US"),
+          weekdayLabel: formatDateKey(date, "shortWeekday", "en-US"),
         };
       });
 

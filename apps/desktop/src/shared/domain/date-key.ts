@@ -4,9 +4,71 @@
 
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
 
-/**
- * Parses a 'YYYY-MM-DD' string into a local Date object.
- */
+const DATE_FORMAT_PRESETS = {
+  fullDate: {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  },
+  fullDateWithDayLong: {
+    day: "numeric",
+    month: "short",
+    weekday: "long",
+    year: "numeric",
+  },
+  fullDateWithDayShort: {
+    day: "numeric",
+    month: "short",
+    weekday: "short",
+    year: "numeric",
+  },
+  mediumDateTime: {
+    dateStyle: "medium",
+    timeStyle: "short",
+  },
+  month: {
+    month: "long",
+  },
+  monthYear: {
+    month: "long",
+    year: "numeric",
+  },
+  shortDate: {
+    day: "numeric",
+    month: "short",
+  },
+  shortDateWithDayLong: {
+    day: "numeric",
+    month: "short",
+    weekday: "long",
+  },
+  shortDateWithDayShort: {
+    day: "numeric",
+    month: "short",
+    weekday: "short",
+  },
+  shortTime: {
+    hour: "numeric",
+    minute: "2-digit",
+  },
+  shortWeekday: {
+    weekday: "short",
+  },
+} as const satisfies Record<string, Intl.DateTimeFormatOptions>;
+
+type DateFormatPreset = keyof typeof DATE_FORMAT_PRESETS;
+type DateFormatOptions = DateFormatPreset | Intl.DateTimeFormatOptions;
+
+function resolveDateFormatOptions(
+  options: DateFormatOptions
+): Intl.DateTimeFormatOptions {
+  if (typeof options === "string") {
+    return DATE_FORMAT_PRESETS[options];
+  }
+
+  return options;
+}
+
 export function parseDateKey(dateKey: string): Date {
   const parts = dateKey.split("-");
   if (parts.length !== 3) {
@@ -25,9 +87,6 @@ export function parseDateKey(dateKey: string): Date {
   return new Date(year, month - 1, day);
 }
 
-/**
- * Formats a local Date object into a 'YYYY-MM-DD' string representation.
- */
 export function toDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -73,9 +132,6 @@ export function isValidDateKey(dateKey: string): boolean {
   return toDateKey(parsedDate) === dateKey;
 }
 
-/**
- * Adds a number of days to a 'YYYY-MM-DD' key, returning the new key.
- */
 export function addDays(dateKey: string, days: number): string {
   const next = parseDateKey(dateKey);
   next.setDate(next.getDate() + days);
@@ -128,18 +184,12 @@ export function getDateKeyMonth(dateKey: string): number {
   return Number.parseInt(dateKey.slice(5, 7), 10);
 }
 
-/**
- * Gets the date key for the start of the week (Sunday) containing the given date key.
- */
 export function startOfWeek(dateKey: string): string {
   const date = parseDateKey(dateKey);
   date.setDate(date.getDate() - date.getDay());
   return toDateKey(date);
 }
 
-/**
- * Gets the date key for the end of the week (Saturday) containing the given date key.
- */
 export function endOfWeek(dateKey: string): string {
   const date = parseDateKey(dateKey);
   date.setDate(date.getDate() + (6 - date.getDay()));
@@ -178,20 +228,20 @@ export function getPreviousCompletedIsoWeek(todayKey: string): {
   };
 }
 
-/**
- * Formats a given date key using the Intl API options
- */
 export function formatDate(
   date: Date,
-  options: Intl.DateTimeFormatOptions,
+  options: DateFormatOptions,
   locale?: string
 ): string {
-  return new Intl.DateTimeFormat(locale, options).format(date);
+  return new Intl.DateTimeFormat(
+    locale,
+    resolveDateFormatOptions(options)
+  ).format(date);
 }
 
 export function formatDateKey(
   dateKey: string,
-  options: Intl.DateTimeFormatOptions,
+  options: DateFormatOptions,
   locale?: string
 ): string {
   return formatDate(parseDateKey(dateKey), options, locale);
@@ -199,19 +249,12 @@ export function formatDateKey(
 
 export function formatIsoDateTime(
   value: string,
-  options: Intl.DateTimeFormatOptions,
+  options: DateFormatOptions,
   locale?: string
 ): string {
   return formatDate(new Date(value), options, locale);
 }
 
 export function formatIsoTime(value: string, locale?: string): string {
-  return formatIsoDateTime(
-    value,
-    {
-      hour: "numeric",
-      minute: "2-digit",
-    },
-    locale
-  );
+  return formatIsoDateTime(value, "shortTime", locale);
 }

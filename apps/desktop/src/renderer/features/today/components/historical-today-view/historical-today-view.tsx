@@ -28,11 +28,7 @@ export function HistoricalTodayView({
     () => splitTodayHabits(day.habits),
     [day.habits]
   );
-  const title = formatDateKey(day.date, {
-    day: "numeric",
-    month: "short",
-    weekday: "short",
-  });
+  const title = formatDateKey(day.date, "shortDateWithDayShort");
   const activityStatus = getActivityStatus(day.summary, false);
   const activityLabel = getActivityBadgeLabel(day.summary, false);
 

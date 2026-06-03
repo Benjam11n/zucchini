@@ -44,11 +44,7 @@ function getCellTooltip(
   habitName: string,
   cell: WeeklyReviewHabitHeatmapCell
 ): string {
-  const dateLabel = formatDateKey(
-    cell.date,
-    { day: "numeric", month: "short", weekday: "long" },
-    "en-US"
-  );
+  const dateLabel = formatDateKey(cell.date, "shortDateWithDayLong", "en-US");
 
   return `${habitName} · ${dateLabel} · ${STATUS_LABELS[cell.status]}`;
 }

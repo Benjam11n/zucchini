@@ -59,10 +59,7 @@ export function HistorySidebar({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-semibold tracking-tight text-foreground">
             {selectedDay
-              ? formatDateKey(selectedDay.date, {
-                  month: "long",
-                  year: "numeric",
-                })
+              ? formatDateKey(selectedDay.date, "monthYear")
               : "History"}
           </h2>
           <div className="flex items-center gap-1">
@@ -106,11 +103,7 @@ export function HistorySidebar({
           <div className="grid gap-2">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-foreground">
-                {formatDateKey(selectedDay.date, {
-                  day: "numeric",
-                  month: "short",
-                  weekday: "short",
-                })}
+                {formatDateKey(selectedDay.date, "shortDateWithDayShort")}
               </p>
               {selectedDay.date === todayDate ? (
                 <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary">
@@ -183,10 +176,10 @@ export function HistorySidebar({
             )}
           >
             {monthStats.bestDay
-              ? `${formatDateKey(monthStats.bestDay.date, {
-                  day: "numeric",
-                  month: "short",
-                })} (${getDailyCompletionPercent(monthStats.bestDay)}%)`
+              ? `${formatDateKey(
+                  monthStats.bestDay.date,
+                  "shortDate"
+                )} (${getDailyCompletionPercent(monthStats.bestDay)}%)`
               : "--"}
           </span>
         </div>

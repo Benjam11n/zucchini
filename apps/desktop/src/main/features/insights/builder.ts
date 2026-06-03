@@ -263,11 +263,7 @@ function buildWeeklyCompletion(
     return {
       completedCount: totals.completed,
       completedPercent,
-      label: formatDateKey(
-        weekStart,
-        { day: "numeric", month: "short" },
-        "en-US"
-      ),
+      label: formatDateKey(weekStart, "shortDate", "en-US"),
       missedCount: totals.missed,
       missedPercent,
       partialCount: totals.partial,

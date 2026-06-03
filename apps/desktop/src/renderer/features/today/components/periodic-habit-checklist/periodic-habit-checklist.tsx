@@ -34,11 +34,7 @@ const PERIOD_SECTIONS: { title: string; value: HabitFrequency }[] = [
 ];
 
 function formatResetLabel(periodEnd: string): string {
-  return `Resets ${formatDateKey(periodEnd, {
-    day: "numeric",
-    month: "short",
-    weekday: "short",
-  })}`;
+  return `Resets ${formatDateKey(periodEnd, "shortDateWithDayShort")}`;
 }
 
 export function PeriodicHabitChecklist({

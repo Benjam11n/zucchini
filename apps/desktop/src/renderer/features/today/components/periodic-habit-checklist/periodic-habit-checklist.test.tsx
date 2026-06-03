@@ -15,11 +15,7 @@ function formatResetLabel(
 ): string {
   const { end } = getHabitPeriod(frequency, dateKey);
 
-  return `Resets ${formatDateKey(end, {
-    day: "numeric",
-    month: "short",
-    weekday: "short",
-  })}`;
+  return `Resets ${formatDateKey(end, "shortDateWithDayShort")}`;
 }
 
 function createHabit(

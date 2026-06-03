@@ -96,7 +96,7 @@ export function TodayHistoryCarousel({
       >
         <CarouselContent className="ml-0 items-center">
           {days.map((day) => {
-            const dayOfWeek = formatDateKey(day.date, { weekday: "short" });
+            const dayOfWeek = formatDateKey(day.date, "shortWeekday");
             const isSelected = day.date === selectedDate;
             const activityStatus = getActivityStatus(day.summary, false);
 

@@ -1,4 +1,5 @@
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
+import { formatIsoDateTime } from "@/shared/domain/date-key";
 import {
   normalizeHabitCategory,
   normalizeHabitFrequency,
@@ -28,10 +29,7 @@ export function formatBackupDate(value: string | null): string {
     return "None";
   }
 
-  return new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  return formatIsoDateTime(value, "mediumDateTime");
 }
 
 export function toRestoreSnapshotHabit(

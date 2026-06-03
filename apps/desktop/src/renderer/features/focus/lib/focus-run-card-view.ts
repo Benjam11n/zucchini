@@ -5,10 +5,7 @@ export function formatSessionRangeLabel(
   startedAt: string,
   completedAt: string
 ): string {
-  const dateLabel = formatIsoDateTime(completedAt, {
-    day: "numeric",
-    month: "short",
-  });
+  const dateLabel = formatIsoDateTime(completedAt, "shortDate");
 
   return `${dateLabel}, ${formatIsoTime(startedAt)} - ${formatIsoTime(completedAt)}`;
 }

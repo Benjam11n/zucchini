@@ -90,12 +90,7 @@ export function ContributionSquare({ cell }: ContributionSquareProps) {
       >
         <div className="space-y-1">
           <p className="ui-eyebrow text-[11px]">
-            {formatDateKey(cell.date, {
-              day: "numeric",
-              month: "short",
-              weekday: "short",
-              year: "numeric",
-            })}
+            {formatDateKey(cell.date, "fullDateWithDayShort")}
           </p>
           <p className="text-sm font-medium text-foreground">
             {completionLabel}

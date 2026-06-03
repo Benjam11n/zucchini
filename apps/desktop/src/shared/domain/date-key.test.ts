@@ -39,19 +39,22 @@ describe("iSO week helpers", () => {
   });
 
   it("formats date keys and ISO timestamps through shared helpers", () => {
+    expect(formatDateKey("2026-03-13", "shortDateWithDayShort")).toBe(
+      "Fri, Mar 13"
+    );
+    expect(formatIsoDateTime("2026-03-13T09:30:00.000Z", "shortTime")).toBe(
+      formatIsoTime("2026-03-13T09:30:00.000Z")
+    );
+  });
+
+  it("allows custom Intl options when presets do not fit", () => {
     expect(
       formatDateKey("2026-03-13", {
-        day: "numeric",
-        month: "short",
-        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
       })
-    ).toBe("Fri, Mar 13");
-    expect(
-      formatIsoDateTime("2026-03-13T09:30:00.000Z", {
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    ).toBe(formatIsoTime("2026-03-13T09:30:00.000Z"));
+    ).toBe("03/13/26");
   });
 
   it("formats date keys in the requested timezone", () => {

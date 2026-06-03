@@ -36,11 +36,11 @@ export function TimelineDayRow({
       type="button"
     >
       <div className="font-medium text-foreground">
-        {isToday ? "Today" : formatDateKey(day.date, { weekday: "short" })}
+        {isToday ? "Today" : formatDateKey(day.date, "shortWeekday")}
       </div>
       <div className="min-w-0">
         <p className="truncate text-muted-foreground">
-          {formatDateKey(day.date, { day: "numeric", month: "short" })}
+          {formatDateKey(day.date, "shortDate")}
         </p>
       </div>
       <div className="font-medium text-foreground">{percent}%</div>

@@ -62,7 +62,7 @@ export function HistoryPageHeader({
               <ChevronLeft className="size-4" />
             </Button>
             <span className="min-w-20 text-center text-sm font-medium text-muted-foreground">
-              {formatDate(visibleMonth, { month: "long" })}
+              {formatDate(visibleMonth, "month")}
             </span>
             <Button
               aria-label="Show next month"
