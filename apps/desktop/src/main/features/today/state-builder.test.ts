@@ -216,6 +216,55 @@ describe("state builder", () => {
       expect(todayState.habitCarryovers).toHaveLength(1);
     });
 
+    it("previews a new streak of one before today's carryovers are complete", () => {
+      const repository = createRepository({
+        getHabitCarryoversForDate: vi.fn(() => [
+          {
+            category: "fitness",
+            completed: false,
+            completedCount: 0,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 2,
+            isArchived: false,
+            name: "Stretch",
+            selectedWeekdays: null,
+            sortOrder: 1,
+            sourceDate: "2026-03-07",
+            targetCount: 1,
+            targetDate: "2026-03-08",
+          },
+        ]),
+        getHabitsWithStatus: vi.fn(() => [
+          {
+            category: "productivity",
+            completed: true,
+            completedCount: 1,
+            createdAt: "2026-03-01T00:00:00.000Z",
+            frequency: "daily",
+            id: 1,
+            isArchived: false,
+            name: "Plan",
+            selectedWeekdays: null,
+            sortOrder: 0,
+            targetCount: 1,
+          },
+        ]),
+        getPersistedStreakState: vi.fn(() => ({
+          availableFreezes: 0,
+          bestStreak: 0,
+          currentStreak: 0,
+          lastEvaluatedDate: "2026-03-07",
+        })),
+      });
+      const clock = createClock("2026-03-08");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.streak.currentStreak).toBe(1);
+      expect(todayState.habitCarryovers).toHaveLength(1);
+    });
+
     it("builds per-habit streaks from persisted state plus today's preview", () => {
       const runHabit = {
         category: "fitness" as const,
@@ -351,6 +400,140 @@ describe("state builder", () => {
         currentStreak: 1,
       });
       expect(todayState.categoryStreaks?.productivity.currentStreak).toBe(0);
+    });
+
+    it("previews completed category streaks even when another category is rescheduled", () => {
+      const habits = [
+        {
+          category: "fitness" as const,
+          completed: true,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 1,
+          isArchived: false,
+          name: "Run",
+          selectedWeekdays: null,
+          sortOrder: 0,
+          targetCount: 1,
+        },
+        {
+          category: "nutrition" as const,
+          completed: false,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 2,
+          isArchived: false,
+          name: "Water",
+          selectedWeekdays: null,
+          sortOrder: 1,
+          targetCount: 1,
+        },
+      ];
+      const repository = createRepository({
+        getDayStatus: vi.fn(() => ({
+          createdAt: "2026-01-01T23:59:59.000Z",
+          date: "2026-01-01",
+          kind: "rescheduled",
+        })),
+        getHabitsWithStatus: vi.fn(() => habits),
+        getPersistedCategoryStreakStates: vi.fn(() => [
+          {
+            bestStreak: 5,
+            category: "fitness",
+            currentStreak: 2,
+            lastEvaluatedDate: "2025-12-31",
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.categoryStreaks?.fitness.currentStreak).toBe(3);
+    });
+
+    it("does not preview category streaks with incomplete same-category carryovers", () => {
+      const habits = [
+        {
+          category: "fitness" as const,
+          completed: true,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 1,
+          isArchived: false,
+          name: "Run",
+          selectedWeekdays: null,
+          sortOrder: 0,
+          targetCount: 1,
+        },
+      ];
+      const repository = createRepository({
+        getHabitCarryoversForDate: vi.fn(() => [
+          {
+            ...habits[0],
+            completed: false,
+            completedCount: 0,
+            sourceDate: "2025-12-31",
+            targetDate: "2026-01-01",
+          },
+        ]),
+        getHabitsWithStatus: vi.fn(() => habits),
+        getPersistedCategoryStreakStates: vi.fn(() => [
+          {
+            bestStreak: 5,
+            category: "fitness",
+            currentStreak: 2,
+            lastEvaluatedDate: "2025-12-31",
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.categoryStreaks?.fitness.currentStreak).toBe(2);
+    });
+
+    it("previews new category streaks before same-category carryovers are complete", () => {
+      const habits = [
+        {
+          category: "fitness" as const,
+          completed: true,
+          createdAt: "2025-12-30T00:00:00.000Z",
+          frequency: "daily" as const,
+          id: 1,
+          isArchived: false,
+          name: "Run",
+          selectedWeekdays: null,
+          sortOrder: 0,
+          targetCount: 1,
+        },
+      ];
+      const repository = createRepository({
+        getHabitCarryoversForDate: vi.fn(() => [
+          {
+            ...habits[0],
+            completed: false,
+            completedCount: 0,
+            sourceDate: "2025-12-31",
+            targetDate: "2026-01-01",
+          },
+        ]),
+        getHabitsWithStatus: vi.fn(() => habits),
+        getPersistedCategoryStreakStates: vi.fn(() => [
+          {
+            bestStreak: 0,
+            category: "fitness",
+            currentStreak: 0,
+            lastEvaluatedDate: "2025-12-31",
+          },
+        ]),
+      });
+      const clock = createClock("2026-01-01");
+
+      const todayState = buildTodayState(repository, clock);
+
+      expect(todayState.categoryStreaks?.fitness.currentStreak).toBe(1);
     });
   });
 

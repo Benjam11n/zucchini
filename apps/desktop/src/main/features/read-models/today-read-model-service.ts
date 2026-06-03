@@ -59,9 +59,15 @@ export class TodayReadModelService {
       throw new Error(`Habit ${habitId} is not scheduled for today.`);
     }
 
-    this.invalidate();
+    const todayState = traceReadModel("today.patch", () =>
+      buildTodayState(this.repository, this.clock)
+    );
+    this.cachedTodayState = todayState;
 
     return {
+      ...(todayState.categoryStreaks
+        ? { categoryStreaks: todayState.categoryStreaks }
+        : {}),
       habit,
       habitStreaksStale: true,
     };

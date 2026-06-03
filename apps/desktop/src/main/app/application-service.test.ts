@@ -1119,10 +1119,136 @@ describe("habitService rollover", () => {
       lastEvaluatedDate: "2026-03-07",
     });
     expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
+      bestStreak: 4,
+      category: "fitness",
+      currentStreak: 4,
+      lastEvaluatedDate: "2026-03-07",
+    });
+  });
+
+  it("increments completed category streaks when another category is rescheduled", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-05",
+    };
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Run",
+      selectedWeekdays: null,
+      sortOrder: 1,
+      targetCount: 1,
+    });
+    repository.categoryStreakStates.set("productivity", {
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.categoryStreakStates.set("fitness", {
+      bestStreak: 2,
+      category: "fitness",
+      currentStreak: 2,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.setStatusForDate(
+      "2026-03-06",
+      new Map([
+        [1, false],
+        [2, true],
+      ])
+    );
+
+    const service = new AppApplicationService(
+      repository,
+      new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
+      bestStreak: 3,
+      category: "productivity",
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-06",
+    });
+    expect(repository.categoryStreakStates.get("fitness")).toStrictEqual({
       bestStreak: 3,
       category: "fitness",
       currentStreak: 3,
-      lastEvaluatedDate: "2026-03-07",
+      lastEvaluatedDate: "2026-03-06",
+    });
+  });
+
+  it("increments habit streaks when another habit has an incomplete carryover", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 3,
+      currentStreak: 1,
+      lastEvaluatedDate: "2026-03-05",
+    };
+    repository.habits.push({
+      category: "fitness",
+      createdAt: "2026-03-01T00:00:00.000Z",
+      frequency: "daily",
+      id: 2,
+      isArchived: false,
+      name: "Run",
+      selectedWeekdays: null,
+      sortOrder: 1,
+      targetCount: 1,
+    });
+    repository.habitStreakStates.set(1, {
+      bestStreak: 3,
+      currentStreak: 3,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.habitStreakStates.set(2, {
+      bestStreak: 2,
+      currentStreak: 2,
+      habitId: 2,
+      lastEvaluatedDate: "2026-03-05",
+    });
+    repository.habitCarryovers.set("2026-03-05:2026-03-06:1", {
+      completed: false,
+      habitId: 1,
+      sourceDate: "2026-03-05",
+      targetDate: "2026-03-06",
+    });
+    repository.setStatusForDate(
+      "2026-03-06",
+      new Map([
+        [1, true],
+        [2, true],
+      ])
+    );
+
+    const service = new AppApplicationService(
+      repository,
+      new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
+    );
+
+    service.getTodayState();
+
+    expect(repository.habitStreakStates.get(1)).toStrictEqual({
+      bestStreak: 3,
+      currentStreak: 0,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-06",
+    });
+    expect(repository.habitStreakStates.get(2)).toStrictEqual({
+      bestStreak: 3,
+      currentStreak: 3,
+      habitId: 2,
+      lastEvaluatedDate: "2026-03-06",
     });
   });
 
@@ -1250,6 +1376,62 @@ describe("habitService rollover", () => {
       bestStreak: 3,
       category: "productivity",
       currentStreak: 0,
+      lastEvaluatedDate: "2026-03-09",
+    });
+  });
+
+  it("starts streaks when incoming carryovers expire incomplete from zero", () => {
+    const repository = new FakeRepository();
+    repository.streak = {
+      availableFreezes: 0,
+      bestStreak: 0,
+      currentStreak: 0,
+      lastEvaluatedDate: "2026-03-08",
+    };
+    repository.habitStreakStates.set(1, {
+      bestStreak: 0,
+      currentStreak: 0,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-08",
+    });
+    repository.categoryStreakStates.set("productivity", {
+      bestStreak: 0,
+      category: "productivity",
+      currentStreak: 0,
+      lastEvaluatedDate: "2026-03-08",
+    });
+    repository.habitCarryovers.set("2026-03-08:2026-03-09:1", {
+      completed: false,
+      habitId: 1,
+      sourceDate: "2026-03-08",
+      targetDate: "2026-03-09",
+    });
+    repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
+
+    const service = new AppApplicationService(
+      repository,
+      new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
+    );
+
+    const today = service.getTodayState();
+
+    expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
+      allCompleted: true,
+      dayStatus: null,
+      freezeUsed: false,
+      streakCountAfterDay: 1,
+    });
+    expect(today.streak.currentStreak).toBe(1);
+    expect(repository.habitStreakStates.get(1)).toStrictEqual({
+      bestStreak: 1,
+      currentStreak: 1,
+      habitId: 1,
+      lastEvaluatedDate: "2026-03-09",
+    });
+    expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
+      bestStreak: 1,
+      category: "productivity",
+      currentStreak: 1,
       lastEvaluatedDate: "2026-03-09",
     });
   });
@@ -1427,6 +1609,28 @@ describe("habit categories", () => {
     const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
+  });
+
+  it("returns category streaks in habit status patches", () => {
+    const repository = new FakeRepository();
+    repository.categoryStreakStates.set("productivity", {
+      bestStreak: 0,
+      category: "productivity",
+      currentStreak: 0,
+      lastEvaluatedDate: "2026-03-07",
+    });
+    const service = new AppApplicationService(
+      repository,
+      new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
+    );
+
+    const patch = service.toggleHabit(1);
+
+    expect(patch.categoryStreaks?.productivity).toStrictEqual({
+      bestStreak: 1,
+      category: "productivity",
+      currentStreak: 1,
+    });
   });
 
   it.each(["weekly", "monthly"] as const)(

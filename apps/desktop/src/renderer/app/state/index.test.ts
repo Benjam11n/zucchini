@@ -626,6 +626,60 @@ describe("app store actions", () => {
     ).toBeTruthy();
   });
 
+  it("applies category streaks from confirmed habit status patches", async () => {
+    const { actions, desktopApi, stores } = await setup();
+    const pendingPatch = createDeferred<HabitStatusPatch>();
+
+    desktopApi.toggleHabit.mockImplementation(() => pendingPatch.promise);
+
+    stores.useTodayStore.setState({
+      todayState: createTodayState({
+        categoryStreaks: {
+          fitness: { bestStreak: 0, category: "fitness", currentStreak: 0 },
+          nutrition: {
+            bestStreak: 0,
+            category: "nutrition",
+            currentStreak: 0,
+          },
+          productivity: {
+            bestStreak: 0,
+            category: "productivity",
+            currentStreak: 0,
+          },
+        },
+        habits: [createTodayHabit()],
+      }),
+    });
+
+    const togglePromise = actions.handleToggleHabit(1);
+
+    pendingPatch.resolve({
+      categoryStreaks: {
+        fitness: { bestStreak: 0, category: "fitness", currentStreak: 0 },
+        nutrition: { bestStreak: 0, category: "nutrition", currentStreak: 0 },
+        productivity: {
+          bestStreak: 1,
+          category: "productivity",
+          currentStreak: 1,
+        },
+      },
+      habit: {
+        ...createTodayHabit(),
+        completed: true,
+        completedCount: 1,
+        targetCount: 1,
+      },
+      habitStreaksStale: true,
+    });
+
+    await togglePromise;
+
+    expect(
+      stores.useTodayStore.getState().todayState?.categoryStreaks?.productivity
+        .currentStreak
+    ).toBe(1);
+  });
+
   it("bases rapid optimistic toggles on the current today state", async () => {
     const { actions, desktopApi, stores } = await setup();
     const firstPatch = createDeferred<HabitStatusPatch>();

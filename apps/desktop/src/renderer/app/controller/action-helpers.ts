@@ -94,6 +94,9 @@ export function applyHabitStatusPatch(patch: HabitStatusPatch): void {
   useTodayStore.setState({
     todayState: {
       ...todayState,
+      ...(patch.categoryStreaks
+        ? { categoryStreaks: patch.categoryStreaks }
+        : {}),
       habits: todayState.habits.map((habit) =>
         habit.id === patch.habit.id ? patch.habit : habit
       ),

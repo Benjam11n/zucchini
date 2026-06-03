@@ -17,6 +17,7 @@ import {
   isDailyHabit,
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -132,7 +133,8 @@ function buildTodayHabitStreaksFromHabits(
 function buildTodayCategoryStreaksFromHabits(
   repository: TodayReadModelRepositoryPort,
   habits: HabitWithStatus[],
-  dayStatus: DayStatusKind | null
+  dayStatus: DayStatusKind | null,
+  habitCarryovers: HabitCarryover[]
 ): Record<HabitCategory, CategoryStreak> {
   const persistedStateByCategory = new Map(
     repository
@@ -140,7 +142,13 @@ function buildTodayCategoryStreaksFromHabits(
       .map((state) => [state.category, state])
   );
   const dailyHabits = habits.filter(isDailyHabit);
+  const incompleteCarryoverCategories = new Set(
+    habitCarryovers
+      .filter((carryover) => !carryover.completed)
+      .map((carryover) => carryover.category)
+  );
   const streaks = {} as Record<HabitCategory, CategoryStreak>;
+  const isRestorativeDay = dayStatus === "rest" || dayStatus === "sick";
 
   for (const { value } of HABIT_CATEGORY_SLOTS) {
     const persistedState = persistedStateByCategory.get(value);
@@ -148,9 +156,12 @@ function buildTodayCategoryStreaksFromHabits(
       (habit) => habit.category === value
     );
     const settledCurrentStreak = persistedState?.currentStreak ?? 0;
+    const hasBlockingCarryover =
+      incompleteCarryoverCategories.has(value) && settledCurrentStreak > 0;
     const currentStreak =
-      !dayStatus &&
+      !isRestorativeDay &&
       categoryHabits.length > 0 &&
+      !hasBlockingCarryover &&
       categoryHabits.every((habit) => habit.completed)
         ? settledCurrentStreak + 1
         : settledCurrentStreak;
@@ -184,7 +195,7 @@ export function buildTodayState(
     settledStreak,
     dailyHabits.length > 0 &&
       dailyHabits.every((habit) => habit.completed) &&
-      allCarryoversComplete,
+      (allCarryoversComplete || settledStreak.currentStreak === 0),
     currentDayStatus?.kind ?? null
   );
 
@@ -198,7 +209,8 @@ export function buildTodayState(
     categoryStreaks: buildTodayCategoryStreaksFromHabits(
       repository,
       habits,
-      currentDayStatus?.kind ?? null
+      currentDayStatus?.kind ?? null,
+      habitCarryovers
     ),
     date: today,
     dayStatus: currentDayStatus?.kind ?? null,
