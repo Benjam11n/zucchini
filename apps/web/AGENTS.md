@@ -1,44 +1,35 @@
 # AGENTS.md
 
-## Web App Overview
+## Scope
 
-- `apps/web` is a small static React/Vite marketing site.
-- It is intentionally separate from the Electron app runtime.
-- The current scope is marketing, product framing, and download entry points.
+- `apps/web` is the static React/Vite marketing/download site.
+- Keep it separate from Electron runtime.
+- Current scope: product framing, marketing, and download entry points.
 
-## Web Workflow Rules
+## Workflow
 
-- Run web commands from the repository root with:
-  `pnpm --dir apps/web ...`
-- Common validations:
-  `pnpm run lint`
-  `pnpm run build:web`
-  `pnpm --dir apps/web react-doctor`
-- Run `pnpm run format` from the workspace root before finalizing changes.
+- Run from repo root.
+- Web commands: `pnpm --dir apps/web ...`.
+- Validate meaningful web changes with `pnpm run lint`, `pnpm run build:web`, and `pnpm --dir apps/web react-doctor`.
+- Run `pnpm run format` before finalizing.
 
-## Web Best Practices
+## Architecture
 
-- Keep the site simple. It is a marketing page, not an application shell.
-- Do not introduce Electron, preload, desktop state, or desktop-only shared
-  code into this app.
-- Prefer small components and direct composition.
+- Do not introduce Electron, preload, desktop state, or desktop-only shared code.
+- Prefer plain React, local CSS, small components, and direct composition.
 - Avoid premature routing, data layers, or framework complexity.
-- Keep copy and layout changes easy to follow in code.
-- Reuse branding assets when helpful, but do not force a shared package for a
-  handful of files.
-- No over-engineering. If plain React and CSS solve it clearly, stop there.
-
-## Design And Maintainability
-
-- Preserve a clear visual direction without adding unnecessary technical
-  complexity.
-- Keep styling local and readable.
-- Avoid clever abstractions for one-off sections.
-- Favor clarity in markup and naming over component generalization.
+- Do not create shared packages for a handful of branding files.
 - Keep download links and external URLs explicit and easy to update.
 
-## Testing Expectations
+## Design
 
-- Build correctness is the main validation right now.
+- Keep site simple, readable, and marketing-focused.
+- Preserve clear visual direction without technical complexity.
+- Avoid clever abstractions for one-off sections.
+- Favor clear markup/names over component generalization.
+
+## Tests
+
+- Build correctness is main validation.
 - Use `react-doctor` after meaningful React changes.
-- Add tests only when page behavior becomes more interactive or stateful.
+- Add tests only when page behavior becomes interactive or stateful.

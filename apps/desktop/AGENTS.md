@@ -1,117 +1,59 @@
 # AGENTS.md
 
-## Desktop App Overview
+## Scope
 
-- `apps/desktop` is the Electron application.
-- Main process code lives in `src/main`.
-- The preload boundary lives in `src/preload`.
-- Shared domain and contracts live in `src/shared`.
-- Renderer UI lives in `src/renderer`.
+- `apps/desktop` is the Electron app.
+- Main: `src/main`; preload: `src/preload`; shared contracts/domain: `src/shared`; renderer: `src/renderer`.
+- Treat preload as the only renderer boundary to privileged APIs. Never import Electron in renderer.
 
-## Desktop Workflow Rules
+## Workflow
 
-- Run desktop commands from the repository root with:
-  `pnpm --dir apps/desktop ...`
-- Common validations:
-  `pnpm run lint`
-  `pnpm run typecheck:desktop`
-  `pnpm run test:desktop`
-  `pnpm run fallow:dead-code`
-  `pnpm run fallow:dupes`
-  `pnpm run build:desktop`
-- For broad desktop changes, prefer `pnpm run check`; it includes lint,
-  Fallow dead-code, Fallow dupes, desktop typecheck, desktop tests, and the web
-  build.
-- Run `pnpm run format` from the workspace root before finalizing changes.
+- Run from repo root.
+- Desktop commands: `pnpm --dir apps/desktop ...`.
+- Validate meaningful desktop changes with relevant checks:
+  `pnpm run lint`, `pnpm run typecheck:desktop`, `pnpm run test:desktop`, `pnpm run build:desktop`.
+- For broad changes, prefer `pnpm run check`.
+- Run `pnpm run format` before finalizing.
 
-## Desktop Best Practices
+## Architecture
 
 - Keep business logic in `src/main` or `src/shared`.
-- Keep renderer code focused on presentation, interaction flow, and local UI
-  state.
-- Standardize renderer pages around explicit props shaped as
-  `{ viewModel, actions }`. The app route layer maps controller state/actions
-  into those feature-specific contracts.
-- Group page actions by user intent or capability, for example
-  `actions.habits.createHabit` or `actions.weeklyReview.select`. Avoid long
-  flat callback lists on page components.
-- Page components should compose feature sections and pass typed models/actions
-  down. Move nontrivial derived data, formatters, validators, mappers, and
-  adapters out of `.tsx` files into feature `lib` modules.
-- Keep component prop interfaces in the same file as the component. Use
-  feature `*.types.ts` files for shared action contracts, view models, domain
-  aliases, and non-component types only.
-- Prefer component folders for renderer feature components:
-  `component-name/component-name.tsx` with `component-name/index.tsx`.
-  The `index.tsx` file should export only the component. Keep that component's
-  tests, local types, local utils, and small component-only helpers in the same
-  folder. Use broader workflow folders only when several tightly related
-  private components form one surface.
+- Keep renderer focused on presentation, interaction flow, and local UI state.
+- Preserve one-way renderer deps: a feature may import itself, `src/renderer/shared`, and `src/shared`; cross-feature imports need review.
+- Share only neutral reusable UI/helpers through `src/renderer/shared`; do not move feature workflow/state/copy/side effects there.
+- Use explicit domain types over duplicated object shapes.
+- Keep modules small. Avoid convenience utilities that blur boundaries.
+
+## Renderer Patterns
+
+- Page props should be `{ viewModel, actions }`.
+- Group actions by user intent, e.g. `actions.habits.createHabit`.
+- Move nontrivial derived data, formatters, validators, mappers, and adapters out of `.tsx` into feature `lib`.
+- Keep component prop interfaces beside component. Use `*.types.ts` only for shared contracts/view models/domain aliases.
+- Prefer component folders: `component-name/component-name.tsx` plus `component-name/index.tsx` exporting only the component.
 - Use feature controller hooks for repeated local interaction orchestration.
-  Keep only truly ephemeral UI state directly in components, such as open
-  dialogs, draft inputs, active tabs, and focused rows.
-- Expected service/IPC errors should be caught at the controller/store edge or
-  in a feature controller hook that owns local feedback. Do not add empty
-  component-level `catch {}` blocks for shell-managed errors.
-- Keep renderer feature dependencies one-way and explicit: a file in
-  `src/renderer/features/<feature>` may import its own feature folder,
-  `src/renderer/shared`, and `src/shared`. Cross-feature imports require review
-  before they land.
-- If one renderer feature owns a full workflow surface, keep its components in
-  that feature and let other features import only the top-level composition
-  component when needed. Do not import another feature's internal cards,
-  charts, stores, or hooks from a sibling feature.
-- When multiple renderer features need the same UI or pure helper, move only the
-  neutral reusable piece into `src/renderer/shared`. Do not move
-  feature-specific workflow, state, copy, or side effects into shared just to
-  avoid an import.
-- Classify new state as `canonical`, `cache`, or `ephemeral` before adding
-  persistence.
-- Store canonical state in SQLite through the main process and preload/IPC
-  boundaries.
-- Document renderer-persisted cache state as non-authoritative and keep it
-  feature-local.
-- Treat preload as the only renderer boundary to privileged APIs.
-- Do not import Electron directly into renderer code.
-- Preserve existing layer boundaries and avoid moving logic into convenience
-  utilities without a strong reason.
-- Prefer explicit domain types over duplicated object shapes.
-- Favor small modules over large mixed-responsibility files.
-- Use existing patterns before introducing new abstractions.
-- Do not over-engineer. A simple function is better than a reusable framework
-  unless repetition is already a problem.
+- Keep only ephemeral UI state directly in components.
 
-## Ports And Adapters
+## State And Side Effects
 
-- Use small local ports for side-effect boundaries only: Electron APIs,
-  timers, clocks, SQLite/filesystem/dialog/shell, native addons, preload IPC,
-  and browser storage.
-- Name side-effect interfaces with a `Port` suffix, for example
-  `DataManagementRepositoryPort`, `ReminderTimerPort`, or
-  `AppTrayShellPort`.
-- Keep feature-owned ports beside the feature in `ports.ts`; keep production
-  implementations beside them in `adapters.ts`.
-- Use `adapters.ts` for concrete Electron/Node/browser implementations, named
-  by technology or runtime such as `electronAppTrayShell`.
-- Do not add ports for pure domain functions, React presentational components,
-  formatting helpers, validation helpers, or one-call wrappers with no
-  meaningful behavior.
-- Prefer one deep module or coordinator per capability over many shallow public
-  helpers. Callers should see a small API while side-effect wiring stays hidden.
+- Classify new state as `canonical`, `cache`, or `ephemeral` before persistence.
+- Store canonical state in SQLite through main process and preload/IPC.
+- Renderer-persisted cache state must be non-authoritative and feature-local.
+- Use `Port` interfaces only for side-effect boundaries: Electron APIs, timers, clocks, SQLite/filesystem/dialog/shell, native addons, preload IPC, browser storage.
+- Keep feature-owned ports in `ports.ts`; production implementations in `adapters.ts`.
+- Do not add ports for pure functions, presentational components, formatting, validation, or one-call wrappers.
 
-## Electron-Specific Rules
+## Electron Security
 
-- Preserve the current security posture:
-  `contextIsolation`, strict navigation rules, and narrow IPC contracts.
-- Validate IPC inputs and outputs at the main-process boundary.
-- Keep filesystem, updater, notifications, tray, and OS integration in the
-  main process.
-- Dispose of long-lived resources explicitly.
-- Avoid remote code, new external origins, or unnecessary renderer privileges.
+- Preserve `contextIsolation`, strict navigation rules, and narrow IPC contracts.
+- Validate IPC inputs and outputs at main-process boundary.
+- Keep filesystem, updater, notifications, tray, and OS integration in main process.
+- Dispose long-lived resources explicitly.
+- Avoid remote code, new external origins, and unnecessary renderer privileges.
 
-## Testing Expectations
+## Tests
 
 - Keep tests deterministic and targeted.
-- Add or update tests when behavior changes materially.
-- Prefer focused Vitest coverage over large end-to-end style test additions.
-- Do not leave `.only` or `.skip` in committed tests.
+- Add/update tests when behavior materially changes.
+- Prefer focused Vitest tests over broad E2E-style tests.
+- Do not leave `.only` or `.skip`.
