@@ -2,12 +2,10 @@ import { m } from "framer-motion";
 import type { CSSProperties } from "react";
 
 import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/renderer/shared/components/ui/tooltip";
+import { HabitCategoryLabel } from "@/renderer/shared/components/ui/habit-category-label";
+import type { HabitListItemProps } from "@/renderer/shared/components/ui/habit-list-item-types";
+import { HabitStreakLabel } from "@/renderer/shared/components/ui/habit-streak-label";
+import { HabitTrailingActions } from "@/renderer/shared/components/ui/habit-trailing-actions";
 import { cn } from "@/renderer/shared/lib/class-names";
 import {
   getHabitCategoryPresentation,
@@ -25,116 +23,9 @@ import {
   microTransition,
   tapPress,
 } from "@/renderer/shared/lib/motion";
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
-import type { HabitWithStatus } from "@/shared/domain/habit";
-
-interface HabitListItemStreak {
-  bestStreak: number;
-  currentStreak: number;
-}
-
-interface HabitListItemProps {
-  disabled?: boolean;
-  habit: HabitWithStatus;
-  inputId?: string;
-  keyboardRowProps?: KeyboardRowProps | undefined;
-  muted?: boolean;
-  onToggle?: ((habitId: number) => void) | undefined;
-  readOnly?: boolean;
-  showCategory?: boolean | undefined;
-  streak?: HabitListItemStreak;
-  trailingActions?: React.ReactNode;
-}
 
 const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
 const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };
-
-function HabitStreakLabel({
-  streak,
-}: {
-  streak?: HabitListItemStreak | undefined;
-}) {
-  if (streak && streak.currentStreak > 0) {
-    const currentUnit = streak.currentStreak === 1 ? "day" : "days";
-    const bestUnit = streak.bestStreak === 1 ? "day" : "days";
-    const bestStreak = Math.max(streak.bestStreak, streak.currentStreak);
-    const isBestStreak = streak.currentStreak >= bestStreak;
-
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span
-              aria-label={`Current streak ${streak.currentStreak} ${currentUnit}. Best streak ${bestStreak} ${bestUnit}.`}
-              className={cn(
-                "inline-flex shrink-0 cursor-help items-center text-xs font-medium tabular-nums",
-                isBestStreak
-                  ? "text-secondary"
-                  : "text-primary/85 dark:text-primary"
-              )}
-            >
-              {streak.currentStreak}d
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top" sideOffset={8}>
-            {isBestStreak ? (
-              <>
-                Best streak: {bestStreak} {bestUnit}. This is your current
-                record.
-              </>
-            ) : (
-              <>
-                Current streak: {streak.currentStreak} {currentUnit}. Best
-                streak: {bestStreak} {bestUnit}.
-              </>
-            )}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  return null;
-}
-
-function HabitCategoryLabel({
-  accentTextColor,
-  label,
-  showCategory,
-}: {
-  accentTextColor: string;
-  label: string;
-  showCategory?: boolean | undefined;
-}) {
-  if (!showCategory) {
-    return null;
-  }
-
-  return (
-    <span
-      className="shrink-0 text-[0.68rem] uppercase tracking-wide opacity-80"
-      style={{ color: accentTextColor }}
-    >
-      {label}
-    </span>
-  );
-}
-
-function HabitTrailingActions({
-  trailingActions,
-}: {
-  trailingActions?: React.ReactNode;
-}) {
-  if (!trailingActions) {
-    return null;
-  }
-
-  return (
-    <div className="z-10 flex shrink-0 items-center gap-1">
-      {trailingActions}
-    </div>
-  );
-}
 
 function getItemStateClassName({
   completed,
