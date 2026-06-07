@@ -1,21 +1,17 @@
 import { m } from "framer-motion";
-import { useEffect, useState } from "react";
 
+import { TodayHistoryCarouselSkeleton } from "@/renderer/features/today/components/today-history-carousel-skeleton/today-history-carousel-skeleton";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/renderer/shared/components/ui/carousel";
-import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
+import { Carousel } from "@/renderer/shared/components/ui/carousel";
+import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
+import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";
+import { CarouselOverflowFade } from "@/renderer/shared/components/ui/carousel-overflow-fade";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { tapPress } from "@/renderer/shared/lib/motion";
 import { formatDateKey } from "@/shared/domain/date-key";
 import type { HistorySummaryDay } from "@/shared/domain/history";
-
-import { TodayHistoryCarouselSkeleton } from "../today-history-carousel-skeleton";
 
 interface TodayHistoryCarouselProps {
   hasLoadedHistorySummary: boolean;
@@ -37,32 +33,6 @@ export function TodayHistoryCarousel({
   onSelectDate,
   selectedDate,
 }: TodayHistoryCarouselProps) {
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  useEffect(() => {
-    if (!carouselApi) {
-      return;
-    }
-
-    const updateScrollState = () => {
-      setCanScrollPrev(carouselApi.canScrollPrev());
-      setCanScrollNext(carouselApi.canScrollNext());
-    };
-
-    updateScrollState();
-    carouselApi.on("reInit", updateScrollState);
-    carouselApi.on("select", updateScrollState);
-    carouselApi.on("settle", updateScrollState);
-
-    return () => {
-      carouselApi.off("reInit", updateScrollState);
-      carouselApi.off("select", updateScrollState);
-      carouselApi.off("settle", updateScrollState);
-    };
-  }, [carouselApi]);
-
   if (!hasLoadedHistorySummary && history.length === 0) {
     return (
       <TodayHistoryCarouselSkeleton
@@ -86,7 +56,6 @@ export function TodayHistoryCarousel({
       )}
     >
       <Carousel
-        setApi={setCarouselApi}
         opts={{
           align: "start",
           dragFree: true,
@@ -136,19 +105,15 @@ export function TodayHistoryCarousel({
             );
           })}
         </CarouselContent>
-      </Carousel>
-      {canScrollPrev ? (
-        <div
-          aria-hidden="true"
+        <CarouselOverflowFade
           className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card/95 via-card/55 to-transparent sm:w-10"
+          side="previous"
         />
-      ) : null}
-      {canScrollNext ? (
-        <div
-          aria-hidden="true"
+        <CarouselOverflowFade
           className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card/95 via-card/55 to-transparent sm:w-10"
+          side="next"
         />
-      ) : null}
+      </Carousel>
     </div>
   );
 }

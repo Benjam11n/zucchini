@@ -1,46 +1,21 @@
 import useEmblaCarousel from "embla-carousel-react";
-import type { UseEmblaCarouselType } from "embla-carousel-react";
 import * as React from "react";
 
+import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
+import { CarouselContext } from "@/renderer/shared/components/ui/carousel-context";
+import { CarouselDotButton } from "@/renderer/shared/components/ui/carousel-dot-button";
+import { CarouselIconButton } from "@/renderer/shared/components/ui/carousel-icon-button";
+import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";
+import { CarouselOverflowFade } from "@/renderer/shared/components/ui/carousel-overflow-fade";
+import type {
+  CarouselApi,
+  CarouselProps,
+} from "@/renderer/shared/components/ui/carousel-types";
 import { cn } from "@/renderer/shared/lib/class-names";
-
-type CarouselApi = UseEmblaCarouselType[1];
-type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
-type CarouselOptions = UseCarouselParameters[0];
-type CarouselPlugin = UseCarouselParameters[1];
-
-interface CarouselProps {
-  opts?: CarouselOptions;
-  plugins?: CarouselPlugin;
-  orientation?: "horizontal" | "vertical";
-  setApi?: (api: CarouselApi) => void;
-}
-
-type CarouselContextProps = {
-  carouselRef: ReturnType<typeof useEmblaCarousel>[0];
-  api: ReturnType<typeof useEmblaCarousel>[1];
-  scrollPrev: () => void;
-  scrollNext: () => void;
-  canScrollPrev: boolean;
-  canScrollNext: boolean;
-} & CarouselProps;
-
-const CarouselContext = React.createContext<CarouselContextProps | null>(null);
-
-function useCarousel() {
-  const context = React.useContext(CarouselContext);
-
-  if (!context) {
-    throw new Error("useCarousel must be used within a <Carousel />");
-  }
-
-  return context;
-}
 
 function Carousel({
   orientation = "horizontal",
   opts,
-  setApi,
   plugins,
   className,
   children,
@@ -55,6 +30,10 @@ function Carousel({
   );
   const [canScrollPrev, setCanScrollPrev] = React.useState(false);
   const [canScrollNext, setCanScrollNext] = React.useState(false);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const onSelectRef = React.useRef<((emblaApi: CarouselApi) => void) | null>(
+    null
+  );
 
   const onSelect = React.useCallback((emblaApi: CarouselApi) => {
     if (!emblaApi) {
@@ -62,7 +41,9 @@ function Carousel({
     }
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
+    setSelectedIndex(emblaApi.selectedScrollSnap?.() ?? 0);
   }, []);
+  onSelectRef.current = onSelect;
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev();
@@ -71,6 +52,13 @@ function Carousel({
   const scrollNext = React.useCallback(() => {
     api?.scrollNext();
   }, [api]);
+
+  const scrollTo = React.useCallback(
+    (index: number) => {
+      api?.scrollTo(index);
+    },
+    [api]
+  );
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -86,25 +74,22 @@ function Carousel({
   );
 
   React.useEffect(() => {
-    if (!api || !setApi) {
-      return;
-    }
-    setApi(api);
-  }, [api, setApi]);
-
-  React.useEffect(() => {
     if (!api) {
       return;
     }
-    onSelect(api);
-    api.on("reInit", onSelect);
-    api.on("select", onSelect);
+    const handleSelect = (emblaApi: CarouselApi) => {
+      onSelectRef.current?.(emblaApi);
+    };
+
+    handleSelect(api);
+    api.on("reInit", handleSelect);
+    api.on("select", handleSelect);
 
     return () => {
-      api.off("reInit", onSelect);
-      api.off("select", onSelect);
+      api.off("reInit", handleSelect);
+      api.off("select", handleSelect);
     };
-  }, [api, onSelect]);
+  }, [api]);
 
   const contextValue = React.useMemo(
     () => ({
@@ -117,6 +102,8 @@ function Carousel({
         orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
       scrollNext,
       scrollPrev,
+      scrollTo,
+      selectedIndex,
     }),
     [
       api,
@@ -127,6 +114,8 @@ function Carousel({
       orientation,
       scrollNext,
       scrollPrev,
+      scrollTo,
+      selectedIndex,
     ]
   );
 
@@ -145,42 +134,12 @@ function Carousel({
   );
 }
 
-function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
-  const { carouselRef, orientation } = useCarousel();
-
-  return (
-    <div
-      ref={carouselRef}
-      className="min-w-0 overflow-hidden"
-      data-slot="carousel-content"
-    >
-      <div
-        className={cn(
-          "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-          className
-        )}
-        {...props}
-      />
-    </div>
-  );
-}
-
-function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
-  const { orientation } = useCarousel();
-
-  return (
-    <div
-      aria-roledescription="slide"
-      data-slot="carousel-item"
-      className={cn(
-        "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "pl-4" : "pt-4",
-        className
-      )}
-      {...props}
-    />
-  );
-}
-
-export { type CarouselApi, Carousel, CarouselContent, CarouselItem };
+export {
+  type CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselDotButton,
+  CarouselIconButton,
+  CarouselItem,
+  CarouselOverflowFade,
+};

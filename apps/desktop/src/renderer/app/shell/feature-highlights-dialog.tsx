@@ -1,14 +1,10 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import { Button } from "@/renderer/shared/components/ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/renderer/shared/components/ui/carousel";
-import type { CarouselApi } from "@/renderer/shared/components/ui/carousel";
+import { Carousel } from "@/renderer/shared/components/ui/carousel";
+import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
+import { CarouselDotButton } from "@/renderer/shared/components/ui/carousel-dot-button";
+import { CarouselIconButton } from "@/renderer/shared/components/ui/carousel-icon-button";
+import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/renderer/shared/components/ui/dialog";
-import { cn } from "@/renderer/shared/lib/class-names";
 
 interface FeatureSlide {
   description: string;
@@ -69,58 +64,16 @@ const FEATURE_SLIDES: FeatureSlide[] = [
 ];
 
 function FeaturesCarouselContent() {
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  useEffect(() => {
-    if (!carouselApi) {
-      return;
-    }
-
-    const updateSelectedIndex = () => {
-      setSelectedIndex(carouselApi.selectedScrollSnap());
-    };
-
-    updateSelectedIndex();
-    carouselApi.on("reInit", updateSelectedIndex);
-    carouselApi.on("select", updateSelectedIndex);
-
-    return () => {
-      carouselApi.off("reInit", updateSelectedIndex);
-      carouselApi.off("select", updateSelectedIndex);
-    };
-  }, [carouselApi]);
-
   return (
     <section
       aria-label="Feature highlights"
       className="overflow-hidden px-6 pb-6 pt-2"
     >
-      <Carousel
-        className="min-w-0"
-        opts={{ align: "start", loop: true }}
-        setApi={setCarouselApi}
-      >
+      <Carousel className="min-w-0" opts={{ align: "start", loop: true }}>
         <div className="mb-3 flex justify-end">
           <div className="flex items-center gap-1.5">
-            <Button
-              aria-label="Previous feature"
-              onClick={() => carouselApi?.scrollPrev()}
-              size="icon-sm"
-              type="button"
-              variant="outline"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <Button
-              aria-label="Next feature"
-              onClick={() => carouselApi?.scrollNext()}
-              size="icon-sm"
-              type="button"
-              variant="outline"
-            >
-              <ChevronRight className="size-4" />
-            </Button>
+            <CarouselIconButton direction="previous" label="Previous feature" />
+            <CarouselIconButton direction="next" label="Next feature" />
           </div>
         </div>
         <CarouselContent className="-ml-3">
@@ -152,17 +105,10 @@ function FeaturesCarouselContent() {
         </CarouselContent>
         <div className="mt-3 flex justify-center gap-1.5">
           {FEATURE_SLIDES.map((slide, index) => (
-            <button
-              aria-label={`Show ${slide.title}`}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                selectedIndex === index
-                  ? "w-6 bg-primary"
-                  : "w-1.5 bg-muted-foreground/35 hover:bg-muted-foreground/60"
-              )}
+            <CarouselDotButton
               key={slide.id}
-              onClick={() => carouselApi?.scrollTo(index)}
-              type="button"
+              index={index}
+              label={`Show ${slide.title}`}
             />
           ))}
         </div>
