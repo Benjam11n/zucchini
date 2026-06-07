@@ -1,4 +1,5 @@
 import { APP_CONFIG } from "@/shared/config/app-config";
+import { isValidTimeZone as isValidDateTimeZone } from "@/shared/domain/date-key";
 import type { HabitCategory } from "@/shared/domain/habit";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
@@ -368,22 +369,6 @@ export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
   );
 }
 
-const validTimeZoneCache = new Map<string, boolean>();
-
 export function isValidTimeZone(value: string): boolean {
-  const cachedResult = validTimeZoneCache.get(value);
-  if (cachedResult !== undefined) {
-    return cachedResult;
-  }
-
-  try {
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: value,
-    }).format(new Date());
-    validTimeZoneCache.set(value, true);
-    return true;
-  } catch {
-    validTimeZoneCache.set(value, false);
-    return false;
-  }
+  return isValidDateTimeZone(value);
 }

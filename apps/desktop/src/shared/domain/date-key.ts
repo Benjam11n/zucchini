@@ -54,12 +54,26 @@ const DATE_FORMAT_PRESETS = {
   shortWeekday: {
     weekday: "short",
   },
+  weekdayHour24: {
+    hour: "numeric",
+    hourCycle: "h23",
+    weekday: "short",
+  },
+  zonedDateTimeParts: {
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    month: "2-digit",
+    second: "2-digit",
+    year: "numeric",
+  },
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 
 type DateFormatPreset = keyof typeof DATE_FORMAT_PRESETS;
-type DateFormatOptions = DateFormatPreset | Intl.DateTimeFormatOptions;
 const dateKeyTimeZoneFormatters = new Map<string, Intl.DateTimeFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+const validTimeZoneCache = new Map<string, boolean>();
 
 function getDateKeyTimeZoneFormatter(timezone: string): Intl.DateTimeFormat {
   const cachedFormatter = dateKeyTimeZoneFormatters.get(timezone);
@@ -75,16 +89,6 @@ function getDateKeyTimeZoneFormatter(timezone: string): Intl.DateTimeFormat {
   });
   dateKeyTimeZoneFormatters.set(timezone, formatter);
   return formatter;
-}
-
-function resolveDateFormatOptions(
-  options: DateFormatOptions
-): Intl.DateTimeFormatOptions {
-  if (typeof options === "string") {
-    return DATE_FORMAT_PRESETS[options];
-  }
-
-  return options;
 }
 
 export function parseDateKey(dateKey: string): Date {
@@ -125,6 +129,46 @@ export function toDateKeyInTimeZone(date: Date, timezone: string): string {
   }
 
   return `${year}-${month}-${day}`;
+}
+
+function getDateFormatter(
+  preset: DateFormatPreset,
+  locale?: string,
+  timeZone?: string
+): Intl.DateTimeFormat {
+  const resolvedOptions = {
+    ...DATE_FORMAT_PRESETS[preset],
+    ...(timeZone ? { timeZone } : {}),
+  };
+  const cacheKey = JSON.stringify([locale ?? "", resolvedOptions]);
+  const cachedFormatter = dateFormatters.get(cacheKey);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, resolvedOptions);
+  dateFormatters.set(cacheKey, formatter);
+  return formatter;
+}
+
+export function isValidTimeZone(value: string): boolean {
+  const cachedResult = validTimeZoneCache.get(value);
+  if (cachedResult !== undefined) {
+    return cachedResult;
+  }
+
+  try {
+    getDateFormatter("month", undefined, value).format(new Date());
+    validTimeZoneCache.set(value, true);
+    return true;
+  } catch {
+    validTimeZoneCache.set(value, false);
+    return false;
+  }
+}
+
+export function getSystemTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 export function isValidDateKey(dateKey: string): boolean {
@@ -243,37 +287,38 @@ export function getPreviousCompletedIsoWeek(todayKey: string): {
 
 export function formatDate(
   date: Date,
-  options: DateFormatOptions,
-  locale?: string
+  preset: DateFormatPreset,
+  locale?: string,
+  timeZone?: string
 ): string {
-  const resolvedOptions = resolveDateFormatOptions(options);
-  const cacheKey = JSON.stringify([locale ?? "", resolvedOptions]);
-  const cachedFormatter = dateFormatters.get(cacheKey);
-  if (cachedFormatter) {
-    return cachedFormatter.format(date);
-  }
-
-  const formatter = new Intl.DateTimeFormat(locale, resolvedOptions);
-  dateFormatters.set(cacheKey, formatter);
-  return formatter.format(date);
+  return getDateFormatter(preset, locale, timeZone).format(date);
 }
 
 export function formatDateKey(
   dateKey: string,
-  options: DateFormatOptions,
+  preset: DateFormatPreset,
   locale?: string
 ): string {
-  return formatDate(parseDateKey(dateKey), options, locale);
+  return formatDate(parseDateKey(dateKey), preset, locale);
 }
 
 export function formatIsoDateTime(
   value: string,
-  options: DateFormatOptions,
+  preset: DateFormatPreset,
   locale?: string
 ): string {
-  return formatDate(new Date(value), options, locale);
+  return formatDate(new Date(value), preset, locale);
 }
 
 export function formatIsoTime(value: string, locale?: string): string {
   return formatIsoDateTime(value, "shortTime", locale);
+}
+
+export function formatDateParts(
+  date: Date,
+  preset: DateFormatPreset,
+  locale?: string,
+  timeZone?: string
+): Intl.DateTimeFormatPart[] {
+  return getDateFormatter(preset, locale, timeZone).formatToParts(date);
 }

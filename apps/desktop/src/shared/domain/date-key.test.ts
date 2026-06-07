@@ -47,16 +47,6 @@ describe("iSO week helpers", () => {
     );
   });
 
-  it("allows custom Intl options when presets do not fit", () => {
-    expect(
-      formatDateKey("2026-03-13", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-      })
-    ).toBe("03/13/26");
-  });
-
   it("formats date keys in the requested timezone", () => {
     const instant = new Date("2026-03-08T23:30:00.000Z");
 
