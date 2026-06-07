@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
 import { DurationInput } from "@/renderer/shared/components/ui/duration-input";
@@ -32,25 +32,32 @@ export function PomodoroSettingsFields({
   onChange,
   settings,
 }: PomodoroSettingsFieldsProps) {
-  const [cyclesInput, setCyclesInput] = useState(() =>
-    settings.focusCyclesBeforeLongBreak.toString()
-  );
+  const [cyclesDraft, setCyclesDraft] = useState(() => ({
+    input: settings.focusCyclesBeforeLongBreak.toString(),
+    sourceValue: settings.focusCyclesBeforeLongBreak,
+  }));
+  const cyclesInput =
+    cyclesDraft.sourceValue === settings.focusCyclesBeforeLongBreak
+      ? cyclesDraft.input
+      : settings.focusCyclesBeforeLongBreak.toString();
   const defaultShortcutSettings = createDefaultFocusTimerShortcutSettings();
-
-  useEffect(() => {
-    setCyclesInput(settings.focusCyclesBeforeLongBreak.toString());
-  }, [settings.focusCyclesBeforeLongBreak]);
 
   const commitCycles = () => {
     const parsedValue = Number.parseInt(cyclesInput, 10);
 
     if (!Number.isInteger(parsedValue)) {
-      setCyclesInput(settings.focusCyclesBeforeLongBreak.toString());
+      setCyclesDraft({
+        input: settings.focusCyclesBeforeLongBreak.toString(),
+        sourceValue: settings.focusCyclesBeforeLongBreak,
+      });
       return;
     }
 
     const normalizedValue = Math.min(12, Math.max(1, parsedValue));
-    setCyclesInput(normalizedValue.toString());
+    setCyclesDraft({
+      input: normalizedValue.toString(),
+      sourceValue: normalizedValue,
+    });
 
     if (normalizedValue !== settings.focusCyclesBeforeLongBreak) {
       onChange({
@@ -190,7 +197,10 @@ export function PomodoroSettingsFields({
             inputMode="numeric"
             onBlur={commitCycles}
             onChange={(event) => {
-              setCyclesInput(sanitizeIntegerInput(event.currentTarget.value));
+              setCyclesDraft({
+                input: sanitizeIntegerInput(event.currentTarget.value),
+                sourceValue: settings.focusCyclesBeforeLongBreak,
+              });
             }}
             onFocus={(event) => {
               event.currentTarget.select();

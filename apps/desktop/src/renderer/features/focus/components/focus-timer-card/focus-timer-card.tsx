@@ -1,5 +1,5 @@
 import { Minus, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { FocusDurationEditor } from "@/renderer/features/focus/components/focus-duration-editor";
 import { FocusTimerActions } from "@/renderer/features/focus/components/focus-timer-actions";
@@ -116,17 +116,18 @@ export function FocusTimerCard({
         label: isBreak ? skipBreakLabel : "Reset",
       } as const);
   const cycleChipLabel = getCycleChipLabel(focusCyclesBeforeLongBreak);
-  const [durationDraft, setDurationDraft] = useState(() =>
-    createDurationDraft(timerState.focusDurationMs)
-  );
-
-  useEffect(() => {
-    if (!canEditDuration) {
-      return;
-    }
-
-    setDurationDraft(createDurationDraft(timerState.focusDurationMs));
-  }, [canEditDuration, timerState.focusDurationMs]);
+  const [durationDraftState, setDurationDraftState] = useState(() => ({
+    ...createDurationDraft(timerState.focusDurationMs),
+    sourceDurationMs: timerState.focusDurationMs,
+  }));
+  const durationDraft =
+    canEditDuration &&
+    durationDraftState.sourceDurationMs === timerState.focusDurationMs
+      ? durationDraftState
+      : {
+          ...createDurationDraft(timerState.focusDurationMs),
+          sourceDurationMs: timerState.focusDurationMs,
+        };
 
   const commitDuration = (durationSeconds: number) => {
     const durationMs = clampFocusDurationMs(durationSeconds * MS_PER_SECOND);
@@ -153,7 +154,12 @@ export function FocusTimerCard({
               <FocusDurationEditor
                 canEditDuration={canEditDuration}
                 onDurationChange={onDurationChange}
-                onDurationDraftChange={setDurationDraft}
+                onDurationDraftChange={(nextDraft) => {
+                  setDurationDraftState({
+                    ...nextDraft,
+                    sourceDurationMs: timerState.focusDurationMs,
+                  });
+                }}
                 timerDisplayColorClass={timerDisplayColorClass}
                 timerState={timerState}
               />

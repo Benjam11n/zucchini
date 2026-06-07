@@ -9,14 +9,10 @@ interface FocusDurationEditorProps {
   timerDisplayColorClass: string;
   timerState: PersistedFocusTimerState;
   onDurationChange: (focusDurationMs: number) => void;
-  onDurationDraftChange: (
-    nextDraft:
-      | { minutesInput: string; secondsInput: string }
-      | ((currentDraft: { minutesInput: string; secondsInput: string }) => {
-          minutesInput: string;
-          secondsInput: string;
-        })
-  ) => void;
+  onDurationDraftChange: (nextDraft: {
+    minutesInput: string;
+    secondsInput: string;
+  }) => void;
 }
 
 export function FocusDurationEditor({

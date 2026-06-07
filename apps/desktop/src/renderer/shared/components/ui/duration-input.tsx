@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FocusEvent } from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -90,17 +90,20 @@ export function DurationInput({
 }) {
   const durationParts = splitDurationSeconds(valueSeconds);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [minutesInput, setMinutesInput] = useState(() =>
-    padDurationPart(durationParts.minutes)
-  );
-  const [secondsInput, setSecondsInput] = useState(() =>
-    padDurationPart(durationParts.seconds)
-  );
-
-  useEffect(() => {
-    setMinutesInput(padDurationPart(durationParts.minutes));
-    setSecondsInput(padDurationPart(durationParts.seconds));
-  }, [durationParts.minutes, durationParts.seconds]);
+  const [draft, setDraft] = useState(() => ({
+    minutesInput: padDurationPart(durationParts.minutes),
+    secondsInput: padDurationPart(durationParts.seconds),
+    sourceSeconds: valueSeconds,
+  }));
+  const activeDraft =
+    draft.sourceSeconds === valueSeconds
+      ? draft
+      : {
+          minutesInput: padDurationPart(durationParts.minutes),
+          secondsInput: padDurationPart(durationParts.seconds),
+          sourceSeconds: valueSeconds,
+        };
+  const { minutesInput, secondsInput } = activeDraft;
 
   const commitValue = () => {
     const normalizedSeconds = normalizeDurationInputValue(
@@ -111,14 +114,20 @@ export function DurationInput({
     );
 
     if (normalizedSeconds === null) {
-      setMinutesInput(padDurationPart(durationParts.minutes));
-      setSecondsInput(padDurationPart(durationParts.seconds));
+      setDraft({
+        minutesInput: padDurationPart(durationParts.minutes),
+        secondsInput: padDurationPart(durationParts.seconds),
+        sourceSeconds: valueSeconds,
+      });
       return;
     }
 
     const normalizedParts = splitDurationSeconds(normalizedSeconds);
-    setMinutesInput(padDurationPart(normalizedParts.minutes));
-    setSecondsInput(padDurationPart(normalizedParts.seconds));
+    setDraft({
+      minutesInput: padDurationPart(normalizedParts.minutes),
+      secondsInput: padDurationPart(normalizedParts.seconds),
+      sourceSeconds: normalizedSeconds,
+    });
 
     if (normalizedSeconds !== valueSeconds) {
       onCommit(normalizedSeconds);
@@ -151,7 +160,10 @@ export function DurationInput({
             const nextMinutesInput = sanitizeDurationPart(
               event.currentTarget.value
             );
-            setMinutesInput(nextMinutesInput);
+            setDraft({
+              ...activeDraft,
+              minutesInput: nextMinutesInput,
+            });
             onDraftChange?.({
               minutesInput: nextMinutesInput,
               secondsInput,
@@ -182,7 +194,10 @@ export function DurationInput({
             const nextSecondsInput = sanitizeDurationPart(
               event.currentTarget.value
             );
-            setSecondsInput(nextSecondsInput);
+            setDraft({
+              ...activeDraft,
+              secondsInput: nextSecondsInput,
+            });
             onDraftChange?.({
               minutesInput,
               secondsInput: nextSecondsInput,
