@@ -13,6 +13,28 @@ interface ZonedCalendarDate {
   year: number;
 }
 
+const zonedDateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getZonedDateTimeFormatter(timezone: string): Intl.DateTimeFormat {
+  const cachedFormatter = zonedDateTimeFormatters.get(timezone);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    month: "2-digit",
+    second: "2-digit",
+    timeZone: timezone,
+    year: "numeric",
+  });
+  zonedDateTimeFormatters.set(timezone, formatter);
+  return formatter;
+}
+
 export function parseReminderClockTime(
   value: string
 ): { hours: number; minutes: number } | null {
@@ -53,16 +75,7 @@ function getRequiredDateTimePart(
 }
 
 function getZonedDateTimeParts(date: Date, timezone: string): ZonedDateParts {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    hour: "2-digit",
-    hourCycle: "h23",
-    minute: "2-digit",
-    month: "2-digit",
-    second: "2-digit",
-    timeZone: timezone,
-    year: "numeric",
-  }).formatToParts(date);
+  const parts = getZonedDateTimeFormatter(timezone).formatToParts(date);
 
   return {
     day: getRequiredDateTimePart(parts, "day"),

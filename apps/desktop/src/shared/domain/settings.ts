@@ -368,13 +368,22 @@ export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
   );
 }
 
+const validTimeZoneCache = new Map<string, boolean>();
+
 export function isValidTimeZone(value: string): boolean {
+  const cachedResult = validTimeZoneCache.get(value);
+  if (cachedResult !== undefined) {
+    return cachedResult;
+  }
+
   try {
     new Intl.DateTimeFormat("en-CA", {
       timeZone: value,
     }).format(new Date());
+    validTimeZoneCache.set(value, true);
     return true;
   } catch {
+    validTimeZoneCache.set(value, false);
     return false;
   }
 }

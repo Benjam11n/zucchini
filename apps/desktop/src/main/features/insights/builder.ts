@@ -63,6 +63,23 @@ const TIME_OF_DAY_BUCKETS = [
   { endHour: 23, label: "Evening", startHour: 17, subtitle: "5pm - 11pm" },
   { endHour: 5, label: "Night", startHour: 23, subtitle: "11pm - 5am" },
 ] as const;
+const localCompletionFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getLocalCompletionFormatter(timezone: string): Intl.DateTimeFormat {
+  const cachedFormatter = localCompletionFormatters.get(timezone);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hourCycle: "h23",
+    timeZone: timezone,
+    weekday: "short",
+  });
+  localCompletionFormatters.set(timezone, formatter);
+  return formatter;
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -285,12 +302,7 @@ function getLocalCompletionParts(
     return null;
   }
 
-  const parts = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    hourCycle: "h23",
-    timeZone: timezone,
-    weekday: "short",
-  }).formatToParts(date);
+  const parts = getLocalCompletionFormatter(timezone).formatToParts(date);
   const hour = Number(parts.find((part) => part.type === "hour")?.value);
   const weekday = parts.find((part) => part.type === "weekday")?.value;
   const weekdayIndex = [

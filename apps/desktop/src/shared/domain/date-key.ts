@@ -58,6 +58,24 @@ const DATE_FORMAT_PRESETS = {
 
 type DateFormatPreset = keyof typeof DATE_FORMAT_PRESETS;
 type DateFormatOptions = DateFormatPreset | Intl.DateTimeFormatOptions;
+const dateKeyTimeZoneFormatters = new Map<string, Intl.DateTimeFormat>();
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getDateKeyTimeZoneFormatter(timezone: string): Intl.DateTimeFormat {
+  const cachedFormatter = dateKeyTimeZoneFormatters.get(timezone);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: timezone,
+    year: "numeric",
+  });
+  dateKeyTimeZoneFormatters.set(timezone, formatter);
+  return formatter;
+}
 
 function resolveDateFormatOptions(
   options: DateFormatOptions
@@ -96,12 +114,7 @@ export function toDateKey(date: Date): string {
 }
 
 export function toDateKeyInTimeZone(date: Date, timezone: string): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: timezone,
-    year: "numeric",
-  }).formatToParts(date);
+  const parts = getDateKeyTimeZoneFormatter(timezone).formatToParts(date);
   const valueByType = new Map(parts.map((part) => [part.type, part.value]));
   const year = valueByType.get("year");
   const month = valueByType.get("month");
@@ -233,10 +246,16 @@ export function formatDate(
   options: DateFormatOptions,
   locale?: string
 ): string {
-  return new Intl.DateTimeFormat(
-    locale,
-    resolveDateFormatOptions(options)
-  ).format(date);
+  const resolvedOptions = resolveDateFormatOptions(options);
+  const cacheKey = JSON.stringify([locale ?? "", resolvedOptions]);
+  const cachedFormatter = dateFormatters.get(cacheKey);
+  if (cachedFormatter) {
+    return cachedFormatter.format(date);
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, resolvedOptions);
+  dateFormatters.set(cacheKey, formatter);
+  return formatter.format(date);
 }
 
 export function formatDateKey(
