@@ -59,7 +59,7 @@ export const InsightsPage = memo(function InsightsPage({
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {dashboard.period.label} ending{" "}
-              {formatInsightsDate(dashboard.generatedAtDate)}
+              {formatInsightsDate(dashboard.period.currentEnd)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -98,7 +98,10 @@ export const InsightsPage = memo(function InsightsPage({
         </section>
 
         <section>
-          <HabitLeaderboard habits={dashboard.habitLeaderboard} />
+          <HabitLeaderboard
+            habits={dashboard.habitLeaderboard}
+            periodLabel={dashboard.period.label}
+          />
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">

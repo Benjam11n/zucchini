@@ -19,6 +19,7 @@ import type {
 import type { HistoryViewModel } from "./hooks/use-history-view-state";
 
 export type WeeklyReviewPhase = AsyncPhase;
+export type HistoryViewMode = "review" | "timeline";
 
 export interface HistoryPageActions {
   history: {
@@ -38,12 +39,14 @@ export interface HistoryPageViewModel {
   historyYears: number[];
   historyLoadError: AppIpcError | null;
   todayDate: string;
+  historyMode?: HistoryViewMode;
   selectedHistoryYear: number | null;
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
   weeklyReviewPhase: WeeklyReviewPhase;
   viewModel?: HistoryViewModel;
+  onHistoryModeChange?: (mode: HistoryViewMode) => void;
 }
 
 export type { ContributionIntensity };

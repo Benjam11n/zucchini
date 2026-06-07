@@ -236,7 +236,8 @@ function buildWeeklyCompletion(
   }
 
   return weekStarts.map((weekStart) => {
-    const weekEnd = endOfIsoWeek(weekStart);
+    const weekEnd =
+      endOfIsoWeek(weekStart) <= nowDate ? endOfIsoWeek(weekStart) : nowDate;
     const weekStatuses = statuses.filter(
       (status) => status.periodEnd >= weekStart && status.periodEnd <= weekEnd
     );

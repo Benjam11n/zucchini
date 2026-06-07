@@ -11,6 +11,7 @@ import {
   buildWindDownPageActions,
 } from "@/renderer/app/route-page-props";
 import { HistoryPage } from "@/renderer/features/history/history-page";
+import type { HistoryViewMode } from "@/renderer/features/history/history.types";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodayPage } from "@/renderer/features/today/today-page";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
@@ -77,9 +78,15 @@ function WindDownRoute({ actions, state }: ReadyAppController) {
 
 function HistoryRoute({
   actions,
+  historyMode,
   historyViewModel,
+  onHistoryModeChange,
   state,
-}: ReadyAppController & { historyViewModel?: HistoryViewModel }) {
+}: ReadyAppController & {
+  historyMode?: HistoryViewMode;
+  historyViewModel?: HistoryViewModel;
+  onHistoryModeChange?: (mode: HistoryViewMode) => void;
+}) {
   const pageActions = useMemo(
     () => buildHistoryPageActions(actions),
     [actions]
@@ -96,10 +103,14 @@ function HistoryRoute({
       weeklyReviewError: state.weeklyReviewError,
       weeklyReviewOverview: state.weeklyReviewOverview,
       weeklyReviewPhase: state.weeklyReviewPhase,
+      ...(historyMode ? { historyMode } : {}),
+      ...(onHistoryModeChange ? { onHistoryModeChange } : {}),
       ...(historyViewModel ? { viewModel: historyViewModel } : {}),
     }),
     [
       historyViewModel,
+      historyMode,
+      onHistoryModeChange,
       state.contributionHistory,
       state.history,
       state.historyLoadError,
@@ -247,7 +258,11 @@ function InsightsRoute({ actions, state }: ReadyAppController) {
 }
 
 export function CurrentRoute(
-  controller: ReadyAppController & { historyViewModel?: HistoryViewModel }
+  controller: ReadyAppController & {
+    historyMode?: HistoryViewMode;
+    historyViewModel?: HistoryViewModel;
+    onHistoryModeChange?: (mode: HistoryViewMode) => void;
+  }
 ) {
   switch (controller.tab) {
     case "focus": {

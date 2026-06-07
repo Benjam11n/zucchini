@@ -14,26 +14,22 @@ import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface HistoryMobileSummaryDialogProps {
   monthStats: HistoryMonthStats;
-  nextDateKey: string | null;
+  monthLabel: string;
   open: boolean;
-  previousDateKey: string | null;
   selectedDay: HistorySummaryDay | null;
   todayDate: string;
   trendPoints: HistoryTrendPoint[];
   onOpenChange: (open: boolean) => void;
-  onSelectDate: (dateKey: string) => void;
 }
 
 export function HistoryMobileSummaryDialog({
   monthStats,
-  nextDateKey,
+  monthLabel,
   open,
-  previousDateKey,
   selectedDay,
   todayDate,
   trendPoints,
   onOpenChange,
-  onSelectDate,
 }: HistoryMobileSummaryDialogProps) {
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -47,12 +43,10 @@ export function HistoryMobileSummaryDialog({
         <div className="p-5">
           <HistorySidebar
             monthStats={monthStats}
-            nextDateKey={nextDateKey}
-            previousDateKey={previousDateKey}
+            monthLabel={monthLabel}
             selectedDay={selectedDay}
             todayDate={todayDate}
             trendPoints={trendPoints}
-            onSelectDate={onSelectDate}
           />
         </div>
       </DialogContent>

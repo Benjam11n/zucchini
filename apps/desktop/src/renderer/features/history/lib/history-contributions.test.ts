@@ -220,4 +220,20 @@ describe("history contributions", () => {
       "Sunday, Mar 8, 2026: 1 of 2 daily habits completed, freeze used to preserve streak"
     );
   });
+
+  it("marks the real today instead of the contribution range end", () => {
+    const weeks = buildContributionWeeks([createHistoryDay("2026-03-04")], {
+      endDate: "2026-12-31",
+      startDate: "2026-01-01",
+      todayDate: "2026-03-04",
+    });
+    const cells = weeks.flatMap((week) => week.cells);
+
+    expect(cells.find((cell) => cell.date === "2026-03-04")?.isToday).toBe(
+      true
+    );
+    expect(cells.find((cell) => cell.date === "2026-12-31")?.isToday).toBe(
+      false
+    );
+  });
 });

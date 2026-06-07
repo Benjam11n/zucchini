@@ -14,6 +14,7 @@ interface ContributionGraphProps {
   rangeEnd: string;
   rangeStart: string;
   selectedDateKey: string | null;
+  todayDate: string;
   onSelectDate: (dateKey: string) => void;
 }
 
@@ -23,12 +24,14 @@ export function ContributionGraph({
   rangeEnd,
   rangeStart,
   selectedDateKey,
+  todayDate,
 }: ContributionGraphProps) {
   const weeks = useMemo(
     () =>
       buildContributionWeeks(history, {
         endDate: rangeEnd,
         startDate: rangeStart,
+        todayDate,
       }).map((week) => ({
         ...week,
         cells: week.cells.map((cell) => ({
@@ -41,7 +44,7 @@ export function ContributionGraph({
           totalCount: cell.totalCount,
         })),
       })),
-    [history, rangeEnd, rangeStart]
+    [history, rangeEnd, rangeStart, todayDate]
   );
 
   if (weeks.length === 0) {

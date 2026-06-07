@@ -300,6 +300,24 @@ describe("history page", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("hides timeline date controls in review mode", () => {
+    renderHistoryPage();
+
+    expect(
+      screen.getByRole("button", { name: "Show previous month" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2026" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+
+    expect(
+      screen.queryByRole("button", { name: "Show previous month" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "2026" })
+    ).not.toBeInTheDocument();
+  });
+
   it("moves the timeline list between months without filtering the contribution graph", () => {
     renderHistoryPage({
       history: [

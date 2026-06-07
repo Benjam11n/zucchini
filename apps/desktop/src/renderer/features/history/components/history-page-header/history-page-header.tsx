@@ -48,8 +48,8 @@ export function HistoryPageHeader({
           </TabsTrigger>
         </TabsList>
       </div>
-      <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-        {historyMode === "timeline" ? (
+      {historyMode === "timeline" ? (
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-background/45 px-1">
             <Button
               aria-label="Show previous month"
@@ -75,23 +75,23 @@ export function HistoryPageHeader({
               <ChevronRight className="size-4" />
             </Button>
           </div>
-        ) : null}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" type="button" variant="outline">
-              {selectedYear}
-              <ChevronDown className="size-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {availableYears.map((year) => (
-              <DropdownMenuItem key={year} onClick={() => onSelectYear(year)}>
-                {year}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" type="button" variant="outline">
+                {selectedYear}
+                <ChevronDown className="size-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {availableYears.map((year) => (
+                <DropdownMenuItem key={year} onClick={() => onSelectYear(year)}>
+                  {year}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ) : null}
     </div>
   );
 }

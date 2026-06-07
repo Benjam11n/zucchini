@@ -1,31 +1,51 @@
+import { useState } from "react";
+
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
 import { AppShell } from "@/renderer/app/shell/app-shell";
 import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar";
+import type { HistoryViewMode } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
 import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
+import { formatDate } from "@/shared/domain/date-key";
 
 function getRightSidebar({
   actions,
+  historyMode,
   historyViewModel,
   state,
   tab,
-}: ReadyAppController & { historyViewModel: HistoryViewModel }) {
-  const handleSelectHistoryDate = historyViewModel.selectDateKey;
-
+}: ReadyAppController & {
+  historyMode: HistoryViewMode;
+  historyViewModel: HistoryViewModel;
+}) {
   if (tab === "history") {
+    const activeReview =
+      state.selectedWeeklyReview ?? state.weeklyReviewOverview?.latestReview;
+    const monthLabel =
+      historyMode === "review" && activeReview
+        ? formatDate(
+            new Date(`${activeReview.weekStart}T00:00:00`),
+            "monthYear"
+          )
+        : formatDate(
+            historyViewModel.viewState.visibleMonth ??
+              new Date(
+                `${historyViewModel.viewState.selectedYear}-01-01T00:00:00`
+              ),
+            "monthYear"
+          );
+
     return (
       <HistorySidebar
         monthStats={historyViewModel.monthStats}
-        nextDateKey={historyViewModel.nextDateKey}
-        previousDateKey={historyViewModel.previousDateKey}
+        monthLabel={monthLabel}
         selectedDay={historyViewModel.selectedDay}
         todayDate={state.todayState.date}
         trendPoints={historyViewModel.trendPoints}
-        onSelectDate={handleSelectHistoryDate}
       />
     );
   }
@@ -47,6 +67,7 @@ export function AppReadyShell({
   controller: ReadyAppController;
 }) {
   const { actions, state, tab } = controller;
+  const [historyMode, setHistoryMode] = useState<HistoryViewMode>("timeline");
   const historyViewHistory =
     state.contributionHistory.length > 0
       ? state.contributionHistory
@@ -59,6 +80,7 @@ export function AppReadyShell({
   });
   const rightSidebar = getRightSidebar({
     ...controller,
+    historyMode,
     historyViewModel,
   });
   const weeklyReviewBanner =
@@ -86,6 +108,9 @@ export function AppReadyShell({
         <CurrentRoute
           {...controller}
           {...(tab === "history" ? { historyViewModel } : {})}
+          {...(tab === "history"
+            ? { historyMode, onHistoryModeChange: setHistoryMode }
+            : {})}
         />
       </AppShell>
     </HabitCategoryPreferencesProvider>

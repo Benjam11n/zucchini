@@ -83,6 +83,7 @@ export function buildContributionWeeks(
   range?: {
     endDate: string;
     startDate: string;
+    todayDate?: string;
   }
 ): ContributionWeek[] {
   if (history.length === 0 && !range) {
@@ -101,6 +102,7 @@ export function buildContributionWeeks(
 
   const firstCellDate = startOfWeek(firstDate);
   const lastCellDate = endOfWeek(lastDate);
+  const todayDate = range?.todayDate ?? lastDate;
   const historyDayByDate = new Map(sortedHistory.map((day) => [day.date, day]));
   let maxCompletedCount = 0;
 
@@ -117,7 +119,7 @@ export function buildContributionWeeks(
     const summary = day?.summary ?? null;
     const { completedCount, totalCount } = getCompletionCounts(day);
 
-    const isToday = cursor === lastDate;
+    const isToday = cursor === todayDate;
     cells.push({
       completedCount,
       date: cursor,

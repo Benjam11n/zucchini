@@ -10,7 +10,7 @@ function createDashboard(
   overrides: Partial<InsightsDashboard> = {}
 ): InsightsDashboard {
   return {
-    generatedAtDate: "2026-03-31",
+    generatedAtDate: "2026-04-01",
     habitLeaderboard: [
       {
         category: "productivity",
@@ -143,6 +143,9 @@ describe("InsightsPage", () => {
       screen.getByText("Last 30 days ending Mar 31, 2026")
     ).toBeInTheDocument();
     expect(screen.getByText("Morning Journal")).toBeInTheDocument();
+    expect(
+      screen.getByText("Top habits by last 30 days completion")
+    ).toBeInTheDocument();
     expect(screen.getByText("Productivity")).toBeInTheDocument();
     expect(screen.getByText("24 of 25")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "90d" })).toBeInTheDocument();
@@ -157,6 +160,22 @@ describe("InsightsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "90d" }));
 
     expect(onSelectRangeDays).toHaveBeenCalledWith(90);
+  });
+
+  it("uses the selected period label in the habit leaderboard", () => {
+    renderInsightsPage({
+      dashboard: createDashboard({
+        period: {
+          currentEnd: "2026-03-31",
+          currentStart: "2026-01-01",
+          label: "Last 90 days",
+        },
+      }),
+    });
+
+    expect(
+      screen.getByText("Top habits by last 90 days completion")
+    ).toBeInTheDocument();
   });
 
   it("renders the weekday rhythm chart", () => {

@@ -188,7 +188,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
       }
     }
   },
-  loadHistorySummary: async (limit = 14) => {
+  loadHistorySummary: async (limit = 32) => {
     if (get().isHistorySummaryLoading) {
       return;
     }

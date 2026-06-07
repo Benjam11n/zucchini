@@ -27,9 +27,13 @@ import type { InsightsHabitLeaderboardItem } from "@/shared/domain/insights";
 
 interface HabitLeaderboardProps {
   habits: InsightsHabitLeaderboardItem[];
+  periodLabel: string;
 }
 
-export function HabitLeaderboard({ habits }: HabitLeaderboardProps) {
+export function HabitLeaderboard({
+  habits,
+  periodLabel,
+}: HabitLeaderboardProps) {
   return (
     <Card>
       <CardHeader>
@@ -38,7 +42,9 @@ export function HabitLeaderboard({ habits }: HabitLeaderboardProps) {
             <TrendingUp className="size-4 text-primary" />
             Habit leaderboard
           </CardTitle>
-          <CardDescription>Top habits by 30-day completion</CardDescription>
+          <CardDescription>
+            Top habits by {periodLabel.toLocaleLowerCase()} completion
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent>

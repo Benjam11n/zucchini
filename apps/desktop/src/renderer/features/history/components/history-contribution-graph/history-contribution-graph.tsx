@@ -8,6 +8,7 @@ interface HistoryContributionGraphProps {
   rangeEnd: string;
   rangeStart: string;
   selectedDateKey: string | null;
+  todayDate: string;
   onSelectDate: (dateKey: string) => void;
 }
 
@@ -18,6 +19,7 @@ export function HistoryContributionGraph({
   rangeEnd,
   rangeStart,
   selectedDateKey,
+  todayDate,
 }: HistoryContributionGraphProps) {
   const graphHistory =
     contributionHistory.length > 0 ? contributionHistory : fallbackHistory;
@@ -29,6 +31,7 @@ export function HistoryContributionGraph({
         rangeEnd={rangeEnd}
         rangeStart={rangeStart}
         selectedDateKey={selectedDateKey}
+        todayDate={todayDate}
         onSelectDate={onSelectDate}
       />
     );

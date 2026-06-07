@@ -107,6 +107,23 @@ describe("buildInsightsDashboard()", () => {
     expect(dashboard.smartInsights[0]?.body).toContain("previous 7 days");
   });
 
+  it("caps the current weekly completion bucket at the current period end", () => {
+    const dashboard = buildInsightsDashboard({
+      dailySummaries: [],
+      focusSessions: [],
+      habitStatuses: [createStatus(1, "2026-03-30", 1)],
+      nowDate: "2026-03-31",
+      rangeDays: 7,
+      streak,
+      timezone: "UTC",
+    });
+
+    expect(dashboard.weeklyCompletion.at(-1)).toMatchObject({
+      weekEnd: "2026-03-30",
+      weekStart: "2026-03-30",
+    });
+  });
+
   it("does not show the empty state when only focus data exists", () => {
     const dashboard = buildInsightsDashboard({
       dailySummaries: [],

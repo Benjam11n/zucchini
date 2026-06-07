@@ -12,6 +12,7 @@ import { HistoryMobileSummaryDialog } from "@/renderer/features/history/componen
 import { HistoryPageHeader } from "@/renderer/features/history/components/history-page-header";
 import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
 import type {
+  HistoryViewMode,
   HistoryPageActions,
   HistoryPageViewModel,
 } from "@/renderer/features/history/history.types";
@@ -37,8 +38,6 @@ interface HistoryPageProps {
   viewModel: HistoryPageViewModel;
 }
 
-type HistoryViewMode = "review" | "timeline";
-
 export function HistoryPage({
   actions,
   viewModel: pageViewModel,
@@ -48,6 +47,8 @@ export function HistoryPage({
     history,
     historyYears,
     historyLoadError,
+    historyMode: controlledHistoryMode,
+    onHistoryModeChange,
     todayDate,
     selectedHistoryYear,
     selectedWeeklyReview,
@@ -58,7 +59,9 @@ export function HistoryPage({
   } = pageViewModel;
   const { loadYears, selectMonth } = actions.history;
   const { loadOverview, select: selectWeeklyReview } = actions.weeklyReview;
-  const [historyMode, setHistoryMode] = useState<HistoryViewMode>("timeline");
+  const [localHistoryMode, setLocalHistoryMode] =
+    useState<HistoryViewMode>("timeline");
+  const historyMode = controlledHistoryMode ?? localHistoryMode;
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   const localViewModel = useHistoryViewState({
     history,
@@ -70,8 +73,6 @@ export function HistoryPage({
     availableYears,
     filteredHistory,
     monthStats,
-    nextDateKey,
-    previousDateKey,
     selectDateKey,
     selectedDay: selectedSummaryDay,
     setViewState,
@@ -111,6 +112,8 @@ export function HistoryPage({
     [viewState.selectedYear]
   );
   const visibleMonthLabel = formatDate(visibleMonth, "monthYear");
+  const activeReview =
+    selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
   const canShowPreviousMonth =
     visibleMonth.getMonth() > 0 ||
     availableYears.includes(visibleMonth.getFullYear() - 1);
@@ -178,13 +181,50 @@ export function HistoryPage({
     isMobileSummaryOpen &&
     selectedSummaryDay !== null;
 
+  useEffect(() => {
+    if (historyMode !== "review" || !activeReview) {
+      return;
+    }
+
+    const reviewMonth = parseDateKey(activeReview.weekStart);
+    const reviewMonthRange = getMonthRange(reviewMonth);
+    const alreadyShowingReviewMonth =
+      visibleMonthRange.startDate === reviewMonthRange.startDate;
+
+    if (alreadyShowingReviewMonth) {
+      return;
+    }
+
+    setViewState((current) => ({
+      ...current,
+      selectedDateKey:
+        history.find(
+          (day) =>
+            day.date >= reviewMonthRange.startDate &&
+            day.date <= reviewMonthRange.endDate
+        )?.date ?? null,
+      selectedYear: reviewMonth.getFullYear(),
+      visibleMonth: reviewMonth,
+    }));
+
+    selectMonth(reviewMonth.getFullYear(), reviewMonth.getMonth() + 1);
+  }, [
+    activeReview,
+    history,
+    historyMode,
+    selectMonth,
+    setViewState,
+    visibleMonthRange.startDate,
+  ]);
+
   return (
     <LazyMotion features={domAnimation}>
       <Tabs
         className="w-full"
         onValueChange={(value) => {
           const nextMode = value as HistoryViewMode;
-          setHistoryMode(nextMode);
+          setLocalHistoryMode(nextMode);
+          onHistoryModeChange?.(nextMode);
 
           if (nextMode !== "timeline") {
             setIsMobileSummaryOpen(false);
@@ -226,6 +266,7 @@ export function HistoryPage({
                 rangeEnd={yearRange.endDate}
                 rangeStart={yearRange.startDate}
                 selectedDateKey={viewState.selectedDateKey}
+                todayDate={todayDate}
                 onSelectDate={selectHistoryDate}
               />
             ) : null}
@@ -256,14 +297,12 @@ export function HistoryPage({
       </Tabs>
       <HistoryMobileSummaryDialog
         monthStats={monthStats}
-        nextDateKey={nextDateKey}
+        monthLabel={visibleMonthLabel}
         open={isMobileSummaryDialogOpen}
-        previousDateKey={previousDateKey}
         selectedDay={selectedSummaryDay}
         todayDate={todayDate}
         trendPoints={trendPoints}
         onOpenChange={setIsMobileSummaryOpen}
-        onSelectDate={selectHistoryDate}
       />
     </LazyMotion>
   );

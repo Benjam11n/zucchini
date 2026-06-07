@@ -383,10 +383,10 @@ describe("app store actions", () => {
 
     await actions.loadHistorySummary();
 
-    expect(getHistorySummaryMock).toHaveBeenCalledWith(14);
+    expect(getHistorySummaryMock).toHaveBeenCalledWith(32);
     expect(
       stores.useHistoryStore.getState().historySummary.map((day) => day.date)
-    ).toStrictEqual(["2026-03-10"]);
+    ).toStrictEqual(["2026-03-10", "2026-03-09"]);
   });
 
   it("loads month summary for first paint and year summary in the background", async () => {

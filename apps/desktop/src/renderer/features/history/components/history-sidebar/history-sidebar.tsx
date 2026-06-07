@@ -1,10 +1,4 @@
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Target,
-  Timer,
-} from "lucide-react";
+import { CalendarDays, Target, Timer } from "lucide-react";
 
 import {
   formatFocusMinutes,
@@ -15,7 +9,6 @@ import type {
   HistoryTrendPoint,
 } from "@/renderer/features/history/lib/history-timeline";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
-import { Button } from "@/renderer/shared/components/ui/button";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { formatDateKey } from "@/shared/domain/date-key";
@@ -26,19 +19,15 @@ import { TrendLine } from "../trend-line";
 
 interface HistorySidebarProps {
   monthStats: HistoryMonthStats;
-  nextDateKey: string | null;
-  previousDateKey: string | null;
+  monthLabel: string;
   selectedDay: HistorySummaryDay | null;
   todayDate: string;
   trendPoints: HistoryTrendPoint[];
-  onSelectDate: (dateKey: string) => void;
 }
 
 export function HistorySidebar({
   monthStats,
-  nextDateKey,
-  onSelectDate,
-  previousDateKey,
+  monthLabel,
   selectedDay,
   todayDate,
   trendPoints,
@@ -56,35 +45,9 @@ export function HistorySidebar({
   return (
     <div className="grid min-w-0 gap-6">
       <section className="grid gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold tracking-tight text-foreground">
-            {selectedDay
-              ? formatDateKey(selectedDay.date, "monthYear")
-              : "History"}
-          </h2>
-          <div className="flex items-center gap-1">
-            <Button
-              aria-label="Previous history day"
-              disabled={!previousDateKey}
-              onClick={() => previousDateKey && onSelectDate(previousDateKey)}
-              size="icon-xs"
-              type="button"
-              variant="ghost"
-            >
-              <ChevronLeft className="size-3.5" />
-            </Button>
-            <Button
-              aria-label="Next history day"
-              disabled={!nextDateKey}
-              onClick={() => nextDateKey && onSelectDate(nextDateKey)}
-              size="icon-xs"
-              type="button"
-              variant="ghost"
-            >
-              <ChevronRight className="size-3.5" />
-            </Button>
-          </div>
-        </div>
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          {monthLabel}
+        </h2>
 
         <div className="flex justify-center py-1">
           <div className="relative grid size-32 place-items-center">
