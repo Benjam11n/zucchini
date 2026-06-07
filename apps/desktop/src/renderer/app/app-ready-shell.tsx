@@ -7,45 +7,80 @@ import { HistorySidebar } from "@/renderer/features/history/components/history-s
 import type { HistoryViewMode } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
+import {
+  getHistoryMonthDays,
+  getHistoryMonthStats,
+  getHistoryTrendPoints,
+} from "@/renderer/features/history/lib/history-timeline";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
 import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
-import { formatDate } from "@/shared/domain/date-key";
+import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
+import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
+import {
+  formatDate,
+  getMonthRange,
+  parseDateKey,
+} from "@/shared/domain/date-key";
 
 function getRightSidebar({
   actions,
   historyMode,
+  historyViewHistory,
   historyViewModel,
   state,
   tab,
 }: ReadyAppController & {
   historyMode: HistoryViewMode;
+  historyViewHistory: HistoryDailyCountDay[];
   historyViewModel: HistoryViewModel;
 }) {
   if (tab === "history") {
     const activeReview =
       state.selectedWeeklyReview ?? state.weeklyReviewOverview?.latestReview;
-    const monthLabel =
+    const reviewMonth =
       historyMode === "review" && activeReview
-        ? formatDate(
-            new Date(`${activeReview.weekStart}T00:00:00`),
-            "monthYear"
-          )
-        : formatDate(
-            historyViewModel.viewState.visibleMonth ??
-              new Date(
-                `${historyViewModel.viewState.selectedYear}-01-01T00:00:00`
-              ),
-            "monthYear"
-          );
+        ? parseDateKey(activeReview.weekStart)
+        : null;
+    const reviewMonthRange = reviewMonth ? getMonthRange(reviewMonth) : null;
+    const reviewMonthHistory = reviewMonthRange
+      ? historyViewHistory.filter(
+          (day) =>
+            day.date >= reviewMonthRange.startDate &&
+            day.date <= reviewMonthRange.endDate
+        )
+      : [];
+    const reviewSelectedDay =
+      activeReview && reviewMonthHistory.length > 0
+        ? (getHistoryDayLookup(reviewMonthHistory).get(
+            activeReview.weekStart
+          ) ??
+          reviewMonthHistory[0] ??
+          null)
+        : null;
+    const sidebarMonthStats = reviewMonth
+      ? getHistoryMonthStats(getHistoryMonthDays(reviewMonthHistory, null))
+      : historyViewModel.monthStats;
+    const sidebarTrendPoints = reviewMonth
+      ? getHistoryTrendPoints(reviewMonthHistory)
+      : historyViewModel.trendPoints;
+    const sidebarSelectedDay = reviewMonth
+      ? reviewSelectedDay
+      : historyViewModel.selectedDay;
+    const monthLabel = formatDate(
+      reviewMonth ??
+        historyViewModel.viewState.visibleMonth ??
+        new Date(`${historyViewModel.viewState.selectedYear}-01-01T00:00:00`),
+      "monthYear"
+    );
 
     return (
       <HistorySidebar
-        monthStats={historyViewModel.monthStats}
+        monthStats={sidebarMonthStats}
         monthLabel={monthLabel}
-        selectedDay={historyViewModel.selectedDay}
+        selectedDay={sidebarSelectedDay}
         todayDate={state.todayState.date}
-        trendPoints={historyViewModel.trendPoints}
+        trendPoints={sidebarTrendPoints}
       />
     );
   }
@@ -81,6 +116,7 @@ export function AppReadyShell({
   const rightSidebar = getRightSidebar({
     ...controller,
     historyMode,
+    historyViewHistory,
     historyViewModel,
   });
   const weeklyReviewBanner =

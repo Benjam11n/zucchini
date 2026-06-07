@@ -112,8 +112,6 @@ export function HistoryPage({
     [viewState.selectedYear]
   );
   const visibleMonthLabel = formatDate(visibleMonth, "monthYear");
-  const activeReview =
-    selectedWeeklyReview ?? weeklyReviewOverview?.latestReview ?? null;
   const canShowPreviousMonth =
     visibleMonth.getMonth() > 0 ||
     availableYears.includes(visibleMonth.getFullYear() - 1);
@@ -180,42 +178,6 @@ export function HistoryPage({
     historyMode === "timeline" &&
     isMobileSummaryOpen &&
     selectedSummaryDay !== null;
-
-  useEffect(() => {
-    if (historyMode !== "review" || !activeReview) {
-      return;
-    }
-
-    const reviewMonth = parseDateKey(activeReview.weekStart);
-    const reviewMonthRange = getMonthRange(reviewMonth);
-    const alreadyShowingReviewMonth =
-      visibleMonthRange.startDate === reviewMonthRange.startDate;
-
-    if (alreadyShowingReviewMonth) {
-      return;
-    }
-
-    setViewState((current) => ({
-      ...current,
-      selectedDateKey:
-        history.find(
-          (day) =>
-            day.date >= reviewMonthRange.startDate &&
-            day.date <= reviewMonthRange.endDate
-        )?.date ?? null,
-      selectedYear: reviewMonth.getFullYear(),
-      visibleMonth: reviewMonth,
-    }));
-
-    selectMonth(reviewMonth.getFullYear(), reviewMonth.getMonth() + 1);
-  }, [
-    activeReview,
-    history,
-    historyMode,
-    selectMonth,
-    setViewState,
-    visibleMonthRange.startDate,
-  ]);
 
   return (
     <LazyMotion features={domAnimation}>
