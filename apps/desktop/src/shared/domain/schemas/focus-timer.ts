@@ -6,16 +6,14 @@ const focusTimerPhaseSchema = z.enum(["focus", "break"]);
 const focusTimerStatusSchema = z.enum(["idle", "running", "paused"]);
 const focusBreakVariantSchema = z.enum(["short", "long"]);
 
-const persistedCompletedBreakStateSchema = z
-  .object({
-    completedAt: isoTimestampSchema,
-    timerSessionId: z.string().trim().min(1).max(120),
-    variant: focusBreakVariantSchema,
-  })
-  .strict();
+const persistedCompletedBreakStateSchema = z.strictObject({
+  completedAt: isoTimestampSchema,
+  timerSessionId: z.string().trim().min(1).max(120),
+  variant: focusBreakVariantSchema,
+});
 
 export const persistedFocusTimerStateSchema = z
-  .object({
+  .strictObject({
     breakVariant: focusBreakVariantSchema.nullable(),
     completedFocusCycles: z.number().int().min(0),
     cycleId: z.string().trim().min(1).max(120).nullable(),
@@ -29,7 +27,6 @@ export const persistedFocusTimerStateSchema = z
     status: focusTimerStatusSchema,
     timerSessionId: z.string().trim().min(1).max(120).nullable(),
   })
-  .strict()
   .superRefine((state, context) => {
     if (state.phase === "break" && state.breakVariant === null) {
       context.addIssue({

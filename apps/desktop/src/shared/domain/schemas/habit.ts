@@ -20,27 +20,23 @@ export const habitCategorySchema = z.enum([
   "fitness",
 ]);
 
-const habitCategoryMetadataSchema = z
-  .object({
-    color: z.string().refine(isValidHabitCategoryColor, {
-      message: "Category colors must use #RRGGBB format.",
-    }),
-    icon: z.string().refine(isValidHabitCategoryIcon, {
-      message: "Category icons must use a supported icon id.",
-    }),
-    label: z.string().refine(isValidHabitCategoryLabel, {
-      message: "Category labels must be between 1 and 24 characters.",
-    }),
-  })
-  .strict();
+const habitCategoryMetadataSchema = z.strictObject({
+  color: z.string().refine(isValidHabitCategoryColor, {
+    message: "Category colors must use #RRGGBB format.",
+  }),
+  icon: z.string().refine(isValidHabitCategoryIcon, {
+    message: "Category icons must use a supported icon id.",
+  }),
+  label: z.string().refine(isValidHabitCategoryLabel, {
+    message: "Category labels must be between 1 and 24 characters.",
+  }),
+});
 
-export const habitCategoryPreferencesSchema = z
-  .object({
-    fitness: habitCategoryMetadataSchema,
-    nutrition: habitCategoryMetadataSchema,
-    productivity: habitCategoryMetadataSchema,
-  })
-  .strict();
+export const habitCategoryPreferencesSchema = z.strictObject({
+  fitness: habitCategoryMetadataSchema,
+  nutrition: habitCategoryMetadataSchema,
+  productivity: habitCategoryMetadataSchema,
+});
 
 export const habitFrequencySchema = z.enum(["daily", "weekly", "monthly"]);
 

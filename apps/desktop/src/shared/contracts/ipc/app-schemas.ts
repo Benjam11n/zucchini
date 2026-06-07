@@ -47,48 +47,37 @@ export const notificationIconFilenameSchema = z
   })
   .optional();
 
-export const focusQuotaGoalIdPayloadSchema = z
-  .object({
-    goalId: habitIdSchema,
-  })
-  .strict();
+export const focusQuotaGoalIdPayloadSchema = z.strictObject({
+  goalId: habitIdSchema,
+});
 
-export const habitIdPayloadSchema = z
-  .object({
-    habitId: habitIdSchema,
-  })
-  .strict();
+export const habitIdPayloadSchema = z.strictObject({
+  habitId: habitIdSchema,
+});
 
-export const windDownActionIdPayloadSchema = z
-  .object({
-    actionId: habitIdSchema,
-  })
-  .strict();
+export const windDownActionIdPayloadSchema = z.strictObject({
+  actionId: habitIdSchema,
+});
 
-export const createHabitPayloadSchema = z
-  .object({
-    category: habitCategorySchema,
-    frequency: habitFrequencySchema,
-    name: habitNameSchema,
-    selectedWeekdays: habitWeekdaysSchema.nullable().optional(),
-    targetCount: habitTargetCountSchema.nullable().optional(),
-  })
-  .strict();
+export const createHabitPayloadSchema = z.strictObject({
+  category: habitCategorySchema,
+  frequency: habitFrequencySchema,
+  name: habitNameSchema,
+  selectedWeekdays: habitWeekdaysSchema.nullable().optional(),
+  targetCount: habitTargetCountSchema.nullable().optional(),
+});
 
-export const updateHabitFrequencyPayloadSchema = z
-  .object({
-    frequency: habitFrequencySchema,
-    habitId: habitIdSchema,
-    targetCount: habitTargetCountSchema.nullable().optional(),
-  })
-  .strict();
+export const updateHabitFrequencyPayloadSchema = z.strictObject({
+  frequency: habitFrequencySchema,
+  habitId: habitIdSchema,
+  targetCount: habitTargetCountSchema.nullable().optional(),
+});
 
 export const focusQuotaGoalUpsertPayloadSchema = z
-  .object({
+  .strictObject({
     frequency: goalFrequencySchema,
     targetMinutes: focusQuotaTargetMinutesSchema,
   })
-  .strict()
   .superRefine((payload, context) => {
     if (
       isValidFocusQuotaTargetMinutes(payload.frequency, payload.targetMinutes)
@@ -104,80 +93,81 @@ export const focusQuotaGoalUpsertPayloadSchema = z
     });
   });
 
-export const renameHabitPayloadSchema = z
-  .object({ habitId: habitIdSchema, name: habitNameSchema })
-  .strict();
+export const renameHabitPayloadSchema = z.strictObject({
+  habitId: habitIdSchema,
+  name: habitNameSchema,
+});
 
-export const reorderHabitPayloadSchema = z
-  .object({ habitIds: reorderHabitIdsSchema })
-  .strict();
+export const reorderHabitPayloadSchema = z.strictObject({
+  habitIds: reorderHabitIdsSchema,
+});
 
-export const updateHabitCategoryPayloadSchema = z
-  .object({ category: habitCategorySchema, habitId: habitIdSchema })
-  .strict();
+export const updateHabitCategoryPayloadSchema = z.strictObject({
+  category: habitCategorySchema,
+  habitId: habitIdSchema,
+});
 
-export const updateHabitTargetCountPayloadSchema = z
-  .object({ habitId: habitIdSchema, targetCount: habitTargetCountSchema })
-  .strict();
+export const updateHabitTargetCountPayloadSchema = z.strictObject({
+  habitId: habitIdSchema,
+  targetCount: habitTargetCountSchema,
+});
 
-export const updateHabitWeekdaysPayloadSchema = z
-  .object({
-    habitId: habitIdSchema,
-    selectedWeekdays: habitWeekdaysSchema.nullable(),
-  })
-  .strict();
+export const updateHabitWeekdaysPayloadSchema = z.strictObject({
+  habitId: habitIdSchema,
+  selectedWeekdays: habitWeekdaysSchema.nullable(),
+});
 
-export const setDayStatusPayloadSchema = z
-  .object({ kind: z.enum(["rescheduled", "rest", "sick"]).nullable() })
-  .strict();
+export const setDayStatusPayloadSchema = z.strictObject({
+  kind: z.enum(["rescheduled", "rest", "sick"]).nullable(),
+});
 
-export const toggleCarryoverPayloadSchema = z
-  .object({ habitId: habitIdSchema, sourceDate: dateKeySchema })
-  .strict();
+export const toggleCarryoverPayloadSchema = z.strictObject({
+  habitId: habitIdSchema,
+  sourceDate: dateKeySchema,
+});
 
-export const createWindDownActionPayloadSchema = z
-  .object({ name: habitNameSchema })
-  .strict();
+export const createWindDownActionPayloadSchema = z.strictObject({
+  name: habitNameSchema,
+});
 
-export const renameWindDownActionPayloadSchema = z
-  .object({ actionId: habitIdSchema, name: habitNameSchema })
-  .strict();
+export const renameWindDownActionPayloadSchema = z.strictObject({
+  actionId: habitIdSchema,
+  name: habitNameSchema,
+});
 
 export const focusSessionListPayloadSchema = z
-  .object({
+  .strictObject({
     limit: focusSessionLimitSchema,
   })
-  .strict()
   .optional();
 
 export const optionalLimitPayloadSchema = z
-  .object({
+  .strictObject({
     limit: historyLimitSchema,
   })
-  .strict()
   .optional();
 const insightsRangeDaysSchema = z.union(
   INSIGHTS_RANGE_OPTIONS.map((rangeDays) => z.literal(rangeDays))
 );
 export const optionalInsightsPayloadSchema = z
-  .object({
+  .strictObject({
     rangeDays: insightsRangeDaysSchema.optional(),
   })
-  .strict()
   .optional();
 
-export const historyYearPayloadSchema = z
-  .object({ year: historyYearSchema })
-  .strict();
+export const historyYearPayloadSchema = z.strictObject({
+  year: historyYearSchema,
+});
 
-export const historySummaryMonthPayloadSchema = z
-  .object({ month: historyMonthSchema, year: historyYearSchema })
-  .strict();
+export const historySummaryMonthPayloadSchema = z.strictObject({
+  month: historyMonthSchema,
+  year: historyYearSchema,
+});
 
-export const historyDayPayloadSchema = z
-  .object({ date: dateKeySchema })
-  .strict();
+export const historyDayPayloadSchema = z.strictObject({
+  date: dateKeySchema,
+});
 
-export const weeklyReviewPayloadSchema = z
-  .object({ weekStart: dateKeySchema })
-  .strict();
+export const weeklyReviewPayloadSchema = z.strictObject({
+  weekStart: dateKeySchema,
+});

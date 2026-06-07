@@ -6,7 +6,7 @@ export const dateKeySchema = z.string().refine(isValidDateKey, {
   message: "Date keys must be real calendar dates in YYYY-MM-DD format.",
 });
 
-export const isoTimestampSchema = z.string().datetime({
+export const isoTimestampSchema = z.iso.datetime({
   message: "Timestamps must use ISO 8601 format.",
   offset: true,
 });

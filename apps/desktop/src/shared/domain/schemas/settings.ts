@@ -26,7 +26,7 @@ const globalShortcutSchema = z
   });
 
 export const appSettingsSchema = z
-  .object({
+  .strictObject({
     autoBackupCadence: autoBackupCadenceSchema,
     autoBackupLastRunAt: isoTimestampSchema.nullable(),
     categoryPreferences: habitCategoryPreferencesSchema,
@@ -77,7 +77,6 @@ export const appSettingsSchema = z
       message: "Wind down time must use HH:MM 24-hour format.",
     }),
   })
-  .strict()
   .superRefine((settings, context) => {
     if (settings.focusLongBreakSeconds < settings.focusShortBreakSeconds) {
       context.addIssue({
