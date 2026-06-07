@@ -8,6 +8,7 @@ import {
   getPomodoroFocusDurationMs,
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
+import { msUntil, toIsoTimestamp } from "@/shared/domain/date-time";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
@@ -71,17 +72,14 @@ export function resolveFocusTimerTick(
     return { kind: "unchanged" };
   }
 
-  const remainingMs = Math.max(
-    Date.parse(currentState.endsAt) - now.getTime(),
-    0
-  );
+  const remainingMs = msUntil(currentState.endsAt, now);
 
   if (remainingMs > 0) {
     return {
       kind: "updated",
       nextState: {
         ...currentState,
-        lastUpdatedAt: now.toISOString(),
+        lastUpdatedAt: toIsoTimestamp(now),
         remainingMs,
       },
     };
@@ -139,7 +137,7 @@ export function resolveFocusTimerTick(
           nextCompletedFocusCycles,
           currentState.timerSessionId
             ? {
-                completedAt: now.toISOString(),
+                completedAt: toIsoTimestamp(now),
                 timerSessionId: currentState.timerSessionId,
                 variant: "long",
               }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { isValidTimeZone } from "@/shared/domain/date-key";
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/domain/keyboard-shortcuts";
 import { isoTimestampSchema } from "@/shared/domain/schemas/date";
 import { habitCategoryPreferencesSchema } from "@/shared/domain/schemas/habit";
@@ -10,7 +11,6 @@ import {
   isValidGlobalShortcutAccelerator,
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
-  isValidTimeZone,
   normalizeGlobalShortcutAccelerator,
 } from "@/shared/domain/settings";
 

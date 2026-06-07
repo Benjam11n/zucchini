@@ -11,7 +11,7 @@ import type {
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 import { SidebarMetric } from "../sidebar-metric";

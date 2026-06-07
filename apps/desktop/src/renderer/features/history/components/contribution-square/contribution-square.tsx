@@ -12,7 +12,7 @@ import type {
   ContributionIntensity,
   HistoryStatus,
 } from "@/renderer/shared/types/contribution";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 
 interface ContributionCalendarCell {
   completedCount: number;

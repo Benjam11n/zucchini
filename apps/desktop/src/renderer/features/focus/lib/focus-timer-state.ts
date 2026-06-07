@@ -4,6 +4,7 @@ import type {
   PersistedFocusTimerState,
 } from "@/renderer/features/focus/focus.types";
 import { toDateKey } from "@/shared/domain/date-key";
+import { addMsIso, msUntil, toIsoTimestamp } from "@/shared/domain/date-time";
 import type { CreateFocusSessionInput } from "@/shared/domain/focus-session";
 import type { PomodoroTimerSettings } from "@/shared/domain/settings";
 
@@ -32,6 +33,7 @@ export function createIdleFocusTimerState(
   lastCompletedBreak: PersistedCompletedBreakState | null = null
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
+  const nowIso = toIsoTimestamp(now);
 
   return {
     breakVariant: null,
@@ -40,7 +42,7 @@ export function createIdleFocusTimerState(
     endsAt: null,
     focusDurationMs: resolvedFocusDurationMs,
     lastCompletedBreak,
-    lastUpdatedAt: now.toISOString(),
+    lastUpdatedAt: nowIso,
     phase: "focus",
     remainingMs: resolvedFocusDurationMs,
     startedAt: null,
@@ -56,18 +58,19 @@ export function createRunningFocusTimerState(
   timerSessionId: string | null = null
 ): PersistedFocusTimerState {
   const resolvedFocusDurationMs = clampFocusDurationMs(focusDurationMs);
+  const nowIso = toIsoTimestamp(now);
 
   return {
     breakVariant: null,
     completedFocusCycles: Math.max(0, completedFocusCycles),
     cycleId: createCycleId(),
-    endsAt: new Date(now.getTime() + resolvedFocusDurationMs).toISOString(),
+    endsAt: addMsIso(now, resolvedFocusDurationMs),
     focusDurationMs: resolvedFocusDurationMs,
     lastCompletedBreak: null,
-    lastUpdatedAt: now.toISOString(),
+    lastUpdatedAt: nowIso,
     phase: "focus",
     remainingMs: resolvedFocusDurationMs,
-    startedAt: now.toISOString(),
+    startedAt: nowIso,
     status: "running",
     timerSessionId: resolveTimerSessionId(timerSessionId),
   };
@@ -89,15 +92,16 @@ export function createRunningBreakTimerState({
   timerSessionId: string | null;
 }): PersistedFocusTimerState {
   const resolvedBreakDurationMs = Math.max(1000, breakDurationMs);
+  const nowIso = toIsoTimestamp(now);
 
   return {
     breakVariant,
     completedFocusCycles: Math.max(0, completedFocusCycles),
     cycleId: null,
-    endsAt: new Date(now.getTime() + resolvedBreakDurationMs).toISOString(),
+    endsAt: addMsIso(now, resolvedBreakDurationMs),
     focusDurationMs: clampFocusDurationMs(focusDurationMs),
     lastCompletedBreak: null,
-    lastUpdatedAt: now.toISOString(),
+    lastUpdatedAt: nowIso,
     phase: "break",
     remainingMs: resolvedBreakDurationMs,
     startedAt: null,
@@ -130,8 +134,8 @@ export function pauseFocusTimerState(
   return {
     ...timerState,
     endsAt: null,
-    lastUpdatedAt: now.toISOString(),
-    remainingMs: Math.max(Date.parse(timerState.endsAt) - now.getTime(), 0),
+    lastUpdatedAt: toIsoTimestamp(now),
+    remainingMs: msUntil(timerState.endsAt, now),
     status: "paused",
   };
 }
@@ -146,8 +150,8 @@ export function resumeFocusTimerState(
 
   return {
     ...timerState,
-    endsAt: new Date(now.getTime() + timerState.remainingMs).toISOString(),
-    lastUpdatedAt: now.toISOString(),
+    endsAt: addMsIso(now, timerState.remainingMs),
+    lastUpdatedAt: toIsoTimestamp(now),
     status: "running",
   };
 }
@@ -183,7 +187,7 @@ function getRemainingFocusTimerMs(
   now = new Date()
 ): number {
   if (timerState.status === "running" && timerState.endsAt) {
-    return Math.max(Date.parse(timerState.endsAt) - now.getTime(), 0);
+    return msUntil(timerState.endsAt, now);
   }
 
   return Math.max(timerState.remainingMs, 0);
@@ -211,7 +215,7 @@ export function createPartialFocusSessionInput(
   }
 
   return {
-    completedAt: now.toISOString(),
+    completedAt: toIsoTimestamp(now),
     completedDate: toDateKey(now),
     durationSeconds: elapsedSeconds,
     entryKind: "partial",

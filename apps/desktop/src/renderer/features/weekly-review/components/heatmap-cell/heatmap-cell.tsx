@@ -4,7 +4,7 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type {
   WeeklyReviewHabitHeatmapCell,
   WeeklyReviewHabitHeatmapCellStatus,

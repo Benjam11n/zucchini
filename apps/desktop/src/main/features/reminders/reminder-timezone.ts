@@ -1,4 +1,4 @@
-import { formatDateParts } from "@/shared/domain/date-key";
+import { formatDateParts } from "@/shared/domain/date-format";
 
 interface ZonedDateParts {
   day: number;

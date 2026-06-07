@@ -1,7 +1,7 @@
 import { Clock3, PauseCircle } from "lucide-react";
 
 import { formatFocusMinutes } from "@/renderer/features/focus/lib/focus-session-format";
-import { formatIsoTime } from "@/shared/domain/date-key";
+import { formatIsoTime } from "@/shared/domain/date-format";
 import type { FocusSessionEntryKind } from "@/shared/domain/focus-session";
 
 function formatEntryRange(startedAt: string, completedAt: string): string {

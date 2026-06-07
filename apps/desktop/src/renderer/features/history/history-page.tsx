@@ -24,8 +24,8 @@ import {
   staggerContainerVariants,
   staggerItemVariants,
 } from "@/renderer/shared/lib/motion";
+import { formatDate } from "@/shared/domain/date-format";
 import {
-  formatDate,
   getDateKeyMonth,
   getMonthOffset,
   getMonthRange,

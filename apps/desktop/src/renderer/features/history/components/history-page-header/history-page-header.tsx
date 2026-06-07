@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/renderer/shared/components/ui/dropdown-menu";
 import { TabsList, TabsTrigger } from "@/renderer/shared/components/ui/tabs";
-import { formatDate } from "@/shared/domain/date-key";
+import { formatDate } from "@/shared/domain/date-format";
 
 interface HistoryPageHeaderProps {
   availableYears: number[];

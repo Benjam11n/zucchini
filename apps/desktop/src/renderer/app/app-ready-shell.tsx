@@ -17,11 +17,8 @@ import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/c
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
 import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
 import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
-import {
-  formatDate,
-  getMonthRange,
-  parseDateKey,
-} from "@/shared/domain/date-key";
+import { formatDate } from "@/shared/domain/date-format";
+import { getMonthRange, parseDateKey } from "@/shared/domain/date-key";
 
 function getRightSidebar({
   actions,

@@ -1,5 +1,5 @@
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
-import { formatIsoDateTime, formatIsoTime } from "@/shared/domain/date-key";
+import { formatIsoDateTime, formatIsoTime } from "@/shared/domain/date-format";
 
 export function formatSessionRangeLabel(
   startedAt: string,

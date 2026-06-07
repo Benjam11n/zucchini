@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";

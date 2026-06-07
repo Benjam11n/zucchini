@@ -6,7 +6,7 @@ import {
 import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface TimelineDayRowProps {

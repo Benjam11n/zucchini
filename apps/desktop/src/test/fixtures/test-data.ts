@@ -6,6 +6,7 @@ import { schema } from "@/main/infra/db/schema";
 import { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
 import {
   addDays,
+  addMonths,
   parseDateKey,
   startOfMonth,
   startOfWeek,
@@ -53,12 +54,6 @@ export interface GeneratedDatasetStats {
   trackedDayCount: number;
   windDownActionCount: number;
   windDownActionStatusCount: number;
-}
-
-function addFixtureMonths(dateKey: string, months: number): string {
-  const next = parseDateKey(dateKey);
-  next.setMonth(next.getMonth() + months, 1);
-  return toDateKey(next);
 }
 
 interface PresetConfig {
@@ -624,7 +619,7 @@ function createPeriodicStatusRows(
       habit.frequency === "weekly"
         ? startOfWeek(habit.createdDate)
         : startOfMonth(habit.createdDate);
-    const addPeriod = habit.frequency === "weekly" ? addDays : addFixtureMonths;
+    const addPeriod = habit.frequency === "weekly" ? addDays : addMonths;
     const increment = habit.frequency === "weekly" ? 7 : 1;
 
     for (

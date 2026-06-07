@@ -3,7 +3,7 @@ import {
   getFocusMinutesLabel,
 } from "@/renderer/features/focus/lib/focus-session-format";
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
-import { formatIsoTime } from "@/shared/domain/date-key";
+import { formatIsoTime } from "@/shared/domain/date-format";
 
 type TimelineSegment = FocusHistorySessionView["timelineSegments"][number];
 

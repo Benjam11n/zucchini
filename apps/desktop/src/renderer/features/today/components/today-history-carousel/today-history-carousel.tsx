@@ -10,7 +10,7 @@ import { CarouselOverflowFade } from "@/renderer/shared/components/ui/carousel-o
 import { cn } from "@/renderer/shared/lib/class-names";
 import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
 import { tapPress } from "@/renderer/shared/lib/motion";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface TodayHistoryCarouselProps {

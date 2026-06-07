@@ -9,7 +9,7 @@ import {
   getActivityBadgeLabel,
   getActivityStatus,
 } from "@/renderer/shared/lib/history-summary";
-import { formatDateKey } from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistoryDay } from "@/shared/domain/history";
 
 import { HabitChecklist } from "../habit-checklist";

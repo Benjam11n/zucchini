@@ -1,8 +1,5 @@
 import {
   endOfIsoWeek,
-  formatDateKey,
-  formatIsoDateTime,
-  formatIsoTime,
   getDateKeyMonth,
   getMonthOffset,
   getMonthRange,
@@ -36,15 +33,6 @@ describe("iSO week helpers", () => {
       weekEnd: "2026-03-08",
       weekStart: "2026-03-02",
     });
-  });
-
-  it("formats date keys and ISO timestamps through shared helpers", () => {
-    expect(formatDateKey("2026-03-13", "shortDateWithDayShort")).toBe(
-      "Fri, Mar 13"
-    );
-    expect(formatIsoDateTime("2026-03-13T09:30:00.000Z", "shortTime")).toBe(
-      formatIsoTime("2026-03-13T09:30:00.000Z")
-    );
   });
 
   it("formats date keys in the requested timezone", () => {

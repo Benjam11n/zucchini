@@ -1,5 +1,5 @@
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
-import { formatIsoTime } from "@/shared/domain/date-key";
+import { formatIsoTime } from "@/shared/domain/date-format";
 
 interface FocusRunSummaryProps {
   breakCount: number;

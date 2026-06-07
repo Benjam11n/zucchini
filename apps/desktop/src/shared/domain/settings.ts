@@ -1,5 +1,4 @@
 import { APP_CONFIG } from "@/shared/config/app-config";
-import { isValidTimeZone as isValidDateTimeZone } from "@/shared/domain/date-key";
 import type { HabitCategory } from "@/shared/domain/habit";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
@@ -367,8 +366,4 @@ export function isValidFocusCyclesBeforeLongBreak(value: number): boolean {
     value >= APP_CONFIG.focus.cyclesRange.min &&
     value <= APP_CONFIG.focus.cyclesRange.max
   );
-}
-
-export function isValidTimeZone(value: string): boolean {
-  return isValidDateTimeZone(value);
 }

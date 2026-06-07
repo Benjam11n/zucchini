@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { msUntil } from "@/shared/domain/date-time";
 import { arePersistedFocusTimerStatesEqual } from "@/shared/domain/focus-timer";
 
 function resolveRestoredTimerState(
@@ -13,7 +14,7 @@ function resolveRestoredTimerState(
 
   return {
     ...timerState,
-    remainingMs: Math.max(Date.parse(timerState.endsAt) - Date.now(), 0),
+    remainingMs: msUntil(timerState.endsAt, Date.now()),
   };
 }
 

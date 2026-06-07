@@ -1,4 +1,5 @@
 import type { SettingsFieldErrors } from "@/renderer/features/settings/settings.types";
+import { isValidTimeZone } from "@/shared/domain/date-key";
 import type { HabitCategory } from "@/shared/domain/habit";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import { FOCUS_TIMER_SHORTCUT_REFERENCE } from "@/shared/domain/keyboard-shortcuts";
@@ -15,7 +16,6 @@ import {
   isValidHabitCategoryLabel,
   isValidReminderSnoozeMinutes,
   isValidReminderTime,
-  isValidTimeZone,
   normalizeGlobalShortcutAccelerator,
 } from "@/shared/domain/settings";
 

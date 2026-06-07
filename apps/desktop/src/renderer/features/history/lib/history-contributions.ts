@@ -6,12 +6,8 @@ import type {
 import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
-import {
-  addDays,
-  endOfWeek,
-  formatDateKey,
-  startOfWeek,
-} from "@/shared/domain/date-key";
+import { formatDateKey } from "@/shared/domain/date-format";
+import { addDays, endOfWeek, startOfWeek } from "@/shared/domain/date-key";
 import type { DailySummary } from "@/shared/domain/streak";
 
 const DAY_IN_WEEK = 7;
