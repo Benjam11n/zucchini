@@ -1,9 +1,6 @@
 import { createContext, use } from "react";
 
-import type {
-  CarouselApi,
-  CarouselContextProps,
-} from "@/renderer/shared/components/ui/carousel-types";
+import type { CarouselContextProps } from "@/renderer/shared/components/ui/carousel-types";
 
 export const CarouselContext = createContext<CarouselContextProps | null>(null);
 
@@ -17,4 +14,4 @@ export function useCarousel(): CarouselContextProps {
   return context;
 }
 
-export type { CarouselApi, CarouselContextProps };
+export type { CarouselContextProps };

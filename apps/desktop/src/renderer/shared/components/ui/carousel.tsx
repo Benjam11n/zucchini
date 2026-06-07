@@ -1,12 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import * as React from "react";
 
-import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
 import { CarouselContext } from "@/renderer/shared/components/ui/carousel-context";
-import { CarouselDotButton } from "@/renderer/shared/components/ui/carousel-dot-button";
-import { CarouselIconButton } from "@/renderer/shared/components/ui/carousel-icon-button";
-import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";
-import { CarouselOverflowFade } from "@/renderer/shared/components/ui/carousel-overflow-fade";
 import type {
   CarouselApi,
   CarouselProps,
@@ -134,12 +129,4 @@ function Carousel({
   );
 }
 
-export {
-  type CarouselApi,
-  Carousel,
-  CarouselContent,
-  CarouselDotButton,
-  CarouselIconButton,
-  CarouselItem,
-  CarouselOverflowFade,
-};
+export { Carousel };
