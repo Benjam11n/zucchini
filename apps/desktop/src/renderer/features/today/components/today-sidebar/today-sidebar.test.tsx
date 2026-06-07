@@ -95,7 +95,7 @@ function renderSidebar({
 }
 
 describe("TodaySidebar", () => {
-  it("summarizes today's progress, streak, and recent consistency", () => {
+  it("summarizes today's progress, streak, and month-to-date consistency", () => {
     renderSidebar({
       history: [
         historyDay("2026-03-10", 1, 1),
@@ -107,8 +107,8 @@ describe("TodaySidebar", () => {
     expect(screen.getByText("1 of 2 complete")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("Best: 5 days")).toBeInTheDocument();
-    expect(screen.getByText("7%")).toBeInTheDocument();
-    expect(screen.getByText("2 of 30 days")).toBeInTheDocument();
+    expect(screen.getByText("15%")).toBeInTheDocument();
+    expect(screen.getByText("2 of 13 days")).toBeInTheDocument();
   });
 
   it("renders and clears the active day status", () => {

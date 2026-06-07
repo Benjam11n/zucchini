@@ -38,7 +38,7 @@ import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
-  getRecentConsistencySummary,
+  getMonthToDateConsistencySummary,
   getTodayCompletion,
   getWeekCompletionSeries,
 } from "../../lib/today-sidebar-metrics";
@@ -73,7 +73,7 @@ export function TodaySidebar({
   );
   const { consistency, todayCompletion, weekSeries } = useMemo(
     () => ({
-      consistency: getRecentConsistencySummary(history, todayMetricsState),
+      consistency: getMonthToDateConsistencySummary(history, todayMetricsState),
       todayCompletion: getTodayCompletion(state.habits),
       weekSeries: getWeekCompletionSeries(history, todayMetricsState),
     }),

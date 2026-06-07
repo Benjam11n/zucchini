@@ -1,6 +1,6 @@
 import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
 import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
-import { addDays, startOfWeek } from "@/shared/domain/date-key";
+import { addDays, startOfMonth, startOfWeek } from "@/shared/domain/date-key";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 type TodayMetricsState = Pick<TodayState, "date" | "habits">;
@@ -97,16 +97,15 @@ export function getWeekCompletionSeries(
   });
 }
 
-export function getRecentConsistencySummary(
+export function getMonthToDateConsistencySummary(
   history: readonly HistoryDailyCountDay[],
-  state: TodayMetricsState,
-  days = 30
+  state: TodayMetricsState
 ): TodaySidebarConsistencySummary {
   const historyByDate = new Map(history.map((day) => [day.date, day]));
+  const monthStart = startOfMonth(state.date);
   const consistencyDays: TodaySidebarConsistencyDay[] = [];
 
-  for (let offset = days - 1; offset >= 0; offset -= 1) {
-    const date = addDays(state.date, -offset);
+  for (let date = monthStart; date <= state.date; date = addDays(date, 1)) {
     const completion = getCompletionForDate(date, historyByDate, state);
     const completed =
       completion !== null &&
@@ -124,7 +123,10 @@ export function getRecentConsistencySummary(
   return {
     completedDays,
     days: consistencyDays,
-    percent: days === 0 ? 0 : Math.round((completedDays / days) * 100),
-    totalDays: days,
+    percent:
+      consistencyDays.length === 0
+        ? 0
+        : Math.round((completedDays / consistencyDays.length) * 100),
+    totalDays: consistencyDays.length,
   };
 }

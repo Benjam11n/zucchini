@@ -4,7 +4,7 @@ import { createDefaultAppSettings } from "@/shared/domain/settings";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 import {
-  getRecentConsistencySummary,
+  getMonthToDateConsistencySummary,
   getTodayCompletion,
   getWeekCompletionSeries,
 } from "./today-sidebar-metrics";
@@ -84,40 +84,66 @@ describe("today sidebar metrics", () => {
     expect(series[5]).toMatchObject({ completed: 1, percent: 50, total: 2 });
   });
 
-  it("calculates recent consistency from completed available days", () => {
+  it("calculates month-to-date consistency from completed elapsed days", () => {
     const state = todayState([habit(1, true), habit(2, true)]);
-    const consistency = getRecentConsistencySummary(
+    const consistency = getMonthToDateConsistencySummary(
       [
+        historyDay("2026-03-01", [habit(5, true)]),
         historyDay("2026-03-11", [habit(3, true)]),
         historyDay("2026-03-12", [habit(4, false)]),
       ],
-      state,
-      3
+      state
     );
 
-    expect(consistency.percent).toBe(67);
+    expect(consistency).toMatchObject({
+      completedDays: 3,
+      percent: 23,
+      totalDays: 13,
+    });
   });
 
-  it("builds a fixed-length consistency dot summary", () => {
+  it("builds an elapsed month consistency dot summary", () => {
     const state = todayState([habit(1, true), habit(2, true)]);
-    const consistency = getRecentConsistencySummary(
+    const consistency = getMonthToDateConsistencySummary(
       [
         historyDay("2026-03-11", [habit(3, true)]),
         historyDay("2026-03-12", [habit(4, false)]),
       ],
-      state,
-      3
+      state
     );
 
     expect(consistency).toMatchObject({
       completedDays: 2,
-      percent: 67,
-      totalDays: 3,
+      percent: 15,
+      totalDays: 13,
     });
-    expect(consistency.days).toEqual([
+    expect(consistency.days).toHaveLength(13);
+    expect(consistency.days[0]).toEqual({
+      completed: false,
+      date: "2026-03-01",
+    });
+    expect(consistency.days.slice(-3)).toEqual([
       { completed: true, date: "2026-03-11" },
       { completed: false, date: "2026-03-12" },
       { completed: true, date: "2026-03-13" },
     ]);
+  });
+
+  it("limits consistency to today on the first day of the month", () => {
+    const state = {
+      ...todayState([habit(1, true), habit(2, true)]),
+      date: "2026-04-01",
+    };
+    const consistency = getMonthToDateConsistencySummary(
+      [historyDay("2026-03-31", [habit(3, true)])],
+      state
+    );
+
+    expect(consistency).toMatchObject({
+      completedDays: 1,
+      percent: 100,
+      totalDays: 1,
+    });
+    expect(consistency.days).toEqual([{ completed: true, date: "2026-04-01" }]);
   });
 });
