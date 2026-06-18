@@ -2,7 +2,7 @@ import {
   getHabitCategoryColor,
   getHabitCategoryLabel,
   getHabitCategoryPresentation,
-} from "@/renderer/shared/lib/habit-category-presentation";
+} from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import type { HabitCategoryProgress } from "@/shared/domain/habit";
 import type { HabitCategoryPreferences } from "@/shared/domain/settings";
 

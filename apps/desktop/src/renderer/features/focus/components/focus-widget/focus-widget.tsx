@@ -17,14 +17,12 @@ import {
 } from "@/renderer/features/focus/lib/focus-timer-state";
 import { focusWidgetActions } from "@/renderer/features/focus/lib/focus-widget-actions";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { getDefaultHabitCategoryPreferences } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { useKeyboardShortcut } from "@/renderer/shared/hooks/use-keyboard-shortcut";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
-import {
-  HabitCategoryPreferencesProvider,
-  getDefaultHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
 import { MS_PER_MINUTE } from "@/renderer/shared/lib/time";
+import { HabitCategoryPreferencesProvider } from "@/renderer/shared/providers/habit-category-preferences";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import {
   createDefaultPomodoroTimerSettings,

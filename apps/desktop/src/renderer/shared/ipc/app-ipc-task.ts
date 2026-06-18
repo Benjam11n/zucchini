@@ -1,8 +1,7 @@
+import { runAsyncTask } from "@/renderer/shared/lib/async-task";
+import type { RunAsyncTaskOptions } from "@/renderer/shared/lib/async-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
-
-import { runAsyncTask } from "./async-task";
-import type { RunAsyncTaskOptions } from "./async-task";
 
 type RunAppIpcTaskOptions<TResult> = Omit<
   RunAsyncTaskOptions<TResult, AppIpcError>,

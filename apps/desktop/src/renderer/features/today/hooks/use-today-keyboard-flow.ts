@@ -80,15 +80,15 @@ export function useTodayKeyboardFlow(rows: TodayKeyboardRow[]) {
     () => enabledRows.map((row) => row.id),
     [enabledRows]
   );
-  const incompleteRowIds = useMemo(
-    () =>
-      enabledRows
-        .filter(
-          (row) => row.incomplete && !optimisticallyCompletedRowIds.has(row.id)
-        )
-        .map((row) => row.id),
-    [enabledRows, optimisticallyCompletedRowIds]
-  );
+  const incompleteRowIds = useMemo(() => {
+    const rowIds: string[] = [];
+    for (const row of enabledRows) {
+      if (row.incomplete && !optimisticallyCompletedRowIds.has(row.id)) {
+        rowIds.push(row.id);
+      }
+    }
+    return rowIds;
+  }, [enabledRows, optimisticallyCompletedRowIds]);
   const rowsById = useMemo(
     () => new Map(enabledRows.map((row) => [row.id, row])),
     [enabledRows]

@@ -14,6 +14,7 @@ import {
   formatWeekBarLabel,
   getBarClassName,
 } from "@/renderer/features/today/lib/today-sidebar-view";
+import { microTransition } from "@/renderer/shared/animation/motion";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
@@ -31,7 +32,6 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { microTransition } from "@/renderer/shared/lib/motion";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";

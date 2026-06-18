@@ -8,12 +8,12 @@ import { Button } from "@/renderer/shared/components/ui/button";
 import {
   getActivityBadgeLabel,
   getActivityStatus,
-} from "@/renderer/shared/lib/history-summary";
+} from "@/renderer/shared/history/history-summary";
 import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistoryDay } from "@/shared/domain/history";
 
-import { HabitChecklist } from "../habit-checklist";
-import { PeriodicHabitChecklist } from "../periodic-habit-checklist";
+import { HabitChecklist } from "../habit-checklist/habit-checklist";
+import { PeriodicHabitChecklist } from "../periodic-habit-checklist/periodic-habit-checklist";
 
 interface HistoricalTodayViewProps {
   day: HistoryDay;

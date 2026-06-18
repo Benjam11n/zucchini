@@ -1,5 +1,6 @@
 import { m } from "framer-motion";
 
+import { hoverLift, tapPress } from "@/renderer/shared/animation/motion";
 import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import {
   Tooltip,
@@ -7,7 +8,6 @@ import {
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { hoverLift, tapPress } from "@/renderer/shared/lib/motion";
 import type {
   ContributionIntensity,
   HistoryStatus,

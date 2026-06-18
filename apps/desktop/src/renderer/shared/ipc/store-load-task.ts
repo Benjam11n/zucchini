@@ -1,4 +1,4 @@
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runAppIpcTask } from "@/renderer/shared/ipc/app-ipc-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 
 type StorePatch<TState> =

@@ -4,6 +4,7 @@ import { memo, useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { getDailyHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   HabitListEmptyState,
@@ -11,10 +12,7 @@ import {
   HabitListItem,
   HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
-import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { CategoryStreak } from "@/shared/domain/category-streak";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";

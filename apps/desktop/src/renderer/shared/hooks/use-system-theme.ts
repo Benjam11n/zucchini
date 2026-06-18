@@ -19,11 +19,10 @@ export function useSystemTheme(): "dark" | "light" {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DARK_MODE_MEDIA_QUERY);
-    const syncSystemTheme = () => {
-      setSystemTheme(mediaQuery.matches ? "dark" : "light");
+    const syncSystemTheme = ({ matches }: MediaQueryListEvent) => {
+      setSystemTheme(matches ? "dark" : "light");
     };
 
-    syncSystemTheme();
     mediaQuery.addEventListener("change", syncSystemTheme);
 
     return () => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { reorderHabitListByDropPosition } from "@/renderer/shared/lib/reorder-habits";
+import { reorderHabitListByDropPosition } from "@/renderer/shared/components/app/habit-management/lib/reorder-habits";
 import type { Habit } from "@/shared/domain/habit";
 
 import type { HabitDragState } from "../habit-management-content/habit-management-content.types";

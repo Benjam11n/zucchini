@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import type * as React from "react";
 
 import { cn } from "@/renderer/shared/lib/class-names";
@@ -19,28 +25,38 @@ export function TextWithTooltip({
   content,
   ...props
 }: TextWithTooltipProps) {
-  const textRef = useRef<HTMLSpanElement | null>(null);
+  const elementRef = useRef<HTMLSpanElement | null>(null);
   const [isTruncated, setIsTruncated] = useState(false);
+  const refreshTruncation = useCallback(() => {
+    const element = elementRef.current;
+    if (element) {
+      setIsTruncated(element.scrollWidth > element.clientWidth);
+    }
+  }, []);
+  const onResize = useEffectEvent(() => {
+    refreshTruncation();
+  });
+  const textRef = useCallback(
+    (nextElement: HTMLSpanElement | null) => {
+      elementRef.current = nextElement;
+      refreshTruncation();
+    },
+    [refreshTruncation]
+  );
 
   useEffect(() => {
-    const element = textRef.current;
+    const element = elementRef.current;
     if (!element) {
       return;
     }
 
-    const updateTruncation = () => {
-      setIsTruncated(element.scrollWidth > element.clientWidth);
-    };
-
-    updateTruncation();
-
     if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateTruncation);
+      window.addEventListener("resize", onResize);
 
-      return () => window.removeEventListener("resize", updateTruncation);
+      return () => window.removeEventListener("resize", onResize);
     }
 
-    const observer = new ResizeObserver(updateTruncation);
+    const observer = new ResizeObserver(onResize);
     observer.observe(element);
 
     return () => observer.disconnect();

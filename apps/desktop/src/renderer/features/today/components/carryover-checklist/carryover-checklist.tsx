@@ -2,15 +2,13 @@ import { CalendarPlus } from "lucide-react";
 import { useMemo } from "react";
 
 import { getCarryoverKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import {
   HabitListCard,
   HabitListItem,
   HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
-import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory } from "@/shared/domain/habit";

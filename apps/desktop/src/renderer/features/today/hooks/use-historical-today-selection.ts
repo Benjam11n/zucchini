@@ -22,42 +22,38 @@ export function useHistoricalTodaySelection({
     () => new Set(history.map((day) => day.date)),
     [history]
   );
-  const handleSelectDate = useCallback((date: string) => {
-    setSelectedDate(date);
-  }, []);
+  const activeSelectedDate =
+    selectedDate && selectableDates.has(selectedDate) ? selectedDate : null;
+  const selectedDay = activeSelectedDate
+    ? (historyDayByDate[activeSelectedDate] ?? null)
+    : null;
+  const handleSelectDate = useCallback(
+    (date: string) => {
+      setSelectedDate(date);
+      if (!historyDayByDate[date]) {
+        void loadHistoryDay(date);
+      }
+    },
+    [historyDayByDate, loadHistoryDay]
+  );
   const handleClearSelection = useCallback(() => {
     setSelectedDate(null);
   }, []);
-  const selectedDay = selectedDate
-    ? (historyDayByDate[selectedDate] ?? null)
-    : null;
 
   useEffect(() => {
-    if (!selectedDate) {
-      return;
-    }
-
-    if (!selectableDates.has(selectedDate)) {
+    if (selectedDate && !selectableDates.has(selectedDate)) {
       setSelectedDate(null);
     }
   }, [selectableDates, selectedDate]);
-
-  useEffect(() => {
-    if (!selectedDate || !selectableDates.has(selectedDate) || selectedDay) {
-      return;
-    }
-
-    void loadHistoryDay(selectedDate);
-  }, [loadHistoryDay, selectableDates, selectedDate, selectedDay]);
 
   return {
     handleClearSelection,
     handleSelectDate,
     isLoading:
-      selectedDate !== null &&
+      activeSelectedDate !== null &&
       isHistoryDayLoading &&
-      loadingHistoryDayKey === selectedDate,
-    selectedDate,
+      loadingHistoryDayKey === activeSelectedDate,
+    selectedDate: activeSelectedDate,
     selectedDay,
   };
 }

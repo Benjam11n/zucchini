@@ -1,28 +1,26 @@
 import { m } from "framer-motion";
 import type { CSSProperties } from "react";
 
-import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
-import { HabitCategoryLabel } from "@/renderer/shared/components/ui/habit-category-label";
-import type { HabitListItemProps } from "@/renderer/shared/components/ui/habit-list-item-types";
-import { HabitStreakLabel } from "@/renderer/shared/components/ui/habit-streak-label";
-import { HabitTrailingActions } from "@/renderer/shared/components/ui/habit-trailing-actions";
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+  hoverLift,
+  microTransition,
+  tapPress,
+} from "@/renderer/shared/animation/motion";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import {
   HABIT_COMPLETION_POP_CLASSNAME,
   HABIT_ROW_BASE_CLASSNAME,
   HABIT_ROW_CHECKBOX_INTERACTION_CLASSNAME,
   HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
   HABIT_ROW_INTERACTIVE_CLASSNAME,
-} from "@/renderer/shared/lib/habit-row-interaction";
-import {
-  hoverLift,
-  microTransition,
-  tapPress,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/components/app/habit-management/lib/habit-row-interaction";
+import { Checkbox } from "@/renderer/shared/components/ui/checkbox";
+import { HabitCategoryLabel } from "@/renderer/shared/components/ui/habit-category-label";
+import type { HabitListItemProps } from "@/renderer/shared/components/ui/habit-list-item-types";
+import { HabitStreakLabel } from "@/renderer/shared/components/ui/habit-streak-label";
+import { HabitTrailingActions } from "@/renderer/shared/components/ui/habit-trailing-actions";
+import { cn } from "@/renderer/shared/lib/class-names";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 
 const HABIT_ITEM_ANIMATE = { opacity: 1, scale: 1, x: 0 };
 const HABIT_ITEM_INITIAL = { opacity: 0, scale: 0.98, x: -8 };

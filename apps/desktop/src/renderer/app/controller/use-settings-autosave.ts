@@ -15,7 +15,7 @@ import {
   mapSettingsValidationErrors,
   validateAppSettings,
 } from "@/renderer/features/settings/lib/settings-form";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runAppIpcTask } from "@/renderer/shared/ipc/app-ipc-task";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export function useSettingsAutosave({

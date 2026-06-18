@@ -1,6 +1,6 @@
+import { getHabitNameError } from "@/renderer/shared/components/app/habit-management/lib/habit-name-validation";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
-import { getHabitNameError } from "@/renderer/shared/lib/habit-name-validation";
 import type { Habit } from "@/shared/domain/habit";
 
 interface HabitNameFieldProps {

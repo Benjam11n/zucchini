@@ -1,5 +1,5 @@
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { getHabitCadenceSummary } from "@/renderer/shared/components/app/habit-management/lib/habit-cadence-summary";
-import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 
 import { toRestoreSnapshotHabit } from "../../lib/data-management-format";

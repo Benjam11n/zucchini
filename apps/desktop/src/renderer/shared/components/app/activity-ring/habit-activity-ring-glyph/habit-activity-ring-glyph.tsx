@@ -1,8 +1,8 @@
 "use client";
 
-import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 
-import { ActivityRingGlyph } from "../activity-ring-glyph";
+import { ActivityRingGlyph } from "../activity-ring-glyph/activity-ring-glyph";
 import { buildHabitActivityData } from "../lib/build-habit-activity-data";
 import type { HabitActivityRingProps } from "../lib/types";
 

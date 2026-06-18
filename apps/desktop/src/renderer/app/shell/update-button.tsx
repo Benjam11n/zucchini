@@ -1,6 +1,6 @@
 import { Download, Rocket, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
@@ -93,24 +93,18 @@ function getButtonIcon({
 
 export function UpdateButton() {
   const { runPrimaryAction, viewState } = useAppUpdaterState();
-  const [dismissedVersions, setDismissedVersions] = useState<Set<string>>(
-    () => {
-      const dismissedVersion = readDismissedUpdateVersion();
+  const dismissedVersionsRef = useRef<Set<string> | null>(null);
+  if (dismissedVersionsRef.current === null) {
+    const dismissedVersion = readDismissedUpdateVersion();
+    dismissedVersionsRef.current = dismissedVersion
+      ? new Set([dismissedVersion])
+      : new Set();
+  }
 
-      return dismissedVersion ? new Set([dismissedVersion]) : new Set();
-    }
-  );
-
-  const handleDismiss = (dismissedVersion: string) => {
+  const dismissToast = useEffectEvent((dismissedVersion: string) => {
     writeDismissedUpdateVersion(dismissedVersion);
-    setDismissedVersions(
-      (currentKeys) => new Set([...currentKeys, dismissedVersion])
-    );
+    dismissedVersionsRef.current?.add(dismissedVersion);
     toast.dismiss(UPDATE_TOAST_ID);
-  };
-
-  const dismissToast = useEffectEvent((dismissalKey: string) => {
-    handleDismiss(dismissalKey);
   });
 
   const runToastAction = useEffectEvent(async () => {
@@ -130,7 +124,7 @@ export function UpdateButton() {
       return null;
     }
 
-    if (dismissedVersions.has(dismissalKey)) {
+    if (dismissedVersionsRef.current?.has(dismissalKey)) {
       return null;
     }
 
@@ -138,7 +132,7 @@ export function UpdateButton() {
       dismissalKey,
       state: viewState.state,
     };
-  }, [dismissedVersions, viewState.state]);
+  }, [viewState.state]);
 
   useEffect(() => {
     if (visibleState === null) {

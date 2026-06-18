@@ -1,7 +1,7 @@
 import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 
 import { Button } from "@/renderer/shared/components/ui/button";
-import { normalizeDurationInputValue } from "@/renderer/shared/components/ui/duration-input";
+import { normalizeDurationInputValue } from "@/renderer/shared/components/ui/duration-input-utils";
 import { MS_PER_SECOND } from "@/renderer/shared/lib/time";
 
 interface FocusTimerActionsProps {

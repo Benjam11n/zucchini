@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import type { Habit } from "@/shared/domain/habit";
 
@@ -11,11 +11,10 @@ export function useCreatedHabitExpansion({
   habits,
   setExpandedHabitId,
 }: UseCreatedHabitExpansionInput) {
-  const [pendingCreatedHabitName, setPendingCreatedHabitName] = useState<
-    string | null
-  >(null);
+  const pendingCreatedHabitNameRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const pendingCreatedHabitName = pendingCreatedHabitNameRef.current;
     if (!pendingCreatedHabitName) {
       return;
     }
@@ -27,9 +26,13 @@ export function useCreatedHabitExpansion({
       return;
     }
 
+    pendingCreatedHabitNameRef.current = null;
     setExpandedHabitId(createdHabit.id);
-    setPendingCreatedHabitName(null);
-  }, [habits, pendingCreatedHabitName, setExpandedHabitId]);
+  }, [habits, setExpandedHabitId]);
+
+  const setPendingCreatedHabitName = useCallback((name: string) => {
+    pendingCreatedHabitNameRef.current = name;
+  }, []);
 
   return {
     setPendingCreatedHabitName,

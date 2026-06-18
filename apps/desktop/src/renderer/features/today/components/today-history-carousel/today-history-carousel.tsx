@@ -1,15 +1,15 @@
 import { m } from "framer-motion";
 
 import { TodayHistoryCarouselSkeleton } from "@/renderer/features/today/components/today-history-carousel-skeleton/today-history-carousel-skeleton";
+import { tapPress } from "@/renderer/shared/animation/motion";
 import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
 import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
 import { Carousel } from "@/renderer/shared/components/ui/carousel";
 import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
 import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";
 import { CarouselOverflowFade } from "@/renderer/shared/components/ui/carousel-overflow-fade";
+import { getActivityStatus } from "@/renderer/shared/history/history-summary";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { getActivityStatus } from "@/renderer/shared/lib/history-summary";
-import { tapPress } from "@/renderer/shared/lib/motion";
 import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 

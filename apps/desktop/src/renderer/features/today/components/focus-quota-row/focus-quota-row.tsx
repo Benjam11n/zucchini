@@ -1,11 +1,11 @@
 import { Timer } from "lucide-react";
 
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   HABIT_ROW_BASE_CLASSNAME,
   HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
   HABIT_ROW_INTERACTIVE_CLASSNAME,
-} from "@/renderer/shared/lib/habit-row-interaction";
+} from "@/renderer/shared/components/app/habit-management/lib/habit-row-interaction";
+import { cn } from "@/renderer/shared/lib/class-names";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 
 interface FocusQuotaRowProps {

@@ -185,31 +185,36 @@ export class SqliteHistoryRepository {
         ])
       );
 
-      return activeHabits
-        .filter((habit) =>
-          isHabitActiveOnDate(
+      const habitsWithStatus = [];
+      for (const habit of activeHabits) {
+        if (
+          !isHabitActiveOnDate(
             habit,
             date,
             undefined,
             pausePeriodsByHabitId.get(habit.id) ?? []
           )
-        )
-        .map((habit) => {
-          const period = getHabitPeriod(habit.frequency, date);
-          const status = statusByKey.get(
-            SqliteHistoryRepository.getStatusKey(
-              habit.frequency,
-              period.start,
-              habit.id
-            )
-          );
+        ) {
+          continue;
+        }
 
-          return {
-            ...habit,
-            completed: status?.completed ?? false,
-            completedCount: status?.completedCount ?? 0,
-          };
+        const period = getHabitPeriod(habit.frequency, date);
+        const status = statusByKey.get(
+          SqliteHistoryRepository.getStatusKey(
+            habit.frequency,
+            period.start,
+            habit.id
+          )
+        );
+
+        habitsWithStatus.push({
+          ...habit,
+          completed: status?.completed ?? false,
+          completedCount: status?.completedCount ?? 0,
         });
+      }
+
+      return habitsWithStatus;
     });
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import type { ChartSize } from "./chart-types";
@@ -15,23 +15,27 @@ interface ChartSvgFrameProps {
 }
 
 function useResponsiveChartSize(defaultSize: ChartSize) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
   const [size, setSize] = useState(defaultSize);
+  const updateSize = useCallback(({ height, width }: DOMRectReadOnly) => {
+    if (height > 0 && width > 0) {
+      setSize({ height, width });
+    }
+  }, []);
+  const containerRef = useCallback(
+    (nextElement: HTMLDivElement | null) => {
+      setElement(nextElement);
+      if (nextElement) {
+        updateSize(nextElement.getBoundingClientRect());
+      }
+    },
+    [updateSize]
+  );
 
   useEffect(() => {
-    const element = containerRef.current;
-
     if (!element || typeof ResizeObserver === "undefined") {
       return;
     }
-
-    const updateSize = ({ height, width }: DOMRectReadOnly) => {
-      if (height > 0 && width > 0) {
-        setSize({ height, width });
-      }
-    };
-
-    updateSize(element.getBoundingClientRect());
 
     const observer = new ResizeObserver(([entry]) => {
       if (entry) {
@@ -42,7 +46,7 @@ function useResponsiveChartSize(defaultSize: ChartSize) {
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, []);
+  }, [element, updateSize]);
 
   return { containerRef, size };
 }

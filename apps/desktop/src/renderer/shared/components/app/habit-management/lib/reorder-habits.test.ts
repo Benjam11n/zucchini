@@ -2,7 +2,7 @@ import {
   reorderHabitList,
   reorderHabitListByDropPosition,
   sortHabitListByCategory,
-} from "@/renderer/shared/lib/reorder-habits";
+} from "@/renderer/shared/components/app/habit-management/lib/reorder-habits";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 function createHabit(

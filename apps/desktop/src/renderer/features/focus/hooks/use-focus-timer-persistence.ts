@@ -25,13 +25,12 @@ export function useFocusTimerPersistence({
   setTimerState: (timerState: PersistedFocusTimerState) => void;
   timerState: PersistedFocusTimerState;
 }): boolean {
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(() => !window.desktop);
   const persistedTimerStateRef = useRef<PersistedFocusTimerState | null>(null);
   const latestSaveRequestIdRef = useRef(0);
 
   useEffect(() => {
     if (!window.desktop) {
-      setHasHydrated(true);
       return;
     }
 

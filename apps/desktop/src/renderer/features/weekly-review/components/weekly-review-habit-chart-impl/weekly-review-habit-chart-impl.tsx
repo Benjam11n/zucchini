@@ -1,16 +1,14 @@
 import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/components/weekly-review-chart-card";
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/weekly-review/lib/weekly-review-habit-chart";
+import { getHabitCategoryLabel } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
 import { TooltipProvider } from "@/renderer/shared/components/ui/tooltip";
-import {
-  getHabitCategoryLabel,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
 
-import { EmptyHeatmapState } from "../empty-heatmap-state";
-import { HeatmapCell } from "../heatmap-cell";
+import { EmptyHeatmapState } from "../empty-heatmap-state/empty-heatmap-state";
+import { HeatmapCell } from "../heatmap-cell/heatmap-cell";
 
 interface WeeklyReviewHabitChartImplProps {
   heatmapRows: WeeklyReviewHabitHeatmapRow[];

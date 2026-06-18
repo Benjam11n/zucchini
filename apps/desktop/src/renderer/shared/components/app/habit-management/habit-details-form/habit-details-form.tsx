@@ -3,11 +3,11 @@ import { cn } from "@/renderer/shared/lib/class-names";
 import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
-import { HabitCategorySelector } from "../habit-category-selector";
-import { HabitFrequencySelector } from "../habit-frequency-selector";
-import { HabitNameField } from "../habit-name-field";
-import { HabitTargetCountStepper } from "../habit-target-count-stepper";
-import { HabitWeekdaySelector } from "../habit-weekday-selector";
+import { HabitCategorySelector } from "../habit-category-selector/habit-category-selector";
+import { HabitFrequencySelector } from "../habit-frequency-selector/habit-frequency-selector";
+import { HabitNameField } from "../habit-name-field/habit-name-field";
+import { HabitTargetCountStepper } from "../habit-target-count-stepper/habit-target-count-stepper";
+import { HabitWeekdaySelector } from "../habit-weekday-selector/habit-weekday-selector";
 
 interface HabitDetailsFormProps {
   draftName: string;

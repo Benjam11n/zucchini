@@ -1,15 +1,13 @@
 import { m } from "framer-motion";
 
-import { cn } from "@/renderer/shared/lib/class-names";
-import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
 import {
   hoverLift,
   microTransition,
   tapPress,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
+import { cn } from "@/renderer/shared/lib/class-names";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import {
   HABIT_CATEGORY_SLOTS,
   normalizeHabitCategory,

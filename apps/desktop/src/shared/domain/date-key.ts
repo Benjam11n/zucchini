@@ -1,4 +1,6 @@
 const DATE_KEY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/u;
+const dateKeyTimeZoneFormatters = new Map<string, Intl.DateTimeFormat>();
+const timeZoneValidationFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function readDateKey(dateKey: string): [number, number, number] {
   const match = DATE_KEY_PATTERN.exec(dateKey);
@@ -31,12 +33,18 @@ function shiftDateKey(dateKey: string, update: (date: Date) => void): string {
 }
 
 export function toDateKeyInTimeZone(date: Date, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone,
-    year: "numeric",
-  }).formatToParts(date);
+  let formatter = dateKeyTimeZoneFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-CA", {
+      day: "2-digit",
+      month: "2-digit",
+      timeZone,
+      year: "numeric",
+    });
+    dateKeyTimeZoneFormatters.set(timeZone, formatter);
+  }
+
+  const parts = formatter.formatToParts(date);
   const valueByType = Object.fromEntries(
     parts.map((part) => [part.type, part.value])
   );
@@ -51,7 +59,12 @@ export function toDateKeyInTimeZone(date: Date, timeZone: string): string {
 
 export function isValidTimeZone(timeZone: string): boolean {
   try {
-    new Intl.DateTimeFormat(undefined, { timeZone }).format();
+    let formatter = timeZoneValidationFormatters.get(timeZone);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat(undefined, { timeZone });
+      timeZoneValidationFormatters.set(timeZone, formatter);
+    }
+    formatter.format();
     return true;
   } catch {
     return false;

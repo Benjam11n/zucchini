@@ -3,8 +3,8 @@ import type {
   ContributionIntensity,
   ContributionWeek,
 } from "@/renderer/features/history/history.types";
-import { getHistoryDailyCounts } from "@/renderer/shared/lib/history-daily-counts";
-import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
+import { getHistoryDailyCounts } from "@/renderer/shared/history/history-daily-counts";
+import type { HistoryDailyCountDay } from "@/renderer/shared/history/history-daily-counts";
 import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/domain/date-format";
 import { addDays, endOfWeek, startOfWeek } from "@/shared/domain/date-key";

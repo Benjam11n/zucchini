@@ -2,7 +2,7 @@ import { m } from "framer-motion";
 
 import { TimelineDayRow } from "@/renderer/features/history/components/timeline-day-row";
 import { TimelineHeaderRow } from "@/renderer/features/history/components/timeline-header-row";
-import { staggerItemVariants } from "@/renderer/shared/lib/motion";
+import { staggerItemVariants } from "@/renderer/shared/animation/motion";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface HistoryTimelineContentProps {

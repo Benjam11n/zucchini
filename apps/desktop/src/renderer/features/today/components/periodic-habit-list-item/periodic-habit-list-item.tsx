@@ -1,21 +1,21 @@
 import { m } from "framer-motion";
 
-import { cn } from "@/renderer/shared/lib/class-names";
-import type { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
-import {
-  HABIT_ROW_BASE_CLASSNAME,
-  HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
-  HABIT_ROW_INTERACTIVE_CLASSNAME,
-} from "@/renderer/shared/lib/habit-row-interaction";
 import {
   hoverLift,
   microTransition,
   tapPress,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import type { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
+import {
+  HABIT_ROW_BASE_CLASSNAME,
+  HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
+  HABIT_ROW_INTERACTIVE_CLASSNAME,
+} from "@/renderer/shared/components/app/habit-management/lib/habit-row-interaction";
+import { cn } from "@/renderer/shared/lib/class-names";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-import { PeriodicHabitControls } from "../periodic-habit-controls";
+import { PeriodicHabitControls } from "../periodic-habit-controls/periodic-habit-controls";
 
 interface PeriodicHabitListItemProps {
   habit: HabitWithStatus;

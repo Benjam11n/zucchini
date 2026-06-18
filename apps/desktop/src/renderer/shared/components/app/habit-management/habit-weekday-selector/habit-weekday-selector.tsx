@@ -1,11 +1,11 @@
 import { m } from "framer-motion";
 
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   hoverLift,
   microTransition,
   tapPress,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import { cn } from "@/renderer/shared/lib/class-names";
 import {
   HABIT_WEEKDAY_DEFINITIONS,
   normalizeHabitWeekdays,

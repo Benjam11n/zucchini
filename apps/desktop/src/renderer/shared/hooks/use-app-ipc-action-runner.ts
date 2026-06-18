@@ -1,4 +1,4 @@
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runAppIpcTask } from "@/renderer/shared/ipc/app-ipc-task";
 
 type MaybePromise<T> = Promise<T> | T;
 

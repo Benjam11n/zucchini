@@ -142,11 +142,12 @@ function buildTodayCategoryStreaksFromHabits(
       .map((state) => [state.category, state])
   );
   const dailyHabits = habits.filter(isDailyHabit);
-  const incompleteCarryoverCategories = new Set(
-    habitCarryovers
-      .filter((carryover) => !carryover.completed)
-      .map((carryover) => carryover.category)
-  );
+  const incompleteCarryoverCategories = new Set<HabitCategory>();
+  for (const carryover of habitCarryovers) {
+    if (!carryover.completed) {
+      incompleteCarryoverCategories.add(carryover.category);
+    }
+  }
   const streaks = {} as Record<HabitCategory, CategoryStreak>;
   const isRestorativeDay = dayStatus === "rest" || dayStatus === "sick";
 

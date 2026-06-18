@@ -1,9 +1,9 @@
 import { Minus, Plus } from "lucide-react";
 import type { CSSProperties } from "react";
 
+import type { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { cn } from "@/renderer/shared/lib/class-names";
-import type { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 interface PeriodicHabitControlsProps {

@@ -13,7 +13,7 @@ import { useInsightsStore } from "@/renderer/features/insights/state/insights-st
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
-import { appClient } from "@/renderer/shared/lib/app-client";
+import { appClient } from "@/renderer/shared/ipc/app-client";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type {
   Habit,

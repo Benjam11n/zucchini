@@ -1,10 +1,8 @@
 import type { ComponentProps } from "react";
 
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { cn } from "@/renderer/shared/lib/class-names";
-import {
-  getHabitCategoryPresentation,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { HabitCategory } from "@/shared/domain/habit";
 
 import { Badge } from "./badge";

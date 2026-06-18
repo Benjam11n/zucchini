@@ -3,6 +3,8 @@ import { m } from "framer-motion";
 import { ChevronDown, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { microTransition } from "@/renderer/shared/animation/motion";
+import { getHabitNameError } from "@/renderer/shared/components/app/habit-management/lib/habit-name-validation";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Collapsible,
@@ -12,8 +14,6 @@ import {
 import { Input } from "@/renderer/shared/components/ui/input";
 import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { getHabitNameError } from "@/renderer/shared/lib/habit-name-validation";
-import { microTransition } from "@/renderer/shared/lib/motion";
 import {
   DEFAULT_HABIT_CATEGORY,
   DEFAULT_HABIT_FREQUENCY,
@@ -26,10 +26,10 @@ import type {
   HabitWeekday,
 } from "@/shared/domain/habit";
 
-import { HabitCategorySelector } from "../habit-category-selector";
-import { HabitFrequencySelector } from "../habit-frequency-selector";
-import { HabitTargetCountStepper } from "../habit-target-count-stepper";
-import { HabitWeekdaySelector } from "../habit-weekday-selector";
+import { HabitCategorySelector } from "../habit-category-selector/habit-category-selector";
+import { HabitFrequencySelector } from "../habit-frequency-selector/habit-frequency-selector";
+import { HabitTargetCountStepper } from "../habit-target-count-stepper/habit-target-count-stepper";
+import { HabitWeekdaySelector } from "../habit-weekday-selector/habit-weekday-selector";
 
 const CREATION_FEEDBACK_TIMEOUT_MS = 2200;
 

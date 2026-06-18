@@ -1,14 +1,14 @@
 import { m } from "framer-motion";
 
 import { getPeriodicHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
-import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
-import { staggerItemVariants } from "@/renderer/shared/lib/motion";
+import { staggerItemVariants } from "@/renderer/shared/animation/motion";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
-import { FocusQuotaRow } from "../focus-quota-row";
-import { PeriodicHabitListItem } from "../periodic-habit-list-item";
+import { FocusQuotaRow } from "../focus-quota-row/focus-quota-row";
+import { PeriodicHabitListItem } from "../periodic-habit-list-item/periodic-habit-list-item";
 
 interface PeriodicHabitSectionData {
   completedHabitGoalCount: number;

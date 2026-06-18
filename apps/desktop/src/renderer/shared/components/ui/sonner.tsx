@@ -6,7 +6,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Toaster as Sonner } from "sonner";
 import type { ToasterProps } from "sonner";
 
@@ -25,24 +25,21 @@ const TOASTER_STYLE = {
   "--normal-text": "var(--popover-foreground)",
 } as CSSProperties;
 
+function subscribeToDocumentTheme(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributeFilter: ["class"],
+    attributes: true,
+  });
+  return () => observer.disconnect();
+}
+
 export function Toaster(props: ToasterProps) {
-  const [theme, setTheme] =
-    useState<NonNullable<ToasterProps["theme"]>>(getDocumentTheme);
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setTheme(getDocumentTheme());
-    });
-
-    observer.observe(document.documentElement, {
-      attributeFilter: ["class"],
-      attributes: true,
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  const theme = useSyncExternalStore(
+    subscribeToDocumentTheme,
+    getDocumentTheme,
+    getDocumentTheme
+  );
 
   return (
     <Sonner

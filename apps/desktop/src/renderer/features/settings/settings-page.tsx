@@ -21,6 +21,10 @@ import type {
   SettingsPageActions,
   SettingsPageViewModel,
 } from "@/renderer/features/settings/settings.types";
+import {
+  staggerContainerVariants,
+  staggerItemVariants,
+} from "@/renderer/shared/animation/motion";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Tabs,
@@ -28,10 +32,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/renderer/shared/components/ui/tabs";
-import {
-  staggerContainerVariants,
-  staggerItemVariants,
-} from "@/renderer/shared/lib/motion";
 
 interface SettingsPageProps {
   actions: SettingsPageActions;

@@ -18,12 +18,12 @@ import type {
 } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import { WeeklyReviewSection } from "@/renderer/features/weekly-review/components/weekly-review-section";
-import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
-import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
 import {
   staggerContainerVariants,
   staggerItemVariants,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
+import { useMediaQuery } from "@/renderer/shared/hooks/use-media-query";
 import { formatDate } from "@/shared/domain/date-format";
 import {
   getDateKeyMonth,

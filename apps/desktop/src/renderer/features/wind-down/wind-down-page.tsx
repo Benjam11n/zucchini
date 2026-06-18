@@ -5,11 +5,11 @@ import { WindDownActionForm } from "@/renderer/features/wind-down/components/win
 import { WindDownActionRows } from "@/renderer/features/wind-down/components/wind-down-action-rows";
 import { useWindDownController } from "@/renderer/features/wind-down/hooks/use-wind-down-controller";
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
-import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import {
   staggerContainerVariants,
   staggerItemVariants,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
 import type { TodayState } from "@/shared/read-models/today-state";
 

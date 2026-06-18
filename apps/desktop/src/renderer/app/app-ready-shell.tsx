@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
@@ -14,9 +14,9 @@ import {
 } from "@/renderer/features/history/lib/history-timeline";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
 import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner";
-import { HabitCategoryPreferencesProvider } from "@/renderer/shared/lib/habit-category-presentation";
-import type { HistoryDailyCountDay } from "@/renderer/shared/lib/history-daily-counts";
-import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
+import type { HistoryDailyCountDay } from "@/renderer/shared/history/history-daily-counts";
+import { getHistoryDayLookup } from "@/renderer/shared/history/history-summary";
+import { HabitCategoryPreferencesProvider } from "@/renderer/shared/providers/habit-category-preferences";
 import { formatDate } from "@/shared/domain/date-format";
 import { getMonthRange, parseDateKey } from "@/shared/domain/date-key";
 
@@ -116,15 +116,23 @@ export function AppReadyShell({
     historyViewHistory,
     historyViewModel,
   });
-  const weeklyReviewBanner =
-    state.isWeeklyReviewSpotlightOpen &&
-    state.weeklyReviewOverview?.latestReview ? (
-      <WeeklyReviewSpotlightBanner
-        onDismiss={actions.handleDismissWeeklyReviewSpotlight}
-        onOpenReview={actions.handleWeeklyReviewOpen}
-        review={state.weeklyReviewOverview.latestReview}
-      />
-    ) : null;
+  const weeklyReviewBanner = useMemo(
+    () =>
+      state.isWeeklyReviewSpotlightOpen &&
+      state.weeklyReviewOverview?.latestReview ? (
+        <WeeklyReviewSpotlightBanner
+          onDismiss={actions.handleDismissWeeklyReviewSpotlight}
+          onOpenReview={actions.handleWeeklyReviewOpen}
+          review={state.weeklyReviewOverview.latestReview}
+        />
+      ) : null,
+    [
+      actions.handleDismissWeeklyReviewSpotlight,
+      actions.handleWeeklyReviewOpen,
+      state.isWeeklyReviewSpotlightOpen,
+      state.weeklyReviewOverview?.latestReview,
+    ]
+  );
 
   return (
     <HabitCategoryPreferencesProvider

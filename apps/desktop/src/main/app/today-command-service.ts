@@ -216,13 +216,14 @@ export class TodayCommandService extends ApplicationServiceSlice {
         this.repository.getMaxSortOrder() + 1,
         this.clock.now().toISOString()
       );
-      this.repository.reorderHabits([
-        habitId,
-        ...this.repository
-          .getHabits()
-          .filter((habit) => habit.id !== habitId)
-          .map((habit) => habit.id),
-      ]);
+      const habitIds = [habitId];
+      for (const habit of this.repository.getHabits()) {
+        if (habit.id !== habitId) {
+          habitIds.push(habit.id);
+        }
+      }
+
+      this.repository.reorderHabits(habitIds);
       this.repository.ensureStatusRow(today, habitId);
       return this.rebuildCurrentTodayState();
     });
@@ -386,13 +387,15 @@ export class TodayCommandService extends ApplicationServiceSlice {
   unarchiveHabit(habitId: number): TodayState {
     return this.inInitializedTransaction("unarchiveHabit", () => {
       this.repository.unarchiveHabit(habitId);
-      this.repository.reorderHabits([
-        ...this.repository
-          .getHabits()
-          .filter((habit) => habit.id !== habitId)
-          .map((habit) => habit.id),
-        habitId,
-      ]);
+      const habitIds: number[] = [];
+      for (const habit of this.repository.getHabits()) {
+        if (habit.id !== habitId) {
+          habitIds.push(habit.id);
+        }
+      }
+      habitIds.push(habitId);
+
+      this.repository.reorderHabits(habitIds);
       this.repository.ensureStatusRow(this.getTodayKey(), habitId);
       this.syncRollingState();
       return this.rebuildCurrentTodayState();

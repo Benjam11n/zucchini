@@ -246,18 +246,19 @@ function syncHabitStreakStates(
       repository,
       cursor
     );
-    const habitIdsWithIncompleteCarryovers = new Set(
-      repository
-        .getHabitCarryoversForDate(cursor)
-        .filter((carryover) => !carryover.completed)
-        .map((carryover) => carryover.id)
-    );
-    const habitById = new Map(
-      repository
-        .getHabitsWithStatus(cursor)
-        .filter(isDailyHabit)
-        .map((habit) => [habit.id, habit])
-    );
+    const habitIdsWithIncompleteCarryovers = new Set<number>();
+    for (const carryover of repository.getHabitCarryoversForDate(cursor)) {
+      if (!carryover.completed) {
+        habitIdsWithIncompleteCarryovers.add(carryover.id);
+      }
+    }
+
+    const habitById = new Map<number, HabitWithStatus>();
+    for (const habit of repository.getHabitsWithStatus(cursor)) {
+      if (isDailyHabit(habit)) {
+        habitById.set(habit.id, habit);
+      }
+    }
 
     for (const habit of dailyHabits) {
       const currentState =

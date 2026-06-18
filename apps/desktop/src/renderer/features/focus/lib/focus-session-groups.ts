@@ -572,27 +572,28 @@ export function buildFocusHistorySessions(
     groupedEntries.set(groupKey, [entryView]);
   }
 
-  return [...groupedEntries.values()]
-    .map((entries) =>
-      buildHistorySessionView(
-        entries,
-        activeTimerState ? { activeTimerState } : {}
-      )
-    )
-    .map((session) => ({
+  const historySessions: FocusHistorySessionView[] = [];
+  for (const entries of groupedEntries.values()) {
+    const session = buildHistorySessionView(
+      entries,
+      activeTimerState ? { activeTimerState } : {}
+    );
+    historySessions.push({
       ...session,
       hasPausedTime: session.timelineSegments.some(
         (segment) => segment.kind === "pause"
       ),
-    }))
-    .toSorted((left, right) => {
-      const completedDifference =
-        Date.parse(right.completedAt) - Date.parse(left.completedAt);
-
-      if (completedDifference !== 0) {
-        return completedDifference;
-      }
-
-      return Date.parse(right.startedAt) - Date.parse(left.startedAt);
     });
+  }
+
+  return historySessions.toSorted((left, right) => {
+    const completedDifference =
+      Date.parse(right.completedAt) - Date.parse(left.completedAt);
+
+    if (completedDifference !== 0) {
+      return completedDifference;
+    }
+
+    return Date.parse(right.startedAt) - Date.parse(left.startedAt);
+  });
 }

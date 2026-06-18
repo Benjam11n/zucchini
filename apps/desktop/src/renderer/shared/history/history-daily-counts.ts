@@ -20,13 +20,13 @@ export function getHistoryDailyCounts(day: HistoryDailyCountDay): {
     return { completed, total };
   }
 
-  const uniqueDailyHabits = [
-    ...new Map(
-      day.habits
-        .filter((habit: HabitWithStatus) => habit.frequency === "daily")
-        .map((habit: HabitWithStatus) => [habit.id, habit])
-    ).values(),
-  ];
+  const uniqueDailyHabitsById = new Map<number, HabitWithStatus>();
+  for (const habit of day.habits) {
+    if (habit.frequency === "daily") {
+      uniqueDailyHabitsById.set(habit.id, habit);
+    }
+  }
+  const uniqueDailyHabits = [...uniqueDailyHabitsById.values()];
 
   return {
     completed: uniqueDailyHabits.filter((habit) => habit.completed).length,

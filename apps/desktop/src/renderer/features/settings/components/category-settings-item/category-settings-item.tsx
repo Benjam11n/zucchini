@@ -1,11 +1,11 @@
 import { ChevronDown, Palette, RotateCcw } from "lucide-react";
 import type { RefObject } from "react";
 
+import { HABIT_CATEGORY_ICON_OPTIONS } from "@/renderer/shared/components/app/habit-category/lib/categories";
+import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Input } from "@/renderer/shared/components/ui/input";
 import { cn } from "@/renderer/shared/lib/class-names";
-import { HABIT_CATEGORY_ICON_OPTIONS } from "@/renderer/shared/lib/habit-categories";
-import { getHabitCategoryPresentation } from "@/renderer/shared/lib/habit-category-presentation";
 import type { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategoryPreferences } from "@/shared/domain/settings";
 

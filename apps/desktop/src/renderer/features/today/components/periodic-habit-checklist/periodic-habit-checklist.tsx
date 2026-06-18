@@ -2,14 +2,14 @@ import { LazyMotion, domAnimation } from "framer-motion";
 import { CalendarRange } from "lucide-react";
 
 import { HabitListCard } from "@/renderer/shared/components/ui/habit-list";
-import { useHabitCategoryPreferences } from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import { formatDateKey } from "@/shared/domain/date-format";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitFrequency, HabitWithStatus } from "@/shared/domain/habit";
 import { getHabitPeriod } from "@/shared/domain/habit-period";
 
-import { PeriodicHabitSection } from "../periodic-habit-section";
+import { PeriodicHabitSection } from "../periodic-habit-section/periodic-habit-section";
 
 interface PeriodicHabitChecklistProps {
   dateKey: string;

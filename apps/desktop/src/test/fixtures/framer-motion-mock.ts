@@ -1,8 +1,8 @@
 import type * as FramerMotion from "framer-motion";
-import { createElement, forwardRef } from "react";
-import type { ComponentProps, ComponentPropsWithoutRef } from "react";
+import { createElement } from "react";
+import type { ComponentProps, ComponentPropsWithRef } from "react";
 
-interface MotionMockProps extends ComponentPropsWithoutRef<"div"> {
+interface MotionMockProps extends ComponentPropsWithRef<"div"> {
   animate?: object;
   exit?: object;
   initial?: object;
@@ -23,23 +23,21 @@ export async function createFramerMotionMock(
       {},
       {
         get: (_, tag: string) =>
-          forwardRef<HTMLElement, MotionMockProps>(
-            function MotionMock(props, ref) {
-              const {
-                animate: _animate,
-                exit: _exit,
-                initial: _initial,
-                layout: _layout,
-                transition: _transition,
-                variants: _variants,
-                whileHover: _whileHover,
-                whileTap: _whileTap,
-                ...rest
-              } = props;
+          function MotionMock(props: MotionMockProps) {
+            const {
+              animate: _animate,
+              exit: _exit,
+              initial: _initial,
+              layout: _layout,
+              transition: _transition,
+              variants: _variants,
+              whileHover: _whileHover,
+              whileTap: _whileTap,
+              ...rest
+            } = props;
 
-              return createElement(tag, { ...rest, ref });
-            }
-          ),
+            return createElement(tag, rest);
+          },
       }
     );
   }

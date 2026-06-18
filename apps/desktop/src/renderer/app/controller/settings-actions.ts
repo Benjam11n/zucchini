@@ -4,7 +4,7 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import { appClient } from "@/renderer/shared/lib/app-client";
+import { appClient } from "@/renderer/shared/ipc/app-client";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
 import type { AppSettings } from "@/shared/domain/settings";
 

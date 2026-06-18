@@ -6,7 +6,7 @@
  * surfaces the boot error so the user can retry.
  */
 import { useBootStore } from "@/renderer/app/state/boot-store";
-import { runAppIpcTask } from "@/renderer/shared/lib/app-ipc-task";
+import { runAppIpcTask } from "@/renderer/shared/ipc/app-ipc-task";
 
 import { applyBootFailureState } from "./action-helpers";
 import type { ReloadAllFn } from "./today-actions";

@@ -35,16 +35,26 @@ const formats = {
 } as const satisfies Record<string, Intl.DateTimeFormatOptions>;
 
 type DateFormat = keyof typeof formats;
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 function formatter(
   format: DateFormat,
   locale?: string,
   timeZone?: string
 ): Intl.DateTimeFormat {
-  return new Intl.DateTimeFormat(locale, {
+  const options = {
     ...formats[format],
     ...(timeZone ? { timeZone } : {}),
-  });
+  };
+  const cacheKey = JSON.stringify([format, locale ?? "", options]);
+  const cachedFormatter = formatterCache.get(cacheKey);
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const nextFormatter = new Intl.DateTimeFormat(locale, options);
+  formatterCache.set(cacheKey, nextFormatter);
+  return nextFormatter;
 }
 
 export function formatDate(

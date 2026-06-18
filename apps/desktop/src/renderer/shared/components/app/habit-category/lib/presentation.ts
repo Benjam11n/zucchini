@@ -1,31 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
 
-import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/lib/habit-categories";
+import { HABIT_CATEGORY_ICONS } from "@/renderer/shared/components/app/habit-category/lib/categories";
 import type { HabitCategory } from "@/shared/domain/habit";
-import type { HabitCategoryPreferences } from "@/shared/domain/settings";
 import { createDefaultHabitCategoryPreferences } from "@/shared/domain/settings";
 
 const DEFAULT_CATEGORY_PREFERENCES = createDefaultHabitCategoryPreferences();
-
-const HabitCategoryPreferencesContext = createContext<HabitCategoryPreferences>(
-  DEFAULT_CATEGORY_PREFERENCES
-);
-
-export function HabitCategoryPreferencesProvider({
-  children,
-  preferences,
-}: {
-  children: ReactNode;
-  preferences: HabitCategoryPreferences;
-}) {
-  return (
-    <HabitCategoryPreferencesContext.Provider value={preferences}>
-      {children}
-    </HabitCategoryPreferencesContext.Provider>
-  );
-}
 
 function getColorChannels(color: string): {
   blue: number;
@@ -44,10 +23,6 @@ function getColorChannels(color: string): {
     luminance: (red * 299 + green * 587 + blue * 114) / 1000,
     red,
   };
-}
-
-export function useHabitCategoryPreferences(): HabitCategoryPreferences {
-  return useContext(HabitCategoryPreferencesContext);
 }
 
 function getTextColorOnColor(backgroundColor: string): string {

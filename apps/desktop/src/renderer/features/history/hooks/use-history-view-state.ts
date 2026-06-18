@@ -12,7 +12,7 @@ import {
   getHistoryMonthStats,
   getHistoryTrendPoints,
 } from "@/renderer/features/history/lib/history-timeline";
-import { getHistoryDayLookup } from "@/renderer/shared/lib/history-summary";
+import { getHistoryDayLookup } from "@/renderer/shared/history/history-summary";
 import { parseDateKey } from "@/shared/domain/date-key";
 
 interface HistoryViewState {

@@ -1,5 +1,6 @@
 import { ArrowDownRight } from "lucide-react";
 
+import { getHabitCategoryLabel } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { Badge } from "@/renderer/shared/components/ui/badge";
 import {
   Card,
@@ -9,10 +10,7 @@ import {
 } from "@/renderer/shared/components/ui/card";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";
 import { TextWithTooltip } from "@/renderer/shared/components/ui/text-with-tooltip";
-import {
-  getHabitCategoryLabel,
-  useHabitCategoryPreferences,
-} from "@/renderer/shared/lib/habit-category-presentation";
+import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
 import type { WeeklyReviewHabitMetric } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewMostMissedCardProps {

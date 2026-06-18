@@ -16,8 +16,8 @@ import type { ReactNode } from "react";
 import type { AppTab } from "@/renderer/app/app.types";
 import { AppNav } from "@/renderer/app/shell/app-nav";
 import { UpdateButton } from "@/renderer/app/shell/update-button";
+import { pageVariants } from "@/renderer/shared/animation/motion";
 import { Tabs, TabsContent } from "@/renderer/shared/components/ui/tabs";
-import { pageVariants } from "@/renderer/shared/lib/motion";
 
 interface AppShellProps {
   children: ReactNode;

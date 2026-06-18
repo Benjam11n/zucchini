@@ -84,22 +84,25 @@ export function listAutoBackupFiles(backupDirectory: string): AutoBackupFile[] {
     return [];
   }
 
-  return fs
-    .readdirSync(backupDirectory)
-    .filter((filename) => AUTO_BACKUP_FILENAME_PATTERN.test(filename))
-    .map((filename) => {
-      const filePath = path.join(backupDirectory, filename);
-      return {
-        filePath,
-        filename,
-        modifiedAtMs: fs.statSync(filePath).mtimeMs,
-      };
-    })
-    .toSorted(
-      (left, right) =>
-        right.modifiedAtMs - left.modifiedAtMs ||
-        right.filename.localeCompare(left.filename)
-    );
+  const files: AutoBackupFile[] = [];
+  for (const filename of fs.readdirSync(backupDirectory)) {
+    if (!AUTO_BACKUP_FILENAME_PATTERN.test(filename)) {
+      continue;
+    }
+
+    const filePath = path.join(backupDirectory, filename);
+    files.push({
+      filePath,
+      filename,
+      modifiedAtMs: fs.statSync(filePath).mtimeMs,
+    });
+  }
+
+  return files.toSorted(
+    (left, right) =>
+      right.modifiedAtMs - left.modifiedAtMs ||
+      right.filename.localeCompare(left.filename)
+  );
 }
 
 export function createAutoBackupService({

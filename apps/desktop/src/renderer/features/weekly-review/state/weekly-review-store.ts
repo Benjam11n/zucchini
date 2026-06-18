@@ -9,8 +9,8 @@
 import { create } from "zustand";
 
 import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
-import { appClient } from "@/renderer/shared/lib/app-client";
-import { runStoreLoad } from "@/renderer/shared/lib/store-load-task";
+import { appClient } from "@/renderer/shared/ipc/app-client";
+import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {

@@ -1,20 +1,20 @@
 import { RotateCcw, Tags } from "lucide-react";
-import { useState, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type {
   SettingsPageActions,
   SettingsPageViewModel,
 } from "@/renderer/features/settings/settings.types";
-import { Button } from "@/renderer/shared/components/ui/button";
-import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {
   getDefaultHabitCategoryPreferences,
   getHabitCategoryPresentation,
-} from "@/renderer/shared/lib/habit-category-presentation";
+} from "@/renderer/shared/components/app/habit-category/lib/presentation";
+import { Button } from "@/renderer/shared/components/ui/button";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 
-import { CategorySettingsItem } from "../category-settings-item";
+import { CategorySettingsItem } from "../category-settings-item/category-settings-item";
 
 const CATEGORY_PREVIEW_RING_ORDER = [
   "fitness",
@@ -38,16 +38,18 @@ export function CategorySettingsCard({
     section: "color" | "icon";
     value: (typeof HABIT_CATEGORY_SLOTS)[number]["value"];
   }>(null);
+  const firstColorPickerRef = useRef<HTMLInputElement>(null);
+  const secondColorPickerRef = useRef<HTMLInputElement>(null);
+  const thirdColorPickerRef = useRef<HTMLInputElement>(null);
 
-  // Create refs for hidden color inputs to trigger them via SVG rings
-  const colorPickerRefs = {
-    [HABIT_CATEGORY_SLOTS[0]?.value ?? "slot-1"]:
-      useRef<HTMLInputElement>(null),
-    [HABIT_CATEGORY_SLOTS[1]?.value ?? "slot-2"]:
-      useRef<HTMLInputElement>(null),
-    [HABIT_CATEGORY_SLOTS[2]?.value ?? "slot-3"]:
-      useRef<HTMLInputElement>(null),
-  };
+  const colorPickerRefs = useMemo(
+    () => ({
+      [HABIT_CATEGORY_SLOTS[0]?.value ?? "slot-1"]: firstColorPickerRef,
+      [HABIT_CATEGORY_SLOTS[1]?.value ?? "slot-2"]: secondColorPickerRef,
+      [HABIT_CATEGORY_SLOTS[2]?.value ?? "slot-3"]: thirdColorPickerRef,
+    }),
+    []
+  );
 
   return (
     <Card>

@@ -1,5 +1,5 @@
 import { TimerReset } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
 import type {
@@ -16,41 +16,54 @@ interface PomodoroSettingsCardProps {
   settings: SettingsPageViewModel["settings"];
 }
 
+let shortcutStatusSnapshot: FocusTimerShortcutStatus | null = null;
+const shortcutStatusListeners = new Set<() => void>();
+
+function emitShortcutStatusChange() {
+  for (const listener of shortcutStatusListeners) {
+    listener();
+  }
+}
+
+async function refreshShortcutStatus() {
+  try {
+    shortcutStatusSnapshot = await window.desktop.getFocusTimerShortcutStatus();
+  } catch {
+    shortcutStatusSnapshot = null;
+  }
+  emitShortcutStatusChange();
+}
+
+function subscribeToShortcutStatus(onChange: () => void): () => void {
+  shortcutStatusListeners.add(onChange);
+  void refreshShortcutStatus();
+  const unsubscribe = window.desktop.onFocusTimerShortcutStatusChanged(
+    (nextStatus) => {
+      shortcutStatusSnapshot = nextStatus;
+      emitShortcutStatusChange();
+    }
+  );
+
+  return () => {
+    shortcutStatusListeners.delete(onChange);
+    unsubscribe();
+  };
+}
+
+function getShortcutStatusSnapshot(): FocusTimerShortcutStatus | null {
+  return shortcutStatusSnapshot;
+}
+
 export function PomodoroSettingsCard({
   fieldErrors,
   onChange,
   settings,
 }: PomodoroSettingsCardProps) {
-  const [shortcutStatus, setShortcutStatus] =
-    useState<FocusTimerShortcutStatus | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadShortcutStatus() {
-      try {
-        const nextStatus = await window.desktop.getFocusTimerShortcutStatus();
-
-        if (!cancelled) {
-          setShortcutStatus(nextStatus);
-        }
-      } catch {
-        if (!cancelled) {
-          setShortcutStatus(null);
-        }
-      }
-    }
-
-    loadShortcutStatus();
-
-    const unsubscribe =
-      window.desktop.onFocusTimerShortcutStatusChanged(setShortcutStatus);
-
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, []);
+  const shortcutStatus = useSyncExternalStore(
+    subscribeToShortcutStatus,
+    getShortcutStatusSnapshot,
+    getShortcutStatusSnapshot
+  );
 
   const shortcutWarnings = shortcutStatus
     ? [shortcutStatus.toggle, shortcutStatus.reset].filter(

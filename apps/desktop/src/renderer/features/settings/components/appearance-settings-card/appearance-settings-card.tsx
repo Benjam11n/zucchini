@@ -7,13 +7,13 @@ import type {
   SettingsPageActions,
   SettingsPageViewModel,
 } from "@/renderer/features/settings/settings.types";
-import { Card, CardContent } from "@/renderer/shared/components/ui/card";
-import { cn } from "@/renderer/shared/lib/class-names";
 import {
   hoverLift,
   microTransition,
   tapPress,
-} from "@/renderer/shared/lib/motion";
+} from "@/renderer/shared/animation/motion";
+import { Card, CardContent } from "@/renderer/shared/components/ui/card";
+import { cn } from "@/renderer/shared/lib/class-names";
 
 interface AppearanceSettingsCardProps {
   fieldErrors: SettingsPageViewModel["fieldErrors"];
