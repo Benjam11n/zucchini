@@ -1,5 +1,7 @@
 import { spawn } from "node:child_process";
 
+import { exitWithChild } from "./electron-launcher.mjs";
+
 const hasSpaceInCwd = /\s/u.test(process.cwd());
 
 if (hasSpaceInCwd) {
@@ -29,11 +31,4 @@ const child =
         stdio: "inherit",
       });
 
-child.on("exit", (code, signal) => {
-  if (signal) {
-    process.kill(process.pid, signal);
-    return;
-  }
-
-  process.exit(code ?? 0);
-});
+child.on("exit", exitWithChild);

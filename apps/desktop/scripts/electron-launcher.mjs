@@ -20,6 +20,15 @@ const LAUNCHER_VERSION = 5;
 const __dirname = import.meta.dirname;
 export const desktopDir = resolve(__dirname, "..");
 
+export function exitWithChild(code, signal) {
+  if (signal) {
+    process.kill(process.pid, signal);
+    return;
+  }
+
+  process.exit(code ?? 0);
+}
+
 function setPlistString(plistPath, key, value) {
   const replaceResult = spawnSync(
     "plutil",

@@ -1,10 +1,9 @@
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
 import { watch } from "node:fs";
+import { access } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-
-import waitOn from "wait-on";
 
 import { desktopDir, resolveElectronPath } from "./electron-launcher.mjs";
 
@@ -17,13 +16,32 @@ const watchedDirectories = [
 const forcedShutdownTimeoutMs = 1500;
 const restartDebounceMs = 120;
 const childTreeGracePeriodMs = 1200;
+const waitRetryMs = 100;
 
-await waitOn({
-  resources: [
-    `tcp:${port}`,
-    ...requiredFiles.map((filePath) => `file:${filePath}`),
-  ],
-});
+async function waitForFile(filePath) {
+  while (true) {
+    try {
+      await access(filePath);
+      return;
+    } catch {
+      await delay(waitRetryMs);
+    }
+  }
+}
+
+async function waitForDevServer() {
+  while (true) {
+    try {
+      const response = await fetch(devServerUrl);
+      await response.body?.cancel();
+      return;
+    } catch {
+      await delay(waitRetryMs);
+    }
+  }
+}
+
+await Promise.all([waitForDevServer(), ...requiredFiles.map(waitForFile)]);
 
 const childEnv = { ...process.env };
 delete childEnv.ELECTRON_RUN_AS_NODE;
