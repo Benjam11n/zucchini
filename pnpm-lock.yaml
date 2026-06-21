@@ -178,9 +178,6 @@ importers:
       lucide-react:
         specifier: 1.16.0
         version: 1.16.0(react@19.2.6)
-      postprocessing:
-        specifier: ^6.39.1
-        version: 6.39.1(three@0.184.0)
       react:
         specifier: ^19.2.6
         version: 19.2.6
@@ -4921,11 +4918,6 @@ packages:
     resolution: {integrity: sha512-b9Eb8h2eVqNE8edvKdwqkrY6O7kAwmI8kcnBv1NScolYJbo59XUF0noFq+lxbC1yN20bmC0WBEbDC5H/7ASb0A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
-
-  postprocessing@6.39.1:
-    resolution: {integrity: sha512-R2dG2zy+BAx3USl5EHw+PvnrlbT5PKnZVp3se0HCR0pWH8WQdh742yNG4YWOsq6c0bFpffk0Gd2RqPeoP/wKng==}
-    peerDependencies:
-      three: '>= 0.168.0 < 0.185.0'
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
@@ -10348,10 +10340,6 @@ snapshots:
     dependencies:
       commander: 9.5.0
     optional: true
-
-  postprocessing@6.39.1(three@0.184.0):
-    dependencies:
-      three: 0.184.0
 
   powershell-utils@0.1.0: {}
 
