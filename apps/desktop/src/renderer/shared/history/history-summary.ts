@@ -1,5 +1,5 @@
 import { getHistoryStatusLabel } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
-import type { HistoryStatus } from "@/renderer/shared/types/contribution";
+import type { HistoryStatus } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import type { DailySummary } from "@/shared/domain/streak";
 
 export function getActivityStatus(

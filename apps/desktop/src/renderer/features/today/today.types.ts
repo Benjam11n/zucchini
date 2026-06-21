@@ -4,7 +4,7 @@
  * Defines the persisted UI snapshot used to detect state changes for
  * celebration triggers and popup notifications.
  */
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import type { TodayState } from "@/shared/read-models/today-state";
 
 export interface TodayPageActions {

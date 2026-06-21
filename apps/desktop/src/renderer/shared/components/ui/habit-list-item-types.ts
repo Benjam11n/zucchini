@@ -1,7 +1,17 @@
-import type { ReactNode } from "react";
+import type { FocusEvent, KeyboardEvent, MouseEvent, ReactNode } from "react";
 
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
+
+export interface KeyboardRowProps {
+  "data-keyboard-row": string;
+  onBlur: (event: FocusEvent<HTMLElement>) => void;
+  onFocus: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
+  onMouseEnter: (event: MouseEvent<HTMLElement>) => void;
+  onMouseLeave: (event: MouseEvent<HTMLElement>) => void;
+  ref: (node: HTMLElement | null) => void;
+  tabIndex: number;
+}
 
 export interface HabitListItemStreak {
   bestStreak: number;

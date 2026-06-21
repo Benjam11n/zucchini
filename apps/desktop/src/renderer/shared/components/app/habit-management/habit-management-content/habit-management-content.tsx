@@ -1,8 +1,8 @@
 import { domAnimation, LazyMotion } from "framer-motion";
 import { ArrowDownAZ } from "lucide-react";
 
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { Button } from "@/renderer/shared/components/ui/button";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
 import { HabitManagementFeedback } from "../habit-management-feedback/habit-management-feedback";

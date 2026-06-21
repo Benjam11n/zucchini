@@ -3,9 +3,9 @@ import type {
   ContributionIntensity,
   ContributionWeek,
 } from "@/renderer/features/history/history.types";
+import type { HistoryStatus } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { getHistoryDailyCounts } from "@/renderer/shared/history/history-daily-counts";
 import type { HistoryDailyCountDay } from "@/renderer/shared/history/history-daily-counts";
-import type { HistoryStatus } from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/domain/date-format";
 import { addDays, endOfWeek, startOfWeek } from "@/shared/domain/date-key";
 import type { DailySummary } from "@/shared/domain/streak";

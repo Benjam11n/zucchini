@@ -4,7 +4,6 @@
  * Re-exports focus timer domain types and defines focus page action/view-model
  * contracts. Component prop types live beside their component.
  */
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type {
   CreateFocusSessionInput,
   FocusSession,
@@ -18,6 +17,7 @@ import type { GoalFrequency } from "@/shared/domain/goal";
 import type { AppSettings } from "@/shared/domain/settings";
 
 export type FocusSessionsPhase = AsyncPhase;
+type AsyncPhase = "error" | "idle" | "loading" | "ready";
 export type {
   FocusBreakVariant,
   PersistedCompletedBreakState,

@@ -1,4 +1,4 @@
-import { electronWindDownReminderNotifier } from "@/main/features/reminders/adapters";
+import { showWindDownReminder } from "@/main/features/reminders/notifications";
 import type {
   ReminderRuntimeStateStore,
   ReminderTimerPort,
@@ -24,6 +24,10 @@ import {
 } from "./scheduler-utils";
 import type { TimerHandle } from "./scheduler-utils";
 
+const defaultWindDownReminderNotifier: WindDownReminderNotifier = {
+  showWindDownReminder,
+};
+
 interface WindDownReminderSchedulerOptions {
   clock?: Pick<Clock, "now">;
   getTodayState: () => TodayState;
@@ -44,7 +48,7 @@ export function createWindDownReminderScheduler({
   clock = systemClock,
   getTodayState,
   loadState = () => ({ ...DEFAULT_WIND_DOWN_RUNTIME_STATE }),
-  notifier = electronWindDownReminderNotifier,
+  notifier = defaultWindDownReminderNotifier,
   onOpenWindDown,
   saveState,
   stateStore,

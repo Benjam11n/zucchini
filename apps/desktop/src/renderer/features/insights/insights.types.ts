@@ -1,4 +1,3 @@
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   InsightsDashboard,
@@ -6,6 +5,7 @@ import type {
 } from "@/shared/domain/insights";
 
 export type InsightsPhase = AsyncPhase;
+type AsyncPhase = "error" | "idle" | "loading" | "ready";
 
 export interface InsightsPageActions {
   insights: {

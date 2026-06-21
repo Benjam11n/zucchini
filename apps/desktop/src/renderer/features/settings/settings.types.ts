@@ -1,8 +1,4 @@
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
-import type {
-  SettingsFieldErrors,
-  SettingsSavePhase,
-} from "@/renderer/shared/types/settings";
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import type {
   FocusQuotaGoalWithStatus,
@@ -18,7 +14,15 @@ import type {
 import type { Habit } from "@/shared/domain/habit";
 import type { AppSettings } from "@/shared/domain/settings";
 
-export type { SettingsFieldErrors, SettingsSavePhase };
+export type SettingsSavePhase =
+  | "idle"
+  | "pending"
+  | "invalid"
+  | "saving"
+  | "saved"
+  | "error";
+
+export type SettingsFieldErrors = Partial<Record<keyof AppSettings, string>>;
 
 export interface SettingsPageActions {
   dataManagement: {

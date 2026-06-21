@@ -1,4 +1,4 @@
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
+import type { WeeklyReviewAsyncPhase } from "@/renderer/features/weekly-review/weekly-review.types";
 import { isMonday } from "@/shared/domain/date-key";
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
@@ -7,7 +7,7 @@ interface ShouldOpenWeeklyReviewSpotlightOptions {
   lastSeenWeeklyReviewStart: string | null;
   latestReview: WeeklyReview | null;
   todayKey: string | null;
-  weeklyReviewPhase: AsyncPhase;
+  weeklyReviewPhase: WeeklyReviewAsyncPhase;
 }
 
 export function shouldOpenWeeklyReviewSpotlight({

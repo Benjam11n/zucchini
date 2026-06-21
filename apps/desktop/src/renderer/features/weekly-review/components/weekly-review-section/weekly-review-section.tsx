@@ -3,6 +3,7 @@ import { WeeklyReviewHabitChart } from "@/renderer/features/weekly-review/compon
 import { WeeklyReviewHeroCard } from "@/renderer/features/weekly-review/components/weekly-review-hero-card/weekly-review-hero-card";
 import { WeeklyReviewMostMissedCard } from "@/renderer/features/weekly-review/components/weekly-review-most-missed-card/weekly-review-most-missed-card";
 import { WeeklyReviewTrendChart } from "@/renderer/features/weekly-review/components/weekly-review-trend-chart/weekly-review-trend-chart";
+import type { WeeklyReviewAsyncPhase } from "@/renderer/features/weekly-review/weekly-review.types";
 import {
   Card,
   CardContent,
@@ -11,7 +12,6 @@ import {
   CardTitle,
 } from "@/renderer/shared/components/ui/card";
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   WeeklyReview,
@@ -23,7 +23,7 @@ interface WeeklyReviewSectionProps {
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
-  weeklyReviewPhase: AsyncPhase;
+  weeklyReviewPhase: WeeklyReviewAsyncPhase;
 }
 
 export function WeeklyReviewSection({

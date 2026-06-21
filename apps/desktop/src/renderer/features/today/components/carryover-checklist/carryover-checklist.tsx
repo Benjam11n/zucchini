@@ -8,8 +8,8 @@ import {
   HabitListItem,
   HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
+import type { KeyboardRowProps } from "@/renderer/shared/components/ui/habit-list-item-types";
 import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type { HabitCategory } from "@/shared/domain/habit";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";

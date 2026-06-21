@@ -11,8 +11,8 @@ import {
   HABIT_ROW_CONTENT_INTERACTION_CLASSNAME,
   HABIT_ROW_INTERACTIVE_CLASSNAME,
 } from "@/renderer/shared/components/app/habit-management/lib/habit-row-interaction";
+import type { KeyboardRowProps } from "@/renderer/shared/components/ui/habit-list-item-types";
 import { cn } from "@/renderer/shared/lib/class-names";
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 
 import { PeriodicHabitControls } from "../periodic-habit-controls/periodic-habit-controls";

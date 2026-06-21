@@ -1,8 +1,8 @@
 import { useState } from "react";
 
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { sortHabitListByCategory } from "@/renderer/shared/components/app/habit-management/lib/reorder-habits";
 import { useAppIpcActionRunner } from "@/renderer/shared/hooks/use-app-ipc-action-runner";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type {
   Habit,
   HabitCategory,

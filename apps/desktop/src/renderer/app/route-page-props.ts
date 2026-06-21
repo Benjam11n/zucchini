@@ -5,7 +5,7 @@ import type { InsightsPageActions } from "@/renderer/features/insights/insights.
 import type { SettingsPageActions } from "@/renderer/features/settings/settings.types";
 import type { TodayPageActions } from "@/renderer/features/today/today.types";
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 
 type ControllerActions = ReadyAppController["actions"];
 

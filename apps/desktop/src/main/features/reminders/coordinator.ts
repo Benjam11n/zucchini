@@ -8,10 +8,6 @@ import type { AppSettings } from "@/shared/domain/settings";
 import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 import { DEFAULT_WIND_DOWN_RUNTIME_STATE } from "@/shared/domain/wind-down-runtime-state";
 
-import {
-  electronHabitReminderNotifier,
-  electronWindDownReminderNotifier,
-} from "./adapters";
 import type {
   HabitReminderNotifier,
   ReminderClockPort,
@@ -43,19 +39,19 @@ export interface ReminderCoordinator {
 
 export function createReminderCoordinator({
   clock = systemClock,
-  habitNotifier = electronHabitReminderNotifier,
+  habitNotifier,
   habitState,
   onOpenWindDown,
   repository,
   timers = realReminderTimers,
   today,
-  windDownNotifier = electronWindDownReminderNotifier,
+  windDownNotifier,
   windDownState,
 }: ReminderCoordinatorOptions): ReminderCoordinator {
   const reminders = createReminderScheduler({
     clock,
     getTodayState: today.getTodayState,
-    notifier: habitNotifier,
+    ...(habitNotifier ? { notifier: habitNotifier } : {}),
     stateStore:
       habitState ??
       createRuntimeStateStore({
@@ -70,7 +66,7 @@ export function createReminderCoordinator({
   const windDownReminders = createWindDownReminderScheduler({
     clock,
     getTodayState: today.getTodayState,
-    notifier: windDownNotifier,
+    ...(windDownNotifier ? { notifier: windDownNotifier } : {}),
     onOpenWindDown,
     stateStore:
       windDownState ??

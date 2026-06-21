@@ -1,6 +1,6 @@
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { Label } from "@/renderer/shared/components/ui/label";
 import { cn } from "@/renderer/shared/lib/class-names";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
 import { HabitCategorySelector } from "../habit-category-selector/habit-category-selector";

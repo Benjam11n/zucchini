@@ -8,11 +8,11 @@ import {
 } from "lucide-react";
 
 import type { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { reorderHabitList } from "@/renderer/shared/components/app/habit-management/lib/reorder-habits";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { CollapsibleTrigger } from "@/renderer/shared/components/ui/collapsible";
 import { ConfirmIconButton } from "@/renderer/shared/components/ui/confirm-icon-button";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
 import { getHabitCadenceSummary } from "../lib/habit-cadence-summary";

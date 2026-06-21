@@ -5,7 +5,9 @@
  * opening the main window, focus widget, snoozing reminders, and quitting.
  * Respects the `minimizeToTray` setting to show/hide the tray icon.
  */
-import { electronAppTrayShell } from "@/main/app/adapters";
+import { Menu, Tray, nativeImage } from "electron";
+
+import { resolveRuntimeIconPath } from "@/main/app/assets";
 import type { AppTrayShellPort } from "@/main/app/ports";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -44,8 +46,15 @@ function createTrayIcon(shell: AppTrayShellPort) {
     .resize({ height: 18, width: 18 });
 }
 
+const defaultTrayShell: AppTrayShellPort = {
+  buildMenuFromTemplate: (template) => Menu.buildFromTemplate(template),
+  createImageFromPath: (assetPath) => nativeImage.createFromPath(assetPath),
+  createTray: (image) => new Tray(image),
+  resolveIconPath: resolveRuntimeIconPath,
+};
+
 export function createAppTray({
-  shell = electronAppTrayShell,
+  shell = defaultTrayShell,
   onOpen,
   onOpenWidget,
   onQuit,

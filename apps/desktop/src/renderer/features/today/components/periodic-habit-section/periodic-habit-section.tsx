@@ -3,7 +3,7 @@ import { m } from "framer-motion";
 import { getPeriodicHabitKeyboardRowId } from "@/renderer/features/today/lib/today-keyboard-row-ids";
 import { staggerItemVariants } from "@/renderer/shared/animation/motion";
 import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
+import type { KeyboardRowProps } from "@/renderer/shared/components/ui/habit-list-item-types";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 

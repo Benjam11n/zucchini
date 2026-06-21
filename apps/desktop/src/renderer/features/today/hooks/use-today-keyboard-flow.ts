@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
+import type { KeyboardRowProps } from "@/renderer/shared/components/ui/habit-list-item-types";
 
 type TodayKeyboardRowKind = "carryover" | "daily" | "periodic";
 

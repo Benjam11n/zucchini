@@ -1,13 +1,9 @@
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 /**
  * History page type definitions.
  *
  * Defines props for the history page and weekly review phase type.
  */
-import type {
-  ContributionIntensity,
-  ContributionStatus as HistoryStatus,
-} from "@/renderer/shared/types/contribution";
+import type { HistoryStatus } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary } from "@/shared/domain/streak";
@@ -19,6 +15,8 @@ import type {
 import type { HistoryViewModel } from "./hooks/use-history-view-state";
 
 export type WeeklyReviewPhase = AsyncPhase;
+type AsyncPhase = "error" | "idle" | "loading" | "ready";
+export type ContributionIntensity = 0 | 1 | 2 | 3 | 4;
 export type HistoryViewMode = "review" | "timeline";
 
 export interface HistoryPageActions {
@@ -48,8 +46,6 @@ export interface HistoryPageViewModel {
   viewModel?: HistoryViewModel;
   onHistoryModeChange?: (mode: HistoryViewMode) => void;
 }
-
-export type { ContributionIntensity };
 
 export interface ContributionCell {
   completedCount: number;

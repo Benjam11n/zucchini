@@ -29,7 +29,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/renderer/shared/components/ui/dialog";
-import type { SettingsSavePhase } from "@/renderer/shared/types/settings";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
@@ -37,6 +36,14 @@ import type { AppSettings } from "@/shared/domain/settings";
 
 import { FocusSessionList } from "./components/focus-session-list/focus-session-list";
 import { FocusTimerCard } from "./components/focus-timer-card/focus-timer-card";
+
+type SettingsSavePhase =
+  | "idle"
+  | "pending"
+  | "invalid"
+  | "saving"
+  | "saved"
+  | "error";
 
 interface FocusPageViewModel {
   focusSaveErrorMessage: string | null;

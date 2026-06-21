@@ -13,7 +13,13 @@ import type { AppSettings } from "@/shared/domain/settings";
  */
 import type { TodayState } from "@/shared/read-models/today-state";
 
-import { electronHabitReminderNotifier } from "./adapters";
+import {
+  showCatchUpReminder,
+  showIncompleteReminder,
+  showMidnightWarning,
+  showMissedReminderWarning,
+  showSnoozedReminder,
+} from "./notifications";
 import type {
   HabitReminderNotifier,
   ReminderRuntimeStateStore,
@@ -35,6 +41,14 @@ import type { TimerHandle } from "./scheduler-utils";
 
 const MIDNIGHT_WARNING_HOUR = 23;
 const MIDNIGHT_WARNING_MINUTE = 0;
+
+const defaultHabitReminderNotifier: HabitReminderNotifier = {
+  showCatchUpReminder,
+  showIncompleteReminder,
+  showMidnightWarning,
+  showMissedReminderWarning,
+  showSnoozedReminder,
+};
 
 interface ReminderSchedulerOptions {
   clock?: Pick<Clock, "now">;
@@ -436,7 +450,7 @@ export function createReminderScheduler({
   clock = systemClock,
   getTodayState,
   loadState = () => ({ ...DEFAULT_REMINDER_RUNTIME_STATE }),
-  notifier = electronHabitReminderNotifier,
+  notifier = defaultHabitReminderNotifier,
   saveState,
   stateStore,
   timers = realReminderTimers,

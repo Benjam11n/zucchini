@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { hoverLift, microTransition } from "@/renderer/shared/animation/motion";
 import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
+import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 import { getHabitNameError } from "@/renderer/shared/components/app/habit-management/lib/habit-name-validation";
 import {
   Collapsible,
@@ -12,7 +13,6 @@ import {
 import { Item } from "@/renderer/shared/components/ui/item";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
-import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
 import { DropIndicator } from "../drop-indicator/drop-indicator";

@@ -1,17 +1,15 @@
 import { m } from "framer-motion";
 
+import type { ContributionIntensity } from "@/renderer/features/history/history.types";
 import { hoverLift, tapPress } from "@/renderer/shared/animation/motion";
 import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
+import type { HistoryStatus } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/renderer/shared/components/ui/tooltip";
 import { cn } from "@/renderer/shared/lib/class-names";
-import type {
-  ContributionIntensity,
-  HistoryStatus,
-} from "@/renderer/shared/types/contribution";
 import { formatDateKey } from "@/shared/domain/date-format";
 
 interface ContributionCalendarCell {

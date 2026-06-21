@@ -9,8 +9,8 @@
 import { create } from "zustand";
 
 import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
+import type { WeeklyReviewAsyncPhase } from "@/renderer/features/weekly-review/weekly-review.types";
 import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
-import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
   WeeklyReview,
@@ -22,7 +22,7 @@ interface WeeklyReviewStoreState {
   selectedWeeklyReview: WeeklyReview | null;
   weeklyReviewError: AppIpcError | null;
   weeklyReviewOverview: WeeklyReviewOverview | null;
-  weeklyReviewPhase: AsyncPhase;
+  weeklyReviewPhase: WeeklyReviewAsyncPhase;
   dismissWeeklyReviewSpotlight: () => void;
   loadWeeklyReviewOverview: (options?: { force?: boolean }) => Promise<void>;
   openWeeklyReviewSpotlight: () => void;

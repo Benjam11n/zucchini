@@ -12,8 +12,8 @@ import {
   HabitListItem,
   HabitListRows,
 } from "@/renderer/shared/components/ui/habit-list";
+import type { KeyboardRowProps } from "@/renderer/shared/components/ui/habit-list-item-types";
 import { useHabitCategoryPreferences } from "@/renderer/shared/providers/habit-category-preferences";
-import type { KeyboardRowProps } from "@/renderer/shared/types/keyboard-row";
 import type { CategoryStreak } from "@/shared/domain/category-streak";
 import { HABIT_CATEGORY_SLOTS } from "@/shared/domain/habit";
 import type {

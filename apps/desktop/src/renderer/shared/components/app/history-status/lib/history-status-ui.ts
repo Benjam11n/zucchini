@@ -1,4 +1,12 @@
-import type { HistoryStatus } from "@/renderer/shared/types/contribution";
+export type HistoryStatus =
+  | "complete"
+  | "empty"
+  | "freeze"
+  | "rest"
+  | "sick"
+  | "missed"
+  | "rescheduled"
+  | "in-progress";
 
 export const HISTORY_STATUS_UI: Record<
   HistoryStatus,
