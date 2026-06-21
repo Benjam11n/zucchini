@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 
-import { WeeklyReviewChartFallback } from "@/renderer/features/weekly-review/components/weekly-review-chart-fallback";
+import { WeeklyReviewChartFallback } from "@/renderer/features/weekly-review/components/weekly-review-chart-fallback/weekly-review-chart-fallback";
 import type { WeeklyReviewTrendPoint } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewTrendChartProps {
@@ -8,7 +8,8 @@ interface WeeklyReviewTrendChartProps {
 }
 
 const WeeklyReviewTrendChartImpl = lazy(async () => {
-  const module = await import("../weekly-review-trend-chart-impl");
+  const module =
+    await import("../weekly-review-trend-chart-impl/weekly-review-trend-chart-impl");
   return {
     default: module.WeeklyReviewTrendChartImpl,
   };

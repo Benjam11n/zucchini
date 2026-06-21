@@ -1,6 +1,6 @@
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 
-import { FocusRunEntryRow } from "../focus-run-entry-row";
+import { FocusRunEntryRow } from "../focus-run-entry-row/focus-run-entry-row";
 
 interface FocusRunDetailsProps {
   detailsId: string;

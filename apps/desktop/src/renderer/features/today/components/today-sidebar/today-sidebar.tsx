@@ -15,7 +15,7 @@ import {
   getBarClassName,
 } from "@/renderer/features/today/lib/today-sidebar-view";
 import { microTransition } from "@/renderer/shared/animation/motion";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph/habit-activity-ring-glyph";
 import { HISTORY_STATUS_UI } from "@/renderer/shared/components/app/history-status/lib/history-status-ui";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {

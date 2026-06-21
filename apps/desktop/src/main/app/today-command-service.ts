@@ -27,7 +27,7 @@ import { ApplicationServiceSlice } from "./application-service-slice";
 export class TodayCommandService extends ApplicationServiceSlice {
   getHabits(): Habit[] {
     return this.inInitializedTransaction("getHabits", () =>
-      this.repository.getHabits()
+      this.repository.habits.getHabits()
     );
   }
 
@@ -42,16 +42,16 @@ export class TodayCommandService extends ApplicationServiceSlice {
       "setDayStatus",
       (today) => {
         if (!kind) {
-          const currentDayStatus = this.repository.getDayStatus(today);
+          const currentDayStatus = this.repository.history.getDayStatus(today);
           if (currentDayStatus?.kind === "rescheduled") {
-            this.repository.clearHabitCarryoversFromSourceDate(today);
+            this.repository.history.clearHabitCarryoversFromSourceDate(today);
           }
 
-          this.repository.clearDayStatus(today);
+          this.repository.history.clearDayStatus(today);
           return;
         }
 
-        this.repository.setDayStatus(
+        this.repository.history.setDayStatus(
           today,
           kind,
           this.clock.now().toISOString()
@@ -68,9 +68,9 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.mutateTodayState(
       "moveUnfinishedHabitsToTomorrow",
       (today) => {
-        this.repository.ensureStatusRowsForDate(today);
+        this.repository.history.ensureStatusRowsForDate(today);
         const unfinishedDailyHabits = this.repository
-          .getHabitsWithStatus(today)
+          .history.getHabitsWithStatus(today)
           .filter((habit) => isDailyHabit(habit) && !habit.completed);
 
         if (unfinishedDailyHabits.length === 0) {
@@ -78,8 +78,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
         }
 
         const nowIso = this.clock.now().toISOString();
-        this.repository.createHabitCarryovers(today, addDays(today, 1), nowIso);
-        this.repository.setDayStatus(today, "rescheduled", nowIso);
+        this.repository.history.createHabitCarryovers(today, addDays(today, 1), nowIso);
+        this.repository.history.setDayStatus(today, "rescheduled", nowIso);
       },
       {
         ensureStatusRowsForToday: true,
@@ -92,7 +92,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.mutateTodayState(
       "toggleHabitCarryover",
       (today) => {
-        this.repository.toggleHabitCarryover(
+        this.repository.history.toggleHabitCarryover(
           today,
           sourceDate,
           habitId,
@@ -110,13 +110,13 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.mutateTodayState(
       "toggleSickDay",
       (today) => {
-        const currentDayStatus = this.repository.getDayStatus(today);
+        const currentDayStatus = this.repository.history.getDayStatus(today);
         if (currentDayStatus?.kind === "sick") {
-          this.repository.clearDayStatus(today);
+          this.repository.history.clearDayStatus(today);
           return;
         }
 
-        this.repository.setDayStatus(
+        this.repository.history.setDayStatus(
           today,
           "sick",
           this.clock.now().toISOString()
@@ -131,7 +131,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
 
   toggleHabit(habitId: number): HabitStatusPatch {
     return this.mutateHabitStatusPatch("toggleHabit", habitId, (today) => {
-      this.repository.toggleHabit(
+      this.repository.history.toggleHabit(
         today,
         habitId,
         this.clock.now().toISOString()
@@ -144,7 +144,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
       "incrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.adjustHabitProgress(
+        this.repository.history.adjustHabitProgress(
           today,
           habitId,
           1,
@@ -159,7 +159,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
       "decrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.adjustHabitProgress(
+        this.repository.history.adjustHabitProgress(
           today,
           habitId,
           -1,
@@ -173,8 +173,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("pauseHabit", () => {
       this.syncRollingState();
       const today = this.getTodayKey();
-      this.repository.pauseHabit(habitId, this.clock.now().toISOString());
-      this.repository.removeStatusRowsForDate(today, habitId);
+      this.repository.habits.pauseHabit(habitId, this.clock.now().toISOString());
+      this.repository.history.removeStatusRowsForDate(today, habitId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -183,8 +183,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("resumeHabit", () => {
       this.syncRollingState();
       const today = this.getTodayKey();
-      this.repository.resumeHabit(habitId, this.clock.now().toISOString());
-      this.repository.ensureStatusRow(today, habitId);
+      this.repository.habits.resumeHabit(habitId, this.clock.now().toISOString());
+      this.repository.history.ensureStatusRow(today, habitId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -204,7 +204,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("createHabit", () => {
       const today = this.getTodayKey();
       this.syncRollingState();
-      const habitId = this.repository.insertHabit(
+      const habitId = this.repository.habits.insertHabit(
         trimmedName,
         normalizeHabitCategory(category),
         normalizeHabitFrequency(frequency),
@@ -213,18 +213,18 @@ export class TodayCommandService extends ApplicationServiceSlice {
           normalizeHabitFrequency(frequency),
           targetCount
         ),
-        this.repository.getMaxSortOrder() + 1,
+        this.repository.habits.getMaxSortOrder() + 1,
         this.clock.now().toISOString()
       );
       const habitIds = [habitId];
-      for (const habit of this.repository.getHabits()) {
+      for (const habit of this.repository.habits.getHabits()) {
         if (habit.id !== habitId) {
           habitIds.push(habit.id);
         }
       }
 
-      this.repository.reorderHabits(habitIds);
-      this.repository.ensureStatusRow(today, habitId);
+      this.repository.habits.reorderHabits(habitIds);
+      this.repository.history.ensureStatusRow(today, habitId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -236,14 +236,14 @@ export class TodayCommandService extends ApplicationServiceSlice {
     }
 
     return this.withInitialized(() => {
-      this.repository.renameHabit(habitId, trimmedName);
+      this.repository.habits.renameHabit(habitId, trimmedName);
       return this.rebuildCurrentTodayState();
     });
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState {
     return this.withInitialized(() => {
-      this.repository.updateHabitCategory(
+      this.repository.habits.updateHabitCategory(
         habitId,
         normalizeHabitCategory(category)
       );
@@ -258,15 +258,15 @@ export class TodayCommandService extends ApplicationServiceSlice {
   ): TodayState {
     return this.inInitializedTransaction("updateHabitFrequency", () => {
       const today = this.getTodayKey();
-      const previousProgress = this.repository.getHabitProgress(today, habitId);
+      const previousProgress = this.repository.history.getHabitProgress(today, habitId);
       const normalizedFrequency = normalizeHabitFrequency(frequency);
       const normalizedTargetCount = normalizeHabitTargetCount(
         normalizedFrequency,
         targetCount
       );
 
-      this.repository.removeStatusRowsForDate(today, habitId);
-      this.repository.updateHabitFrequency(
+      this.repository.history.removeStatusRowsForDate(today, habitId);
+      this.repository.habits.updateHabitFrequency(
         habitId,
         normalizedFrequency,
         normalizedTargetCount
@@ -285,19 +285,19 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("updateHabitTargetCount", () => {
       const today = this.getTodayKey();
       const habit = this.repository
-        .getHabits()
+        .habits.getHabits()
         .find((candidate) => candidate.id === habitId);
 
       if (!habit) {
         return this.rebuildCurrentTodayState();
       }
 
-      const previousProgress = this.repository.getHabitProgress(today, habitId);
+      const previousProgress = this.repository.history.getHabitProgress(today, habitId);
       const normalizedTargetCount = normalizeHabitTargetCount(
         habit.frequency,
         targetCount
       );
-      this.repository.updateHabitTargetCount(habitId, normalizedTargetCount);
+      this.repository.habits.updateHabitTargetCount(habitId, normalizedTargetCount);
       this.preserveTodayHabitProgress(
         today,
         habitId,
@@ -313,12 +313,12 @@ export class TodayCommandService extends ApplicationServiceSlice {
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
     return this.inInitializedTransaction("updateHabitWeekdays", () => {
-      this.repository.removeStatusRowsForDate(this.getTodayKey(), habitId);
-      this.repository.updateHabitWeekdays(
+      this.repository.history.removeStatusRowsForDate(this.getTodayKey(), habitId);
+      this.repository.habits.updateHabitWeekdays(
         habitId,
         normalizeHabitWeekdays(selectedWeekdays)
       );
-      this.repository.ensureStatusRow(this.getTodayKey(), habitId);
+      this.repository.history.ensureStatusRow(this.getTodayKey(), habitId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -339,7 +339,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
           );
         }
 
-        this.repository.upsertFocusQuotaGoal(
+        this.repository.focusQuotaGoals.upsertGoal(
           normalizedFrequency,
           normalizeFocusQuotaTargetMinutes(normalizedFrequency, targetMinutes),
           this.clock.now().toISOString()
@@ -353,7 +353,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.mutateTodayState(
       "archiveFocusQuotaGoal",
       () => {
-        this.repository.archiveFocusQuotaGoal(
+        this.repository.focusQuotaGoals.archiveGoal(
           goalId,
           this.clock.now().toISOString()
         );
@@ -366,7 +366,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.mutateTodayState(
       "unarchiveFocusQuotaGoal",
       () => {
-        this.repository.unarchiveFocusQuotaGoal(
+        this.repository.focusQuotaGoals.unarchiveGoal(
           goalId,
           this.clock.now().toISOString()
         );
@@ -377,8 +377,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
 
   archiveHabit(habitId: number): TodayState {
     return this.inInitializedTransaction("archiveHabit", () => {
-      this.repository.archiveHabit(habitId);
-      this.repository.normalizeHabitOrder();
+      this.repository.habits.archiveHabit(habitId);
+      this.repository.habits.normalizeHabitOrder();
       this.syncRollingState();
       return this.rebuildCurrentTodayState();
     });
@@ -386,17 +386,17 @@ export class TodayCommandService extends ApplicationServiceSlice {
 
   unarchiveHabit(habitId: number): TodayState {
     return this.inInitializedTransaction("unarchiveHabit", () => {
-      this.repository.unarchiveHabit(habitId);
+      this.repository.habits.unarchiveHabit(habitId);
       const habitIds: number[] = [];
-      for (const habit of this.repository.getHabits()) {
+      for (const habit of this.repository.habits.getHabits()) {
         if (habit.id !== habitId) {
           habitIds.push(habit.id);
         }
       }
       habitIds.push(habitId);
 
-      this.repository.reorderHabits(habitIds);
-      this.repository.ensureStatusRow(this.getTodayKey(), habitId);
+      this.repository.habits.reorderHabits(habitIds);
+      this.repository.history.ensureStatusRow(this.getTodayKey(), habitId);
       this.syncRollingState();
       return this.rebuildCurrentTodayState();
     });
@@ -404,7 +404,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
 
   reorderHabits(habitIds: number[]): TodayState {
     return this.inInitializedTransaction("reorderHabits", () => {
-      const activeHabits = this.repository.getHabits();
+      const activeHabits = this.repository.habits.getHabits();
       const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
 
       if (
@@ -414,7 +414,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
         return this.rebuildCurrentTodayState();
       }
 
-      this.repository.reorderHabits(habitIds);
+      this.repository.habits.reorderHabits(habitIds);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -426,7 +426,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     }
 
     return this.inInitializedTransaction("createWindDownAction", () => {
-      this.repository.createWindDownAction(
+      this.repository.windDownActions.createAction(
         trimmedName,
         this.clock.now().toISOString()
       );
@@ -441,14 +441,14 @@ export class TodayCommandService extends ApplicationServiceSlice {
     }
 
     return this.withInitialized(() => {
-      this.repository.renameWindDownAction(actionId, trimmedName);
+      this.repository.windDownActions.renameAction(actionId, trimmedName);
       return this.rebuildCurrentTodayState();
     });
   }
 
   deleteWindDownAction(actionId: number): TodayState {
     return this.inInitializedTransaction("deleteWindDownAction", () => {
-      this.repository.deleteWindDownAction(actionId);
+      this.repository.windDownActions.deleteAction(actionId);
       return this.rebuildCurrentTodayState();
     });
   }
@@ -456,8 +456,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
   toggleWindDownAction(actionId: number): TodayState {
     return this.inInitializedTransaction("toggleWindDownAction", () => {
       const today = this.getTodayKey();
-      this.repository.ensureWindDownStatusRowsForDate(today);
-      this.repository.toggleWindDownAction(
+      this.repository.windDownActions.ensureStatusRowsForDate(today);
+      this.repository.windDownActions.toggleAction(
         today,
         actionId,
         this.clock.now().toISOString()

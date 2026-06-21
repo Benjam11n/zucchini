@@ -103,7 +103,7 @@ function buildTodayHabitStreaksFromHabits(
   const dailyHabits = habits.filter(isDailyHabit);
   const persistedStateByHabitId = new Map(
     repository
-      .getPersistedHabitStreakStates(dailyHabits.map((habit) => habit.id))
+      .streaks.getPersistedHabitStreakStates(dailyHabits.map((habit) => habit.id))
       .map((state) => [state.habitId, state])
   );
   const habitStreaks: Record<number, HabitStreak> = {};
@@ -138,7 +138,7 @@ function buildTodayCategoryStreaksFromHabits(
 ): Record<HabitCategory, CategoryStreak> {
   const persistedStateByCategory = new Map(
     repository
-      .getPersistedCategoryStreakStates()
+      .streaks.getPersistedCategoryStreakStates()
       .map((state) => [state.category, state])
   );
   const dailyHabits = habits.filter(isDailyHabit);
@@ -182,16 +182,16 @@ export function buildTodayState(
   clock: Clock
 ): TodayState {
   const today = clock.todayKey();
-  repository.ensureStatusRowsForDate(today);
+  repository.history.ensureStatusRowsForDate(today);
 
-  const habits = repository.getHabitsWithStatus(today);
-  const currentDayStatus = repository.getDayStatus(today);
+  const habits = repository.history.getHabitsWithStatus(today);
+  const currentDayStatus = repository.history.getDayStatus(today);
   const dailyHabits = habits.filter(isDailyHabit);
-  const habitCarryovers = repository.getHabitCarryoversForDate(today);
+  const habitCarryovers = repository.history.getHabitCarryoversForDate(today);
   const allCarryoversComplete = habitCarryovers.every(
     (carryover) => carryover.completed
   );
-  const settledStreak = repository.getPersistedStreakState();
+  const settledStreak = repository.streaks.getPersistedStreakState();
   const preview = previewOpenDay(
     settledStreak,
     dailyHabits.length > 0 &&
@@ -200,12 +200,12 @@ export function buildTodayState(
     currentDayStatus?.kind ?? null
   );
 
-  const focusSessions = repository.getFocusSessionsInRange(today, today);
+  const focusSessions = repository.focusSessions.listSessionsInRange(today, today);
   const focusMinutes = toFocusMinutes(
     focusSessions.reduce((total, session) => total + session.durationSeconds, 0)
   );
-  repository.ensureWindDownStatusRowsForDate(today);
-  const windDownActions = repository.getWindDownActionsWithStatus(today);
+  repository.windDownActions.ensureStatusRowsForDate(today);
+  const windDownActions = repository.windDownActions.getActionsWithStatus(today);
   return {
     categoryStreaks: buildTodayCategoryStreaksFromHabits(
       repository,
@@ -216,7 +216,7 @@ export function buildTodayState(
     date: today,
     dayStatus: currentDayStatus?.kind ?? null,
     focusMinutes,
-    focusQuotaGoals: repository.getFocusQuotaGoalsWithStatusForDate(today),
+    focusQuotaGoals: repository.history.getFocusQuotaGoalsWithStatus(today),
     habitCarryovers,
     habitStreaks: buildTodayHabitStreaksFromHabits(
       repository,
@@ -224,7 +224,7 @@ export function buildTodayState(
       currentDayStatus?.kind ?? null
     ),
     habits,
-    settings: repository.getSettings(clock.timezone()),
+    settings: repository.settings.getSettings(clock.timezone()),
     streak: {
       availableFreezes: preview.availableFreezes,
       bestStreak: preview.bestStreak,

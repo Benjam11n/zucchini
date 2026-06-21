@@ -1,7 +1,7 @@
 import { m } from "framer-motion";
 import { Palette } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import { THEME_OPTIONS } from "@/renderer/features/settings/lib/theme-options";
 import type {
   SettingsPageActions,

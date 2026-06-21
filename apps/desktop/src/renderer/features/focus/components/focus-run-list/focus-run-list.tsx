@@ -1,6 +1,6 @@
 import type { FocusHistorySessionView } from "@/renderer/features/focus/lib/focus-session-groups";
 
-import { FocusRunCard } from "../focus-run-card";
+import { FocusRunCard } from "../focus-run-card/focus-run-card";
 
 interface FocusRunListProps {
   sessions: FocusHistorySessionView[];

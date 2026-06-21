@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
 import { AppShell } from "@/renderer/app/shell/app-shell";
-import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar";
+import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar/history-sidebar";
 import type { HistoryViewMode } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
@@ -12,8 +12,8 @@ import {
   getHistoryMonthStats,
   getHistoryTrendPoints,
 } from "@/renderer/features/history/lib/history-timeline";
-import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar";
-import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner";
+import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar/today-sidebar";
+import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner/weekly-review-spotlight-banner";
 import type { HistoryDailyCountDay } from "@/renderer/shared/history/history-daily-counts";
 import { getHistoryDayLookup } from "@/renderer/shared/history/history-summary";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/providers/habit-category-preferences";

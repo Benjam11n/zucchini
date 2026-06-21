@@ -52,7 +52,7 @@ export class TodayReadModelService {
 
   getFreshHabitStatusPatch(habitId: number): HabitStatusPatch {
     const today = this.clock.todayKey();
-    const habit = this.repository.getHabitWithStatus(today, habitId);
+    const habit = this.repository.history.getHabitWithStatus(today, habitId);
 
     if (!habit) {
       this.invalidate();

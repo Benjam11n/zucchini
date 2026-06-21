@@ -1,6 +1,6 @@
 import { MoonStar } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import type {
   SettingsPageActions,
   SettingsPageViewModel,

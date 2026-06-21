@@ -3,7 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
-import type * as WeeklyReviewSectionModule from "@/renderer/features/weekly-review/components/weekly-review-section";
+import type * as WeeklyReviewSectionModule from "@/renderer/features/weekly-review/components/weekly-review-section/weekly-review-section";
 import type * as TabsModule from "@/renderer/shared/components/ui/tabs";
 import type { HistoryDay } from "@/shared/domain/history";
 import type {
@@ -82,7 +82,7 @@ vi.mock<typeof TabsModule>(
 );
 
 vi.mock<typeof WeeklyReviewSectionModule>(
-  import("@/renderer/features/weekly-review/components/weekly-review-section"),
+  import("@/renderer/features/weekly-review/components/weekly-review-section/weekly-review-section"),
   () => ({
     WeeklyReviewSection: ({
       selectedWeeklyReview,

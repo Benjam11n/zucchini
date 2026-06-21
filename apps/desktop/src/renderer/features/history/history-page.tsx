@@ -7,17 +7,17 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 
-import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph";
-import { HistoryMobileSummaryDialog } from "@/renderer/features/history/components/history-mobile-summary-dialog";
-import { HistoryPageHeader } from "@/renderer/features/history/components/history-page-header";
-import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content";
+import { HistoryContributionGraph } from "@/renderer/features/history/components/history-contribution-graph/history-contribution-graph";
+import { HistoryMobileSummaryDialog } from "@/renderer/features/history/components/history-mobile-summary-dialog/history-mobile-summary-dialog";
+import { HistoryPageHeader } from "@/renderer/features/history/components/history-page-header/history-page-header";
+import { HistoryTimelineContent } from "@/renderer/features/history/components/history-timeline-content/history-timeline-content";
 import type {
   HistoryViewMode,
   HistoryPageActions,
   HistoryPageViewModel,
 } from "@/renderer/features/history/history.types";
 import { useHistoryViewState } from "@/renderer/features/history/hooks/use-history-view-state";
-import { WeeklyReviewSection } from "@/renderer/features/weekly-review/components/weekly-review-section";
+import { WeeklyReviewSection } from "@/renderer/features/weekly-review/components/weekly-review-section/weekly-review-section";
 import {
   staggerContainerVariants,
   staggerItemVariants,

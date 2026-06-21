@@ -1,6 +1,6 @@
 import { Activity, RefreshCw } from "lucide-react";
 
-import { RangeSelector } from "@/renderer/features/insights/components/range-selector";
+import { RangeSelector } from "@/renderer/features/insights/components/range-selector/range-selector";
 import type {
   InsightsPageActions,
   InsightsPageViewModel,

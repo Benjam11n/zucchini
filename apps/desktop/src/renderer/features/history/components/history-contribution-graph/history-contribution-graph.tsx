@@ -1,5 +1,5 @@
-import { ContributionGraph } from "@/renderer/features/history/components/contribution-graph";
-import { ContributionGraphSkeleton } from "@/renderer/features/history/components/contribution-graph-skeleton";
+import { ContributionGraphSkeleton } from "@/renderer/features/history/components/contribution-graph-skeleton/contribution-graph-skeleton";
+import { ContributionGraph } from "@/renderer/features/history/components/contribution-graph/contribution-graph";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
 interface HistoryContributionGraphProps {

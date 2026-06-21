@@ -1,4 +1,4 @@
-import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/components/weekly-review-chart-card";
+import { WeeklyReviewChartCard } from "@/renderer/features/weekly-review/components/weekly-review-chart-card/weekly-review-chart-card";
 import { buildWeeklyReviewHabitChartState } from "@/renderer/features/weekly-review/lib/weekly-review-habit-chart";
 import { getHabitCategoryLabel } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { HabitCategoryMarker } from "@/renderer/shared/components/ui/habit-category-marker";

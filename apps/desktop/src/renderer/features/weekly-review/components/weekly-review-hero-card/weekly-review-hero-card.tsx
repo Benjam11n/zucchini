@@ -16,7 +16,7 @@ import type {
   WeeklyReviewListItem,
 } from "@/shared/domain/weekly-review";
 
-import { WeeklyReviewHeroStat } from "../weekly-review-hero-stat";
+import { WeeklyReviewHeroStat } from "../weekly-review-hero-stat/weekly-review-hero-stat";
 
 interface WeeklyReviewHeroCardProps {
   availableWeeks: WeeklyReviewListItem[];

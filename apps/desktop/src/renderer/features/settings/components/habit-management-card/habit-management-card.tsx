@@ -1,7 +1,7 @@
 import { ListTodo } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
-import { HabitManagementContent } from "@/renderer/shared/components/app/habit-management/habit-management-content";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
+import { HabitManagementContent } from "@/renderer/shared/components/app/habit-management/habit-management-content/habit-management-content";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";

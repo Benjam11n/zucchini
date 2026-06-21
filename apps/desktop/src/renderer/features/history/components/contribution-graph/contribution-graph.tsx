@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { ContributionSquare } from "@/renderer/features/history/components/contribution-square";
+import { ContributionSquare } from "@/renderer/features/history/components/contribution-square/contribution-square";
 import {
   buildContributionWeeks,
   formatContributionLabel,

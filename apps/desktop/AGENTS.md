@@ -30,7 +30,7 @@
 - Group actions by user intent, e.g. `actions.habits.createHabit`.
 - Move nontrivial derived data, formatters, validators, mappers, and adapters out of `.tsx` into feature `lib`.
 - Keep component prop interfaces beside component. Use `*.types.ts` only for shared contracts/view models/domain aliases.
-- Prefer component folders: `component-name/component-name.tsx` plus `component-name/index.tsx` exporting only the component.
+- Prefer direct imports from component files. Do not add one-line component barrel files; use `index.tsx` only for grouped public APIs with multiple exports or a deliberate stable boundary.
 - Use feature controller hooks for repeated local interaction orchestration.
 - Keep only ephemeral UI state directly in components.
 

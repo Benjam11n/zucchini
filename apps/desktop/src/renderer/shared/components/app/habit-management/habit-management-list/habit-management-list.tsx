@@ -12,7 +12,7 @@ import type {
   HabitDragState,
   RecentArchivedHabit,
 } from "../habit-management-content/habit-management-content.types";
-import { HabitManagementListItem } from "../habit-management-list-item";
+import { HabitManagementListItem } from "../habit-management-list-item/habit-management-list-item";
 import { mergeReorderedFrequencySection } from "./habit-list-reorder";
 import { findScrollableAncestor, getAutoScrollStep } from "./habit-list-scroll";
 

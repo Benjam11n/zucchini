@@ -1,16 +1,16 @@
 import { RefreshCw } from "lucide-react";
 import { memo } from "react";
 
-import { HabitLeaderboard } from "@/renderer/features/insights/components/habit-leaderboard";
-import { InsightsEmptyState } from "@/renderer/features/insights/components/insights-empty-state";
-import { InsightsErrorState } from "@/renderer/features/insights/components/insights-error-state";
-import { InsightsLoadingState } from "@/renderer/features/insights/components/insights-loading-state";
-import { MomentumCard } from "@/renderer/features/insights/components/momentum-card";
-import { RangeSelector } from "@/renderer/features/insights/components/range-selector";
-import { SmartInsightsCard } from "@/renderer/features/insights/components/smart-insights-card";
-import { SummaryMetricCard } from "@/renderer/features/insights/components/summary-metric-card";
-import { WeekdayRhythmCard } from "@/renderer/features/insights/components/weekday-rhythm-card";
-import { WeeklyCompletionChart } from "@/renderer/features/insights/components/weekly-completion-chart";
+import { HabitLeaderboard } from "@/renderer/features/insights/components/habit-leaderboard/habit-leaderboard";
+import { InsightsEmptyState } from "@/renderer/features/insights/components/insights-empty-state/insights-empty-state";
+import { InsightsErrorState } from "@/renderer/features/insights/components/insights-error-state/insights-error-state";
+import { InsightsLoadingState } from "@/renderer/features/insights/components/insights-loading-state/insights-loading-state";
+import { MomentumCard } from "@/renderer/features/insights/components/momentum-card/momentum-card";
+import { RangeSelector } from "@/renderer/features/insights/components/range-selector/range-selector";
+import { SmartInsightsCard } from "@/renderer/features/insights/components/smart-insights-card/smart-insights-card";
+import { SummaryMetricCard } from "@/renderer/features/insights/components/summary-metric-card/summary-metric-card";
+import { WeekdayRhythmCard } from "@/renderer/features/insights/components/weekday-rhythm-card/weekday-rhythm-card";
+import { WeeklyCompletionChart } from "@/renderer/features/insights/components/weekly-completion-chart/weekly-completion-chart";
 import type {
   InsightsPageActions,
   InsightsPageViewModel,

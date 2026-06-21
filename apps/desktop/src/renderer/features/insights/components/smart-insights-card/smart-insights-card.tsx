@@ -7,7 +7,7 @@ import {
 } from "@/renderer/shared/components/ui/card";
 import type { InsightsSmartInsight } from "@/shared/domain/insights";
 
-import { SmartInsightRow } from "../smart-insight-row";
+import { SmartInsightRow } from "../smart-insight-row/smart-insight-row";
 
 interface SmartInsightsCardProps {
   insights: InsightsSmartInsight[];

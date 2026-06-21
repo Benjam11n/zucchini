@@ -1,8 +1,8 @@
-import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/weekly-review/components/weekly-review-daily-cadence-chart";
-import { WeeklyReviewHabitChart } from "@/renderer/features/weekly-review/components/weekly-review-habit-chart";
-import { WeeklyReviewHeroCard } from "@/renderer/features/weekly-review/components/weekly-review-hero-card";
-import { WeeklyReviewMostMissedCard } from "@/renderer/features/weekly-review/components/weekly-review-most-missed-card";
-import { WeeklyReviewTrendChart } from "@/renderer/features/weekly-review/components/weekly-review-trend-chart";
+import { WeeklyReviewDailyCadenceChart } from "@/renderer/features/weekly-review/components/weekly-review-daily-cadence-chart/weekly-review-daily-cadence-chart";
+import { WeeklyReviewHabitChart } from "@/renderer/features/weekly-review/components/weekly-review-habit-chart/weekly-review-habit-chart";
+import { WeeklyReviewHeroCard } from "@/renderer/features/weekly-review/components/weekly-review-hero-card/weekly-review-hero-card";
+import { WeeklyReviewMostMissedCard } from "@/renderer/features/weekly-review/components/weekly-review-most-missed-card/weekly-review-most-missed-card";
+import { WeeklyReviewTrendChart } from "@/renderer/features/weekly-review/components/weekly-review-trend-chart/weekly-review-trend-chart";
 import {
   Card,
   CardContent,

@@ -8,14 +8,14 @@ import type {
   HistoryMonthStats,
   HistoryTrendPoint,
 } from "@/renderer/features/history/lib/history-timeline";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph/habit-activity-ring-glyph";
 import { Separator } from "@/renderer/shared/components/ui/separator";
 import { cn } from "@/renderer/shared/lib/class-names";
 import { formatDateKey } from "@/shared/domain/date-format";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 
-import { SidebarMetric } from "../sidebar-metric";
-import { TrendLine } from "../trend-line";
+import { SidebarMetric } from "../sidebar-metric/sidebar-metric";
+import { TrendLine } from "../trend-line/trend-line";
 
 interface HistorySidebarProps {
   monthStats: HistoryMonthStats;

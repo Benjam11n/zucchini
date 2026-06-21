@@ -16,7 +16,7 @@ import {
   formatBackupSize,
 } from "../../lib/data-management-format";
 import type { DataAction } from "../../lib/data-management-types";
-import { RestoreHabitSnapshot } from "../restore-habit-snapshot";
+import { RestoreHabitSnapshot } from "../restore-habit-snapshot/restore-habit-snapshot";
 
 interface RestoreBackupDialogProps {
   activeAction: DataAction;

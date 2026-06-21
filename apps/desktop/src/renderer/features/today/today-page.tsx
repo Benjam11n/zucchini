@@ -8,14 +8,14 @@
 import { ListChecks, Plus } from "lucide-react";
 import { memo, useMemo } from "react";
 
-import { CarryoverChecklist } from "@/renderer/features/today/components/carryover-checklist";
-import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist";
-import { HistoricalTodayView } from "@/renderer/features/today/components/historical-today-view";
-import { PeriodicHabitChecklist } from "@/renderer/features/today/components/periodic-habit-checklist";
-import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay";
-import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog";
-import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel";
-import { TodayKeyboardHint } from "@/renderer/features/today/components/today-keyboard-hint";
+import { CarryoverChecklist } from "@/renderer/features/today/components/carryover-checklist/carryover-checklist";
+import { HabitChecklist } from "@/renderer/features/today/components/habit-checklist/habit-checklist";
+import { HistoricalTodayView } from "@/renderer/features/today/components/historical-today-view/historical-today-view";
+import { PeriodicHabitChecklist } from "@/renderer/features/today/components/periodic-habit-checklist/periodic-habit-checklist";
+import { TodayCelebrationOverlay } from "@/renderer/features/today/components/today-celebration-overlay/today-celebration-overlay";
+import { TodayHabitManagerDialog } from "@/renderer/features/today/components/today-habit-manager-dialog/today-habit-manager-dialog";
+import { TodayHistoryCarousel } from "@/renderer/features/today/components/today-history-carousel/today-history-carousel";
+import { TodayKeyboardHint } from "@/renderer/features/today/components/today-keyboard-hint/today-keyboard-hint";
 import { useHistoricalTodaySelection } from "@/renderer/features/today/hooks/use-historical-today-selection";
 import { useTodayCelebration } from "@/renderer/features/today/hooks/use-today-celebration";
 import { useTodayKeyboardRows } from "@/renderer/features/today/hooks/use-today-keyboard-rows";

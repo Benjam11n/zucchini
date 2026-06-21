@@ -90,8 +90,8 @@ export class ApplicationServiceRuntime {
     previousProgress: number,
     targetCount: number
   ): void {
-    this.repository.ensureStatusRow(today, habitId);
-    this.repository.setHabitProgress(
+    this.repository.history.ensureStatusRow(today, habitId);
+    this.repository.history.setHabitProgress(
       today,
       habitId,
       Math.min(previousProgress, targetCount)
@@ -119,7 +119,7 @@ export class ApplicationServiceRuntime {
       }
 
       if (options.ensureStatusRowsForToday) {
-        this.repository.ensureStatusRowsForDate(today);
+        this.repository.history.ensureStatusRowsForDate(today);
       }
 
       mutate(today);
@@ -137,7 +137,7 @@ export class ApplicationServiceRuntime {
       const today = this.getTodayKey();
 
       this.syncRollingState();
-      this.repository.ensureStatusRowsForDate(today);
+      this.repository.history.ensureStatusRowsForDate(today);
       mutate(today);
 
       return this.todayReadModel.getFreshHabitStatusPatch(habitId);

@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel";
+import type * as TodayHistoryCarouselModule from "@/renderer/features/today/components/today-history-carousel/today-history-carousel";
 import type { Habit } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import { FOCUS_TIMER_SHORTCUT_DEFAULTS } from "@/shared/domain/keyboard-shortcuts";
@@ -15,7 +15,7 @@ const todayHistoryCarouselSpy = vi.hoisted(() => vi.fn());
 const loadHistoryDayMock = vi.hoisted(() => vi.fn());
 
 vi.mock<typeof TodayHistoryCarouselModule>(
-  import("@/renderer/features/today/components/today-history-carousel"),
+  import("@/renderer/features/today/components/today-history-carousel/today-history-carousel"),
   () => ({
     TodayHistoryCarousel: (props) => {
       todayHistoryCarouselSpy(props);

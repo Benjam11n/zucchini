@@ -16,7 +16,7 @@ import { Toaster } from "@/renderer/shared/components/ui/sonner";
 
 const FocusWidget = lazy(async () => {
   const module =
-    await import("@/renderer/features/focus/components/focus-widget");
+    await import("@/renderer/features/focus/components/focus-widget/focus-widget");
 
   return { default: module.FocusWidget };
 });

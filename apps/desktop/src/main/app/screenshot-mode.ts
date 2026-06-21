@@ -139,13 +139,13 @@ function seedMarketingHistory(
     );
     const completedAt = `${date}T21:00:00.000Z`;
 
-    repository.ensureStatusRowsForDate(date);
+    repository.history.ensureStatusRowsForDate(date);
     for (const [index, habit] of dailyHabits.entries()) {
       const completedCount =
         index < completedHabits ? (habit.targetCount ?? 1) : 0;
-      repository.setHabitProgress(date, habit.id, completedCount);
+      repository.history.setHabitProgress(date, habit.id, completedCount);
     }
-    repository.saveDailySummary({
+    repository.history.saveDailySummary({
       allCompleted: completedHabits === dailyHabits.length,
       completedAt: completedHabits === dailyHabits.length ? completedAt : null,
       date,
@@ -155,7 +155,7 @@ function seedMarketingHistory(
     });
 
     if (offset <= 7) {
-      repository.saveFocusSession({
+      repository.focusSessions.insertSession({
         completedAt: `${date}T10:30:00.000Z`,
         completedDate: date,
         durationSeconds: (offset % 3 === 0 ? 45 : 30) * 60,
@@ -174,7 +174,7 @@ export function seedMarketingScreenshotData({
   repository: AppRepository;
   service: ApplicationService;
 }): void {
-  if (!isScreenshotMode() || service.getHabits().length > 0) {
+  if (!isScreenshotMode() || service.habits.getHabits().length > 0) {
     return;
   }
 
@@ -197,10 +197,10 @@ export function seedMarketingScreenshotData({
       continue;
     }
 
-    repository.setHabitProgress(todayState.date, habit.id, count);
+    repository.history.setHabitProgress(todayState.date, habit.id, count);
   }
 
-  service.upsertFocusQuotaGoal("weekly", 450);
+  service.focusQuotaGoals.upsertGoal("weekly", 450);
   seedMarketingHistory(repository, todayState.date, todayState.habits);
 }
 

@@ -2,8 +2,8 @@ import { m } from "framer-motion";
 
 import { TodayHistoryCarouselSkeleton } from "@/renderer/features/today/components/today-history-carousel-skeleton/today-history-carousel-skeleton";
 import { tapPress } from "@/renderer/shared/animation/motion";
-import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph";
-import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge";
+import { HabitActivityRingGlyph } from "@/renderer/shared/components/app/activity-ring/habit-activity-ring-glyph/habit-activity-ring-glyph";
+import { HistoryStatusBadge } from "@/renderer/shared/components/app/history-status/history-status-badge/history-status-badge";
 import { Carousel } from "@/renderer/shared/components/ui/carousel";
 import { CarouselContent } from "@/renderer/shared/components/ui/carousel-content";
 import { CarouselItem } from "@/renderer/shared/components/ui/carousel-item";

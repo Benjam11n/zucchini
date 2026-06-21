@@ -3,7 +3,7 @@ import { VisuallyHidden } from "radix-ui";
 import { useState } from "react";
 import type { ReactElement } from "react";
 
-import { HabitManagementContent } from "@/renderer/shared/components/app/habit-management/habit-management-content";
+import { HabitManagementContent } from "@/renderer/shared/components/app/habit-management/habit-management-content/habit-management-content";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Dialog,

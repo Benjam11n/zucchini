@@ -1,10 +1,10 @@
 import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
 
-import { FocusDurationEditor } from "@/renderer/features/focus/components/focus-duration-editor";
-import { FocusTimerActions } from "@/renderer/features/focus/components/focus-timer-actions";
-import { FocusTimerHeader } from "@/renderer/features/focus/components/focus-timer-header";
-import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card";
+import { FocusDurationEditor } from "@/renderer/features/focus/components/focus-duration-editor/focus-duration-editor";
+import { FocusTimerActions } from "@/renderer/features/focus/components/focus-timer-actions/focus-timer-actions";
+import { FocusTimerHeader } from "@/renderer/features/focus/components/focus-timer-header/focus-timer-header";
+import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card/pomodoro-roadmap-card";
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
 import {

@@ -1,6 +1,6 @@
 import { Download, RefreshCw, Rocket } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import {

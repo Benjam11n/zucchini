@@ -1,8 +1,8 @@
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { MoonStar } from "lucide-react";
 
-import { WindDownActionForm } from "@/renderer/features/wind-down/components/wind-down-action-form";
-import { WindDownActionRows } from "@/renderer/features/wind-down/components/wind-down-action-rows";
+import { WindDownActionForm } from "@/renderer/features/wind-down/components/wind-down-action-form/wind-down-action-form";
+import { WindDownActionRows } from "@/renderer/features/wind-down/components/wind-down-action-rows/wind-down-action-rows";
 import { useWindDownController } from "@/renderer/features/wind-down/hooks/use-wind-down-controller";
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
 import {

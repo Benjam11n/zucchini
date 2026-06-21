@@ -1,12 +1,12 @@
 import { TimerReset } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import type {
   SettingsPageActions,
   SettingsPageViewModel,
 } from "@/renderer/features/settings/settings.types";
-import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields";
+import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields/pomodoro-settings-fields";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import type { FocusTimerShortcutStatus } from "@/shared/contracts/api/desktop-api";
 

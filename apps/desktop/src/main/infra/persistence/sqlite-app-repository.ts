@@ -152,7 +152,7 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   getHabits(): Habit[] {
-    return this.habitsRepository.getHabits();
+    return this.habitsRepository.habits.getHabits();
   }
 
   getFocusQuotaGoals(includeArchived = false): FocusQuotaGoal[] {
@@ -168,49 +168,49 @@ export class SqliteAppRepository implements AppRepository {
   getHistoricalFocusQuotaGoalsWithStatus(
     date: string
   ): FocusQuotaGoalWithStatus[] {
-    return this.historyRepository.getHistoricalFocusQuotaGoalsWithStatus(date);
+    return this.historyRepository.history.getHistoricalFocusQuotaGoalsWithStatus(date);
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.historyRepository.getHabitsWithStatus(date);
+    return this.historyRepository.history.getHabitsWithStatus(date);
   }
 
   getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
-    return this.historyRepository.getHabitWithStatus(date, habitId);
+    return this.historyRepository.history.getHabitWithStatus(date, habitId);
   }
 
   getHistoricalHabitPeriodStatusesOverlappingRange(
     start: string,
     end: string
   ): HabitPeriodStatusSnapshot[] {
-    return this.historyRepository.getHistoricalHabitPeriodStatusesOverlappingRange(
+    return this.historyRepository.history.getHistoricalHabitPeriodStatusesOverlappingRange(
       start,
       end
     );
   }
 
   getHabitProgress(date: string, habitId: number): number {
-    return this.historyRepository.getHabitProgress(date, habitId);
+    return this.historyRepository.history.getHabitProgress(date, habitId);
   }
 
   getDayStatus(date: string): DayStatus | null {
-    return this.historyRepository.getDayStatus(date);
+    return this.historyRepository.history.getDayStatus(date);
   }
 
   getHabitCarryoversForDate(targetDate: string): HabitCarryover[] {
-    return this.historyRepository.getHabitCarryoversForDate(targetDate);
+    return this.historyRepository.history.getHabitCarryoversForDate(targetDate);
   }
 
   ensureStatusRowsForDate(date: string): void {
-    this.historyRepository.ensureStatusRowsForDate(date);
+    this.historyRepository.history.ensureStatusRowsForDate(date);
   }
 
   ensureStatusRow(date: string, habitId: number): void {
-    this.historyRepository.ensureStatusRow(date, habitId);
+    this.historyRepository.history.ensureStatusRow(date, habitId);
   }
 
   removeStatusRowsForDate(date: string, habitId: number): void {
-    this.historyRepository.removeStatusRowsForDate(date, habitId);
+    this.historyRepository.history.removeStatusRowsForDate(date, habitId);
   }
 
   setHabitProgress(
@@ -218,11 +218,11 @@ export class SqliteAppRepository implements AppRepository {
     habitId: number,
     completedCount: number
   ): void {
-    this.historyRepository.setHabitProgress(date, habitId, completedCount);
+    this.historyRepository.history.setHabitProgress(date, habitId, completedCount);
   }
 
   toggleHabit(date: string, habitId: number, completedAt: string): void {
-    this.historyRepository.toggleHabit(date, habitId, completedAt);
+    this.historyRepository.history.toggleHabit(date, habitId, completedAt);
   }
 
   adjustHabitProgress(
@@ -231,7 +231,7 @@ export class SqliteAppRepository implements AppRepository {
     delta: number,
     completedAt: string
   ): void {
-    this.historyRepository.adjustHabitProgress(
+    this.historyRepository.history.adjustHabitProgress(
       date,
       habitId,
       delta,
@@ -265,55 +265,55 @@ export class SqliteAppRepository implements AppRepository {
     limit?: number,
     options?: SettledHistoryOptions
   ): DailySummary[] {
-    return this.historyRepository.getSettledHistory(limit, options);
+    return this.historyRepository.history.getSettledHistory(limit, options);
   }
 
   getDailySummariesInRange(start: string, end: string): DailySummary[] {
-    return this.historyRepository.getDailySummariesInRange(start, end);
+    return this.historyRepository.history.getDailySummariesInRange(start, end);
   }
 
   getSettledHistoryYears(): number[] {
-    return this.historyRepository.getSettledHistoryYears();
+    return this.historyRepository.history.getSettledHistoryYears();
   }
 
   getHabitPeriodStatusesEndingInRange(
     start: string,
     end: string
   ): HabitPeriodStatusSnapshot[] {
-    return this.historyRepository.getHabitPeriodStatusesEndingInRange(
+    return this.historyRepository.history.getHabitPeriodStatusesEndingInRange(
       start,
       end
     );
   }
 
   getPersistedStreakState(): StreakState {
-    return this.streakRepository.getPersistedStreakState();
+    return this.streakRepository.streaks.getPersistedStreakState();
   }
 
   savePersistedStreakState(state: StreakState): void {
-    this.streakRepository.savePersistedStreakState(state);
+    this.streakRepository.streaks.savePersistedStreakState(state);
   }
 
   getPersistedHabitStreakStates(
     habitIds: readonly number[]
   ): PersistedHabitStreakState[] {
-    return this.streakRepository.getPersistedHabitStreakStates(habitIds);
+    return this.streakRepository.streaks.getPersistedHabitStreakStates(habitIds);
   }
 
   savePersistedHabitStreakStates(
     states: readonly PersistedHabitStreakState[]
   ): void {
-    this.streakRepository.savePersistedHabitStreakStates(states);
+    this.streakRepository.streaks.savePersistedHabitStreakStates(states);
   }
 
   getPersistedCategoryStreakStates(): PersistedCategoryStreakState[] {
-    return this.streakRepository.getPersistedCategoryStreakStates();
+    return this.streakRepository.streaks.getPersistedCategoryStreakStates();
   }
 
   savePersistedCategoryStreakStates(
     states: readonly PersistedCategoryStreakState[]
   ): void {
-    this.streakRepository.savePersistedCategoryStreakStates(states);
+    this.streakRepository.streaks.savePersistedCategoryStreakStates(states);
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
@@ -333,15 +333,15 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   getSettings(defaultTimezone: string): AppSettings {
-    return this.settingsRepository.getSettings(defaultTimezone);
+    return this.settingsRepository.settings.getSettings(defaultTimezone);
   }
 
   saveSettings(settings: AppSettings, defaultTimezone: string): AppSettings {
-    return this.settingsRepository.saveSettings(settings, defaultTimezone);
+    return this.settingsRepository.settings.saveSettings(settings, defaultTimezone);
   }
 
   updateAutoBackupLastRunAt(timestamp: string): void {
-    this.settingsRepository.updateAutoBackupLastRunAt(timestamp);
+    this.settingsRepository.settings.updateAutoBackupLastRunAt(timestamp);
   }
 
   getWindDownActions(): WindDownAction[] {
@@ -353,7 +353,7 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   ensureWindDownStatusRowsForDate(date: string): void {
-    this.windDownActionRepository.ensureStatusRowsForDate(date);
+    this.windDownActionRepository.history.ensureStatusRowsForDate(date);
   }
 
   createWindDownAction(name: string, createdAt: string): number {
@@ -377,19 +377,19 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   getFirstTrackedDate(): string | null {
-    return this.historyRepository.getFirstTrackedDate();
+    return this.historyRepository.history.getFirstTrackedDate();
   }
 
   getLatestTrackedDate(): string | null {
-    return this.historyRepository.getLatestTrackedDate();
+    return this.historyRepository.history.getLatestTrackedDate();
   }
 
   getExistingCompletedAt(date: string): string | null {
-    return this.historyRepository.getExistingCompletedAt(date);
+    return this.historyRepository.history.getExistingCompletedAt(date);
   }
 
   setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void {
-    this.historyRepository.setDayStatus(date, kind, createdAt);
+    this.historyRepository.history.setDayStatus(date, kind, createdAt);
   }
 
   createHabitCarryovers(
@@ -397,7 +397,7 @@ export class SqliteAppRepository implements AppRepository {
     targetDate: string,
     createdAt: string
   ): void {
-    this.historyRepository.createHabitCarryovers(
+    this.historyRepository.history.createHabitCarryovers(
       sourceDate,
       targetDate,
       createdAt
@@ -410,7 +410,7 @@ export class SqliteAppRepository implements AppRepository {
     habitId: number,
     completedAt: string
   ): void {
-    this.historyRepository.toggleHabitCarryover(
+    this.historyRepository.history.toggleHabitCarryover(
       targetDate,
       sourceDate,
       habitId,
@@ -419,19 +419,19 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   clearHabitCarryoversFromSourceDate(sourceDate: string): void {
-    this.historyRepository.clearHabitCarryoversFromSourceDate(sourceDate);
+    this.historyRepository.history.clearHabitCarryoversFromSourceDate(sourceDate);
   }
 
   clearDayStatus(date: string): void {
-    this.historyRepository.clearDayStatus(date);
+    this.historyRepository.history.clearDayStatus(date);
   }
 
   saveDailySummary(summary: DailySummary): void {
-    this.historyRepository.saveDailySummary(summary);
+    this.historyRepository.history.saveDailySummary(summary);
   }
 
   getMaxSortOrder(): number {
-    return this.habitsRepository.getMaxSortOrder();
+    return this.habitsRepository.habits.getMaxSortOrder();
   }
 
   insertHabit(
@@ -443,7 +443,7 @@ export class SqliteAppRepository implements AppRepository {
     sortOrder: number,
     createdAt: string
   ): number {
-    return this.habitsRepository.insertHabit(
+    return this.habitsRepository.habits.insertHabit(
       name,
       category,
       frequency,
@@ -455,11 +455,11 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   renameHabit(habitId: number, name: string): void {
-    this.habitsRepository.renameHabit(habitId, name);
+    this.habitsRepository.habits.renameHabit(habitId, name);
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): void {
-    this.habitsRepository.updateHabitCategory(habitId, category);
+    this.habitsRepository.habits.updateHabitCategory(habitId, category);
   }
 
   updateHabitFrequency(
@@ -467,26 +467,26 @@ export class SqliteAppRepository implements AppRepository {
     frequency: HabitFrequency,
     targetCount: number
   ): void {
-    this.habitsRepository.updateHabitFrequency(habitId, frequency, targetCount);
+    this.habitsRepository.habits.updateHabitFrequency(habitId, frequency, targetCount);
   }
 
   updateHabitTargetCount(habitId: number, targetCount: number): void {
-    this.habitsRepository.updateHabitTargetCount(habitId, targetCount);
+    this.habitsRepository.habits.updateHabitTargetCount(habitId, targetCount);
   }
 
   updateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): void {
-    this.habitsRepository.updateHabitWeekdays(habitId, selectedWeekdays);
+    this.habitsRepository.habits.updateHabitWeekdays(habitId, selectedWeekdays);
   }
 
   pauseHabit(habitId: number, pausedAt: string): void {
-    this.habitsRepository.pauseHabit(habitId, pausedAt);
+    this.habitsRepository.habits.pauseHabit(habitId, pausedAt);
   }
 
   resumeHabit(habitId: number, resumedAt: string): void {
-    this.habitsRepository.resumeHabit(habitId, resumedAt);
+    this.habitsRepository.habits.resumeHabit(habitId, resumedAt);
   }
 
   upsertFocusQuotaGoal(
@@ -510,18 +510,18 @@ export class SqliteAppRepository implements AppRepository {
   }
 
   archiveHabit(habitId: number): void {
-    this.habitsRepository.archiveHabit(habitId);
+    this.habitsRepository.habits.archiveHabit(habitId);
   }
 
   unarchiveHabit(habitId: number): void {
-    this.habitsRepository.unarchiveHabit(habitId);
+    this.habitsRepository.habits.unarchiveHabit(habitId);
   }
 
   normalizeHabitOrder(): void {
-    this.habitsRepository.normalizeHabitOrder();
+    this.habitsRepository.habits.normalizeHabitOrder();
   }
 
   reorderHabits(habitIds: number[]): void {
-    this.habitsRepository.reorderHabits(habitIds);
+    this.habitsRepository.habits.reorderHabits(habitIds);
   }
 }

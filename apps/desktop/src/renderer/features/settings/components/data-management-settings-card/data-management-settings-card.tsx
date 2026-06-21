@@ -7,16 +7,16 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { ItemGroup } from "@/renderer/shared/components/ui/item";
 import type { AppSettings } from "@/shared/domain/settings";
 
 import type { SettingsPageActions } from "../../settings.types";
-import { AutoBackupSettingsSection } from "../auto-backup-settings-section";
-import { DataActionItem } from "../data-action-item";
-import { DestructiveDataDialog } from "../destructive-data-dialog";
-import { RestoreBackupDialog } from "../restore-backup-dialog";
+import { AutoBackupSettingsSection } from "../auto-backup-settings-section/auto-backup-settings-section";
+import { DataActionItem } from "../data-action-item/data-action-item";
+import { DestructiveDataDialog } from "../destructive-data-dialog/destructive-data-dialog";
+import { RestoreBackupDialog } from "../restore-backup-dialog/restore-backup-dialog";
 import { useDataManagementController } from "./use-data-management-controller";
 
 interface DataManagementSettingsCardProps {

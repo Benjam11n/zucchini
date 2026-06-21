@@ -1,4 +1,4 @@
-import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar";
+import { HistorySidebar } from "@/renderer/features/history/components/history-sidebar/history-sidebar";
 import type {
   HistoryMonthStats,
   HistoryTrendPoint,

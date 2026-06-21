@@ -334,7 +334,7 @@ export class SqliteHabitsRepository {
 
   normalizeHabitOrder(): void {
     this.client.run("normalizeHabitOrder", () => {
-      const activeHabits = this.getHabits();
+      const activeHabits = this.habits.getHabits();
 
       for (const [index, habit] of activeHabits.entries()) {
         this.client

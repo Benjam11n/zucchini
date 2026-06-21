@@ -156,7 +156,7 @@ class FakeRepository implements AppRepository {
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.getHabits()
+    return this.habits.getHabits()
       .filter((habit) =>
         isHabitActiveOnDate(
           habit,
@@ -177,7 +177,7 @@ class FakeRepository implements AppRepository {
 
   getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
     return (
-      this.getHabitsWithStatus(date).find((habit) => habit.id === habitId) ??
+      this.history.getHabitsWithStatus(date).find((habit) => habit.id === habitId) ??
       null
     );
   }
@@ -256,7 +256,7 @@ class FakeRepository implements AppRepository {
   }
 
   ensureStatusRowsForDate(date: string): void {
-    const scheduledHabits = this.getHabits().filter((habit) =>
+    const scheduledHabits = this.habits.getHabits().filter((habit) =>
       isHabitActiveOnDate(
         habit,
         date,
@@ -575,7 +575,7 @@ class FakeRepository implements AppRepository {
     const completedActionIds =
       this.windDownCompletedActionIdsByDate.get(date) ?? new Set<number>();
 
-    return this.getWindDownActions().map((action) => ({
+    return this.windDownActions.getActions().map((action) => ({
       ...action,
       completed: completedActionIds.has(action.id),
       completedAt: completedActionIds.has(action.id)
@@ -667,7 +667,7 @@ class FakeRepository implements AppRepository {
   }
 
   createHabitCarryovers(sourceDate: string, targetDate: string): void {
-    const unfinishedDailyHabits = this.getHabitsWithStatus(sourceDate).filter(
+    const unfinishedDailyHabits = this.history.getHabitsWithStatus(sourceDate).filter(
       (habit) => habit.frequency === "daily" && !habit.completed
     );
 
@@ -710,7 +710,7 @@ class FakeRepository implements AppRepository {
   }
 
   getMaxSortOrder(): number {
-    return Math.max(...this.getHabits().map((habit) => habit.sortOrder), -1);
+    return Math.max(...this.habits.getHabits().map((habit) => habit.sortOrder), -1);
   }
 
   insertHabit(
@@ -894,7 +894,7 @@ class FakeRepository implements AppRepository {
   }
 
   normalizeHabitOrder(): void {
-    for (const [index, habit] of this.getHabits().entries()) {
+    for (const [index, habit] of this.habits.getHabits().entries()) {
       habit.sortOrder = index;
     }
   }
@@ -971,7 +971,7 @@ class FakeRepository implements AppRepository {
       .toSorted((left, right) => left.frequency.localeCompare(right.frequency))
       .map((goal) => {
         const period = getFocusQuotaGoalPeriod(goal.frequency, date);
-        const completedMinutes = this.getFocusSessionsInRange(
+        const completedMinutes = this.focusSessions.listSessionsInRange(
           period.start,
           period.end
         ).reduce(
@@ -1029,7 +1029,7 @@ describe("habitService rollover", () => {
       streakCountAfterDay: 3,
     });
 
-    expect(repository.getHabitCarryoversForDate("2026-03-07")).toMatchObject([
+    expect(repository.history.getHabitCarryoversForDate("2026-03-07")).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1037,7 +1037,7 @@ describe("habitService rollover", () => {
         targetDate: "2026-03-07",
       },
     ]);
-    expect(repository.getHabitCarryoversForDate("2026-03-08")).toMatchObject([
+    expect(repository.history.getHabitCarryoversForDate("2026-03-08")).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1459,7 +1459,7 @@ describe("habitService rollover", () => {
 
     service.getTodayState();
 
-    expect(repository.getHabitCarryoversForDate("2026-03-10")).toMatchObject([
+    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1467,7 +1467,7 @@ describe("habitService rollover", () => {
         targetDate: "2026-03-10",
       },
     ]);
-    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(1);
+    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(1);
   });
 
   it("keeps sick days neutral even with incomplete incoming carryovers", () => {
@@ -1503,7 +1503,7 @@ describe("habitService rollover", () => {
       freezeUsed: false,
       streakCountAfterDay: 3,
     });
-    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
+    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
     expect(today.streak.currentStreak).toBe(3);
   });
 
@@ -1537,7 +1537,7 @@ describe("habitService rollover", () => {
 
     service.getTodayState();
 
-    expect(repository.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
+    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
   });
 });
 
@@ -1594,7 +1594,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitCategory(1, "fitness");
+    const todayState = service.habits.updateHabitCategory(1, "fitness");
 
     expect(todayState.habits[0]?.category).toBe("fitness");
   });
@@ -1606,7 +1606,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.habits.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
   });
@@ -1624,7 +1624,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const patch = service.toggleHabit(1);
+    const patch = service.history.toggleHabit(1);
 
     expect(patch.categoryStreaks?.productivity).toStrictEqual({
       bestStreak: 1,
@@ -1647,7 +1647,7 @@ describe("habit categories", () => {
         frequency,
         targetCount: 2,
       };
-      repository.setHabitProgress("2026-03-08", 1, 2);
+      repository.history.setHabitProgress("2026-03-08", 1, 2);
 
       const service = new AppApplicationService(
         repository,
@@ -1678,14 +1678,14 @@ describe("habit categories", () => {
       targetCount: 3,
     };
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
-    repository.adjustHabitProgress("2026-03-08", 1, 1);
+    repository.history.adjustHabitProgress("2026-03-08", 1, 1);
 
     const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitTargetCount(1, 4);
+    const todayState = service.habits.updateHabitTargetCount(1, 4);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1708,14 +1708,14 @@ describe("habit categories", () => {
       targetCount: 3,
     };
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
-    repository.adjustHabitProgress("2026-03-08", 1, 1);
+    repository.history.adjustHabitProgress("2026-03-08", 1, 1);
 
     const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "monthly", 5);
+    const todayState = service.habits.updateHabitFrequency(1, "monthly", 5);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1744,7 +1744,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly", 1);
+    const todayState = service.habits.updateHabitFrequency(1, "weekly", 1);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: true,
@@ -1773,7 +1773,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.habits.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1787,7 +1787,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.habits.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1803,12 +1803,12 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitWeekdays(1, [1, 3, 5]);
+    const todayState = service.habits.updateHabitWeekdays(1, [1, 3, 5]);
 
     expect(todayState.habits).toStrictEqual([]);
     expect(repository.habits[0]?.selectedWeekdays).toStrictEqual([1, 3, 5]);
     expect(
-      repository.getHabitPeriodStatusesEndingInRange("2026-03-10", "2026-03-10")
+      repository.history.getHabitPeriodStatusesEndingInRange("2026-03-10", "2026-03-10")
     ).toStrictEqual([]);
   });
 
@@ -1829,7 +1829,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.reorderHabits([1, 999]);
+    const todayState = service.habits.reorderHabits([1, 999]);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
   });
@@ -1851,7 +1851,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.unarchiveHabit(2);
+    const todayState = service.habits.unarchiveHabit(2);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
     expect(repository.habits.find((habit) => habit.id === 2)).toMatchObject({
@@ -1870,7 +1870,7 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.pauseHabit(1);
+    const todayState = service.habits.pauseHabit(1);
 
     expect(repository.habits[0]?.pausedAt).toBe("2026-03-08T09:00:00.000Z");
     expect(repository.habitPausePeriods).toStrictEqual([
@@ -1882,7 +1882,7 @@ describe("habit pause", () => {
     ]);
     expect(todayState.habits).toStrictEqual([]);
     expect(
-      repository.getHabitPeriodStatusesEndingInRange("2026-03-08", "2026-03-08")
+      repository.history.getHabitPeriodStatusesEndingInRange("2026-03-08", "2026-03-08")
     ).toStrictEqual([]);
   });
 
@@ -1902,7 +1902,7 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.resumeHabit(1);
+    const todayState = service.habits.resumeHabit(1);
 
     expect(repository.habits[0]?.pausedAt).toBeNull();
     expect(repository.habitPausePeriods).toStrictEqual([
@@ -1947,7 +1947,7 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.resumeHabit(1);
+    const todayState = service.habits.resumeHabit(1);
 
     expect(repository.streak.currentStreak).toBe(4);
     expect(repository.dailySummaries.get("2026-03-06")).toBeUndefined();
@@ -1963,13 +1963,13 @@ describe("habit pause", () => {
       repository,
       new FakeClock("2026-03-06", "2026-03-06T09:00:00.000Z")
     );
-    pauseService.pauseHabit(1);
+    pauseService.habits.pauseHabit(1);
 
     const resumeService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    resumeService.resumeHabit(1);
+    resumeService.habits.resumeHabit(1);
 
     expect(repository.habitPausePeriods).toStrictEqual([
       {
@@ -1979,12 +1979,12 @@ describe("habit pause", () => {
       },
     ]);
     expect(
-      repository.getHabitsWithStatus("2026-03-05").map(({ id }) => id)
+      repository.history.getHabitsWithStatus("2026-03-05").map(({ id }) => id)
     ).toStrictEqual([1]);
-    expect(repository.getHabitsWithStatus("2026-03-06")).toStrictEqual([]);
-    expect(repository.getHabitsWithStatus("2026-03-07")).toStrictEqual([]);
+    expect(repository.history.getHabitsWithStatus("2026-03-06")).toStrictEqual([]);
+    expect(repository.history.getHabitsWithStatus("2026-03-07")).toStrictEqual([]);
     expect(
-      repository.getHabitsWithStatus("2026-03-08").map(({ id }) => id)
+      repository.history.getHabitsWithStatus("2026-03-08").map(({ id }) => id)
     ).toStrictEqual([1]);
   });
 });
@@ -2018,7 +2018,7 @@ describe("habit carryovers", () => {
     const today = service.moveUnfinishedHabitsToTomorrow();
 
     expect(today.dayStatus).toBe("rescheduled");
-    expect(repository.getHabitCarryoversForDate("2026-03-09")).toMatchObject([
+    expect(repository.history.getHabitCarryoversForDate("2026-03-09")).toMatchObject([
       {
         completed: false,
         id: 2,
@@ -2042,7 +2042,7 @@ describe("habit carryovers", () => {
       repository,
       new FakeClock("2026-03-09", "2026-03-09T09:00:00.000Z")
     );
-    const tomorrow = tomorrowService.toggleHabitCarryover("2026-03-08", 1);
+    const tomorrow = tomorrowService.history.toggleHabitCarryover("2026-03-08", 1);
 
     expect(tomorrow.habitCarryovers).toMatchObject([
       {
@@ -2051,7 +2051,7 @@ describe("habit carryovers", () => {
         sourceDate: "2026-03-08",
       },
     ]);
-    expect(repository.getHabitProgress("2026-03-08", 1)).toBe(0);
+    expect(repository.history.getHabitProgress("2026-03-08", 1)).toBe(0);
   });
 
   it("clears carryovers when undoing a rescheduled day", () => {
@@ -2063,10 +2063,10 @@ describe("habit carryovers", () => {
     );
     service.moveUnfinishedHabitsToTomorrow();
 
-    const today = service.setDayStatus(null);
+    const today = service.history.setDayStatus(null);
 
     expect(today.dayStatus).toBeNull();
-    expect(repository.getHabitCarryoversForDate("2026-03-09")).toHaveLength(0);
+    expect(repository.history.getHabitCarryoversForDate("2026-03-09")).toHaveLength(0);
   });
 });
 
@@ -2199,13 +2199,13 @@ describe("history retrieval", () => {
       repository,
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
-    service.upsertFocusQuotaGoal("weekly", 300);
+    service.focusQuotaGoals.upsertGoal("weekly", 300);
 
     const nextDayService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    nextDayService.upsertFocusQuotaGoal("weekly", 480);
+    nextDayService.focusQuotaGoals.upsertGoal("weekly", 480);
 
     const history = nextDayService.getHistory();
     const march7 = history.find((day) => day.date === "2026-03-07");
@@ -2227,10 +2227,10 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    expect(() => service.upsertFocusQuotaGoal("weekly", 20_000)).toThrow(
+    expect(() => service.focusQuotaGoals.upsertGoal("weekly", 20_000)).toThrow(
       RangeError
     );
-    expect(repository.getFocusQuotaGoals()).toHaveLength(0);
+    expect(repository.focusQuotaGoals.getGoals()).toHaveLength(0);
   });
 
   it("keeps the full history path uncapped when no limit is provided", () => {
@@ -2434,7 +2434,7 @@ describe("focus sessions", () => {
       durationSeconds: 1500,
       id: 1,
     });
-    expect(service.getFocusSessions()).toHaveLength(1);
+    expect(service.focusSessions.listRecentSessions()).toHaveLength(1);
   });
 
   it("records focus session dates in the OS timezone", () => {

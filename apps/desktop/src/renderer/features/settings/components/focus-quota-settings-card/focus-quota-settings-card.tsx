@@ -1,6 +1,6 @@
 import { Timer } from "lucide-react";
 
-import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header";
+import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
 import { Button } from "@/renderer/shared/components/ui/button";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { useTimedUndo } from "@/renderer/shared/hooks/use-timed-undo";
@@ -10,7 +10,7 @@ import type {
   GoalFrequency,
 } from "@/shared/domain/goal";
 
-import { FocusQuotaGoalsCard } from "../focus-quota-goals-card";
+import { FocusQuotaGoalsCard } from "../focus-quota-goals-card/focus-quota-goals-card";
 
 const UNDO_TIMEOUT_MS = 5000;
 

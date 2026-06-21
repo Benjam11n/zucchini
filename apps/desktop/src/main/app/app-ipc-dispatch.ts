@@ -42,16 +42,16 @@ type AppQueryHandlers = {
 
 const appCommandHandlers = {
   "focusQuotaGoal.archive": (service, payload) =>
-    service.archiveFocusQuotaGoal(payload.goalId),
+    service.focusQuotaGoals.archiveGoal(payload.goalId),
   "focusQuotaGoal.unarchive": (service, payload) =>
-    service.unarchiveFocusQuotaGoal(payload.goalId),
+    service.focusQuotaGoals.unarchiveGoal(payload.goalId),
   "focusQuotaGoal.upsert": (service, payload) =>
-    service.upsertFocusQuotaGoal(payload.frequency, payload.targetMinutes),
+    service.focusQuotaGoals.upsertGoal(payload.frequency, payload.targetMinutes),
   "focusSession.record": (service, payload) =>
     service.recordFocusSession(payload),
   "focusTimer.saveState": (service, payload) =>
-    service.savePersistedFocusTimerState(payload),
-  "habit.archive": (service, payload) => service.archiveHabit(payload.habitId),
+    service.focusTimerState.saveState(payload),
+  "habit.archive": (service, payload) => service.habits.archiveHabit(payload.habitId),
   "habit.create": (service, payload) =>
     service.createHabit(
       payload.name,
@@ -64,50 +64,50 @@ const appCommandHandlers = {
     service.decrementHabitProgress(payload.habitId),
   "habit.incrementProgress": (service, payload) =>
     service.incrementHabitProgress(payload.habitId),
-  "habit.pause": (service, payload) => service.pauseHabit(payload.habitId),
+  "habit.pause": (service, payload) => service.habits.pauseHabit(payload.habitId),
   "habit.rename": (service, payload) =>
-    service.renameHabit(payload.habitId, payload.name),
+    service.habits.renameHabit(payload.habitId, payload.name),
   "habit.reorder": (service, payload) =>
-    service.reorderHabits(payload.habitIds),
-  "habit.resume": (service, payload) => service.resumeHabit(payload.habitId),
-  "habit.toggle": (service, payload) => service.toggleHabit(payload.habitId),
+    service.habits.reorderHabits(payload.habitIds),
+  "habit.resume": (service, payload) => service.habits.resumeHabit(payload.habitId),
+  "habit.toggle": (service, payload) => service.history.toggleHabit(payload.habitId),
   "habit.unarchive": (service, payload) =>
-    service.unarchiveHabit(payload.habitId),
+    service.habits.unarchiveHabit(payload.habitId),
   "habit.updateCategory": (service, payload) =>
-    service.updateHabitCategory(payload.habitId, payload.category),
+    service.habits.updateHabitCategory(payload.habitId, payload.category),
   "habit.updateFrequency": (service, payload) =>
-    service.updateHabitFrequency(
+    service.habits.updateHabitFrequency(
       payload.habitId,
       payload.frequency,
       payload.targetCount
     ),
   "habit.updateTargetCount": (service, payload) =>
-    service.updateHabitTargetCount(payload.habitId, payload.targetCount),
+    service.habits.updateHabitTargetCount(payload.habitId, payload.targetCount),
   "habit.updateWeekdays": (service, payload) =>
-    service.updateHabitWeekdays(payload.habitId, payload.selectedWeekdays),
+    service.habits.updateHabitWeekdays(payload.habitId, payload.selectedWeekdays),
   "settings.update": (service, payload) => service.updateSettings(payload),
   "today.moveUnfinishedToTomorrow": (service) =>
     service.moveUnfinishedHabitsToTomorrow(),
   "today.setDayStatus": (service, payload) =>
-    service.setDayStatus(payload.kind),
+    service.history.setDayStatus(payload.kind),
   "today.toggleCarryover": (service, payload) =>
-    service.toggleHabitCarryover(payload.sourceDate, payload.habitId),
+    service.history.toggleHabitCarryover(payload.sourceDate, payload.habitId),
   "today.toggleSickDay": (service) => service.toggleSickDay(),
   "windDown.createAction": (service, payload) =>
-    service.createWindDownAction(payload.name),
+    service.windDownActions.createAction(payload.name),
   "windDown.deleteAction": (service, payload) =>
-    service.deleteWindDownAction(payload.actionId),
+    service.windDownActions.deleteAction(payload.actionId),
   "windDown.renameAction": (service, payload) =>
-    service.renameWindDownAction(payload.actionId, payload.name),
+    service.windDownActions.renameAction(payload.actionId, payload.name),
   "windDown.toggleAction": (service, payload) =>
-    service.toggleWindDownAction(payload.actionId),
+    service.windDownActions.toggleAction(payload.actionId),
 } satisfies AppCommandHandlers;
 
 const appQueryHandlers = {
   "focusSession.list": (service, payload) =>
-    service.getFocusSessions(payload?.limit),
-  "focusTimer.getState": (service) => service.getPersistedFocusTimerState(),
-  "habit.list": (service) => service.getHabits(),
+    service.focusSessions.listRecentSessions(payload?.limit),
+  "focusTimer.getState": (service) => service.focusTimerState.getState(),
+  "habit.list": (service) => service.habits.getHabits(),
   "history.get": (service, payload) => service.getHistory(payload?.limit),
   "history.getDay": (service, payload) => service.getHistoryDay(payload.date),
   "history.getYear": (service, payload) =>

@@ -7,13 +7,13 @@ import { ApplicationServiceSlice } from "./application-service-slice";
 export class RuntimeSettingsService extends ApplicationServiceSlice {
   getReminderRuntimeState(): ReminderRuntimeState {
     return this.withInitialized(() =>
-      this.repository.getReminderRuntimeState()
+      this.repository.reminderRuntimeState.getState()
     );
   }
 
   updateSettings(settings: AppSettings): AppSettings {
     return this.withInitialized(() => {
-      const savedSettings = this.repository.saveSettings(
+      const savedSettings = this.repository.settings.saveSettings(
         settings,
         this.clock.timezone()
       );
@@ -24,19 +24,19 @@ export class RuntimeSettingsService extends ApplicationServiceSlice {
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
     this.withInitialized(() => {
-      this.repository.saveReminderRuntimeState(state);
+      this.repository.reminderRuntimeState.saveState(state);
     });
   }
 
   getWindDownRuntimeState(): WindDownRuntimeState {
     return this.withInitialized(() =>
-      this.repository.getWindDownRuntimeState()
+      this.repository.windDownRuntimeState.getState()
     );
   }
 
   saveWindDownRuntimeState(state: WindDownRuntimeState): void {
     this.withInitialized(() => {
-      this.repository.saveWindDownRuntimeState(state);
+      this.repository.windDownRuntimeState.saveState(state);
     });
   }
 }

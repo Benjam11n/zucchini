@@ -4,7 +4,7 @@ import type {
   GoalFrequency,
 } from "@/shared/domain/goal";
 
-import { FocusQuotaGoalForm } from "../focus-quota-goal-form";
+import { FocusQuotaGoalForm } from "../focus-quota-goal-form/focus-quota-goal-form";
 
 interface FocusQuotaGoalsCardProps {
   archiveButtonVariant?: "destructive" | "ghost";

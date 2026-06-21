@@ -18,7 +18,7 @@ import {
 import { Spinner } from "@/renderer/shared/components/ui/spinner";
 import type { FocusSession } from "@/shared/domain/focus-session";
 
-import { FocusRunList } from "../focus-run-list";
+import { FocusRunList } from "../focus-run-list/focus-run-list";
 
 interface FocusSessionListProps {
   phase: FocusSessionsPhase;

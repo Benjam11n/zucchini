@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 
-import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls";
+import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls/focus-widget-controls";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useFocusTimerActions } from "@/renderer/features/focus/hooks/use-focus-timer-actions";
 import { useFocusWidgetSizeSync } from "@/renderer/features/focus/hooks/use-focus-widget-size-sync";

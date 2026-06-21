@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 
-import { WeeklyReviewChartFallback } from "@/renderer/features/weekly-review/components/weekly-review-chart-fallback";
+import { WeeklyReviewChartFallback } from "@/renderer/features/weekly-review/components/weekly-review-chart-fallback/weekly-review-chart-fallback";
 import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
 
 interface WeeklyReviewHabitChartProps {
@@ -8,7 +8,8 @@ interface WeeklyReviewHabitChartProps {
 }
 
 const WeeklyReviewHabitChartImpl = lazy(async () => {
-  const module = await import("../weekly-review-habit-chart-impl");
+  const module =
+    await import("../weekly-review-habit-chart-impl/weekly-review-habit-chart-impl");
   return {
     default: module.WeeklyReviewHabitChartImpl,
   };

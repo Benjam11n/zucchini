@@ -5,9 +5,9 @@ import { Button } from "@/renderer/shared/components/ui/button";
 import type { HabitManagementActions } from "@/renderer/shared/types/habit-actions";
 import type { Habit } from "@/shared/domain/habit";
 
-import { HabitManagementFeedback } from "../habit-management-feedback";
-import { HabitManagementList } from "../habit-management-list";
-import { NewHabitForm } from "../new-habit-form";
+import { HabitManagementFeedback } from "../habit-management-feedback/habit-management-feedback";
+import { HabitManagementList } from "../habit-management-list/habit-management-list";
+import { NewHabitForm } from "../new-habit-form/new-habit-form";
 import { useHabitManagementController } from "../use-habit-management-controller";
 
 export interface HabitManagementContentProps {

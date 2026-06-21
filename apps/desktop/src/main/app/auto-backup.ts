@@ -140,7 +140,7 @@ export function createAutoBackupService({
     );
 
     await repository.exportBackup(backupPath);
-    repository.updateAutoBackupLastRunAt(now.toISOString());
+    repository.settings.updateAutoBackupLastRunAt(now.toISOString());
     pruneOldBackups(backupDirectory);
     return backupPath;
   }

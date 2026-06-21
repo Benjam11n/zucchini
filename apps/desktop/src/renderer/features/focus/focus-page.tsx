@@ -21,7 +21,7 @@ import {
   setFocusTimerDuration,
   skipBreakFocusTimerState,
 } from "@/renderer/features/focus/lib/focus-timer-state";
-import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields";
+import { PomodoroSettingsFields } from "@/renderer/shared/components/app/pomodoro-settings/pomodoro-settings-fields/pomodoro-settings-fields";
 import {
   Dialog,
   DialogContent,
@@ -35,8 +35,8 @@ import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import { FocusSessionList } from "./components/focus-session-list";
-import { FocusTimerCard } from "./components/focus-timer-card";
+import { FocusSessionList } from "./components/focus-session-list/focus-session-list";
+import { FocusTimerCard } from "./components/focus-timer-card/focus-timer-card";
 
 interface FocusPageViewModel {
   focusSaveErrorMessage: string | null;

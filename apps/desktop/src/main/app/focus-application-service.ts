@@ -29,7 +29,7 @@ function assertValidPersistedFocusTimerState(
 export class FocusApplicationService extends ApplicationServiceSlice {
   getFocusSessions(limit?: number): FocusSession[] {
     return this.inInitializedTransaction("getFocusSessions", () =>
-      this.repository.getFocusSessions(limit)
+      this.repository.focusSessions.listRecentSessions(limit)
     );
   }
 
@@ -45,13 +45,13 @@ export class FocusApplicationService extends ApplicationServiceSlice {
         ),
       };
 
-      return this.repository.saveFocusSession(normalizedInput);
+      return this.repository.focusSessions.insertSession(normalizedInput);
     });
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
     return this.inInitializedTransaction("getPersistedFocusTimerState", () =>
-      this.repository.getPersistedFocusTimerState()
+      this.repository.focusTimerState.getState()
     );
   }
 
@@ -61,7 +61,7 @@ export class FocusApplicationService extends ApplicationServiceSlice {
     assertValidPersistedFocusTimerState(state);
 
     return this.inInitializedTransaction("savePersistedFocusTimerState", () =>
-      this.repository.savePersistedFocusTimerState(state)
+      this.repository.focusTimerState.saveState(state)
     );
   }
 }
