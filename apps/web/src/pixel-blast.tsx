@@ -3,21 +3,16 @@ import type { CSSProperties } from "react";
 
 import "./pixel-blast.css";
 import { usePixelBlastRenderer } from "./pixel-blast-renderer";
-import type { PixelBlastRendererOptions } from "./pixel-blast-renderer";
 
-interface PixelBlastProps extends PixelBlastRendererOptions {
+interface PixelBlastProps {
   className?: string;
   style?: CSSProperties;
 }
 
-export default function PixelBlast({
-  className,
-  style,
-  ...rendererOptions
-}: PixelBlastProps) {
+export default function PixelBlast({ className, style }: PixelBlastProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  usePixelBlastRenderer(containerRef, rendererOptions);
+  usePixelBlastRenderer(containerRef);
 
   return (
     <div

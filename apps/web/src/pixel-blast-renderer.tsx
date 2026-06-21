@@ -53,51 +53,28 @@ interface PixelBlastRuntimeConfig extends ReinitConfig {
   variant: PixelBlastVariant;
 }
 
-export interface PixelBlastRendererOptions {
-  antialias?: boolean;
-  autoPauseOffscreen?: boolean;
-  color?: string;
-  edgeFade?: number;
-  enableRipples?: boolean;
-  liquid?: boolean;
-  liquidRadius?: number;
-  liquidStrength?: number;
-  liquidWobbleSpeed?: number;
-  noiseAmount?: number;
-  patternDensity?: number;
-  patternScale?: number;
-  pixelSize?: number;
-  pixelSizeJitter?: number;
-  rippleIntensityScale?: number;
-  rippleSpeed?: number;
-  rippleThickness?: number;
-  speed?: number;
-  transparent?: boolean;
-  variant?: PixelBlastVariant;
-}
-
-const DEFAULT_PIXEL_BLAST_OPTIONS = {
+const PIXEL_BLAST_CONFIG = {
   antialias: true,
   autoPauseOffscreen: true,
-  color: "#B19EEF",
-  edgeFade: 0.5,
+  color: "#669c35",
+  edgeFade: 0.25,
   enableRipples: true,
   liquid: false,
-  liquidRadius: 1,
-  liquidStrength: 0.1,
-  liquidWobbleSpeed: 4.5,
+  liquidRadius: 1.2,
+  liquidStrength: 0.12,
+  liquidWobbleSpeed: 5,
   noiseAmount: 0,
   patternDensity: 1,
   patternScale: 2,
-  pixelSize: 3,
+  pixelSize: 4,
   pixelSizeJitter: 0,
-  rippleIntensityScale: 1,
-  rippleSpeed: 0.3,
-  rippleThickness: 0.1,
+  rippleIntensityScale: 1.5,
+  rippleSpeed: 0.4,
+  rippleThickness: 0.12,
   speed: 0.5,
   transparent: true,
   variant: "square",
-} satisfies Required<PixelBlastRendererOptions>;
+} satisfies PixelBlastRuntimeConfig & { speed: number };
 
 interface PixelBlastUniforms {
   uClickPos: { value: THREE.Vector2[] };
@@ -1021,32 +998,9 @@ function updatePixelBlastState(
 }
 
 export function usePixelBlastRenderer(
-  containerRef: RefObject<HTMLDivElement | null>,
-  options: PixelBlastRendererOptions
+  containerRef: RefObject<HTMLDivElement | null>
 ) {
-  const {
-    antialias,
-    autoPauseOffscreen,
-    color,
-    edgeFade,
-    enableRipples,
-    liquid,
-    liquidRadius,
-    liquidStrength,
-    liquidWobbleSpeed,
-    noiseAmount,
-    patternDensity,
-    patternScale,
-    pixelSize,
-    pixelSizeJitter,
-    rippleIntensityScale,
-    rippleSpeed,
-    rippleThickness,
-    speed,
-    transparent,
-    variant,
-  } = { ...DEFAULT_PIXEL_BLAST_OPTIONS, ...options };
-  const speedRef = useRef(speed);
+  const speedRef = useRef(PIXEL_BLAST_CONFIG.speed);
   const threeRef = useRef<PixelBlastState | null>(null);
   const prevConfigRef = useRef<ReinitConfig | null>(null);
   const visibilityRef = useRef({ visible: true });
@@ -1054,7 +1008,7 @@ export function usePixelBlastRenderer(
   useEffect(() => {
     const container = containerRef.current;
 
-    if (!container || !autoPauseOffscreen) {
+    if (!container || !PIXEL_BLAST_CONFIG.autoPauseOffscreen) {
       return;
     }
 
@@ -1070,7 +1024,7 @@ export function usePixelBlastRenderer(
     return () => {
       observer.disconnect();
     };
-  }, [autoPauseOffscreen, containerRef]);
+  }, [containerRef]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -1079,46 +1033,24 @@ export function usePixelBlastRenderer(
       return;
     }
 
-    speedRef.current = speed;
+    speedRef.current = PIXEL_BLAST_CONFIG.speed;
 
     const config: ReinitConfig = {
-      antialias,
-      liquid,
-      noiseAmount,
+      antialias: PIXEL_BLAST_CONFIG.antialias,
+      liquid: PIXEL_BLAST_CONFIG.liquid,
+      noiseAmount: PIXEL_BLAST_CONFIG.noiseAmount,
     };
     const needsReinit = shouldReinitPixelBlast(
       prevConfigRef.current,
       config,
       threeRef.current
     );
-    const runtimeConfig: PixelBlastRuntimeConfig = {
-      antialias,
-      autoPauseOffscreen,
-      color,
-      edgeFade,
-      enableRipples,
-      liquid,
-      liquidRadius,
-      liquidStrength,
-      liquidWobbleSpeed,
-      noiseAmount,
-      patternDensity,
-      patternScale,
-      pixelSize,
-      pixelSizeJitter,
-      rippleIntensityScale,
-      rippleSpeed,
-      rippleThickness,
-      transparent,
-      variant,
-    };
-
     if (needsReinit) {
       disposeState(container, threeRef.current);
       threeRef.current = null;
 
       threeRef.current = createPixelBlastState({
-        config: runtimeConfig,
+        config: PIXEL_BLAST_CONFIG,
         container,
         refs: {
           speed: speedRef,
@@ -1127,33 +1059,11 @@ export function usePixelBlastRenderer(
         },
       });
     } else if (threeRef.current) {
-      updatePixelBlastState(threeRef.current, runtimeConfig);
+      updatePixelBlastState(threeRef.current, PIXEL_BLAST_CONFIG);
     }
 
     prevConfigRef.current = config;
-  }, [
-    antialias,
-    autoPauseOffscreen,
-    color,
-    edgeFade,
-    enableRipples,
-    liquid,
-    liquidRadius,
-    liquidStrength,
-    liquidWobbleSpeed,
-    noiseAmount,
-    patternDensity,
-    patternScale,
-    pixelSize,
-    pixelSizeJitter,
-    rippleIntensityScale,
-    rippleSpeed,
-    rippleThickness,
-    speed,
-    transparent,
-    variant,
-    containerRef,
-  ]);
+  }, [containerRef]);
 
   useEffect(() => {
     const container = containerRef.current;

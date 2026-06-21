@@ -22,27 +22,7 @@ export default function App() {
   return (
     <div className="page-shell">
       <div aria-hidden="true" className="pixel-blast" role="presentation">
-        <PixelBlast
-          className="pixel-blast-layer"
-          color="#669c35"
-          edgeFade={0.25}
-          enableRipples
-          liquid={false}
-          liquidRadius={1.2}
-          liquidStrength={0.12}
-          liquidWobbleSpeed={5}
-          patternDensity={1}
-          patternScale={2}
-          pixelSize={4}
-          pixelSizeJitter={0}
-          rippleIntensityScale={1.5}
-          rippleSpeed={0.4}
-          rippleThickness={0.12}
-          speed={0.5}
-          style={{ opacity: 0.65 }}
-          transparent
-          variant="square"
-        />
+        <PixelBlast className="pixel-blast-layer" style={{ opacity: 0.65 }} />
         <div className="pixel-blast-noise" />
         <div className="pixel-blast-vignette" />
       </div>
