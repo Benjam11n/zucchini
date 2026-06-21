@@ -1,37 +1,17 @@
 import type {
-  App,
-  Dialog,
-  IpcMain,
   Menu,
   MenuItemConstructorOptions,
   NativeImage,
-  Shell,
   Tray,
 } from "electron";
 
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
-import type { Clock } from "@/shared/domain/clock";
 
 export interface LoggerPort {
   error: (...args: unknown[]) => void;
   info: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
 }
-
-export type DesktopLoggerAppPort = Pick<App, "getPath">;
-
-export type FatalErrorAppPort = Pick<App, "exit" | "isReady">;
-
-export type FatalErrorDialogPort = Pick<Dialog, "showErrorBox">;
-
-export type DataManagementAppPort = Pick<App, "quit" | "relaunch">;
-
-export type DataManagementClockPort = Pick<Clock, "now" | "todayKey">;
-
-export type DataManagementDialogPort = Pick<
-  Dialog,
-  "showOpenDialog" | "showSaveDialog"
->;
 
 export interface DataManagementRepositoryPort {
   exportBackup(destinationPath: string): Promise<void>;
@@ -67,8 +47,6 @@ export interface DataManagementServicePort {
   initialize(): void;
 }
 
-export type DataManagementShellPort = Pick<Shell, "openPath">;
-
 export interface GlobalShortcutPort {
   isRegistered: (accelerator: string) => boolean;
   register: (accelerator: string, callback: () => void) => boolean;
@@ -81,13 +59,6 @@ export interface AppTrayShellPort {
   createTray(image: NativeImage): Tray;
   resolveIconPath(): string;
 }
-
-export type UpdaterAppPort = Pick<
-  App,
-  "getAppPath" | "getVersion" | "isPackaged"
->;
-
-export type UpdaterIpcMainPort = Pick<IpcMain, "handle">;
 
 export type AppUpdaterEventName =
   | "checking-for-update"
@@ -113,28 +84,33 @@ export interface AutoUpdaterPort {
 }
 
 export interface UpdaterRuntimePorts {
-  app: UpdaterAppPort;
+  app: {
+    getAppPath: () => string;
+    getVersion: () => string;
+    isPackaged: boolean;
+  };
   autoUpdater: AutoUpdaterPort;
   broadcastState: (state: AppUpdateState) => void;
-  ipcMain: UpdaterIpcMainPort;
+  ipcMain: {
+    handle: (
+      channel: string,
+      listener: (...args: unknown[]) => unknown
+    ) => void;
+  };
   log: LoggerPort;
-}
-
-export interface PermissionWebContentsPort {
-  getURL(): string;
 }
 
 export interface SessionSecurityPort {
   setPermissionCheckHandler(
     handler: (
-      webContents: PermissionWebContentsPort | null,
+      webContents: { getURL: () => string } | null,
       permission: string,
       requestingOrigin: string
     ) => boolean
   ): void;
   setPermissionRequestHandler(
     handler: (
-      webContents: PermissionWebContentsPort | null,
+      webContents: { getURL: () => string } | null,
       permission: string,
       callback: (granted: boolean) => void,
       details: {
@@ -142,18 +118,4 @@ export interface SessionSecurityPort {
       }
     ) => void
   ): void;
-}
-
-export type SingleInstanceLockAppPort = Pick<App, "requestSingleInstanceLock">;
-
-export interface SecondInstanceAppPort {
-  on(event: "second-instance", listener: () => void): void;
-}
-
-export interface RuntimeAppPort {
-  isPackaged: boolean;
-  setLoginItemSettings(settings: {
-    openAsHidden: boolean;
-    openAtLogin: boolean;
-  }): void;
 }

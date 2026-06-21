@@ -5,10 +5,12 @@
  * is launched, it forwards the focus event to the existing instance instead
  * of starting a new window.
  */
-import type {
-  SecondInstanceAppPort,
-  SingleInstanceLockAppPort,
-} from "@/main/app/ports";
+import type { App } from "electron";
+
+type SingleInstanceLockAppPort = Pick<App, "requestSingleInstanceLock">;
+interface SecondInstanceAppPort {
+  on(event: "second-instance", listener: () => void): void;
+}
 
 export function acquireSingleInstanceLock(
   app: SingleInstanceLockAppPort

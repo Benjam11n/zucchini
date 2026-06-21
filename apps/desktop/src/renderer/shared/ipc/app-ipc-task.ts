@@ -1,36 +1,35 @@
-import { runAsyncTask } from "@/renderer/shared/lib/async-task";
-import type { RunAsyncTaskOptions } from "@/renderer/shared/lib/async-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { toAppIpcError } from "@/shared/contracts/ipc/app-errors";
 
-type RunAppIpcTaskOptions<TResult> = Omit<
-  RunAsyncTaskOptions<TResult, AppIpcError>,
-  "mapError"
->;
+type MaybePromise<T> = Promise<T> | T;
 
-export function runAppIpcTask<TResult>(
-  task: () => Promise<TResult>,
-  options: RunAppIpcTaskOptions<TResult> & { rethrow: true }
-): Promise<TResult>;
-export function runAppIpcTask<TResult>(
-  task: () => Promise<TResult>,
-  options?: RunAppIpcTaskOptions<TResult> & { rethrow?: false }
-): Promise<TResult | undefined>;
-export function runAppIpcTask<TResult>(
+interface RunAppIpcTaskOptions<TResult> {
+  onError?: (error: AppIpcError, originalError: unknown) => MaybePromise<void>;
+  onFinally?: () => MaybePromise<void>;
+  onStart?: () => MaybePromise<void>;
+  onSuccess?: (result: TResult) => MaybePromise<void>;
+  rethrow?: boolean;
+}
+
+export async function runAppIpcTask<TResult>(
   task: () => Promise<TResult>,
   options: RunAppIpcTaskOptions<TResult> = {}
-) {
-  if (options.rethrow) {
-    return runAsyncTask(task, {
-      ...options,
-      mapError: toAppIpcError,
-      rethrow: true,
-    });
-  }
+): Promise<TResult | undefined> {
+  await options.onStart?.();
 
-  return runAsyncTask(task, {
-    ...options,
-    mapError: toAppIpcError,
-    rethrow: false,
-  });
+  try {
+    const result = await task();
+    await options.onSuccess?.(result);
+    return result;
+  } catch (error) {
+    await options.onError?.(toAppIpcError(error), error);
+
+    if (options.rethrow) {
+      throw error;
+    }
+
+    return undefined;
+  } finally {
+    await options.onFinally?.();
+  }
 }

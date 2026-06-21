@@ -10,19 +10,26 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import type { App, Dialog, Shell } from "electron";
+
 import {
   getAutoBackupDirectory,
   listAutoBackupFiles,
 } from "@/main/app/auto-backup";
 import type {
-  DataManagementAppPort,
-  DataManagementClockPort,
-  DataManagementDialogPort,
   DataManagementRepositoryPort,
   DataManagementServicePort,
-  DataManagementShellPort,
 } from "@/main/app/ports";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
+import type { Clock } from "@/shared/domain/clock";
+
+type DataManagementAppPort = Pick<App, "quit" | "relaunch">;
+type DataManagementClockPort = Pick<Clock, "now" | "todayKey">;
+type DataManagementDialogPort = Pick<
+  Dialog,
+  "showOpenDialog" | "showSaveDialog"
+>;
+type DataManagementShellPort = Pick<Shell, "openPath">;
 
 const RESTORE_TOKEN_TTL_MS = 15 * 60 * 1000;
 

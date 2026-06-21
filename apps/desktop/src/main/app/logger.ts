@@ -1,7 +1,11 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-import type { DesktopLoggerAppPort, LoggerPort } from "@/main/app/ports";
+import type { App } from "electron";
+
+import type { LoggerPort } from "@/main/app/ports";
+
+type DesktopLoggerAppPort = Pick<App, "getPath">;
 
 interface CreateDesktopLoggerOptions {
   app: DesktopLoggerAppPort;

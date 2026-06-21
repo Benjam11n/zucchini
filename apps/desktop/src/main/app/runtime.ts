@@ -1,5 +1,4 @@
 import { AppApplicationService } from "@/main/app/application-service";
-import type { RuntimeAppPort } from "@/main/app/ports";
 import { createAppTray } from "@/main/app/tray";
 import { createReminderCoordinator } from "@/main/features/reminders/coordinator";
 import type { ReminderCoordinator } from "@/main/features/reminders/coordinator";
@@ -17,6 +16,14 @@ import { systemClock } from "@/shared/domain/clock";
 import type { AppSettings, ThemeMode } from "@/shared/domain/settings";
 
 import { buildLoginItemSettings } from "./lifecycle";
+
+interface RuntimeAppPort {
+  isPackaged: boolean;
+  setLoginItemSettings(settings: {
+    openAsHidden: boolean;
+    openAtLogin: boolean;
+  }): void;
+}
 
 export interface AppRuntime {
   reminders: ReminderCoordinator;

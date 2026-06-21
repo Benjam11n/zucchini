@@ -1,10 +1,6 @@
-import type {
-  LoggerPort,
-  PermissionWebContentsPort,
-  SessionSecurityPort,
-} from "@/main/app/ports";
+import type { LoggerPort, SessionSecurityPort } from "@/main/app/ports";
 
-type PermissionWebContents = PermissionWebContentsPort | null;
+type PermissionWebContents = { getURL: () => string } | null;
 
 export function configureSessionSecurity(
   session: SessionSecurityPort,

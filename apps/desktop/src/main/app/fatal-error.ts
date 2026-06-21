@@ -5,11 +5,12 @@
  * Shows a native error dialog, cleans up runtime resources, and exits the
  * process. Uses Electron's `showErrorBox` for macOS/Windows compatibility.
  */
-import type {
-  FatalErrorAppPort,
-  FatalErrorDialogPort,
-  LoggerPort,
-} from "@/main/app/ports";
+import type { App, Dialog } from "electron";
+
+import type { LoggerPort } from "@/main/app/ports";
+
+type FatalErrorAppPort = Pick<App, "exit" | "isReady">;
+type FatalErrorDialogPort = Pick<Dialog, "showErrorBox">;
 
 const FATAL_ERROR_TITLE = "Zucchini needs to close";
 const FATAL_ERROR_MESSAGE =
