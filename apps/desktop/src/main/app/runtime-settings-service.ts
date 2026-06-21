@@ -2,41 +2,47 @@ import type { ReminderRuntimeState } from "@/shared/domain/reminder-runtime-stat
 import type { AppSettings } from "@/shared/domain/settings";
 import type { WindDownRuntimeState } from "@/shared/domain/wind-down-runtime-state";
 
-import { ApplicationServiceSlice } from "./application-service-slice";
+import type { ApplicationServiceRuntime } from "./application-service-runtime";
 
-export class RuntimeSettingsService extends ApplicationServiceSlice {
+export class RuntimeSettingsService {
+  private readonly runtime: ApplicationServiceRuntime;
+
+  constructor(runtime: ApplicationServiceRuntime) {
+    this.runtime = runtime;
+  }
+
   getReminderRuntimeState(): ReminderRuntimeState {
-    return this.withInitialized(() =>
-      this.repository.reminderRuntimeState.getState()
+    return this.runtime.withInitialized(() =>
+      this.runtime.repository.reminderRuntimeState.getState()
     );
   }
 
   updateSettings(settings: AppSettings): AppSettings {
-    return this.withInitialized(() => {
-      const savedSettings = this.repository.settings.saveSettings(
+    return this.runtime.withInitialized(() => {
+      const savedSettings = this.runtime.repository.settings.saveSettings(
         settings,
-        this.clock.timezone()
+        this.runtime.clock.timezone()
       );
-      this.todayReadModel.invalidate();
+      this.runtime.todayReadModel.invalidate();
       return savedSettings;
     });
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
-    this.withInitialized(() => {
-      this.repository.reminderRuntimeState.saveState(state);
+    this.runtime.withInitialized(() => {
+      this.runtime.repository.reminderRuntimeState.saveState(state);
     });
   }
 
   getWindDownRuntimeState(): WindDownRuntimeState {
-    return this.withInitialized(() =>
-      this.repository.windDownRuntimeState.getState()
+    return this.runtime.withInitialized(() =>
+      this.runtime.repository.windDownRuntimeState.getState()
     );
   }
 
   saveWindDownRuntimeState(state: WindDownRuntimeState): void {
-    this.withInitialized(() => {
-      this.repository.windDownRuntimeState.saveState(state);
+    this.runtime.withInitialized(() => {
+      this.runtime.repository.windDownRuntimeState.saveState(state);
     });
   }
 }

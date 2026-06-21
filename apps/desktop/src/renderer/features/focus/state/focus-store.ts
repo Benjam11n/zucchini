@@ -13,7 +13,6 @@ import type {
   PersistedFocusTimerState,
 } from "@/renderer/features/focus/focus.types";
 import { createIdleFocusTimerState } from "@/renderer/features/focus/lib/focus-timer-state";
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
@@ -68,7 +67,7 @@ function getInitialFocusState(): Pick<
 export const useFocusStore = create<FocusStoreState>()((set, get) => ({
   ...getInitialFocusState(),
   clearFocusSaveError: () => set({ focusSaveErrorMessage: null }),
-  getTodaySnapshot: () => appClient.getTodayState(),
+  getTodaySnapshot: () => window.desktop.query({ type: "today.get" }),
   loadFocusSessions: async (force = false) => {
     if (
       get().focusSessionsPhase === "loading" ||
@@ -93,7 +92,7 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
         focusSessionsPhase: "ready",
         hasLoadedFocusSessions: true,
       }),
-      task: () => appClient.getFocusSessions(),
+      task: () => window.desktop.query({ type: "focusSession.list" }),
     });
   },
   prependFocusSession: (focusSession: FocusSession) =>
@@ -105,13 +104,20 @@ export const useFocusStore = create<FocusStoreState>()((set, get) => ({
         : [focusSession, ...state.focusSessions].slice(0, 30),
     })),
   recordFocusSession: async (input) => {
-    const focusSession = await appClient.recordFocusSession(input);
+    const focusSession = await window.desktop.command({
+      payload: input,
+      type: "focusSession.record",
+    });
     set({ focusSaveErrorMessage: null });
     return focusSession;
   },
-  restoreFocusTimerState: () => appClient.getFocusTimerState(),
+  restoreFocusTimerState: () =>
+    window.desktop.query({ type: "focusTimer.getState" }),
   saveFocusTimerState: (timerState) =>
-    appClient.saveFocusTimerState(timerState),
+    window.desktop.command({
+      payload: timerState,
+      type: "focusTimer.saveState",
+    }),
   setFocusSaveErrorMessage: (focusSaveErrorMessage) =>
     set({ focusSaveErrorMessage }),
   setTimerState: (timerState) => set({ timerState }),

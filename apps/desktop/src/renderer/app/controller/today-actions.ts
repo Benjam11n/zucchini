@@ -13,7 +13,6 @@ import { useInsightsStore } from "@/renderer/features/insights/state/insights-st
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
 import type {
   Habit,
@@ -43,6 +42,50 @@ export type ReloadAllFn = (
 type HabitStatusMutationKind = "decrement" | "increment" | "toggle";
 
 const habitStatusMutationVersions = new Map<number, number>();
+
+const queryTodayState = () => window.desktop.query({ type: "today.get" });
+const queryHabits = () => window.desktop.query({ type: "habit.list" });
+const archiveFocusQuotaGoal = (goalId: number) =>
+  window.desktop.command({
+    payload: { goalId },
+    type: "focusQuotaGoal.archive",
+  });
+const archiveHabit = (habitId: number) =>
+  window.desktop.command({ payload: { habitId }, type: "habit.archive" });
+const createHabit = (
+  name: string,
+  category: HabitCategory,
+  frequency: HabitFrequency,
+  selectedWeekdays: HabitWeekday[] | null,
+  targetCount: number | null
+) =>
+  window.desktop.command({
+    payload: { category, frequency, name, selectedWeekdays, targetCount },
+    type: "habit.create",
+  });
+const createWindDownAction = (name: string) =>
+  window.desktop.command({
+    payload: { name },
+    type: "windDown.createAction",
+  });
+const deleteWindDownAction = (actionId: number) =>
+  window.desktop.command({
+    payload: { actionId },
+    type: "windDown.deleteAction",
+  });
+const renameHabit = (habitId: number, name: string) =>
+  window.desktop.command({ payload: { habitId, name }, type: "habit.rename" });
+const pauseHabit = (habitId: number) =>
+  window.desktop.command({ payload: { habitId }, type: "habit.pause" });
+const renameWindDownAction = (actionId: number, name: string) =>
+  window.desktop.command({
+    payload: { actionId, name },
+    type: "windDown.renameAction",
+  });
+const resumeHabit = (habitId: number) =>
+  window.desktop.command({ payload: { habitId }, type: "habit.resume" });
+const unarchiveHabit = (habitId: number) =>
+  window.desktop.command({ payload: { habitId }, type: "habit.unarchive" });
 
 function startHabitStatusMutation(habitId: number): number {
   const nextVersion = (habitStatusMutationVersions.get(habitId) ?? 0) + 1;
@@ -154,8 +197,8 @@ async function refreshWeeklyReviewOverview() {
 }
 
 const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
-  const todayState = nextTodayState ?? (await appClient.getTodayState());
-  const managedHabits = await appClient.getHabits();
+  const todayState = nextTodayState ?? (await queryTodayState());
+  const managedHabits = await queryHabits();
 
   applyTodayReloadResult({
     managedHabits,
@@ -173,7 +216,7 @@ const reloadAll: ReloadAllFn = async (nextTodayState, options = {}) => {
 
 async function applyTodayMutation(mutator: Promise<TodayState>) {
   const nextTodayState = await mutator;
-  const managedHabits = await appClient.getHabits();
+  const managedHabits = await queryHabits();
   applyTodayState(nextTodayState, managedHabits);
   refreshWeeklyReviewIfLoaded();
   resetInsightsIfLoaded();
@@ -280,10 +323,8 @@ export function createTodayActions({
   // oxlint-disable-next-line eslint/sort-keys
   return {
     applyTodayMutation,
-    handleArchiveFocusQuotaGoal: applyTodayCommand(
-      appClient.archiveFocusQuotaGoal
-    ),
-    handleArchiveHabit: applyTodayCommand(appClient.archiveHabit),
+    handleArchiveFocusQuotaGoal: applyTodayCommand(archiveFocusQuotaGoal),
+    handleArchiveHabit: applyTodayCommand(archiveHabit),
     async handleCreateHabit(
       name: string,
       category: HabitCategory,
@@ -292,41 +333,37 @@ export function createTodayActions({
       targetCount: number | null = null
     ) {
       await applyTodayMutation(
-        appClient.createHabit(
-          name,
-          category,
-          frequency,
-          selectedWeekdays,
-          targetCount
-        )
+        createHabit(name, category, frequency, selectedWeekdays, targetCount)
       );
       syncSettingsDraftFromTodayState();
     },
-    handleCreateWindDownAction: applyTodayCommand(
-      appClient.createWindDownAction
-    ),
+    handleCreateWindDownAction: applyTodayCommand(createWindDownAction),
     async handleDecrementHabitProgress(habitId: number) {
       await applyHabitStatusMutation({
         habitId,
         mutationKind: "decrement",
-        run: () => appClient.decrementHabitProgress(habitId),
+        run: () =>
+          window.desktop.command({
+            payload: { habitId },
+            type: "habit.decrementProgress",
+          }),
       });
     },
-    handleDeleteWindDownAction: applyTodayCommand(
-      appClient.deleteWindDownAction
-    ),
+    handleDeleteWindDownAction: applyTodayCommand(deleteWindDownAction),
     async handleIncrementHabitProgress(habitId: number) {
       await applyHabitStatusMutation({
         habitId,
         mutationKind: "increment",
-        run: () => appClient.incrementHabitProgress(habitId),
+        run: () =>
+          window.desktop.command({
+            payload: { habitId },
+            type: "habit.incrementProgress",
+          }),
       });
     },
-    handleRenameHabit: applyTodayCommand(appClient.renameHabit),
-    handlePauseHabit: applyTodayCommand(appClient.pauseHabit),
-    handleRenameWindDownAction: applyTodayCommand(
-      appClient.renameWindDownAction
-    ),
+    handleRenameHabit: applyTodayCommand(renameHabit),
+    handlePauseHabit: applyTodayCommand(pauseHabit),
+    handleRenameWindDownAction: applyTodayCommand(renameWindDownAction),
     async handleReorderHabits(nextHabits: Habit[]) {
       const previousTodayState = useTodayStore.getState().todayState;
       const previousManagedHabits = useTodayStore.getState().managedHabits;
@@ -339,7 +376,10 @@ export function createTodayActions({
       await runOptimisticMutation(
         () =>
           applyTodayMutation(
-            appClient.reorderHabits(nextHabits.map((habit) => habit.id))
+            window.desktop.command({
+              payload: { habitIds: nextHabits.map((habit) => habit.id) },
+              type: "habit.reorder",
+            })
           ),
         () => {
           useTodayStore.setState({
@@ -383,33 +423,82 @@ export function createTodayActions({
       await applyHabitStatusMutation({
         habitId,
         mutationKind: "toggle",
-        run: () => appClient.toggleHabit(habitId),
+        run: () =>
+          window.desktop.command({
+            payload: { habitId },
+            type: "habit.toggle",
+          }),
       });
     },
     handleToggleHabitCarryover: refreshTodayCommand(
-      appClient.toggleHabitCarryover
+      (sourceDate: string, habitId: number) =>
+        window.desktop.command({
+          payload: { habitId, sourceDate },
+          type: "today.toggleCarryover",
+        })
     ),
-    handleToggleSickDay: refreshTodayCommand(appClient.toggleSickDay),
-    handleSetDayStatus: refreshTodayCommand(appClient.setDayStatus),
-    handleToggleWindDownAction: refreshTodayCommand(
-      appClient.toggleWindDownAction
+    handleToggleSickDay: refreshTodayCommand(() =>
+      window.desktop.command({ type: "today.toggleSickDay" })
     ),
-    handleUnarchiveFocusQuotaGoal: applyTodayCommand(
-      appClient.unarchiveFocusQuotaGoal
+    handleSetDayStatus: refreshTodayCommand((kind: TodayState["dayStatus"]) =>
+      window.desktop.command({
+        payload: { kind },
+        type: "today.setDayStatus",
+      })
     ),
-    handleUnarchiveHabit: applyTodayCommand(appClient.unarchiveHabit),
-    handleResumeHabit: applyTodayCommand(appClient.resumeHabit),
+    handleToggleWindDownAction: refreshTodayCommand((actionId: number) =>
+      window.desktop.command({
+        payload: { actionId },
+        type: "windDown.toggleAction",
+      })
+    ),
+    handleUnarchiveFocusQuotaGoal: applyTodayCommand((goalId: number) =>
+      window.desktop.command({
+        payload: { goalId },
+        type: "focusQuotaGoal.unarchive",
+      })
+    ),
+    handleUnarchiveHabit: applyTodayCommand(unarchiveHabit),
+    handleResumeHabit: applyTodayCommand(resumeHabit),
     handleUpsertFocusQuotaGoal: refreshTodayCommand(
-      appClient.upsertFocusQuotaGoal
+      (frequency: "weekly" | "monthly", targetMinutes: number) =>
+        window.desktop.command({
+          payload: { frequency, targetMinutes },
+          type: "focusQuotaGoal.upsert",
+        })
     ),
-    handleUpdateHabitCategory: applyTodayCommand(appClient.updateHabitCategory),
+    handleUpdateHabitCategory: applyTodayCommand(
+      (habitId: number, category: HabitCategory) =>
+        window.desktop.command({
+          payload: { category, habitId },
+          type: "habit.updateCategory",
+        })
+    ),
     handleUpdateHabitFrequency: applyTodayCommand(
-      appClient.updateHabitFrequency
+      (
+        habitId: number,
+        frequency: HabitFrequency,
+        targetCount?: number | null
+      ) =>
+        window.desktop.command({
+          payload: { frequency, habitId, targetCount },
+          type: "habit.updateFrequency",
+        })
     ),
     handleUpdateHabitTargetCount: applyTodayCommand(
-      appClient.updateHabitTargetCount
+      (habitId: number, targetCount: number) =>
+        window.desktop.command({
+          payload: { habitId, targetCount },
+          type: "habit.updateTargetCount",
+        })
     ),
-    handleUpdateHabitWeekdays: applyTodayCommand(appClient.updateHabitWeekdays),
+    handleUpdateHabitWeekdays: applyTodayCommand(
+      (habitId: number, selectedWeekdays: HabitWeekday[] | null) =>
+        window.desktop.command({
+          payload: { habitId, selectedWeekdays },
+          type: "habit.updateWeekdays",
+        })
+    ),
     refreshForNewDay,
     reloadAll,
     setSystemTheme(systemTheme: "dark" | "light") {

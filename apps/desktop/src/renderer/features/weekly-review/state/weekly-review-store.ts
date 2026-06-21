@@ -9,7 +9,6 @@
 import { create } from "zustand";
 
 import { loadWeeklyReviewState } from "@/renderer/features/weekly-review/lib/weekly-review-state";
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
 import type { AsyncPhase } from "@/renderer/shared/types/async-phase";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
@@ -89,7 +88,18 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
           weeklyReviewPhase: "ready",
         }),
         task: () =>
-          loadWeeklyReviewState(appClient, get().selectedWeeklyReview),
+          loadWeeklyReviewState(
+            {
+              getWeeklyReview: (weekStart) =>
+                window.desktop.query({
+                  payload: { weekStart },
+                  type: "weeklyReview.get",
+                }),
+              getWeeklyReviewOverview: () =>
+                window.desktop.query({ type: "weeklyReview.overview" }),
+            },
+            get().selectedWeeklyReview
+          ),
       });
     },
     openWeeklyReviewSpotlight: () =>
@@ -117,7 +127,11 @@ export const useWeeklyReviewStore = create<WeeklyReviewStoreState>()(
           weeklyReviewError: null,
           weeklyReviewPhase: "ready",
         }),
-        task: () => appClient.getWeeklyReview(weekStart),
+        task: () =>
+          window.desktop.query({
+            payload: { weekStart },
+            type: "weeklyReview.get",
+          }),
       });
     },
   })

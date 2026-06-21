@@ -22,39 +22,48 @@ import type {
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
 
-import { ApplicationServiceSlice } from "./application-service-slice";
+import type { ApplicationServiceRuntime } from "./application-service-runtime";
 
-export class TodayCommandService extends ApplicationServiceSlice {
+export class TodayCommandService {
+  private readonly runtime: ApplicationServiceRuntime;
+
+  constructor(runtime: ApplicationServiceRuntime) {
+    this.runtime = runtime;
+  }
+
   getHabits(): Habit[] {
-    return this.inInitializedTransaction("getHabits", () =>
-      this.repository.habits.getHabits()
+    return this.runtime.inInitializedTransaction("getHabits", () =>
+      this.runtime.repository.habits.getHabits()
     );
   }
 
   getTodayState(): TodayState {
-    return this.withSyncedRead("getTodayState", () =>
-      this.buildCurrentTodayState()
+    return this.runtime.withSyncedRead("getTodayState", () =>
+      this.runtime.buildCurrentTodayState()
     );
   }
 
   setDayStatus(kind: DayStatusKind | null): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "setDayStatus",
       (today) => {
         if (!kind) {
-          const currentDayStatus = this.repository.history.getDayStatus(today);
+          const currentDayStatus =
+            this.runtime.repository.history.getDayStatus(today);
           if (currentDayStatus?.kind === "rescheduled") {
-            this.repository.history.clearHabitCarryoversFromSourceDate(today);
+            this.runtime.repository.history.clearHabitCarryoversFromSourceDate(
+              today
+            );
           }
 
-          this.repository.history.clearDayStatus(today);
+          this.runtime.repository.history.clearDayStatus(today);
           return;
         }
 
-        this.repository.history.setDayStatus(
+        this.runtime.repository.history.setDayStatus(
           today,
           kind,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       {
@@ -65,11 +74,11 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   moveUnfinishedHabitsToTomorrow(): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "moveUnfinishedHabitsToTomorrow",
       (today) => {
-        this.repository.history.ensureStatusRowsForDate(today);
-        const unfinishedDailyHabits = this.repository.history
+        this.runtime.repository.history.ensureStatusRowsForDate(today);
+        const unfinishedDailyHabits = this.runtime.repository.history
           .getHabitsWithStatus(today)
           .filter((habit) => isDailyHabit(habit) && !habit.completed);
 
@@ -77,13 +86,17 @@ export class TodayCommandService extends ApplicationServiceSlice {
           return;
         }
 
-        const nowIso = this.clock.now().toISOString();
-        this.repository.history.createHabitCarryovers(
+        const nowIso = this.runtime.clock.now().toISOString();
+        this.runtime.repository.history.createHabitCarryovers(
           today,
           addDays(today, 1),
           nowIso
         );
-        this.repository.history.setDayStatus(today, "rescheduled", nowIso);
+        this.runtime.repository.history.setDayStatus(
+          today,
+          "rescheduled",
+          nowIso
+        );
       },
       {
         ensureStatusRowsForToday: true,
@@ -93,14 +106,14 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   toggleHabitCarryover(sourceDate: string, habitId: number): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "toggleHabitCarryover",
       (today) => {
-        this.repository.history.toggleHabitCarryover(
+        this.runtime.repository.history.toggleHabitCarryover(
           today,
           sourceDate,
           habitId,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       {
@@ -111,19 +124,20 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   toggleSickDay(): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "toggleSickDay",
       (today) => {
-        const currentDayStatus = this.repository.history.getDayStatus(today);
+        const currentDayStatus =
+          this.runtime.repository.history.getDayStatus(today);
         if (currentDayStatus?.kind === "sick") {
-          this.repository.history.clearDayStatus(today);
+          this.runtime.repository.history.clearDayStatus(today);
           return;
         }
 
-        this.repository.history.setDayStatus(
+        this.runtime.repository.history.setDayStatus(
           today,
           "sick",
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       {
@@ -134,68 +148,72 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   toggleHabit(habitId: number): HabitStatusPatch {
-    return this.mutateHabitStatusPatch("toggleHabit", habitId, (today) => {
-      this.repository.history.toggleHabit(
-        today,
-        habitId,
-        this.clock.now().toISOString()
-      );
-    });
+    return this.runtime.mutateHabitStatusPatch(
+      "toggleHabit",
+      habitId,
+      (today) => {
+        this.runtime.repository.history.toggleHabit(
+          today,
+          habitId,
+          this.runtime.clock.now().toISOString()
+        );
+      }
+    );
   }
 
   incrementHabitProgress(habitId: number): HabitStatusPatch {
-    return this.mutateHabitStatusPatch(
+    return this.runtime.mutateHabitStatusPatch(
       "incrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.history.adjustHabitProgress(
+        this.runtime.repository.history.adjustHabitProgress(
           today,
           habitId,
           1,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       }
     );
   }
 
   decrementHabitProgress(habitId: number): HabitStatusPatch {
-    return this.mutateHabitStatusPatch(
+    return this.runtime.mutateHabitStatusPatch(
       "decrementHabitProgress",
       habitId,
       (today) => {
-        this.repository.history.adjustHabitProgress(
+        this.runtime.repository.history.adjustHabitProgress(
           today,
           habitId,
           -1,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       }
     );
   }
 
   pauseHabit(habitId: number): TodayState {
-    return this.inInitializedTransaction("pauseHabit", () => {
-      this.syncRollingState();
-      const today = this.getTodayKey();
-      this.repository.habits.pauseHabit(
+    return this.runtime.inInitializedTransaction("pauseHabit", () => {
+      this.runtime.syncRollingState();
+      const today = this.runtime.getTodayKey();
+      this.runtime.repository.habits.pauseHabit(
         habitId,
-        this.clock.now().toISOString()
+        this.runtime.clock.now().toISOString()
       );
-      this.repository.history.removeStatusRowsForDate(today, habitId);
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.history.removeStatusRowsForDate(today, habitId);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   resumeHabit(habitId: number): TodayState {
-    return this.inInitializedTransaction("resumeHabit", () => {
-      this.syncRollingState();
-      const today = this.getTodayKey();
-      this.repository.habits.resumeHabit(
+    return this.runtime.inInitializedTransaction("resumeHabit", () => {
+      this.runtime.syncRollingState();
+      const today = this.runtime.getTodayKey();
+      this.runtime.repository.habits.resumeHabit(
         habitId,
-        this.clock.now().toISOString()
+        this.runtime.clock.now().toISOString()
       );
-      this.repository.history.ensureStatusRow(today, habitId);
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.history.ensureStatusRow(today, habitId);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -211,10 +229,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
       return this.getTodayState();
     }
 
-    return this.inInitializedTransaction("createHabit", () => {
-      const today = this.getTodayKey();
-      this.syncRollingState();
-      const habitId = this.repository.habits.insertHabit(
+    return this.runtime.inInitializedTransaction("createHabit", () => {
+      const today = this.runtime.getTodayKey();
+      this.runtime.syncRollingState();
+      const habitId = this.runtime.repository.habits.insertHabit(
         trimmedName,
         normalizeHabitCategory(category),
         normalizeHabitFrequency(frequency),
@@ -223,19 +241,19 @@ export class TodayCommandService extends ApplicationServiceSlice {
           normalizeHabitFrequency(frequency),
           targetCount
         ),
-        this.repository.habits.getMaxSortOrder() + 1,
-        this.clock.now().toISOString()
+        this.runtime.repository.habits.getMaxSortOrder() + 1,
+        this.runtime.clock.now().toISOString()
       );
       const habitIds = [habitId];
-      for (const habit of this.repository.habits.getHabits()) {
+      for (const habit of this.runtime.repository.habits.getHabits()) {
         if (habit.id !== habitId) {
           habitIds.push(habit.id);
         }
       }
 
-      this.repository.habits.reorderHabits(habitIds);
-      this.repository.history.ensureStatusRow(today, habitId);
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.habits.reorderHabits(habitIds);
+      this.runtime.repository.history.ensureStatusRow(today, habitId);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -245,19 +263,19 @@ export class TodayCommandService extends ApplicationServiceSlice {
       return this.getTodayState();
     }
 
-    return this.withInitialized(() => {
-      this.repository.habits.renameHabit(habitId, trimmedName);
-      return this.rebuildCurrentTodayState();
+    return this.runtime.withInitialized(() => {
+      this.runtime.repository.habits.renameHabit(habitId, trimmedName);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState {
-    return this.withInitialized(() => {
-      this.repository.habits.updateHabitCategory(
+    return this.runtime.withInitialized(() => {
+      this.runtime.repository.habits.updateHabitCategory(
         habitId,
         normalizeHabitCategory(category)
       );
-      return this.rebuildCurrentTodayState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -266,9 +284,9 @@ export class TodayCommandService extends ApplicationServiceSlice {
     frequency: HabitFrequency,
     targetCount: number | null = null
   ): TodayState {
-    return this.inInitializedTransaction("updateHabitFrequency", () => {
-      const today = this.getTodayKey();
-      const previousProgress = this.repository.history.getHabitProgress(
+    return this.runtime.inInitializedTransaction("updateHabitFrequency", () => {
+      const today = this.runtime.getTodayKey();
+      const previousProgress = this.runtime.repository.history.getHabitProgress(
         today,
         habitId
       );
@@ -278,70 +296,74 @@ export class TodayCommandService extends ApplicationServiceSlice {
         targetCount
       );
 
-      this.repository.history.removeStatusRowsForDate(today, habitId);
-      this.repository.habits.updateHabitFrequency(
+      this.runtime.repository.history.removeStatusRowsForDate(today, habitId);
+      this.runtime.repository.habits.updateHabitFrequency(
         habitId,
         normalizedFrequency,
         normalizedTargetCount
       );
-      this.preserveTodayHabitProgress(
+      this.runtime.preserveTodayHabitProgress(
         today,
         habitId,
         previousProgress,
         normalizedTargetCount
       );
-      return this.rebuildCurrentTodayState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   updateHabitTargetCount(habitId: number, targetCount: number): TodayState {
-    return this.inInitializedTransaction("updateHabitTargetCount", () => {
-      const today = this.getTodayKey();
-      const habit = this.repository.habits
-        .getHabits()
-        .find((candidate) => candidate.id === habitId);
+    return this.runtime.inInitializedTransaction(
+      "updateHabitTargetCount",
+      () => {
+        const today = this.runtime.getTodayKey();
+        const habit = this.runtime.repository.habits
+          .getHabits()
+          .find((candidate) => candidate.id === habitId);
 
-      if (!habit) {
-        return this.rebuildCurrentTodayState();
+        if (!habit) {
+          return this.runtime.rebuildCurrentTodayState();
+        }
+
+        const previousProgress =
+          this.runtime.repository.history.getHabitProgress(today, habitId);
+        const normalizedTargetCount = normalizeHabitTargetCount(
+          habit.frequency,
+          targetCount
+        );
+        this.runtime.repository.habits.updateHabitTargetCount(
+          habitId,
+          normalizedTargetCount
+        );
+        this.runtime.preserveTodayHabitProgress(
+          today,
+          habitId,
+          previousProgress,
+          normalizedTargetCount
+        );
+        return this.runtime.rebuildCurrentTodayState();
       }
-
-      const previousProgress = this.repository.history.getHabitProgress(
-        today,
-        habitId
-      );
-      const normalizedTargetCount = normalizeHabitTargetCount(
-        habit.frequency,
-        targetCount
-      );
-      this.repository.habits.updateHabitTargetCount(
-        habitId,
-        normalizedTargetCount
-      );
-      this.preserveTodayHabitProgress(
-        today,
-        habitId,
-        previousProgress,
-        normalizedTargetCount
-      );
-      return this.rebuildCurrentTodayState();
-    });
+    );
   }
 
   updateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
-    return this.inInitializedTransaction("updateHabitWeekdays", () => {
-      this.repository.history.removeStatusRowsForDate(
-        this.getTodayKey(),
+    return this.runtime.inInitializedTransaction("updateHabitWeekdays", () => {
+      this.runtime.repository.history.removeStatusRowsForDate(
+        this.runtime.getTodayKey(),
         habitId
       );
-      this.repository.habits.updateHabitWeekdays(
+      this.runtime.repository.habits.updateHabitWeekdays(
         habitId,
         normalizeHabitWeekdays(selectedWeekdays)
       );
-      this.repository.history.ensureStatusRow(this.getTodayKey(), habitId);
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.history.ensureStatusRow(
+        this.runtime.getTodayKey(),
+        habitId
+      );
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -349,7 +371,7 @@ export class TodayCommandService extends ApplicationServiceSlice {
     frequency: GoalFrequency,
     targetMinutes: number
   ): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "upsertFocusQuotaGoal",
       () => {
         const normalizedFrequency = normalizeGoalFrequency(frequency);
@@ -361,10 +383,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
           );
         }
 
-        this.repository.focusQuotaGoals.upsertGoal(
+        this.runtime.repository.focusQuotaGoals.upsertGoal(
           normalizedFrequency,
           normalizeFocusQuotaTargetMinutes(normalizedFrequency, targetMinutes),
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       { syncRollingState: true }
@@ -372,12 +394,12 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   archiveFocusQuotaGoal(goalId: number): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "archiveFocusQuotaGoal",
       () => {
-        this.repository.focusQuotaGoals.archiveGoal(
+        this.runtime.repository.focusQuotaGoals.archiveGoal(
           goalId,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       { syncRollingState: true }
@@ -385,12 +407,12 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   unarchiveFocusQuotaGoal(goalId: number): TodayState {
-    return this.mutateTodayState(
+    return this.runtime.mutateTodayState(
       "unarchiveFocusQuotaGoal",
       () => {
-        this.repository.focusQuotaGoals.unarchiveGoal(
+        this.runtime.repository.focusQuotaGoals.unarchiveGoal(
           goalId,
-          this.clock.now().toISOString()
+          this.runtime.clock.now().toISOString()
         );
       },
       { syncRollingState: true }
@@ -398,46 +420,49 @@ export class TodayCommandService extends ApplicationServiceSlice {
   }
 
   archiveHabit(habitId: number): TodayState {
-    return this.inInitializedTransaction("archiveHabit", () => {
-      this.repository.habits.archiveHabit(habitId);
-      this.repository.habits.normalizeHabitOrder();
-      this.syncRollingState();
-      return this.rebuildCurrentTodayState();
+    return this.runtime.inInitializedTransaction("archiveHabit", () => {
+      this.runtime.repository.habits.archiveHabit(habitId);
+      this.runtime.repository.habits.normalizeHabitOrder();
+      this.runtime.syncRollingState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   unarchiveHabit(habitId: number): TodayState {
-    return this.inInitializedTransaction("unarchiveHabit", () => {
-      this.repository.habits.unarchiveHabit(habitId);
+    return this.runtime.inInitializedTransaction("unarchiveHabit", () => {
+      this.runtime.repository.habits.unarchiveHabit(habitId);
       const habitIds: number[] = [];
-      for (const habit of this.repository.habits.getHabits()) {
+      for (const habit of this.runtime.repository.habits.getHabits()) {
         if (habit.id !== habitId) {
           habitIds.push(habit.id);
         }
       }
       habitIds.push(habitId);
 
-      this.repository.habits.reorderHabits(habitIds);
-      this.repository.history.ensureStatusRow(this.getTodayKey(), habitId);
-      this.syncRollingState();
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.habits.reorderHabits(habitIds);
+      this.runtime.repository.history.ensureStatusRow(
+        this.runtime.getTodayKey(),
+        habitId
+      );
+      this.runtime.syncRollingState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   reorderHabits(habitIds: number[]): TodayState {
-    return this.inInitializedTransaction("reorderHabits", () => {
-      const activeHabits = this.repository.habits.getHabits();
+    return this.runtime.inInitializedTransaction("reorderHabits", () => {
+      const activeHabits = this.runtime.repository.habits.getHabits();
       const activeHabitIds = new Set(activeHabits.map((habit) => habit.id));
 
       if (
         habitIds.length !== activeHabits.length ||
         habitIds.some((habitId) => !activeHabitIds.has(habitId))
       ) {
-        return this.rebuildCurrentTodayState();
+        return this.runtime.rebuildCurrentTodayState();
       }
 
-      this.repository.habits.reorderHabits(habitIds);
-      return this.rebuildCurrentTodayState();
+      this.runtime.repository.habits.reorderHabits(habitIds);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -447,12 +472,12 @@ export class TodayCommandService extends ApplicationServiceSlice {
       return this.getTodayState();
     }
 
-    return this.inInitializedTransaction("createWindDownAction", () => {
-      this.repository.windDownActions.createAction(
+    return this.runtime.inInitializedTransaction("createWindDownAction", () => {
+      this.runtime.repository.windDownActions.createAction(
         trimmedName,
-        this.clock.now().toISOString()
+        this.runtime.clock.now().toISOString()
       );
-      return this.rebuildCurrentTodayState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
@@ -462,29 +487,32 @@ export class TodayCommandService extends ApplicationServiceSlice {
       return this.getTodayState();
     }
 
-    return this.withInitialized(() => {
-      this.repository.windDownActions.renameAction(actionId, trimmedName);
-      return this.rebuildCurrentTodayState();
+    return this.runtime.withInitialized(() => {
+      this.runtime.repository.windDownActions.renameAction(
+        actionId,
+        trimmedName
+      );
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   deleteWindDownAction(actionId: number): TodayState {
-    return this.inInitializedTransaction("deleteWindDownAction", () => {
-      this.repository.windDownActions.deleteAction(actionId);
-      return this.rebuildCurrentTodayState();
+    return this.runtime.inInitializedTransaction("deleteWindDownAction", () => {
+      this.runtime.repository.windDownActions.deleteAction(actionId);
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 
   toggleWindDownAction(actionId: number): TodayState {
-    return this.inInitializedTransaction("toggleWindDownAction", () => {
-      const today = this.getTodayKey();
-      this.repository.windDownActions.ensureStatusRowsForDate(today);
-      this.repository.windDownActions.toggleAction(
+    return this.runtime.inInitializedTransaction("toggleWindDownAction", () => {
+      const today = this.runtime.getTodayKey();
+      this.runtime.repository.windDownActions.ensureStatusRowsForDate(today);
+      this.runtime.repository.windDownActions.toggleAction(
         today,
         actionId,
-        this.clock.now().toISOString()
+        this.runtime.clock.now().toISOString()
       );
-      return this.rebuildCurrentTodayState();
+      return this.runtime.rebuildCurrentTodayState();
     });
   }
 }

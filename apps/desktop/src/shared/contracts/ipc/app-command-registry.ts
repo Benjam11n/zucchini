@@ -171,9 +171,6 @@ export type AppCommand = {
   [TType in AppCommandType]: CommandForType<TType>;
 }[AppCommandType];
 
-export type PayloadForAppCommandType<TType extends AppCommandType> =
-  PayloadForDefinition<AppCommandRegistry[TType]>;
-
 export type ResultForAppCommandType<TType extends AppCommandType> =
   AppCommandRegistry[TType] extends
     | EmptyCommandDefinition<infer TResult>

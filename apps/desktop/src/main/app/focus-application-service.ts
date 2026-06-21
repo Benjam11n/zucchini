@@ -7,7 +7,7 @@ import type { PersistedFocusTimerState } from "@/shared/domain/focus-timer";
 import { createFocusSessionInputSchema } from "@/shared/domain/schemas/focus-session";
 import { persistedFocusTimerStateSchema } from "@/shared/domain/schemas/focus-timer";
 
-import { ApplicationServiceSlice } from "./application-service-slice";
+import type { ApplicationServiceRuntime } from "./application-service-runtime";
 
 function assertValidFocusSessionInput(input: CreateFocusSessionInput): void {
   const result = createFocusSessionInputSchema.safeParse(input);
@@ -26,32 +26,41 @@ function assertValidPersistedFocusTimerState(
   }
 }
 
-export class FocusApplicationService extends ApplicationServiceSlice {
+export class FocusApplicationService {
+  private readonly runtime: ApplicationServiceRuntime;
+
+  constructor(runtime: ApplicationServiceRuntime) {
+    this.runtime = runtime;
+  }
+
   getFocusSessions(limit?: number): FocusSession[] {
-    return this.inInitializedTransaction("getFocusSessions", () =>
-      this.repository.focusSessions.listRecentSessions(limit)
+    return this.runtime.inInitializedTransaction("getFocusSessions", () =>
+      this.runtime.repository.focusSessions.listRecentSessions(limit)
     );
   }
 
   recordFocusSession(input: CreateFocusSessionInput): FocusSession {
     assertValidFocusSessionInput(input);
 
-    return this.inInitializedTransaction("recordFocusSession", () => {
+    return this.runtime.inInitializedTransaction("recordFocusSession", () => {
       const normalizedInput = {
         ...input,
         completedDate: toDateKeyInTimeZone(
           new Date(input.completedAt),
-          this.getTimezone()
+          this.runtime.getTimezone()
         ),
       };
 
-      return this.repository.focusSessions.insertSession(normalizedInput);
+      return this.runtime.repository.focusSessions.insertSession(
+        normalizedInput
+      );
     });
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
-    return this.inInitializedTransaction("getPersistedFocusTimerState", () =>
-      this.repository.focusTimerState.getState()
+    return this.runtime.inInitializedTransaction(
+      "getPersistedFocusTimerState",
+      () => this.runtime.repository.focusTimerState.getState()
     );
   }
 
@@ -60,8 +69,9 @@ export class FocusApplicationService extends ApplicationServiceSlice {
   ): PersistedFocusTimerState {
     assertValidPersistedFocusTimerState(state);
 
-    return this.inInitializedTransaction("savePersistedFocusTimerState", () =>
-      this.repository.focusTimerState.saveState(state)
+    return this.runtime.inInitializedTransaction(
+      "savePersistedFocusTimerState",
+      () => this.runtime.repository.focusTimerState.saveState(state)
     );
   }
 }

@@ -9,10 +9,6 @@
  * @see syncRollingState for the streak catch-up logic.
  * @see buildTodayState for how the read-model is assembled.
  */
-import {
-  executeAppServiceCommand,
-  readAppServiceQuery,
-} from "@/main/app/app-ipc-dispatch";
 import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type {
   ApplicationService,
@@ -69,11 +65,211 @@ export class AppApplicationService implements ApplicationService {
   }
 
   execute(command: AppCommand): AppCommandResult {
-    return executeAppServiceCommand(this, command);
+    if (command.type.startsWith("habit.")) {
+      return this.executeHabitCommand(
+        command as Extract<AppCommand, { type: `habit.${string}` }>
+      );
+    }
+
+    if (command.type.startsWith("windDown.")) {
+      return this.executeWindDownCommand(
+        command as Extract<AppCommand, { type: `windDown.${string}` }>
+      );
+    }
+
+    switch (command.type) {
+      case "focusQuotaGoal.archive": {
+        return this.archiveFocusQuotaGoal(command.payload.goalId);
+      }
+      case "focusQuotaGoal.unarchive": {
+        return this.unarchiveFocusQuotaGoal(command.payload.goalId);
+      }
+      case "focusQuotaGoal.upsert": {
+        return this.upsertFocusQuotaGoal(
+          command.payload.frequency,
+          command.payload.targetMinutes
+        );
+      }
+      case "focusSession.record": {
+        return this.recordFocusSession(command.payload);
+      }
+      case "focusTimer.saveState": {
+        return this.savePersistedFocusTimerState(command.payload);
+      }
+      case "settings.update": {
+        return this.updateSettings(command.payload);
+      }
+      case "today.moveUnfinishedToTomorrow": {
+        return this.moveUnfinishedHabitsToTomorrow();
+      }
+      case "today.setDayStatus": {
+        return this.setDayStatus(command.payload.kind);
+      }
+      case "today.toggleCarryover": {
+        return this.toggleHabitCarryover(
+          command.payload.sourceDate,
+          command.payload.habitId
+        );
+      }
+      case "today.toggleSickDay": {
+        return this.toggleSickDay();
+      }
+      default: {
+        throw new Error("Unknown app command.");
+      }
+    }
+  }
+
+  private executeHabitCommand(
+    command: Extract<AppCommand, { type: `habit.${string}` }>
+  ): AppCommandResult {
+    switch (command.type) {
+      case "habit.archive": {
+        return this.archiveHabit(command.payload.habitId);
+      }
+      case "habit.create": {
+        return this.createHabit(
+          command.payload.name,
+          command.payload.category,
+          command.payload.frequency,
+          command.payload.selectedWeekdays,
+          command.payload.targetCount
+        );
+      }
+      case "habit.decrementProgress": {
+        return this.decrementHabitProgress(command.payload.habitId);
+      }
+      case "habit.incrementProgress": {
+        return this.incrementHabitProgress(command.payload.habitId);
+      }
+      case "habit.pause": {
+        return this.pauseHabit(command.payload.habitId);
+      }
+      case "habit.rename": {
+        return this.renameHabit(command.payload.habitId, command.payload.name);
+      }
+      case "habit.reorder": {
+        return this.reorderHabits(command.payload.habitIds);
+      }
+      case "habit.resume": {
+        return this.resumeHabit(command.payload.habitId);
+      }
+      case "habit.toggle": {
+        return this.toggleHabit(command.payload.habitId);
+      }
+      case "habit.unarchive": {
+        return this.unarchiveHabit(command.payload.habitId);
+      }
+      case "habit.updateCategory": {
+        return this.updateHabitCategory(
+          command.payload.habitId,
+          command.payload.category
+        );
+      }
+      case "habit.updateFrequency": {
+        return this.updateHabitFrequency(
+          command.payload.habitId,
+          command.payload.frequency,
+          command.payload.targetCount
+        );
+      }
+      case "habit.updateTargetCount": {
+        return this.updateHabitTargetCount(
+          command.payload.habitId,
+          command.payload.targetCount
+        );
+      }
+      case "habit.updateWeekdays": {
+        return this.updateHabitWeekdays(
+          command.payload.habitId,
+          command.payload.selectedWeekdays
+        );
+      }
+      default: {
+        command satisfies never;
+        throw new Error("Unknown habit command.");
+      }
+    }
+  }
+
+  private executeWindDownCommand(
+    command: Extract<AppCommand, { type: `windDown.${string}` }>
+  ): AppCommandResult {
+    switch (command.type) {
+      case "windDown.createAction": {
+        return this.createWindDownAction(command.payload.name);
+      }
+      case "windDown.deleteAction": {
+        return this.deleteWindDownAction(command.payload.actionId);
+      }
+      case "windDown.renameAction": {
+        return this.renameWindDownAction(
+          command.payload.actionId,
+          command.payload.name
+        );
+      }
+      case "windDown.toggleAction": {
+        return this.toggleWindDownAction(command.payload.actionId);
+      }
+      default: {
+        command satisfies never;
+        throw new Error("Unknown wind-down command.");
+      }
+    }
   }
 
   read(query: AppQuery): AppQueryResult {
-    return readAppServiceQuery(this, query);
+    switch (query.type) {
+      case "focusSession.list": {
+        return this.getFocusSessions(query.payload?.limit);
+      }
+      case "focusTimer.getState": {
+        return this.getPersistedFocusTimerState();
+      }
+      case "habit.list": {
+        return this.getHabits();
+      }
+      case "history.get": {
+        return this.getHistory(query.payload?.limit);
+      }
+      case "history.getDay": {
+        return this.getHistoryDay(query.payload.date);
+      }
+      case "history.getYear": {
+        return this.getHistoryForYear(query.payload.year);
+      }
+      case "history.summary": {
+        return this.getHistorySummary(query.payload?.limit);
+      }
+      case "history.summaryMonth": {
+        return this.getHistorySummaryForMonth(
+          query.payload.year,
+          query.payload.month
+        );
+      }
+      case "history.summaryYear": {
+        return this.getHistorySummaryForYear(query.payload.year);
+      }
+      case "history.years": {
+        return this.getHistoryYears();
+      }
+      case "insights.dashboard": {
+        return this.getInsightsDashboard(query.payload?.rangeDays);
+      }
+      case "today.get": {
+        return this.getTodayState();
+      }
+      case "weeklyReview.get": {
+        return this.getWeeklyReview(query.payload.weekStart);
+      }
+      case "weeklyReview.overview": {
+        return this.getWeeklyReviewOverview();
+      }
+      default: {
+        query satisfies never;
+        throw new Error("Unknown app query.");
+      }
+    }
   }
 
   getHabits(): Habit[] {

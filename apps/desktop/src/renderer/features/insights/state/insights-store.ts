@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import type {
@@ -53,7 +52,11 @@ export const useInsightsStore = create<InsightsStoreState>()((set, get) => ({
         phase: "ready",
         rangeDays,
       }),
-      task: () => appClient.getInsightsDashboard(rangeDays),
+      task: () =>
+        window.desktop.query({
+          payload: { rangeDays },
+          type: "insights.dashboard",
+        }),
     });
   },
   phase: "idle",

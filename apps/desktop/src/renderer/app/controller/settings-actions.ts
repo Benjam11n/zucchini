@@ -4,7 +4,6 @@ import type {
 } from "@/renderer/features/settings/settings.types";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { clearZucchiniStorage } from "@/renderer/shared/lib/storage";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -42,7 +41,10 @@ export function createSettingsActions() {
       useSettingsStore.getState().handleSettingsDraftChange(settingsDraft);
     },
     async handleUpdateSettings(settings: AppSettings) {
-      const nextSettings = await appClient.updateSettings(settings);
+      const nextSettings = await window.desktop.command({
+        payload: settings,
+        type: "settings.update",
+      });
 
       useSettingsStore.setState({
         settingsDraft: nextSettings,

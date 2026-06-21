@@ -6,7 +6,6 @@
  */
 import { create } from "zustand";
 
-import { appClient } from "@/renderer/shared/ipc/app-client";
 import { runStoreLoad } from "@/renderer/shared/ipc/store-load-task";
 import type { AppIpcError } from "@/shared/contracts/ipc/app-errors";
 import { getDateKeyMonth } from "@/shared/domain/date-key";
@@ -128,7 +127,11 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         isHistoryDayLoading: false,
         loadingHistoryDayKey: null,
       }),
-      task: () => appClient.getHistoryDay(date),
+      task: () =>
+        window.desktop.query({
+          payload: { date },
+          type: "history.getDay",
+        }),
     });
   },
   loadHistoryMonth: async (year, month, options = {}) => {
@@ -175,7 +178,11 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         isHistoryLoading: false,
         selectedHistoryYear: state.selectedHistoryYear ?? year,
       }),
-      task: () => appClient.getHistorySummaryForMonth(year, month),
+      task: () =>
+        window.desktop.query({
+          payload: { month, year },
+          type: "history.summaryMonth",
+        }),
     });
 
     historyMonthRequests.set(monthKey, historyMonthRequest);
@@ -210,7 +217,11 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         historySummary,
         isHistorySummaryLoading: false,
       }),
-      task: () => appClient.getHistorySummary(limit),
+      task: () =>
+        window.desktop.query({
+          payload: { limit },
+          type: "history.summary",
+        }),
     });
   },
   loadHistoryYear: async (year, options = {}) => {
@@ -255,7 +266,11 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         isHistoryContributionLoading: false,
         selectedHistoryYear: state.selectedHistoryYear ?? year,
       }),
-      task: () => appClient.getHistorySummaryForYear(year),
+      task: () =>
+        window.desktop.query({
+          payload: { year },
+          type: "history.summaryYear",
+        }),
     });
 
     historyYearRequests.set(year, historyYearRequest);
@@ -330,7 +345,7 @@ export const useHistoryStore = create<HistoryStoreState>()((set, get) => ({
         }
         return {};
       },
-      task: () => appClient.getHistoryYears(),
+      task: () => window.desktop.query({ type: "history.years" }),
     });
 
     historyYearsRequest = nextHistoryYearsRequest;

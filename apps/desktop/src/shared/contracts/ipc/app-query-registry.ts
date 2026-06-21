@@ -116,9 +116,6 @@ export type AppQuery = {
   [TType in AppQueryType]: QueryForType<TType>;
 }[AppQueryType];
 
-export type PayloadForAppQueryType<TType extends AppQueryType> =
-  PayloadForDefinition<AppQueryRegistry[TType]>;
-
 export type ResultForAppQueryType<TType extends AppQueryType> =
   AppQueryRegistry[TType] extends
     | EmptyQueryDefinition<infer TResult>
