@@ -12,7 +12,6 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { Effect } from "effect";
 
 import { DatabaseError } from "@/main/ports/database-error";
 
@@ -300,12 +299,11 @@ function maxDate(values: (null | string | undefined)[]): string | null {
 }
 
 function runWithDatabaseError<A>(label: string, execute: () => A): A {
-  return Effect.runSync(
-    Effect.try({
-      catch: (cause) => new DatabaseError(label, cause),
-      try: execute,
-    })
-  );
+  try {
+    return execute();
+  } catch (error) {
+    throw new DatabaseError(label, error);
+  }
 }
 
 export class SqliteDatabaseClient {
@@ -345,11 +343,8 @@ export class SqliteDatabaseClient {
   }
 
   transaction<A>(label: string, execute: () => A): A {
-    return Effect.runSync(
-      Effect.try({
-        catch: (cause) => new DatabaseError(label, cause),
-        try: () => this.getDrizzle().transaction(() => execute()),
-      })
+    return runWithDatabaseError(label, () =>
+      this.getDrizzle().transaction(() => execute())
     );
   }
 

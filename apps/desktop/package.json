@@ -46,7 +46,6 @@
     "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
-    "effect": "^3.21.2",
     "electron": "41.3.0",
     "electron-builder": "^26.8.1",
     "embla-carousel-react": "^8.6.0",
