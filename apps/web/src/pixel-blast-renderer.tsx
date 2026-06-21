@@ -679,18 +679,13 @@ export function usePixelBlastRenderer(
     }
 
     prevConfigRef.current = config;
-  }, [containerRef]);
-
-  useEffect(() => {
-    const container = containerRef.current;
+    const state = threeRef.current;
 
     return () => {
-      if (!container) {
-        return;
+      disposeState(container, state);
+      if (threeRef.current === state) {
+        threeRef.current = null;
       }
-
-      disposeState(container, threeRef.current);
-      threeRef.current = null;
     };
   }, [containerRef]);
 }
