@@ -6,7 +6,6 @@
  * SQLite transaction, synchronizes rolling streak state on read paths, and
  * returns fresh `TodayState` snapshots so the renderer stays in sync.
  *
- * @see AppRepository for the data access contract it delegates to.
  * @see syncRollingState for the streak catch-up logic.
  * @see buildTodayState for how the read-model is assembled.
  */
@@ -14,7 +13,7 @@ import {
   executeAppServiceCommand,
   readAppServiceQuery,
 } from "@/main/app/app-ipc-dispatch";
-import type { AppRepository } from "@/main/ports/app-repository";
+import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type {
   ApplicationService,
   AppSettings,

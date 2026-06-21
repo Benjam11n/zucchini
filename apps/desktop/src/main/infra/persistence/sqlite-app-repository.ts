@@ -16,6 +16,25 @@ export interface SqliteAppRepositoryOptions {
   databasePath?: string;
 }
 
+type Public<T> = Pick<T, keyof T>;
+
+export interface AppRepository {
+  focusQuotaGoals: Public<SqliteFocusQuotaGoalRepository>;
+  focusSessions: Public<SqliteFocusSessionRepository>;
+  focusTimerState: Public<SqliteFocusTimerStateRepository>;
+  habits: Public<SqliteHabitsRepository>;
+  history: Public<SqliteHistoryRepository>;
+  reminderRuntimeState: Public<SqliteReminderRuntimeStateRepository>;
+  settings: Public<SqliteSettingsRepository>;
+  streaks: Public<SqliteStreakRepository>;
+  windDownActions: Public<SqliteWindDownActionRepository>;
+  windDownRuntimeState: Public<SqliteWindDownRuntimeStateRepository>;
+
+  initializeSchema(): void;
+  runInTransaction<A>(label: string, execute: () => A): A;
+  seedDefaults(timezone: string): void;
+}
+
 export class SqliteAppRepository {
   private readonly client: SqliteDatabaseClient;
   readonly habits: SqliteHabitsRepository;

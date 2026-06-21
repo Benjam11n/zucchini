@@ -1,5 +1,4 @@
 import { createRollingStreakState } from "@/main/features/today/state-builder";
-import type { AppRepository } from "@/main/ports/app-repository";
 import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 /**
  * Rolling streak synchronization service.
@@ -12,9 +11,82 @@ import type { PersistedCategoryStreakState } from "@/shared/domain/category-stre
 import type { Clock } from "@/shared/domain/clock";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { HABIT_CATEGORY_SLOTS, isDailyHabit } from "@/shared/domain/habit";
-import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
+import type {
+  Habit,
+  HabitCategory,
+  HabitWithStatus,
+} from "@/shared/domain/habit";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
+
+interface StreakSyncRepository {
+  habits: {
+    getHabits(): Habit[];
+  };
+  history: {
+    clearDayStatus(date: string): void;
+    createHabitCarryovers(
+      sourceDate: string,
+      targetDate: string,
+      createdAt: string
+    ): void;
+    ensureStatusRowsForDate(date: string): void;
+    getDailySummariesInRange(
+      start: string,
+      end: string
+    ): {
+      dayStatus: DayStatusKind | null;
+      freezeUsed: boolean;
+    }[];
+    getDayStatus(date: string): { kind: DayStatusKind } | null;
+    getExistingCompletedAt(date: string): string | null;
+    getFirstTrackedDate(): string | null;
+    getHabitCarryoversForDate(date: string): {
+      category: HabitCategory;
+      completed: boolean;
+      id: number;
+    }[];
+    getHabitsWithStatus(date: string): HabitWithStatus[];
+    getHistoricalHabitPeriodStatusesOverlappingRange(
+      start: string,
+      end: string
+    ): HabitPeriodStatusSnapshot[];
+    saveDailySummary(summary: {
+      allCompleted: boolean;
+      completedAt: string | null;
+      date: string;
+      dayStatus: DayStatusKind | null;
+      freezeUsed: boolean;
+      streakCountAfterDay: number;
+    }): void;
+    setDayStatus(date: string, kind: DayStatusKind, createdAt: string): void;
+  };
+  streaks: {
+    getPersistedCategoryStreakStates(): PersistedCategoryStreakState[];
+    getPersistedHabitStreakStates(
+      habitIds: readonly number[]
+    ): PersistedHabitStreakState[];
+    getPersistedStreakState(): {
+      availableFreezes: number;
+      bestStreak: number;
+      currentStreak: number;
+      lastEvaluatedDate: string | null;
+    };
+    savePersistedCategoryStreakStates(
+      states: readonly PersistedCategoryStreakState[]
+    ): void;
+    savePersistedHabitStreakStates(
+      states: readonly PersistedHabitStreakState[]
+    ): void;
+    savePersistedStreakState(state: {
+      availableFreezes: number;
+      bestStreak: number;
+      currentStreak: number;
+      lastEvaluatedDate: string | null;
+    }): void;
+  };
+}
 
 const AUTO_RESCHEDULED_TIME = "T23:59:59.000";
 
@@ -59,7 +131,7 @@ function getFirstUnevaluatedDate(
 }
 
 function getClosedDayStreakInputs(
-  repository: AppRepository,
+  repository: StreakSyncRepository,
   cursor: string
 ): {
   dayStatus: DayStatusKind | null;
@@ -88,7 +160,7 @@ function applyClosedDayCarryoverPolicy({
   clock: Clock;
   cursor: string;
   dailyHabits: HabitWithStatus[];
-  repository: AppRepository;
+  repository: StreakSyncRepository;
 }): DayStatusKind | null {
   const currentDayStatus =
     repository.history.getDayStatus(cursor)?.kind ?? null;
@@ -193,7 +265,7 @@ function getNextHabitStreakState({
 }
 
 function syncHabitStreakStates(
-  repository: AppRepository,
+  repository: StreakSyncRepository,
   clock: Clock,
   firstTrackedDate: string,
   yesterday: string
@@ -332,7 +404,7 @@ function getNextCategoryStreakState({
 }
 
 function syncCategoryStreakStates(
-  repository: AppRepository,
+  repository: StreakSyncRepository,
   clock: Clock,
   firstTrackedDate: string,
   yesterday: string
@@ -431,7 +503,7 @@ function syncCategoryStreakStates(
 }
 
 export function syncRollingState(
-  repository: AppRepository,
+  repository: StreakSyncRepository,
   clock: Clock
 ): void {
   const today = clock.todayKey();

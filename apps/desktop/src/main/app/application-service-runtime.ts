@@ -1,6 +1,6 @@
 import { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
 import { syncRollingState } from "@/main/features/streaks/sync-service";
-import type { AppRepository } from "@/main/ports/app-repository";
+import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { Clock } from "@/shared/domain/clock";
 import type { FocusSession } from "@/shared/domain/focus-session";
 import { toFocusMinutes } from "@/shared/domain/focus-session";

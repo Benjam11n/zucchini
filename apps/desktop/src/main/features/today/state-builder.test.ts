@@ -4,7 +4,7 @@ import {
   buildTodayState,
   createRollingStreakState,
 } from "@/main/features/today/state-builder";
-import type { AppRepository } from "@/main/ports/app-repository";
+import type { TodayReadModelRepository } from "@/main/features/today/state-builder";
 import type { Clock } from "@/shared/domain/clock";
 
 function createRepository(
@@ -25,7 +25,7 @@ function createRepository(
     getSettings?: ReturnType<typeof vi.fn>;
     getWindDownActionsWithStatus?: ReturnType<typeof vi.fn>;
   } = {}
-): AppRepository {
+): TodayReadModelRepository {
   return {
     focusSessions: {
       listSessionsInRange: overrides.getFocusSessionsInRange ?? vi.fn(() => []),

@@ -1,5 +1,5 @@
 import type { TodayReadModelService } from "@/main/features/read-models/today-read-model-service";
-import type { AppRepository } from "@/main/ports/app-repository";
+import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { Clock } from "@/shared/domain/clock";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";

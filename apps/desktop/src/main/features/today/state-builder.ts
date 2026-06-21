@@ -1,4 +1,3 @@
-import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
 import type { CategoryStreak } from "@/shared/domain/category-streak";
 /**
  * Today state builder — assembles the read-model the renderer consumes.
@@ -11,6 +10,8 @@ import type { Clock } from "@/shared/domain/clock";
 import { addDays } from "@/shared/domain/date-key";
 import type { DayStatusKind } from "@/shared/domain/day-status";
 import { toFocusMinutes } from "@/shared/domain/focus-session";
+import type { FocusSession } from "@/shared/domain/focus-session";
+import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
 import {
   HABIT_CATEGORY_SLOTS,
   getHabitCategoryProgress,
@@ -19,12 +20,54 @@ import {
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
-import type { HabitStreak } from "@/shared/domain/habit-streak";
+import type {
+  HabitStreak,
+  PersistedHabitStreakState,
+} from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
+import type { AppSettings } from "@/shared/domain/settings";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
 import { previewOpenDay } from "@/shared/domain/streak-engine";
 import { buildEmptyWindDownState } from "@/shared/domain/wind-down";
+import type { WindDownActionWithStatus } from "@/shared/domain/wind-down";
 import type { TodayState } from "@/shared/read-models/today-state";
+
+export interface TodayReadModelRepository {
+  focusSessions: {
+    listSessionsInRange(start: string, end: string): FocusSession[];
+  };
+  history: {
+    ensureStatusRowsForDate(date: string): void;
+    getDayStatus(date: string): { kind: DayStatusKind } | null;
+    getFocusQuotaGoalsWithStatus(date: string): FocusQuotaGoalWithStatus[];
+    getHabitCarryoversForDate(date: string): HabitCarryover[];
+    getHabitPeriodStatusesEndingInRange(
+      start: string,
+      end: string
+    ): HabitPeriodStatusSnapshot[];
+    getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null;
+    getHabitsWithStatus(date: string): HabitWithStatus[];
+    getHistoricalHabitPeriodStatusesOverlappingRange(
+      start: string,
+      end: string
+    ): HabitPeriodStatusSnapshot[];
+    getSettledHistory(limit?: number): DailySummary[];
+  };
+  settings: {
+    getSettings(defaultTimezone: string): AppSettings;
+  };
+  streaks: {
+    getPersistedCategoryStreakStates(): CategoryStreak[];
+    getPersistedHabitStreakStates(
+      habitIds: readonly number[]
+    ): PersistedHabitStreakState[];
+    getPersistedStreakState(): StreakState;
+  };
+  windDownActions: {
+    ensureStatusRowsForDate(date: string): void;
+    getActionsWithStatus(date: string): WindDownActionWithStatus[];
+  };
+}
 
 function mapStatusToHabit(status: {
   category: HabitWithStatus["category"];
@@ -95,7 +138,7 @@ export function buildHistoricalHabitsByDate(
 }
 
 function buildTodayHabitStreaksFromHabits(
-  repository: TodayReadModelRepositoryPort,
+  repository: TodayReadModelRepository,
   habits: HabitWithStatus[],
   dayStatus: DayStatusKind | null
 ): Record<number, HabitStreak> {
@@ -130,7 +173,7 @@ function buildTodayHabitStreaksFromHabits(
 }
 
 function buildTodayCategoryStreaksFromHabits(
-  repository: TodayReadModelRepositoryPort,
+  repository: TodayReadModelRepository,
   habits: HabitWithStatus[],
   dayStatus: DayStatusKind | null,
   habitCarryovers: HabitCarryover[]
@@ -177,7 +220,7 @@ function buildTodayCategoryStreaksFromHabits(
 }
 
 export function buildTodayState(
-  repository: TodayReadModelRepositoryPort,
+  repository: TodayReadModelRepository,
   clock: Clock
 ): TodayState {
   const today = clock.todayKey();

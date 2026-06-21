@@ -1,5 +1,5 @@
 import { buildTodayState } from "@/main/features/today/state-builder";
-import type { TodayReadModelRepositoryPort } from "@/main/ports/app-repository";
+import type { TodayReadModelRepository } from "@/main/features/today/state-builder";
 import type { Clock } from "@/shared/domain/clock";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
@@ -26,9 +26,9 @@ function traceReadModel<T>(label: string, execute: () => T): T {
 export class TodayReadModelService {
   private cachedTodayState: TodayState | null = null;
   private readonly clock: Clock;
-  private readonly repository: TodayReadModelRepositoryPort;
+  private readonly repository: TodayReadModelRepository;
 
-  constructor(repository: TodayReadModelRepositoryPort, clock: Clock) {
+  constructor(repository: TodayReadModelRepository, clock: Clock) {
     this.clock = clock;
     this.repository = repository;
   }

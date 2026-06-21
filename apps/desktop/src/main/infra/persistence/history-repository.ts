@@ -16,7 +16,6 @@ import {
   habitPeriodStatus,
 } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
-import type { SettledHistoryOptions } from "@/main/ports/app-repository";
 import type { DayStatus, DayStatusKind } from "@/shared/domain/day-status";
 import {
   getFocusQuotaGoalPeriod,
@@ -46,6 +45,10 @@ import {
 import type { HabitPeriodStatusRow } from "./types";
 
 const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
+
+export interface SettledHistoryOptions {
+  uncapped?: boolean;
+}
 
 type HabitPeriodStatusInsert = typeof habitPeriodStatus.$inferInsert;
 
