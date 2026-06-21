@@ -179,7 +179,7 @@ export class SqliteSettingsRepository {
       });
     });
 
-    return this.settings.getSettings(defaultTimezone);
+    return this.getSettings(defaultTimezone);
   }
 
   seedDefaults(timezone: string): void {

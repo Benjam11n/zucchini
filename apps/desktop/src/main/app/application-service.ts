@@ -78,7 +78,7 @@ export class AppApplicationService implements ApplicationService {
   }
 
   getHabits(): Habit[] {
-    return this.today.habits.getHabits();
+    return this.today.getHabits();
   }
 
   getTodayState(): TodayState {
@@ -86,7 +86,7 @@ export class AppApplicationService implements ApplicationService {
   }
 
   setDayStatus(kind: DayStatusKind | null): TodayState {
-    return this.today.history.setDayStatus(kind);
+    return this.today.setDayStatus(kind);
   }
 
   moveUnfinishedHabitsToTomorrow(): TodayState {
@@ -94,7 +94,7 @@ export class AppApplicationService implements ApplicationService {
   }
 
   toggleHabitCarryover(sourceDate: string, habitId: number): TodayState {
-    return this.today.history.toggleHabitCarryover(sourceDate, habitId);
+    return this.today.toggleHabitCarryover(sourceDate, habitId);
   }
 
   toggleSickDay(): TodayState {
@@ -102,7 +102,7 @@ export class AppApplicationService implements ApplicationService {
   }
 
   toggleHabit(habitId: number): HabitStatusPatch {
-    return this.today.history.toggleHabit(habitId);
+    return this.today.toggleHabit(habitId);
   }
 
   incrementHabitProgress(habitId: number): HabitStatusPatch {
@@ -114,11 +114,11 @@ export class AppApplicationService implements ApplicationService {
   }
 
   pauseHabit(habitId: number): TodayState {
-    return this.today.habits.pauseHabit(habitId);
+    return this.today.pauseHabit(habitId);
   }
 
   resumeHabit(habitId: number): TodayState {
-    return this.today.habits.resumeHabit(habitId);
+    return this.today.resumeHabit(habitId);
   }
 
   createHabit(
@@ -138,11 +138,11 @@ export class AppApplicationService implements ApplicationService {
   }
 
   renameHabit(habitId: number, name: string): TodayState {
-    return this.today.habits.renameHabit(habitId, name);
+    return this.today.renameHabit(habitId, name);
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): TodayState {
-    return this.today.habits.updateHabitCategory(habitId, category);
+    return this.today.updateHabitCategory(habitId, category);
   }
 
   updateHabitFrequency(
@@ -150,65 +150,65 @@ export class AppApplicationService implements ApplicationService {
     frequency: HabitFrequency,
     targetCount: number | null = null
   ): TodayState {
-    return this.today.habits.updateHabitFrequency(habitId, frequency, targetCount);
+    return this.today.updateHabitFrequency(habitId, frequency, targetCount);
   }
 
   updateHabitTargetCount(habitId: number, targetCount: number): TodayState {
-    return this.today.habits.updateHabitTargetCount(habitId, targetCount);
+    return this.today.updateHabitTargetCount(habitId, targetCount);
   }
 
   updateHabitWeekdays(
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
-    return this.today.habits.updateHabitWeekdays(habitId, selectedWeekdays);
+    return this.today.updateHabitWeekdays(habitId, selectedWeekdays);
   }
 
   upsertFocusQuotaGoal(
     frequency: GoalFrequency,
     targetMinutes: number
   ): TodayState {
-    return this.today.focusQuotaGoals.upsertGoal(frequency, targetMinutes);
+    return this.today.upsertFocusQuotaGoal(frequency, targetMinutes);
   }
 
   archiveFocusQuotaGoal(goalId: number): TodayState {
-    return this.today.focusQuotaGoals.archiveGoal(goalId);
+    return this.today.archiveFocusQuotaGoal(goalId);
   }
 
   unarchiveFocusQuotaGoal(goalId: number): TodayState {
-    return this.today.focusQuotaGoals.unarchiveGoal(goalId);
+    return this.today.unarchiveFocusQuotaGoal(goalId);
   }
 
   archiveHabit(habitId: number): TodayState {
-    return this.today.habits.archiveHabit(habitId);
+    return this.today.archiveHabit(habitId);
   }
 
   unarchiveHabit(habitId: number): TodayState {
-    return this.today.habits.unarchiveHabit(habitId);
+    return this.today.unarchiveHabit(habitId);
   }
 
   reorderHabits(habitIds: number[]): TodayState {
-    return this.today.habits.reorderHabits(habitIds);
+    return this.today.reorderHabits(habitIds);
   }
 
   createWindDownAction(name: string): TodayState {
-    return this.today.windDownActions.createAction(name);
+    return this.today.createWindDownAction(name);
   }
 
   renameWindDownAction(actionId: number, name: string): TodayState {
-    return this.today.windDownActions.renameAction(actionId, name);
+    return this.today.renameWindDownAction(actionId, name);
   }
 
   deleteWindDownAction(actionId: number): TodayState {
-    return this.today.windDownActions.deleteAction(actionId);
+    return this.today.deleteWindDownAction(actionId);
   }
 
   toggleWindDownAction(actionId: number): TodayState {
-    return this.today.windDownActions.toggleAction(actionId);
+    return this.today.toggleWindDownAction(actionId);
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
-    return this.focus.focusSessions.listRecentSessions(limit);
+    return this.focus.getFocusSessions(limit);
   }
 
   recordFocusSession(input: CreateFocusSessionInput): FocusSession {
@@ -216,13 +216,13 @@ export class AppApplicationService implements ApplicationService {
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
-    return this.focus.focusTimerState.getState();
+    return this.focus.getPersistedFocusTimerState();
   }
 
   savePersistedFocusTimerState(
     state: PersistedFocusTimerState
   ): PersistedFocusTimerState {
-    return this.focus.focusTimerState.saveState(state);
+    return this.focus.savePersistedFocusTimerState(state);
   }
 
   getHistory(limit?: number): HistoryDay[] {
@@ -266,7 +266,7 @@ export class AppApplicationService implements ApplicationService {
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
-    return this.runtimeSettings.reminderRuntimeState.getState();
+    return this.runtimeSettings.getReminderRuntimeState();
   }
 
   updateSettings(settings: AppSettings): AppSettings {
@@ -274,14 +274,14 @@ export class AppApplicationService implements ApplicationService {
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
-    return this.runtimeSettings.reminderRuntimeState.saveState(state);
+    return this.runtimeSettings.saveReminderRuntimeState(state);
   }
 
   getWindDownRuntimeState(): WindDownRuntimeState {
-    return this.runtimeSettings.windDownRuntimeState.getState();
+    return this.runtimeSettings.getWindDownRuntimeState();
   }
 
   saveWindDownRuntimeState(state: WindDownRuntimeState): void {
-    return this.runtimeSettings.windDownRuntimeState.saveState(state);
+    return this.runtimeSettings.saveWindDownRuntimeState(state);
   }
 }

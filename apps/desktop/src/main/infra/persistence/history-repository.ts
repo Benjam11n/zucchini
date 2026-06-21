@@ -166,7 +166,7 @@ export class SqliteHistoryRepository {
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
     return this.client.run("getHabitsWithStatus", () => {
-      const activeHabits = this.habitsRepository.habits.getHabits();
+      const activeHabits = this.habitsRepository.getHabits();
       if (activeHabits.length === 0) {
         return [];
       }
@@ -379,7 +379,7 @@ export class SqliteHistoryRepository {
 
   ensureStatusRowsForDate(date: string): void {
     this.client.run("ensureStatusRowsForDate", () => {
-      const activeHabits = this.habitsRepository.habits.getHabits();
+      const activeHabits = this.habitsRepository.getHabits();
       if (activeHabits.length === 0) {
         return;
       }

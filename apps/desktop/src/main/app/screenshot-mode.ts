@@ -174,7 +174,7 @@ export function seedMarketingScreenshotData({
   repository: AppRepository;
   service: ApplicationService;
 }): void {
-  if (!isScreenshotMode() || service.habits.getHabits().length > 0) {
+  if (!isScreenshotMode() || service.getHabits().length > 0) {
     return;
   }
 
@@ -200,7 +200,7 @@ export function seedMarketingScreenshotData({
     repository.history.setHabitProgress(todayState.date, habit.id, count);
   }
 
-  service.focusQuotaGoals.upsertGoal("weekly", 450);
+  service.upsertFocusQuotaGoal("weekly", 450);
   seedMarketingHistory(repository, todayState.date, todayState.habits);
 }
 

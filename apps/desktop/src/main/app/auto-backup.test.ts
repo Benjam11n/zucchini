@@ -53,7 +53,9 @@ function createService(
     repository: {
       exportBackup,
       getDatabasePath: () => databasePath,
-      updateAutoBackupLastRunAt,
+      settings: {
+        updateAutoBackupLastRunAt,
+      },
     },
     shell: {
       openPath,

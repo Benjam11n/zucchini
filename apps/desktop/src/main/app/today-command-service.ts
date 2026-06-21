@@ -69,8 +69,8 @@ export class TodayCommandService extends ApplicationServiceSlice {
       "moveUnfinishedHabitsToTomorrow",
       (today) => {
         this.repository.history.ensureStatusRowsForDate(today);
-        const unfinishedDailyHabits = this.repository
-          .history.getHabitsWithStatus(today)
+        const unfinishedDailyHabits = this.repository.history
+          .getHabitsWithStatus(today)
           .filter((habit) => isDailyHabit(habit) && !habit.completed);
 
         if (unfinishedDailyHabits.length === 0) {
@@ -78,7 +78,11 @@ export class TodayCommandService extends ApplicationServiceSlice {
         }
 
         const nowIso = this.clock.now().toISOString();
-        this.repository.history.createHabitCarryovers(today, addDays(today, 1), nowIso);
+        this.repository.history.createHabitCarryovers(
+          today,
+          addDays(today, 1),
+          nowIso
+        );
         this.repository.history.setDayStatus(today, "rescheduled", nowIso);
       },
       {
@@ -173,7 +177,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("pauseHabit", () => {
       this.syncRollingState();
       const today = this.getTodayKey();
-      this.repository.habits.pauseHabit(habitId, this.clock.now().toISOString());
+      this.repository.habits.pauseHabit(
+        habitId,
+        this.clock.now().toISOString()
+      );
       this.repository.history.removeStatusRowsForDate(today, habitId);
       return this.rebuildCurrentTodayState();
     });
@@ -183,7 +190,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
     return this.inInitializedTransaction("resumeHabit", () => {
       this.syncRollingState();
       const today = this.getTodayKey();
-      this.repository.habits.resumeHabit(habitId, this.clock.now().toISOString());
+      this.repository.habits.resumeHabit(
+        habitId,
+        this.clock.now().toISOString()
+      );
       this.repository.history.ensureStatusRow(today, habitId);
       return this.rebuildCurrentTodayState();
     });
@@ -258,7 +268,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
   ): TodayState {
     return this.inInitializedTransaction("updateHabitFrequency", () => {
       const today = this.getTodayKey();
-      const previousProgress = this.repository.history.getHabitProgress(today, habitId);
+      const previousProgress = this.repository.history.getHabitProgress(
+        today,
+        habitId
+      );
       const normalizedFrequency = normalizeHabitFrequency(frequency);
       const normalizedTargetCount = normalizeHabitTargetCount(
         normalizedFrequency,
@@ -284,20 +297,26 @@ export class TodayCommandService extends ApplicationServiceSlice {
   updateHabitTargetCount(habitId: number, targetCount: number): TodayState {
     return this.inInitializedTransaction("updateHabitTargetCount", () => {
       const today = this.getTodayKey();
-      const habit = this.repository
-        .habits.getHabits()
+      const habit = this.repository.habits
+        .getHabits()
         .find((candidate) => candidate.id === habitId);
 
       if (!habit) {
         return this.rebuildCurrentTodayState();
       }
 
-      const previousProgress = this.repository.history.getHabitProgress(today, habitId);
+      const previousProgress = this.repository.history.getHabitProgress(
+        today,
+        habitId
+      );
       const normalizedTargetCount = normalizeHabitTargetCount(
         habit.frequency,
         targetCount
       );
-      this.repository.habits.updateHabitTargetCount(habitId, normalizedTargetCount);
+      this.repository.habits.updateHabitTargetCount(
+        habitId,
+        normalizedTargetCount
+      );
       this.preserveTodayHabitProgress(
         today,
         habitId,
@@ -313,7 +332,10 @@ export class TodayCommandService extends ApplicationServiceSlice {
     selectedWeekdays: HabitWeekday[] | null
   ): TodayState {
     return this.inInitializedTransaction("updateHabitWeekdays", () => {
-      this.repository.history.removeStatusRowsForDate(this.getTodayKey(), habitId);
+      this.repository.history.removeStatusRowsForDate(
+        this.getTodayKey(),
+        habitId
+      );
       this.repository.habits.updateHabitWeekdays(
         habitId,
         normalizeHabitWeekdays(selectedWeekdays)

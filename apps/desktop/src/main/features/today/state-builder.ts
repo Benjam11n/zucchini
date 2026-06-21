@@ -18,6 +18,7 @@ import {
 } from "@/shared/domain/habit";
 import type { HabitCategory, HabitWithStatus } from "@/shared/domain/habit";
 import type { HabitCarryover } from "@/shared/domain/habit-carryover";
+import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { HabitStreak } from "@/shared/domain/habit-streak";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
 import type { DailySummary, StreakState } from "@/shared/domain/streak";
@@ -55,9 +56,7 @@ function mapStatusToHabit(status: {
 
 export function buildHistoricalHabitsByDate(
   summaries: DailySummary[],
-  statuses: ReturnType<
-    TodayReadModelRepositoryPort["getHistoricalHabitPeriodStatusesOverlappingRange"]
-  >
+  statuses: HabitPeriodStatusSnapshot[]
 ): Map<string, HabitWithStatus[]> {
   const habitsByDate = new Map<string, HabitWithStatus[]>();
   const sortedSummaries = [...summaries].toSorted((left, right) =>
@@ -102,8 +101,8 @@ function buildTodayHabitStreaksFromHabits(
 ): Record<number, HabitStreak> {
   const dailyHabits = habits.filter(isDailyHabit);
   const persistedStateByHabitId = new Map(
-    repository
-      .streaks.getPersistedHabitStreakStates(dailyHabits.map((habit) => habit.id))
+    repository.streaks
+      .getPersistedHabitStreakStates(dailyHabits.map((habit) => habit.id))
       .map((state) => [state.habitId, state])
   );
   const habitStreaks: Record<number, HabitStreak> = {};
@@ -137,8 +136,8 @@ function buildTodayCategoryStreaksFromHabits(
   habitCarryovers: HabitCarryover[]
 ): Record<HabitCategory, CategoryStreak> {
   const persistedStateByCategory = new Map(
-    repository
-      .streaks.getPersistedCategoryStreakStates()
+    repository.streaks
+      .getPersistedCategoryStreakStates()
       .map((state) => [state.category, state])
   );
   const dailyHabits = habits.filter(isDailyHabit);
@@ -200,12 +199,16 @@ export function buildTodayState(
     currentDayStatus?.kind ?? null
   );
 
-  const focusSessions = repository.focusSessions.listSessionsInRange(today, today);
+  const focusSessions = repository.focusSessions.listSessionsInRange(
+    today,
+    today
+  );
   const focusMinutes = toFocusMinutes(
     focusSessions.reduce((total, session) => total + session.durationSeconds, 0)
   );
   repository.windDownActions.ensureStatusRowsForDate(today);
-  const windDownActions = repository.windDownActions.getActionsWithStatus(today);
+  const windDownActions =
+    repository.windDownActions.getActionsWithStatus(today);
   return {
     categoryStreaks: buildTodayCategoryStreaksFromHabits(
       repository,

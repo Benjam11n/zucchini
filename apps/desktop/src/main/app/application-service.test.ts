@@ -46,7 +46,7 @@ const DEFAULT_SETTLED_HISTORY_LIMIT = 365;
 
 class FakeRepository implements AppRepository {
   failTransactionForLabel: string | null = null;
-  habits: Habit[] = [
+  habitRows: Habit[] = [
     {
       category: "productivity",
       createdAt: "2026-03-01T00:00:00.000Z",
@@ -89,30 +89,30 @@ class FakeRepository implements AppRepository {
   };
   habitStreakStates = new Map<number, PersistedHabitStreakState>();
   categoryStreakStates = new Map<string, PersistedCategoryStreakState>();
-  settings: AppSettings = {
+  settingsState: AppSettings = {
     ...createDefaultAppSettings("Asia/Singapore"),
     launchAtLogin: false,
     minimizeToTray: false,
     resetFocusTimerShortcut: "Command+Shift+Backspace",
     toggleFocusTimerShortcut: "Command+Shift+Space",
   };
-  reminderRuntimeState: ReminderRuntimeState = {
+  reminderRuntimeStateValue: ReminderRuntimeState = {
     lastMidnightWarningSentAt: null,
     lastMissedReminderSentAt: null,
     lastReminderSentAt: null,
     snoozedUntil: null,
   };
-  windDownRuntimeState: WindDownRuntimeState = {
+  windDownRuntimeStateValue: WindDownRuntimeState = {
     lastReminderSentAt: null,
   };
-  windDownActions: WindDownAction[] = [];
+  windDownActionRows: WindDownAction[] = [];
   windDownCompletedActionIdsByDate = new Map<string, Set<number>>();
-  focusSessions: FocusSession[] = [];
-  focusQuotaGoals: FocusQuotaGoal[] = [];
-  focusTimerState: PersistedFocusTimerState | null = null;
+  focusSessionRows: FocusSession[] = [];
+  focusQuotaGoalRows: FocusQuotaGoal[] = [];
+  focusTimerStateValue: PersistedFocusTimerState | null = null;
 
   initializeSchema = (): void => {
-    void this.habits;
+    void this.habitRows;
   };
   runInTransaction<A>(label: string, execute: () => A): A {
     if (this.failTransactionForLabel === label) {
@@ -122,11 +122,140 @@ class FakeRepository implements AppRepository {
     return execute();
   }
   seedDefaults = (): void => {
-    void this.habits;
+    void this.habitRows;
   };
 
+  get habits(): AppRepository["habits"] {
+    return {
+      archiveHabit: this.archiveHabit.bind(this),
+      getHabits: this.getHabits.bind(this),
+      getMaxSortOrder: this.getMaxSortOrder.bind(this),
+      insertHabit: this.insertHabit.bind(this),
+      normalizeHabitOrder: this.normalizeHabitOrder.bind(this),
+      pauseHabit: this.pauseHabit.bind(this),
+      renameHabit: this.renameHabit.bind(this),
+      reorderHabits: this.reorderHabits.bind(this),
+      resumeHabit: this.resumeHabit.bind(this),
+      unarchiveHabit: this.unarchiveHabit.bind(this),
+      updateHabitCategory: this.updateHabitCategory.bind(this),
+      updateHabitFrequency: this.updateHabitFrequency.bind(this),
+      updateHabitTargetCount: this.updateHabitTargetCount.bind(this),
+      updateHabitWeekdays: this.updateHabitWeekdays.bind(this),
+    };
+  }
+
+  get history(): AppRepository["history"] {
+    return {
+      adjustHabitProgress: this.adjustHabitProgress.bind(this),
+      clearDayStatus: this.clearDayStatus.bind(this),
+      clearHabitCarryoversFromSourceDate:
+        this.clearHabitCarryoversFromSourceDate.bind(this),
+      createHabitCarryovers: this.createHabitCarryovers.bind(this),
+      ensureStatusRow: this.ensureStatusRow.bind(this),
+      ensureStatusRowsForDate: this.ensureStatusRowsForDate.bind(this),
+      getDailySummariesInRange: this.getDailySummariesInRange.bind(this),
+      getDayStatus: this.getDayStatus.bind(this),
+      getExistingCompletedAt: this.getExistingCompletedAt.bind(this),
+      getFirstTrackedDate: this.getFirstTrackedDate.bind(this),
+      getFocusQuotaGoalsWithStatus:
+        this.getFocusQuotaGoalsWithStatusForDate.bind(this),
+      getHabitCarryoversForDate: this.getHabitCarryoversForDate.bind(this),
+      getHabitPeriodStatusesEndingInRange:
+        this.getHabitPeriodStatusesEndingInRange.bind(this),
+      getHabitProgress: this.getHabitProgress.bind(this),
+      getHabitWithStatus: this.getHabitWithStatus.bind(this),
+      getHabitsWithStatus: this.getHabitsWithStatus.bind(this),
+      getHistoricalFocusQuotaGoalsWithStatus:
+        this.getHistoricalFocusQuotaGoalsWithStatus.bind(this),
+      getHistoricalHabitPeriodStatusesOverlappingRange:
+        this.getHistoricalHabitPeriodStatusesOverlappingRange.bind(this),
+      getLatestTrackedDate: this.getLatestTrackedDate.bind(this),
+      getSettledHistory: this.getSettledHistory.bind(this),
+      getSettledHistoryYears: this.getSettledHistoryYears.bind(this),
+      removeStatusRowsForDate: this.removeStatusRowsForDate.bind(this),
+      saveDailySummary: this.saveDailySummary.bind(this),
+      setDayStatus: this.setDayStatus.bind(this),
+      setHabitProgress: this.setHabitProgress.bind(this),
+      toggleHabit: this.toggleHabit.bind(this),
+      toggleHabitCarryover: this.toggleHabitCarryover.bind(this),
+    };
+  }
+
+  get focusQuotaGoals(): AppRepository["focusQuotaGoals"] {
+    return {
+      archiveGoal: this.archiveFocusQuotaGoal.bind(this),
+      getGoals: this.getFocusQuotaGoals.bind(this),
+      unarchiveGoal: this.unarchiveFocusQuotaGoal.bind(this),
+      upsertGoal: this.upsertFocusQuotaGoal.bind(this),
+    };
+  }
+
+  get focusSessions(): AppRepository["focusSessions"] {
+    return {
+      insertSession: this.saveFocusSession.bind(this),
+      listRecentSessions: this.getFocusSessions.bind(this),
+      listSessionsInRange: this.getFocusSessionsInRange.bind(this),
+    };
+  }
+
+  get focusTimerState(): AppRepository["focusTimerState"] {
+    return {
+      getState: this.getPersistedFocusTimerState.bind(this),
+      saveState: this.savePersistedFocusTimerState.bind(this),
+    };
+  }
+
+  get reminderRuntimeState(): AppRepository["reminderRuntimeState"] {
+    return {
+      getState: this.getReminderRuntimeState.bind(this),
+      saveState: this.saveReminderRuntimeState.bind(this),
+    };
+  }
+
+  get settings(): AppRepository["settings"] {
+    return {
+      getSettings: this.getSettings.bind(this),
+      saveSettings: this.saveSettings.bind(this),
+      updateAutoBackupLastRunAt: this.updateAutoBackupLastRunAt.bind(this),
+    };
+  }
+
+  get streaks(): AppRepository["streaks"] {
+    return {
+      getPersistedCategoryStreakStates:
+        this.getPersistedCategoryStreakStates.bind(this),
+      getPersistedHabitStreakStates:
+        this.getPersistedHabitStreakStates.bind(this),
+      getPersistedStreakState: this.getPersistedStreakState.bind(this),
+      savePersistedCategoryStreakStates:
+        this.savePersistedCategoryStreakStates.bind(this),
+      savePersistedHabitStreakStates:
+        this.savePersistedHabitStreakStates.bind(this),
+      savePersistedStreakState: this.savePersistedStreakState.bind(this),
+    };
+  }
+
+  get windDownActions(): AppRepository["windDownActions"] {
+    return {
+      createAction: this.createWindDownAction.bind(this),
+      deleteAction: this.deleteWindDownAction.bind(this),
+      ensureStatusRowsForDate: this.ensureWindDownStatusRowsForDate.bind(this),
+      getActions: this.getWindDownActions.bind(this),
+      getActionsWithStatus: this.getWindDownActionsWithStatus.bind(this),
+      renameAction: this.renameWindDownAction.bind(this),
+      toggleAction: this.toggleWindDownAction.bind(this),
+    };
+  }
+
+  get windDownRuntimeState(): AppRepository["windDownRuntimeState"] {
+    return {
+      getState: this.getWindDownRuntimeState.bind(this),
+      saveState: this.saveWindDownRuntimeState.bind(this),
+    };
+  }
+
   getHabits(): Habit[] {
-    return this.habits
+    return this.habitRows
       .filter((habit) => !habit.isArchived)
       .toSorted((a, b) => a.sortOrder - b.sortOrder);
   }
@@ -138,7 +267,7 @@ class FakeRepository implements AppRepository {
   }
 
   getFocusQuotaGoals(includeArchived = false): FocusQuotaGoal[] {
-    return this.focusQuotaGoals
+    return this.focusQuotaGoalRows
       .filter((goal) => includeArchived || !goal.isArchived)
       .toSorted((left, right) => left.frequency.localeCompare(right.frequency));
   }
@@ -156,7 +285,7 @@ class FakeRepository implements AppRepository {
   }
 
   getHabitsWithStatus(date: string): HabitWithStatus[] {
-    return this.habits.getHabits()
+    return this.getHabits()
       .filter((habit) =>
         isHabitActiveOnDate(
           habit,
@@ -177,8 +306,9 @@ class FakeRepository implements AppRepository {
 
   getHabitWithStatus(date: string, habitId: number): HabitWithStatus | null {
     return (
-      this.history.getHabitsWithStatus(date).find((habit) => habit.id === habitId) ??
-      null
+      this.history
+        .getHabitsWithStatus(date)
+        .find((habit) => habit.id === habitId) ?? null
     );
   }
 
@@ -190,7 +320,7 @@ class FakeRepository implements AppRepository {
       .filter((entry) => entry.start <= end && entry.end >= start)
       .flatMap((entry) =>
         [...entry.values.entries()].map(([habitId, completedCount]) => {
-          const habit = this.habits.find((item) => item.id === habitId);
+          const habit = this.habitRows.find((item) => item.id === habitId);
 
           if (!habit) {
             throw new Error(`Unknown habit ${habitId}`);
@@ -215,7 +345,7 @@ class FakeRepository implements AppRepository {
   }
 
   getHabitProgress(date: string, habitId: number): number {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (
       !habit ||
       !isHabitActiveOnDate(
@@ -239,7 +369,9 @@ class FakeRepository implements AppRepository {
     return [...this.habitCarryovers.values()]
       .filter((carryover) => carryover.targetDate === targetDate)
       .map((carryover) => {
-        const habit = this.habits.find((item) => item.id === carryover.habitId);
+        const habit = this.habitRows.find(
+          (item) => item.id === carryover.habitId
+        );
         if (!habit) {
           return null;
         }
@@ -256,7 +388,7 @@ class FakeRepository implements AppRepository {
   }
 
   ensureStatusRowsForDate(date: string): void {
-    const scheduledHabits = this.habits.getHabits().filter((habit) =>
+    const scheduledHabits = this.getHabits().filter((habit) =>
       isHabitActiveOnDate(
         habit,
         date,
@@ -274,7 +406,7 @@ class FakeRepository implements AppRepository {
   }
 
   ensureStatusRow(date: string, habitId: number): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (
       !habit ||
       !isHabitActiveOnDate(
@@ -314,7 +446,7 @@ class FakeRepository implements AppRepository {
   }
 
   toggleHabit(date: string, habitId: number, _completedAt?: string): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (
       !habit ||
       !isHabitActiveOnDate(
@@ -337,7 +469,7 @@ class FakeRepository implements AppRepository {
     habitId: number,
     completedCount: number
   ): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (
       !habit ||
       !isHabitActiveOnDate(
@@ -362,7 +494,7 @@ class FakeRepository implements AppRepository {
     delta: number,
     _completedAt?: string
   ): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (
       !habit ||
       !isHabitActiveOnDate(
@@ -381,7 +513,7 @@ class FakeRepository implements AppRepository {
   }
 
   getFocusSessions(limit?: number): FocusSession[] {
-    const sessions = [...this.focusSessions].toSorted((left, right) =>
+    const sessions = [...this.focusSessionRows].toSorted((left, right) =>
       right.completedAt.localeCompare(left.completedAt)
     );
 
@@ -389,7 +521,7 @@ class FakeRepository implements AppRepository {
   }
 
   getFocusSessionsInRange(start: string, end: string): FocusSession[] {
-    return this.focusSessions
+    return this.focusSessionRows
       .filter(
         (session) =>
           session.completedDate >= start && session.completedDate <= end
@@ -402,20 +534,20 @@ class FakeRepository implements AppRepository {
   saveFocusSession(input: CreateFocusSessionInput): FocusSession {
     const focusSession = {
       ...input,
-      id: this.focusSessions.length + 1,
+      id: this.focusSessionRows.length + 1,
     };
-    this.focusSessions.unshift(focusSession);
+    this.focusSessionRows.unshift(focusSession);
     return focusSession;
   }
 
   getPersistedFocusTimerState(): PersistedFocusTimerState | null {
-    return this.focusTimerState;
+    return this.focusTimerStateValue;
   }
 
   savePersistedFocusTimerState(
     state: PersistedFocusTimerState
   ): PersistedFocusTimerState {
-    this.focusTimerState = state;
+    this.focusTimerStateValue = state;
     return state;
   }
 
@@ -460,7 +592,7 @@ class FakeRepository implements AppRepository {
       .filter((entry) => entry.end >= start && entry.end <= end)
       .flatMap((entry) =>
         [...entry.values.entries()].map(([habitId, completedCount]) => {
-          const habit = this.habits.find((item) => item.id === habitId);
+          const habit = this.habitRows.find((item) => item.id === habitId);
 
           if (!habit) {
             throw new Error(`Unknown habit ${habitId}`);
@@ -530,39 +662,39 @@ class FakeRepository implements AppRepository {
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
-    return { ...this.reminderRuntimeState };
+    return { ...this.reminderRuntimeStateValue };
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
-    this.reminderRuntimeState = { ...state };
+    this.reminderRuntimeStateValue = { ...state };
   }
 
   getWindDownRuntimeState(): WindDownRuntimeState {
-    return { ...this.windDownRuntimeState };
+    return { ...this.windDownRuntimeStateValue };
   }
 
   saveWindDownRuntimeState(state: WindDownRuntimeState): void {
-    this.windDownRuntimeState = { ...state };
+    this.windDownRuntimeStateValue = { ...state };
   }
 
   getSettings(): AppSettings {
-    return { ...this.settings };
+    return { ...this.settingsState };
   }
 
-  saveSettings(settings: AppSettings): AppSettings {
-    this.settings = { ...settings };
-    return { ...this.settings };
+  saveSettings(settingsState: AppSettings): AppSettings {
+    this.settingsState = { ...settingsState };
+    return { ...this.settingsState };
   }
 
   updateAutoBackupLastRunAt(timestamp: string): void {
-    this.settings = {
-      ...this.settings,
+    this.settingsState = {
+      ...this.settingsState,
       autoBackupLastRunAt: timestamp,
     };
   }
 
   getWindDownActions(): WindDownAction[] {
-    return this.windDownActions.toSorted((left, right) => {
+    return this.windDownActionRows.toSorted((left, right) => {
       if (left.sortOrder !== right.sortOrder) {
         return left.sortOrder - right.sortOrder;
       }
@@ -575,7 +707,7 @@ class FakeRepository implements AppRepository {
     const completedActionIds =
       this.windDownCompletedActionIdsByDate.get(date) ?? new Set<number>();
 
-    return this.windDownActions.getActions().map((action) => ({
+    return this.getWindDownActions().map((action) => ({
       ...action,
       completed: completedActionIds.has(action.id),
       completedAt: completedActionIds.has(action.id)
@@ -591,25 +723,25 @@ class FakeRepository implements AppRepository {
   }
 
   createWindDownAction(name: string, createdAt: string): number {
-    const id = this.windDownActions.length + 1;
-    this.windDownActions.push({
+    const id = this.windDownActionRows.length + 1;
+    this.windDownActionRows.push({
       createdAt,
       id,
       name,
-      sortOrder: this.windDownActions.length,
+      sortOrder: this.windDownActionRows.length,
     });
     return id;
   }
 
   renameWindDownAction(actionId: number, name: string): void {
-    const action = this.windDownActions.find((item) => item.id === actionId);
+    const action = this.windDownActionRows.find((item) => item.id === actionId);
     if (action) {
       action.name = name;
     }
   }
 
   deleteWindDownAction(actionId: number): void {
-    this.windDownActions = this.windDownActions
+    this.windDownActionRows = this.windDownActionRows
       .filter((action) => action.id !== actionId)
       .map((action, index) => ({
         ...action,
@@ -667,9 +799,9 @@ class FakeRepository implements AppRepository {
   }
 
   createHabitCarryovers(sourceDate: string, targetDate: string): void {
-    const unfinishedDailyHabits = this.history.getHabitsWithStatus(sourceDate).filter(
-      (habit) => habit.frequency === "daily" && !habit.completed
-    );
+    const unfinishedDailyHabits = this.history
+      .getHabitsWithStatus(sourceDate)
+      .filter((habit) => habit.frequency === "daily" && !habit.completed);
 
     for (const habit of unfinishedDailyHabits) {
       this.habitCarryovers.set(`${sourceDate}:${targetDate}:${habit.id}`, {
@@ -710,7 +842,7 @@ class FakeRepository implements AppRepository {
   }
 
   getMaxSortOrder(): number {
-    return Math.max(...this.habits.getHabits().map((habit) => habit.sortOrder), -1);
+    return Math.max(...this.getHabits().map((habit) => habit.sortOrder), -1);
   }
 
   insertHabit(
@@ -722,8 +854,8 @@ class FakeRepository implements AppRepository {
     sortOrder: number,
     createdAt: string
   ): number {
-    const id = this.habits.length + 1;
-    this.habits.push({
+    const id = this.habitRows.length + 1;
+    this.habitRows.push({
       category,
       createdAt,
       frequency,
@@ -738,14 +870,14 @@ class FakeRepository implements AppRepository {
   }
 
   renameHabit(habitId: number, name: string): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.name = name;
     }
   }
 
   updateHabitCategory(habitId: number, category: HabitCategory): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.category = category;
     }
@@ -756,7 +888,7 @@ class FakeRepository implements AppRepository {
     frequency: HabitFrequency,
     targetCount: number
   ): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.frequency = frequency;
       habit.selectedWeekdays = null;
@@ -765,7 +897,7 @@ class FakeRepository implements AppRepository {
   }
 
   updateHabitTargetCount(habitId: number, targetCount: number): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.targetCount = targetCount;
     }
@@ -775,14 +907,14 @@ class FakeRepository implements AppRepository {
     habitId: number,
     selectedWeekdays: HabitWeekday[] | null
   ): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.selectedWeekdays = selectedWeekdays;
     }
   }
 
   pauseHabit(habitId: number, pausedAt: string): void {
-    const habit = this.habits.find(
+    const habit = this.habitRows.find(
       (item) => item.id === habitId && !item.isArchived
     );
     if (!habit || habit.pausedAt) {
@@ -798,7 +930,7 @@ class FakeRepository implements AppRepository {
   }
 
   resumeHabit(habitId: number, resumedAt: string): void {
-    const habit = this.habits.find(
+    const habit = this.habitRows.find(
       (item) => item.id === habitId && !item.isArchived
     );
     if (!habit || !habit.pausedAt) {
@@ -831,7 +963,7 @@ class FakeRepository implements AppRepository {
     targetMinutes: number,
     createdAt: string
   ): void {
-    const existing = this.focusQuotaGoals.find(
+    const existing = this.focusQuotaGoalRows.find(
       (goal) => goal.frequency === frequency && !goal.isArchived
     );
 
@@ -844,18 +976,18 @@ class FakeRepository implements AppRepository {
       existing.isArchived = true;
     }
 
-    this.focusQuotaGoals.push({
+    this.focusQuotaGoalRows.push({
       archivedAt: null,
       createdAt,
       frequency,
-      id: this.focusQuotaGoals.length + 1,
+      id: this.focusQuotaGoalRows.length + 1,
       isArchived: false,
       targetMinutes,
     });
   }
 
   archiveFocusQuotaGoal(goalId: number, archivedAt: string): void {
-    const goal = this.focusQuotaGoals.find((item) => item.id === goalId);
+    const goal = this.focusQuotaGoalRows.find((item) => item.id === goalId);
     if (goal) {
       goal.archivedAt = archivedAt;
       goal.isArchived = true;
@@ -863,12 +995,12 @@ class FakeRepository implements AppRepository {
   }
 
   unarchiveFocusQuotaGoal(goalId: number, restoredAt: string): void {
-    const goal = this.focusQuotaGoals.find((item) => item.id === goalId);
+    const goal = this.focusQuotaGoalRows.find((item) => item.id === goalId);
     if (!goal) {
       return;
     }
 
-    for (const candidate of this.focusQuotaGoals) {
+    for (const candidate of this.focusQuotaGoalRows) {
       if (candidate.frequency === goal.frequency && !candidate.isArchived) {
         candidate.archivedAt = restoredAt;
         candidate.isArchived = true;
@@ -880,28 +1012,28 @@ class FakeRepository implements AppRepository {
   }
 
   archiveHabit(habitId: number): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.isArchived = true;
     }
   }
 
   unarchiveHabit(habitId: number): void {
-    const habit = this.habits.find((item) => item.id === habitId);
+    const habit = this.habitRows.find((item) => item.id === habitId);
     if (habit) {
       habit.isArchived = false;
     }
   }
 
   normalizeHabitOrder(): void {
-    for (const [index, habit] of this.habits.getHabits().entries()) {
+    for (const [index, habit] of this.getHabits().entries()) {
       habit.sortOrder = index;
     }
   }
 
   reorderHabits(habitIds: number[]): void {
     for (const [index, habitId] of habitIds.entries()) {
-      const habit = this.habits.find((item) => item.id === habitId);
+      const habit = this.habitRows.find((item) => item.id === habitId);
       if (habit) {
         habit.sortOrder = index;
       }
@@ -962,7 +1094,7 @@ class FakeRepository implements AppRepository {
   private buildFocusQuotaGoalsWithStatus(
     date: string
   ): FocusQuotaGoalWithStatus[] {
-    return this.focusQuotaGoals
+    return this.focusQuotaGoalRows
       .filter((goal) => {
         const createdOn = goal.createdAt.slice(0, 10);
         const archivedOn = goal.archivedAt?.slice(0, 10) ?? null;
@@ -971,7 +1103,7 @@ class FakeRepository implements AppRepository {
       .toSorted((left, right) => left.frequency.localeCompare(right.frequency))
       .map((goal) => {
         const period = getFocusQuotaGoalPeriod(goal.frequency, date);
-        const completedMinutes = this.focusSessions.listSessionsInRange(
+        const completedMinutes = this.getFocusSessionsInRange(
           period.start,
           period.end
         ).reduce(
@@ -1029,7 +1161,9 @@ describe("habitService rollover", () => {
       streakCountAfterDay: 3,
     });
 
-    expect(repository.history.getHabitCarryoversForDate("2026-03-07")).toMatchObject([
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-07")
+    ).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1037,7 +1171,9 @@ describe("habitService rollover", () => {
         targetDate: "2026-03-07",
       },
     ]);
-    expect(repository.history.getHabitCarryoversForDate("2026-03-08")).toMatchObject([
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-08")
+    ).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1067,7 +1203,7 @@ describe("habitService rollover", () => {
       currentStreak: 1,
       lastEvaluatedDate: "2026-03-05",
     };
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1134,7 +1270,7 @@ describe("habitService rollover", () => {
       currentStreak: 1,
       lastEvaluatedDate: "2026-03-05",
     };
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1194,7 +1330,7 @@ describe("habitService rollover", () => {
       currentStreak: 1,
       lastEvaluatedDate: "2026-03-05",
     };
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1267,11 +1403,11 @@ describe("habitService rollover", () => {
       lastEvaluatedDate: "2026-03-05",
     });
     repository.setStatusForDate("2026-03-06", new Map([[1, false]]));
-    const [habit] = repository.habits;
+    const [habit] = repository.habitRows;
     if (!habit) {
       throw new Error("Expected default habit.");
     }
-    repository.habits[0] = { ...habit, category: "productivity" };
+    repository.habitRows[0] = { ...habit, category: "productivity" };
 
     const service = new AppApplicationService(
       repository,
@@ -1459,7 +1595,9 @@ describe("habitService rollover", () => {
 
     service.getTodayState();
 
-    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toMatchObject([
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-10")
+    ).toMatchObject([
       {
         completed: false,
         id: 1,
@@ -1467,7 +1605,9 @@ describe("habitService rollover", () => {
         targetDate: "2026-03-10",
       },
     ]);
-    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(1);
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-10")
+    ).toHaveLength(1);
   });
 
   it("keeps sick days neutral even with incomplete incoming carryovers", () => {
@@ -1503,21 +1643,23 @@ describe("habitService rollover", () => {
       freezeUsed: false,
       streakCountAfterDay: 3,
     });
-    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-10")
+    ).toHaveLength(0);
     expect(today.streak.currentStreak).toBe(3);
   });
 
   it("does not auto-carry paused or archived habits", () => {
     const repository = new FakeRepository();
-    const [habit] = repository.habits;
+    const [habit] = repository.habitRows;
     if (!habit) {
       throw new Error("Expected default habit.");
     }
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...habit,
       pausedAt: "2026-03-08T09:00:00.000Z",
     };
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1537,7 +1679,9 @@ describe("habitService rollover", () => {
 
     service.getTodayState();
 
-    expect(repository.history.getHabitCarryoversForDate("2026-03-10")).toHaveLength(0);
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-10")
+    ).toHaveLength(0);
   });
 });
 
@@ -1580,7 +1724,7 @@ describe("habit categories", () => {
       "Habit 1",
     ]);
     expect(
-      repository.habits.find((habit) => habit.name === "Gym session")
+      repository.habitRows.find((habit) => habit.name === "Gym session")
     ).toMatchObject({
       frequency: "daily",
       selectedWeekdays: [1, 3, 5],
@@ -1594,7 +1738,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitCategory(1, "fitness");
+    const todayState = service.updateHabitCategory(1, "fitness");
 
     expect(todayState.habits[0]?.category).toBe("fitness");
   });
@@ -1606,7 +1750,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitFrequency(1, "weekly");
+    const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
   });
@@ -1624,7 +1768,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const patch = service.history.toggleHabit(1);
+    const patch = service.toggleHabit(1);
 
     expect(patch.categoryStreaks?.productivity).toStrictEqual({
       bestStreak: 1,
@@ -1637,12 +1781,12 @@ describe("habit categories", () => {
     "allows %s habit progress to exceed the target count",
     (frequency) => {
       const repository = new FakeRepository();
-      const [existingHabit] = repository.habits;
+      const [existingHabit] = repository.habitRows;
       if (!existingHabit) {
         throw new Error("Expected a seeded habit.");
       }
 
-      repository.habits[0] = {
+      repository.habitRows[0] = {
         ...existingHabit,
         frequency,
         targetCount: 2,
@@ -1667,25 +1811,30 @@ describe("habit categories", () => {
 
   it("preserves current progress when updating a habit target count", () => {
     const repository = new FakeRepository();
-    const [existingHabit] = repository.habits;
+    const [existingHabit] = repository.habitRows;
     if (!existingHabit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...existingHabit,
       frequency: "weekly",
       targetCount: 3,
     };
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
-    repository.history.adjustHabitProgress("2026-03-08", 1, 1);
+    repository.history.adjustHabitProgress(
+      "2026-03-08",
+      1,
+      1,
+      "2026-03-08T09:00:00.000Z"
+    );
 
     const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitTargetCount(1, 4);
+    const todayState = service.updateHabitTargetCount(1, 4);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1697,25 +1846,30 @@ describe("habit categories", () => {
 
   it("carries forward current progress when changing a habit frequency", () => {
     const repository = new FakeRepository();
-    const [existingHabit] = repository.habits;
+    const [existingHabit] = repository.habitRows;
     if (!existingHabit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...existingHabit,
       frequency: "weekly",
       targetCount: 3,
     };
     repository.setStatusForDate("2026-03-08", new Map([[1, true]]), "weekly");
-    repository.history.adjustHabitProgress("2026-03-08", 1, 1);
+    repository.history.adjustHabitProgress(
+      "2026-03-08",
+      1,
+      1,
+      "2026-03-08T09:00:00.000Z"
+    );
 
     const service = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitFrequency(1, "monthly", 5);
+    const todayState = service.updateHabitFrequency(1, "monthly", 5);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1727,12 +1881,12 @@ describe("habit categories", () => {
 
   it("caps progress to the new target when downgrading from daily to weekly with a lower target", () => {
     const repository = new FakeRepository();
-    const [existingHabit] = repository.habits;
+    const [existingHabit] = repository.habitRows;
     if (!existingHabit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...existingHabit,
       frequency: "daily",
       targetCount: 1,
@@ -1744,7 +1898,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitFrequency(1, "weekly", 1);
+    const todayState = service.updateHabitFrequency(1, "weekly", 1);
 
     expect(todayState.habits[0]).toMatchObject({
       completed: true,
@@ -1756,12 +1910,12 @@ describe("habit categories", () => {
 
   it("clears progress when switching from daily to weekly on a non-week-start day", () => {
     const repository = new FakeRepository();
-    const [existingHabit] = repository.habits;
+    const [existingHabit] = repository.habitRows;
     if (!existingHabit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...existingHabit,
       frequency: "daily",
       targetCount: 1,
@@ -1773,7 +1927,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitFrequency(1, "weekly");
+    const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1787,7 +1941,7 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitFrequency(1, "weekly");
+    const todayState = service.updateHabitFrequency(1, "weekly");
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1803,18 +1957,21 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.habits.updateHabitWeekdays(1, [1, 3, 5]);
+    const todayState = service.updateHabitWeekdays(1, [1, 3, 5]);
 
     expect(todayState.habits).toStrictEqual([]);
-    expect(repository.habits[0]?.selectedWeekdays).toStrictEqual([1, 3, 5]);
+    expect(repository.habitRows[0]?.selectedWeekdays).toStrictEqual([1, 3, 5]);
     expect(
-      repository.history.getHabitPeriodStatusesEndingInRange("2026-03-10", "2026-03-10")
+      repository.history.getHabitPeriodStatusesEndingInRange(
+        "2026-03-10",
+        "2026-03-10"
+      )
     ).toStrictEqual([]);
   });
 
   it("ignores reorder payloads that do not match the active habit ids", () => {
     const repository = new FakeRepository();
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1829,14 +1986,14 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.reorderHabits([1, 999]);
+    const todayState = service.reorderHabits([1, 999]);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
   });
 
   it("restores an archived habit to the end of the active list", () => {
     const repository = new FakeRepository();
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -1851,10 +2008,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.unarchiveHabit(2);
+    const todayState = service.unarchiveHabit(2);
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
-    expect(repository.habits.find((habit) => habit.id === 2)).toMatchObject({
+    expect(repository.habitRows.find((habit) => habit.id === 2)).toMatchObject({
       isArchived: false,
       sortOrder: 1,
     });
@@ -1870,9 +2027,9 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.pauseHabit(1);
+    const todayState = service.pauseHabit(1);
 
-    expect(repository.habits[0]?.pausedAt).toBe("2026-03-08T09:00:00.000Z");
+    expect(repository.habitRows[0]?.pausedAt).toBe("2026-03-08T09:00:00.000Z");
     expect(repository.habitPausePeriods).toStrictEqual([
       {
         habitId: 1,
@@ -1882,18 +2039,21 @@ describe("habit pause", () => {
     ]);
     expect(todayState.habits).toStrictEqual([]);
     expect(
-      repository.history.getHabitPeriodStatusesEndingInRange("2026-03-08", "2026-03-08")
+      repository.history.getHabitPeriodStatusesEndingInRange(
+        "2026-03-08",
+        "2026-03-08"
+      )
     ).toStrictEqual([]);
   });
 
   it("resumes a paused scheduled habit and recreates today's status row", () => {
     const repository = new FakeRepository();
-    const [habit] = repository.habits;
+    const [habit] = repository.habitRows;
     if (!habit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...habit,
       pausedAt: "2026-03-08T08:00:00.000Z",
     };
@@ -1902,9 +2062,9 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.resumeHabit(1);
+    const todayState = service.resumeHabit(1);
 
-    expect(repository.habits[0]?.pausedAt).toBeNull();
+    expect(repository.habitRows[0]?.pausedAt).toBeNull();
     expect(repository.habitPausePeriods).toStrictEqual([
       {
         habitId: 1,
@@ -1921,12 +2081,12 @@ describe("habit pause", () => {
 
   it("keeps paused closed days neutral before resuming", () => {
     const repository = new FakeRepository();
-    const [habit] = repository.habits;
+    const [habit] = repository.habitRows;
     if (!habit) {
       throw new Error("Expected a seeded habit.");
     }
 
-    repository.habits[0] = {
+    repository.habitRows[0] = {
       ...habit,
       pausedAt: "2026-03-06T09:00:00.000Z",
     };
@@ -1947,7 +2107,7 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.habits.resumeHabit(1);
+    const todayState = service.resumeHabit(1);
 
     expect(repository.streak.currentStreak).toBe(4);
     expect(repository.dailySummaries.get("2026-03-06")).toBeUndefined();
@@ -1963,13 +2123,13 @@ describe("habit pause", () => {
       repository,
       new FakeClock("2026-03-06", "2026-03-06T09:00:00.000Z")
     );
-    pauseService.habits.pauseHabit(1);
+    pauseService.pauseHabit(1);
 
     const resumeService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    resumeService.habits.resumeHabit(1);
+    resumeService.resumeHabit(1);
 
     expect(repository.habitPausePeriods).toStrictEqual([
       {
@@ -1981,8 +2141,12 @@ describe("habit pause", () => {
     expect(
       repository.history.getHabitsWithStatus("2026-03-05").map(({ id }) => id)
     ).toStrictEqual([1]);
-    expect(repository.history.getHabitsWithStatus("2026-03-06")).toStrictEqual([]);
-    expect(repository.history.getHabitsWithStatus("2026-03-07")).toStrictEqual([]);
+    expect(repository.history.getHabitsWithStatus("2026-03-06")).toStrictEqual(
+      []
+    );
+    expect(repository.history.getHabitsWithStatus("2026-03-07")).toStrictEqual(
+      []
+    );
     expect(
       repository.history.getHabitsWithStatus("2026-03-08").map(({ id }) => id)
     ).toStrictEqual([1]);
@@ -1992,7 +2156,7 @@ describe("habit pause", () => {
 describe("habit carryovers", () => {
   it("moves unfinished daily habits to tomorrow and preserves today", () => {
     const repository = new FakeRepository();
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -2018,7 +2182,9 @@ describe("habit carryovers", () => {
     const today = service.moveUnfinishedHabitsToTomorrow();
 
     expect(today.dayStatus).toBe("rescheduled");
-    expect(repository.history.getHabitCarryoversForDate("2026-03-09")).toMatchObject([
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-09")
+    ).toMatchObject([
       {
         completed: false,
         id: 2,
@@ -2042,7 +2208,7 @@ describe("habit carryovers", () => {
       repository,
       new FakeClock("2026-03-09", "2026-03-09T09:00:00.000Z")
     );
-    const tomorrow = tomorrowService.history.toggleHabitCarryover("2026-03-08", 1);
+    const tomorrow = tomorrowService.toggleHabitCarryover("2026-03-08", 1);
 
     expect(tomorrow.habitCarryovers).toMatchObject([
       {
@@ -2063,10 +2229,12 @@ describe("habit carryovers", () => {
     );
     service.moveUnfinishedHabitsToTomorrow();
 
-    const today = service.history.setDayStatus(null);
+    const today = service.setDayStatus(null);
 
     expect(today.dayStatus).toBeNull();
-    expect(repository.history.getHabitCarryoversForDate("2026-03-09")).toHaveLength(0);
+    expect(
+      repository.history.getHabitCarryoversForDate("2026-03-09")
+    ).toHaveLength(0);
   });
 });
 
@@ -2112,7 +2280,7 @@ describe("history retrieval", () => {
       freezeUsed: true,
       streakCountAfterDay: 3,
     });
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-01-01T00:00:00.000Z",
       frequency: "daily",
@@ -2185,7 +2353,7 @@ describe("history retrieval", () => {
       freezeUsed: false,
       streakCountAfterDay: 4,
     });
-    repository.focusSessions.push({
+    repository.focusSessionRows.push({
       completedAt: "2026-03-07T09:30:00.000Z",
       completedDate: "2026-03-07",
       durationSeconds: 120 * 60,
@@ -2199,13 +2367,13 @@ describe("history retrieval", () => {
       repository,
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
-    service.focusQuotaGoals.upsertGoal("weekly", 300);
+    service.upsertFocusQuotaGoal("weekly", 300);
 
     const nextDayService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    nextDayService.focusQuotaGoals.upsertGoal("weekly", 480);
+    nextDayService.upsertFocusQuotaGoal("weekly", 480);
 
     const history = nextDayService.getHistory();
     const march7 = history.find((day) => day.date === "2026-03-07");
@@ -2227,10 +2395,10 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    expect(() => service.focusQuotaGoals.upsertGoal("weekly", 20_000)).toThrow(
+    expect(() => service.upsertFocusQuotaGoal("weekly", 20_000)).toThrow(
       RangeError
     );
-    expect(repository.focusQuotaGoals.getGoals()).toHaveLength(0);
+    expect(repository.getFocusQuotaGoals()).toHaveLength(0);
   });
 
   it("keeps the full history path uncapped when no limit is provided", () => {
@@ -2294,7 +2462,7 @@ describe("history retrieval", () => {
       streakCountAfterDay: 4,
     });
     repository.setStatusForDate("2026-03-09", new Map([[1, true]]));
-    repository.focusSessions.push({
+    repository.focusSessionRows.push({
       completedAt: "2026-03-09T09:30:00.000Z",
       completedDate: "2026-03-09",
       durationSeconds: 25 * 60,
@@ -2353,7 +2521,7 @@ describe("history retrieval", () => {
       ]),
       "weekly"
     );
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "weekly",
@@ -2379,7 +2547,7 @@ describe("history retrieval", () => {
 
   it("excludes archived habits from insights through the service path", () => {
     const repository = new FakeRepository();
-    repository.habits.push({
+    repository.habitRows.push({
       category: "fitness",
       createdAt: "2026-03-01T00:00:00.000Z",
       frequency: "daily",
@@ -2434,13 +2602,13 @@ describe("focus sessions", () => {
       durationSeconds: 1500,
       id: 1,
     });
-    expect(service.focusSessions.listRecentSessions()).toHaveLength(1);
+    expect(service.getFocusSessions()).toHaveLength(1);
   });
 
   it("records focus session dates in the OS timezone", () => {
     const repository = new FakeRepository();
-    repository.settings = {
-      ...repository.settings,
+    repository.settingsState = {
+      ...repository.settingsState,
       timezone: "UTC",
     };
     const service = new AppApplicationService(

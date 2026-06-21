@@ -73,8 +73,8 @@ function getClosedDayStreakInputs(
   return {
     dayStatus: summary ? summary.dayStatus : dayStatus,
     freezeUsed: summary?.freezeUsed ?? false,
-    hasIncompleteCarryover: repository
-      .history.getHabitCarryoversForDate(cursor)
+    hasIncompleteCarryover: repository.history
+      .getHabitCarryoversForDate(cursor)
       .some((carryover) => !carryover.completed),
   };
 }
@@ -90,12 +90,14 @@ function applyClosedDayCarryoverPolicy({
   dailyHabits: HabitWithStatus[];
   repository: AppRepository;
 }): DayStatusKind | null {
-  const currentDayStatus = repository.history.getDayStatus(cursor)?.kind ?? null;
+  const currentDayStatus =
+    repository.history.getDayStatus(cursor)?.kind ?? null;
   if (currentDayStatus === "rest" || currentDayStatus === "sick") {
     return currentDayStatus;
   }
 
-  const incomingCarryovers = repository.history.getHabitCarryoversForDate(cursor);
+  const incomingCarryovers =
+    repository.history.getHabitCarryoversForDate(cursor);
   const hasIncompleteIncomingCarryover = incomingCarryovers.some(
     (carryover) => !carryover.completed
   );
@@ -202,7 +204,8 @@ function syncHabitStreakStates(
     return;
   }
 
-  const persistedStates = repository.streaks.getPersistedHabitStreakStates(habitIds);
+  const persistedStates =
+    repository.streaks.getPersistedHabitStreakStates(habitIds);
   const shouldBackfillMissingStates = persistedStates.length === 0;
   const stateByHabitId = new Map(
     persistedStates.map((state) => [state.habitId, state])
@@ -234,7 +237,9 @@ function syncHabitStreakStates(
 
   if (!firstUnevaluatedDate) {
     if (addedMissingState) {
-      repository.streaks.savePersistedHabitStreakStates([...stateByHabitId.values()]);
+      repository.streaks.savePersistedHabitStreakStates([
+        ...stateByHabitId.values(),
+      ]);
     }
     return;
   }
@@ -247,7 +252,9 @@ function syncHabitStreakStates(
       cursor
     );
     const habitIdsWithIncompleteCarryovers = new Set<number>();
-    for (const carryover of repository.history.getHabitCarryoversForDate(cursor)) {
+    for (const carryover of repository.history.getHabitCarryoversForDate(
+      cursor
+    )) {
       if (!carryover.completed) {
         habitIdsWithIncompleteCarryovers.add(carryover.id);
       }
@@ -289,7 +296,9 @@ function syncHabitStreakStates(
     cursor = clock.addDays(cursor, 1);
   }
 
-  repository.streaks.savePersistedHabitStreakStates([...stateByHabitId.values()]);
+  repository.streaks.savePersistedHabitStreakStates([
+    ...stateByHabitId.values(),
+  ]);
 }
 
 function getNextCategoryStreakState({
@@ -329,8 +338,8 @@ function syncCategoryStreakStates(
   yesterday: string
 ): void {
   const stateByCategory = new Map(
-    repository
-      .streaks.getPersistedCategoryStreakStates()
+    repository.streaks
+      .getPersistedCategoryStreakStates()
       .map((state) => [state.category, state])
   );
   let addedMissingState = false;
@@ -373,14 +382,16 @@ function syncCategoryStreakStates(
     >();
     const hasIncompleteCarryoverByCategory = new Set<HabitCategory>();
 
-    for (const carryover of repository.history.getHabitCarryoversForDate(cursor)) {
+    for (const carryover of repository.history.getHabitCarryoversForDate(
+      cursor
+    )) {
       if (!carryover.completed) {
         hasIncompleteCarryoverByCategory.add(carryover.category);
       }
     }
 
-    for (const habit of repository
-      .history.getHistoricalHabitPeriodStatusesOverlappingRange(cursor, cursor)
+    for (const habit of repository.history
+      .getHistoricalHabitPeriodStatusesOverlappingRange(cursor, cursor)
       .filter(isDailyHabit)) {
       const categoryHabits = habitsByCategory.get(habit.category) ?? [];
       categoryHabits.push(habit);
@@ -414,7 +425,9 @@ function syncCategoryStreakStates(
     cursor = clock.addDays(cursor, 1);
   }
 
-  repository.streaks.savePersistedCategoryStreakStates([...stateByCategory.values()]);
+  repository.streaks.savePersistedCategoryStreakStates([
+    ...stateByCategory.values(),
+  ]);
 }
 
 export function syncRollingState(
@@ -446,8 +459,11 @@ export function syncRollingState(
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
     repository.history.ensureStatusRowsForDate(cursor);
-    const habits = repository.history.getHabitsWithStatus(cursor).filter(isDailyHabit);
-    const incomingCarryovers = repository.history.getHabitCarryoversForDate(cursor);
+    const habits = repository.history
+      .getHabitsWithStatus(cursor)
+      .filter(isDailyHabit);
+    const incomingCarryovers =
+      repository.history.getHabitCarryoversForDate(cursor);
     const hasIncompleteIncomingCarryover = incomingCarryovers.some(
       (carryover) => !carryover.completed
     );
@@ -473,7 +489,8 @@ export function syncRollingState(
     }
 
     const completedAt = allCompleted
-      ? (repository.history.getExistingCompletedAt(cursor) ?? `${cursor}T23:59:59.000`)
+      ? (repository.history.getExistingCompletedAt(cursor) ??
+        `${cursor}T23:59:59.000`)
       : null;
 
     const next = settleClosedDay(createRollingStreakState(rollingState), {

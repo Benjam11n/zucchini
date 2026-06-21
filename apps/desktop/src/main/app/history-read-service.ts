@@ -9,7 +9,6 @@ import {
   buildWeeklyReview,
   buildWeeklyReviewOverview,
 } from "@/main/features/weekly-review/builder";
-import type { AppRepository } from "@/main/ports/app-repository";
 import {
   addDays,
   endOfIsoWeek,
@@ -37,14 +36,14 @@ interface HistoryListContext {
   focusMinutesByDate: Map<string, number>;
   historicalHabitsByDate: Map<string, HabitWithStatus[]>;
   todayState: TodayState;
-  settledSummaries: ReturnType<AppRepository["getSettledHistory"]>;
+  settledSummaries: DailySummary[];
 }
 
 interface HistoryRangeContext {
   focusMinutesByDate: Map<string, number>;
   historicalHabitsByDate: Map<string, HabitWithStatus[]>;
   includeToday: boolean;
-  settledSummaries: ReturnType<AppRepository["getDailySummariesInRange"]>;
+  settledSummaries: DailySummary[];
   todayState: TodayState;
 }
 
@@ -70,7 +69,9 @@ export class HistoryReadService extends ApplicationServiceSlice {
       summary,
       historicalHabitsByDate.get(summary.date) ?? [],
       focusMinutesByDate.get(summary.date) ?? 0,
-      this.repository.history.getHistoricalFocusQuotaGoalsWithStatus(summary.date)
+      this.repository.history.getHistoricalFocusQuotaGoalsWithStatus(
+        summary.date
+      )
     );
   }
 
@@ -114,8 +115,8 @@ export class HistoryReadService extends ApplicationServiceSlice {
     const todayState = this.buildCurrentTodayState();
     const includeToday =
       todayState.date >= rangeStart && todayState.date <= rangeEnd;
-    const settledSummaries = this.repository
-      .history.getDailySummariesInRange(rangeStart, rangeEnd)
+    const settledSummaries = this.repository.history
+      .getDailySummariesInRange(rangeStart, rangeEnd)
       .filter((summary) => summary.date !== todayState.date);
 
     if (!includeToday && settledSummaries.length === 0) {
@@ -130,7 +131,10 @@ export class HistoryReadService extends ApplicationServiceSlice {
       : (settledSummaries.at(-1)?.date ?? rangeEnd);
     const focusMinutesByDate =
       ApplicationServiceRuntime.buildFocusMinutesByDate(
-        this.repository.focusSessions.listSessionsInRange(oldestDate, newestDate)
+        this.repository.focusSessions.listSessionsInRange(
+          oldestDate,
+          newestDate
+        )
       );
     const historicalHabitsByDate =
       settledSummaries.length > 0
@@ -158,8 +162,8 @@ export class HistoryReadService extends ApplicationServiceSlice {
   ): HistorySummaryDay {
     return buildHistorySummaryDay({
       categoryProgress: getHabitCategoryProgress(
-        this.repository
-          .history.getHabitsWithStatus(this.getTodayKey())
+        this.repository.history
+          .getHabitsWithStatus(this.getTodayKey())
           .filter(isDailyHabit)
       ),
       date: todayState.date,
@@ -280,7 +284,10 @@ export class HistoryReadService extends ApplicationServiceSlice {
         );
       }
 
-      const [summary] = this.repository.history.getDailySummariesInRange(date, date);
+      const [summary] = this.repository.history.getDailySummariesInRange(
+        date,
+        date
+      );
 
       if (!summary) {
         throw new Error(`History day ${date} was not found.`);
@@ -347,7 +354,10 @@ export class HistoryReadService extends ApplicationServiceSlice {
     const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
     const focusMinutesByDate =
       ApplicationServiceRuntime.buildFocusMinutesByDate(
-        this.repository.focusSessions.listSessionsInRange(oldestDate, todayState.date)
+        this.repository.focusSessions.listSessionsInRange(
+          oldestDate,
+          todayState.date
+        )
       );
     const historicalHabitsByDate =
       settledSummaries.length > 0
@@ -404,10 +414,11 @@ export class HistoryReadService extends ApplicationServiceSlice {
           rangeStart,
           rangeEnd
         ),
-        habitStatuses: this.repository.history.getHabitPeriodStatusesEndingInRange(
-          rangeStart,
-          rangeEnd
-        ),
+        habitStatuses:
+          this.repository.history.getHabitPeriodStatusesEndingInRange(
+            rangeStart,
+            rangeEnd
+          ),
       });
     });
   }
@@ -426,10 +437,11 @@ export class HistoryReadService extends ApplicationServiceSlice {
           normalizedWeekStart,
           weekEnd
         ),
-        habitStatuses: this.repository.history.getHabitPeriodStatusesEndingInRange(
-          normalizedWeekStart,
-          weekEnd
-        ),
+        habitStatuses:
+          this.repository.history.getHabitPeriodStatusesEndingInRange(
+            normalizedWeekStart,
+            weekEnd
+          ),
         weekStart: normalizedWeekStart,
       });
     });
@@ -455,10 +467,11 @@ export class HistoryReadService extends ApplicationServiceSlice {
           rangeStart,
           rangeEnd
         ),
-        habitStatuses: this.repository.history.getHabitPeriodStatusesEndingInRange(
-          rangeStart,
-          rangeEnd
-        ),
+        habitStatuses:
+          this.repository.history.getHabitPeriodStatusesEndingInRange(
+            rangeStart,
+            rangeEnd
+          ),
         nowDate: today,
         rangeDays: requestedRangeDays,
         streak: this.repository.streaks.getPersistedStreakState(),

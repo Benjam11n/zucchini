@@ -118,7 +118,7 @@ describe("SqliteSettingsRepository", () => {
     );
 
     expect(
-      repository.settings.getSettings("Asia/Singapore").categoryPreferences
+      repository.getSettings("Asia/Singapore").categoryPreferences
     ).toStrictEqual(defaults.categoryPreferences);
   });
 
@@ -146,7 +146,7 @@ describe("SqliteSettingsRepository", () => {
       },
     };
 
-    const savedSettings = repository.settings.saveSettings(
+    const savedSettings = repository.saveSettings(
       customSettings,
       "Asia/Singapore"
     );
@@ -165,7 +165,7 @@ describe("SqliteSettingsRepository", () => {
       autoBackupLastRunAt: "2026-03-30T14:15:16.789Z",
     };
 
-    const savedSettings = repository.settings.saveSettings(
+    const savedSettings = repository.saveSettings(
       customSettings,
       "Asia/Singapore"
     );
@@ -199,7 +199,7 @@ describe("SqliteSettingsRepository", () => {
       }) as never
     );
 
-    expect(repository.settings.getSettings("Asia/Singapore")).toMatchObject({
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
       autoBackupCadence: "off",
       autoBackupLastRunAt: null,
     });
@@ -230,7 +230,7 @@ describe("SqliteSettingsRepository", () => {
       }) as never
     );
 
-    expect(repository.settings.getSettings("Asia/Singapore")).toMatchObject({
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
       autoBackupCadence: "off",
       autoBackupLastRunAt: null,
       focusCyclesBeforeLongBreak: 7,
@@ -243,14 +243,14 @@ describe("SqliteSettingsRepository", () => {
     const repository = new SqliteSettingsRepository(client as never);
     const settings = createDefaultAppSettings("Asia/Singapore");
 
-    repository.settings.saveSettings(
+    repository.saveSettings(
       {
         ...settings,
         autoBackupLastRunAt: "2026-03-30",
       },
       "Asia/Singapore"
     );
-    repository.settings.saveSettings(
+    repository.saveSettings(
       {
         ...settings,
         autoBackupCadence: "daily",
@@ -259,7 +259,7 @@ describe("SqliteSettingsRepository", () => {
       "Asia/Singapore"
     );
 
-    expect(repository.settings.getSettings("Asia/Singapore")).toMatchObject({
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
       autoBackupCadence: "daily",
       autoBackupLastRunAt: null,
     });
@@ -270,9 +270,9 @@ describe("SqliteSettingsRepository", () => {
     const repository = new SqliteSettingsRepository(client as never);
     const settings = createDefaultAppSettings("Asia/Singapore");
 
-    repository.settings.saveSettings(settings, "Asia/Singapore");
-    repository.settings.updateAutoBackupLastRunAt("2026-03-30T14:15:16.789Z");
-    repository.settings.saveSettings(
+    repository.saveSettings(settings, "Asia/Singapore");
+    repository.updateAutoBackupLastRunAt("2026-03-30T14:15:16.789Z");
+    repository.saveSettings(
       {
         ...settings,
         autoBackupCadence: "weekly",
@@ -281,7 +281,7 @@ describe("SqliteSettingsRepository", () => {
       "Asia/Singapore"
     );
 
-    expect(repository.settings.getSettings("Asia/Singapore")).toMatchObject({
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
       autoBackupCadence: "weekly",
       autoBackupLastRunAt: "2026-03-30T14:15:16.789Z",
     });
@@ -291,7 +291,7 @@ describe("SqliteSettingsRepository", () => {
     const client = createFakeClient();
     const repository = new SqliteSettingsRepository(client as never);
 
-    repository.settings.saveSettings(
+    repository.saveSettings(
       {
         ...createDefaultAppSettings("Asia/Singapore"),
         focusCyclesBeforeLongBreak: 7,
@@ -304,7 +304,7 @@ describe("SqliteSettingsRepository", () => {
 
     repository.seedDefaults("Asia/Singapore");
 
-    expect(repository.settings.getSettings("Asia/Singapore")).toMatchObject({
+    expect(repository.getSettings("Asia/Singapore")).toMatchObject({
       focusCyclesBeforeLongBreak: 7,
       focusDefaultDurationSeconds: 33 * 60,
       focusLongBreakSeconds: 22 * 60,
@@ -316,12 +316,12 @@ describe("SqliteSettingsRepository", () => {
     const client = createFakeClient();
     const repository = new SqliteSettingsRepository(client as never);
 
-    repository.settings.saveSettings(
+    repository.saveSettings(
       createDefaultAppSettings("Pacific/Honolulu"),
       "Pacific/Honolulu"
     );
 
-    expect(repository.settings.getSettings("Asia/Singapore").timezone).toBe(
+    expect(repository.getSettings("Asia/Singapore").timezone).toBe(
       "Asia/Singapore"
     );
   });

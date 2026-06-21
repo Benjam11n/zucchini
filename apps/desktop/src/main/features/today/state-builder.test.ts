@@ -27,61 +27,70 @@ function createRepository(
   } = {}
 ): AppRepository {
   return {
-    ensureStatusRowsForDate: overrides.ensureStatusRowsForDate ?? vi.fn(),
-    ensureWindDownStatusRowsForDate:
-      overrides.ensureWindDownStatusRowsForDate ?? vi.fn(),
-    getDayStatus: overrides.getDayStatus ?? vi.fn(() => null),
-    getFocusQuotaGoalsWithStatusForDate:
-      overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
-    getFocusSessionsInRange:
-      overrides.getFocusSessionsInRange ?? vi.fn(() => []),
-    getHabitCarryoversForDate:
-      overrides.getHabitCarryoversForDate ?? vi.fn(() => []),
-    getHabitWithStatus: overrides.getHabitWithStatus ?? vi.fn(() => null),
-    getHabitsWithStatus: overrides.getHabitsWithStatus ?? vi.fn(() => []),
-    getHistoricalHabitPeriodStatusesOverlappingRange:
-      overrides.getHistoricalHabitPeriodStatusesOverlappingRange ??
-      vi.fn(() => []),
-    getPersistedCategoryStreakStates:
-      overrides.getPersistedCategoryStreakStates ?? vi.fn(() => []),
-    getPersistedHabitStreakStates:
-      overrides.getPersistedHabitStreakStates ?? vi.fn(() => []),
-    getPersistedStreakState:
-      overrides.getPersistedStreakState ??
-      vi.fn(() => ({
-        availableFreezes: 0,
-        bestStreak: 0,
-        currentStreak: 0,
-        lastEvaluatedDate: "2026-03-07",
-      })),
-    getSettings:
-      overrides.getSettings ??
-      vi.fn(() => ({
-        categoryPreferences: {
-          fitness: { color: "#FF2D55", icon: "dumbbell", label: "Fitness" },
-          nutrition: { color: "#A3F900", icon: "apple", label: "Nutrition" },
-          productivity: {
-            color: "#04C7DD",
-            icon: "briefcase",
-            label: "Productivity",
+    focusSessions: {
+      listSessionsInRange: overrides.getFocusSessionsInRange ?? vi.fn(() => []),
+    },
+    history: {
+      ensureStatusRowsForDate: overrides.ensureStatusRowsForDate ?? vi.fn(),
+      getDayStatus: overrides.getDayStatus ?? vi.fn(() => null),
+      getFocusQuotaGoalsWithStatus:
+        overrides.getFocusQuotaGoalsWithStatusForDate ?? vi.fn(() => []),
+      getHabitCarryoversForDate:
+        overrides.getHabitCarryoversForDate ?? vi.fn(() => []),
+      getHabitWithStatus: overrides.getHabitWithStatus ?? vi.fn(() => null),
+      getHabitsWithStatus: overrides.getHabitsWithStatus ?? vi.fn(() => []),
+      getHistoricalHabitPeriodStatusesOverlappingRange:
+        overrides.getHistoricalHabitPeriodStatusesOverlappingRange ??
+        vi.fn(() => []),
+      getSettledHistory: overrides.getSettledHistory ?? vi.fn(() => []),
+    },
+    settings: {
+      getSettings:
+        overrides.getSettings ??
+        vi.fn(() => ({
+          categoryPreferences: {
+            fitness: { color: "#FF2D55", icon: "dumbbell", label: "Fitness" },
+            nutrition: { color: "#A3F900", icon: "apple", label: "Nutrition" },
+            productivity: {
+              color: "#04C7DD",
+              icon: "briefcase",
+              label: "Productivity",
+            },
           },
-        },
-        focusDefaultDurationSeconds: 1500,
-        focusLongBreakSeconds: 900,
-        focusQuotaTargetMinutes: 120,
-        focusShortBreakSeconds: 300,
-        minimizeToTray: true,
-        pomodoroBreaksEnabled: true,
-        reminderSnoozeMinutes: 15,
-        remindersEnabled: false,
-        resetFocusTimerShortcut: "Command+Shift+R",
-        themeMode: "system",
-        timezone: "Asia/Singapore",
-        toggleFocusTimerShortcut: "Command+Shift+T",
-      })),
-    getSettledHistory: overrides.getSettledHistory ?? vi.fn(() => []),
-    getWindDownActionsWithStatus:
-      overrides.getWindDownActionsWithStatus ?? vi.fn(() => []),
+          focusDefaultDurationSeconds: 1500,
+          focusLongBreakSeconds: 900,
+          focusQuotaTargetMinutes: 120,
+          focusShortBreakSeconds: 300,
+          minimizeToTray: true,
+          pomodoroBreaksEnabled: true,
+          reminderSnoozeMinutes: 15,
+          remindersEnabled: false,
+          resetFocusTimerShortcut: "Command+Shift+R",
+          themeMode: "system",
+          timezone: "Asia/Singapore",
+          toggleFocusTimerShortcut: "Command+Shift+T",
+        })),
+    },
+    streaks: {
+      getPersistedCategoryStreakStates:
+        overrides.getPersistedCategoryStreakStates ?? vi.fn(() => []),
+      getPersistedHabitStreakStates:
+        overrides.getPersistedHabitStreakStates ?? vi.fn(() => []),
+      getPersistedStreakState:
+        overrides.getPersistedStreakState ??
+        vi.fn(() => ({
+          availableFreezes: 0,
+          bestStreak: 0,
+          currentStreak: 0,
+          lastEvaluatedDate: "2026-03-07",
+        })),
+    },
+    windDownActions: {
+      ensureStatusRowsForDate:
+        overrides.ensureWindDownStatusRowsForDate ?? vi.fn(),
+      getActionsWithStatus:
+        overrides.getWindDownActionsWithStatus ?? vi.fn(() => []),
+    },
   } as never;
 }
 
@@ -103,12 +112,12 @@ describe("state builder", () => {
 
       buildTodayState(repository, clock);
 
-      expect(repository.ensureStatusRowsForDate).toHaveBeenCalledWith(
+      expect(repository.history.ensureStatusRowsForDate).toHaveBeenCalledWith(
         "2026-03-08"
       );
-      expect(repository.ensureWindDownStatusRowsForDate).toHaveBeenCalledWith(
-        "2026-03-08"
-      );
+      expect(
+        repository.windDownActions.ensureStatusRowsForDate
+      ).toHaveBeenCalledWith("2026-03-08");
     });
 
     it("returns zero focus minutes when no sessions exist", () => {
@@ -293,9 +302,9 @@ describe("state builder", () => {
 
       const todayState = buildTodayState(repository, clock);
 
-      expect(repository.getPersistedHabitStreakStates).toHaveBeenCalledWith([
-        1,
-      ]);
+      expect(
+        repository.streaks.getPersistedHabitStreakStates
+      ).toHaveBeenCalledWith([1]);
       expect(todayState.habitStreaks?.[1]).toStrictEqual({
         bestStreak: 4,
         currentStreak: 2,

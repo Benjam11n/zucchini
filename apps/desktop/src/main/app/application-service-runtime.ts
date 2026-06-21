@@ -46,10 +46,7 @@ export class ApplicationServiceRuntime {
     }
 
     this.repository.initializeSchema();
-    this.repository.seedDefaults(
-      this.clock.now().toISOString(),
-      this.clock.timezone()
-    );
+    this.repository.seedDefaults(this.clock.timezone());
     this.syncRollingState();
     this.initialized = true;
   }

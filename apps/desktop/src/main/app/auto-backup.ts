@@ -7,7 +7,9 @@ import type { AppSettings } from "@/shared/domain/settings";
 interface AutoBackupRepositoryPort {
   exportBackup(destinationPath: string): Promise<void>;
   getDatabasePath(): string;
-  updateAutoBackupLastRunAt(timestamp: string): void;
+  settings: {
+    updateAutoBackupLastRunAt(timestamp: string): void;
+  };
 }
 
 interface AutoBackupClockPort {

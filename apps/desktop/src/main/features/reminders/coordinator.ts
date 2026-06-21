@@ -60,9 +60,9 @@ export function createReminderCoordinator({
       habitState ??
       createRuntimeStateStore({
         defaultState: { ...DEFAULT_REMINDER_RUNTIME_STATE },
-        loadState: () => repository.reminderRuntimeState.getState(),
+        loadState: () => repository.getReminderRuntimeState(),
         saveState: (state) => {
-          repository.reminderRuntimeState.saveState(state);
+          repository.saveReminderRuntimeState(state);
         },
       }),
     timers,
@@ -76,9 +76,9 @@ export function createReminderCoordinator({
       windDownState ??
       createRuntimeStateStore({
         defaultState: { ...DEFAULT_WIND_DOWN_RUNTIME_STATE },
-        loadState: () => repository.windDownRuntimeState.getState(),
+        loadState: () => repository.getWindDownRuntimeState(),
         saveState: (state) => {
-          repository.windDownRuntimeState.saveState(state);
+          repository.saveWindDownRuntimeState(state);
         },
       }),
     timers,
