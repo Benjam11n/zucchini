@@ -42,7 +42,6 @@ import type { Clock } from "@/shared/domain/clock";
 import { ApplicationServiceRuntime } from "./application-service-runtime";
 import { FocusApplicationService } from "./focus-application-service";
 import { HistoryReadService } from "./history-read-service";
-import { RuntimeSettingsService } from "./runtime-settings-service";
 import { TodayCommandService } from "./today-command-service";
 
 export class AppApplicationService implements ApplicationService {
@@ -50,14 +49,12 @@ export class AppApplicationService implements ApplicationService {
   private readonly today: TodayCommandService;
   private readonly focus: FocusApplicationService;
   private readonly history: HistoryReadService;
-  private readonly runtimeSettings: RuntimeSettingsService;
 
   constructor(repository: AppRepository, clock: Clock) {
     this.runtime = new ApplicationServiceRuntime(repository, clock);
     this.today = new TodayCommandService(this.runtime);
     this.focus = new FocusApplicationService(this.runtime);
     this.history = new HistoryReadService(this.runtime);
-    this.runtimeSettings = new RuntimeSettingsService(this.runtime);
   }
 
   initialize(): void {
@@ -461,22 +458,37 @@ export class AppApplicationService implements ApplicationService {
   }
 
   getReminderRuntimeState(): ReminderRuntimeState {
-    return this.runtimeSettings.getReminderRuntimeState();
+    return this.runtime.withInitialized(() =>
+      this.runtime.repository.reminderRuntimeState.getState()
+    );
   }
 
   updateSettings(settings: AppSettings): AppSettings {
-    return this.runtimeSettings.updateSettings(settings);
+    return this.runtime.withInitialized(() => {
+      const savedSettings = this.runtime.repository.settings.saveSettings(
+        settings,
+        this.runtime.clock.timezone()
+      );
+      this.runtime.todayReadModel.invalidate();
+      return savedSettings;
+    });
   }
 
   saveReminderRuntimeState(state: ReminderRuntimeState): void {
-    return this.runtimeSettings.saveReminderRuntimeState(state);
+    this.runtime.withInitialized(() => {
+      this.runtime.repository.reminderRuntimeState.saveState(state);
+    });
   }
 
   getWindDownRuntimeState(): WindDownRuntimeState {
-    return this.runtimeSettings.getWindDownRuntimeState();
+    return this.runtime.withInitialized(() =>
+      this.runtime.repository.windDownRuntimeState.getState()
+    );
   }
 
   saveWindDownRuntimeState(state: WindDownRuntimeState): void {
-    return this.runtimeSettings.saveWindDownRuntimeState(state);
+    this.runtime.withInitialized(() => {
+      this.runtime.repository.windDownRuntimeState.saveState(state);
+    });
   }
 }
