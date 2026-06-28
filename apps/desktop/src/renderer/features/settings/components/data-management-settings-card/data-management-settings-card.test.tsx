@@ -2,11 +2,11 @@
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import type { SettingsPageActions } from "@/renderer/features/settings/settings.types";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 import { createDefaultAppSettings } from "@/shared/domain/settings";
 import { installMockDesktopApi } from "@/test/fixtures/desktop-api-mock";
 
-import type { SettingsPageActions } from "../../settings.types";
 import { DataManagementSettingsCard } from "./data-management-settings-card";
 
 const storage = new Map<string, string>();

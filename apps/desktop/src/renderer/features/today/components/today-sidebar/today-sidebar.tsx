@@ -9,6 +9,11 @@ import {
 import { useMemo } from "react";
 
 import {
+  getMonthToDateConsistencySummary,
+  getTodayCompletion,
+  getWeekCompletionSeries,
+} from "@/renderer/features/today/lib/today-sidebar-metrics";
+import {
   DAY_STATUS_COPY,
   formatDays,
   formatWeekBarLabel,
@@ -36,12 +41,6 @@ import type { DayStatusKind } from "@/shared/domain/day-status";
 import { getHabitCategoryProgress } from "@/shared/domain/habit";
 import type { HistorySummaryDay } from "@/shared/domain/history";
 import type { TodayState } from "@/shared/read-models/today-state";
-
-import {
-  getMonthToDateConsistencySummary,
-  getTodayCompletion,
-  getWeekCompletionSeries,
-} from "../../lib/today-sidebar-metrics";
 
 interface TodaySidebarProps {
   history: HistorySummaryDay[];

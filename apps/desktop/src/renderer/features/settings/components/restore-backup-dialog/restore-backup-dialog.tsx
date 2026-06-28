@@ -1,5 +1,10 @@
 import { AlertTriangle } from "lucide-react";
 
+import {
+  formatBackupDate,
+  formatBackupSize,
+} from "@/renderer/features/settings/lib/data-management-format";
+import type { DataAction } from "@/renderer/features/settings/lib/data-management-types";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Dialog,
@@ -11,11 +16,6 @@ import {
 } from "@/renderer/shared/components/ui/dialog";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 
-import {
-  formatBackupDate,
-  formatBackupSize,
-} from "../../lib/data-management-format";
-import type { DataAction } from "../../lib/data-management-types";
 import { RestoreHabitSnapshot } from "../restore-habit-snapshot/restore-habit-snapshot";
 
 interface RestoreBackupDialogProps {

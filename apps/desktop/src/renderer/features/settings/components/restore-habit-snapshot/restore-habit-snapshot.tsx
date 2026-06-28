@@ -1,8 +1,7 @@
+import { toRestoreSnapshotHabit } from "@/renderer/features/settings/lib/data-management-format";
 import { getHabitCategoryPresentation } from "@/renderer/shared/components/app/habit-category/lib/presentation";
 import { getHabitCadenceSummary } from "@/renderer/shared/components/app/habit-management/lib/habit-cadence-summary";
 import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
-
-import { toRestoreSnapshotHabit } from "../../lib/data-management-format";
 
 interface RestoreHabitSnapshotProps {
   preview: BackupRestorePreview;

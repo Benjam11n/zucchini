@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import { getPathLabel } from "@/renderer/features/settings/lib/data-management-format";
-import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
-
 import type {
   AutoBackupAction,
   DataAction,
-} from "../../lib/data-management-types";
-import type { SettingsPageActions } from "../../settings.types";
+} from "@/renderer/features/settings/lib/data-management-types";
+import type { SettingsPageActions } from "@/renderer/features/settings/settings.types";
+import type { BackupRestorePreview } from "@/shared/contracts/api/desktop-api";
 
 interface UseDataManagementControllerInput {
   actions: SettingsPageActions["dataManagement"];

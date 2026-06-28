@@ -1,5 +1,6 @@
 import { FolderOpen } from "lucide-react";
 
+import type { AutoBackupAction } from "@/renderer/features/settings/lib/data-management-types";
 import { Button } from "@/renderer/shared/components/ui/button";
 import {
   Item,
@@ -9,8 +10,6 @@ import {
   ItemGroup,
 } from "@/renderer/shared/components/ui/item";
 import type { AppSettings, AutoBackupCadence } from "@/shared/domain/settings";
-
-import type { AutoBackupAction } from "../../lib/data-management-types";
 
 interface AutoBackupSettingsSectionProps {
   activeAction: AutoBackupAction;

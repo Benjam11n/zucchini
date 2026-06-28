@@ -7,16 +7,16 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { AutoBackupSettingsSection } from "@/renderer/features/settings/components/auto-backup-settings-section/auto-backup-settings-section";
+import { DataActionItem } from "@/renderer/features/settings/components/data-action-item/data-action-item";
+import { DestructiveDataDialog } from "@/renderer/features/settings/components/destructive-data-dialog/destructive-data-dialog";
+import { RestoreBackupDialog } from "@/renderer/features/settings/components/restore-backup-dialog/restore-backup-dialog";
 import { SettingsCardHeader } from "@/renderer/features/settings/components/settings-card-header/settings-card-header";
+import type { SettingsPageActions } from "@/renderer/features/settings/settings.types";
 import { Card, CardContent } from "@/renderer/shared/components/ui/card";
 import { ItemGroup } from "@/renderer/shared/components/ui/item";
 import type { AppSettings } from "@/shared/domain/settings";
 
-import type { SettingsPageActions } from "../../settings.types";
-import { AutoBackupSettingsSection } from "../auto-backup-settings-section/auto-backup-settings-section";
-import { DataActionItem } from "../data-action-item/data-action-item";
-import { DestructiveDataDialog } from "../destructive-data-dialog/destructive-data-dialog";
-import { RestoreBackupDialog } from "../restore-backup-dialog/restore-backup-dialog";
 import { useDataManagementController } from "./use-data-management-controller";
 
 interface DataManagementSettingsCardProps {
