@@ -25,7 +25,7 @@
     "check": "pnpm run lint && pnpm run fallow:dead-code && pnpm run fallow:dupes && pnpm run typecheck:desktop && pnpm run test:desktop && pnpm run build:web"
   },
   "devDependencies": {
-    "fallow": "^2.81.0",
+    "fallow": "^3.9.1",
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
     "ultracite": "^7.7.0"
