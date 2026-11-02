@@ -2,7 +2,6 @@ import {
   buildHistoryDay,
   buildTodayPreviewSummary,
   buildTodayState,
-  createRollingStreakState,
 } from "@/main/features/today/state-builder";
 import type { TodayReadModelRepository } from "@/main/features/today/state-builder";
 import type { Clock } from "@/shared/domain/clock";
@@ -791,22 +790,6 @@ describe("state builder", () => {
       );
 
       expect("focusQuotaGoals" in historyDay).toBe(false);
-    });
-  });
-
-  describe("createRollingStreakState", () => {
-    it("returns a plain object copy of the streak state", () => {
-      const streak = {
-        availableFreezes: 1,
-        bestStreak: 10,
-        currentStreak: 3,
-        lastEvaluatedDate: "2026-03-07",
-      };
-
-      const result = createRollingStreakState(streak);
-
-      expect(result).toStrictEqual(streak);
-      expect(result).not.toBe(streak);
     });
   });
 });

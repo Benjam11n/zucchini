@@ -43,6 +43,7 @@ interface RegisterAppUpdaterOptions {
     handler: () => MaybePromise<IpcHandlerResult>
   ) => void;
   log: LoggerPort;
+  markQuitting: () => void;
   scheduleInterval: ScheduleFn;
   scheduleTimeout: ScheduleFn;
   supportMode: AppUpdateSupportMode;
@@ -103,7 +104,7 @@ export function resolveAppUpdateSupportMode({
   hasConfigFile: boolean;
   platform: NodeJS.Platform;
 }): AppUpdateSupportMode {
-  if (platform !== "darwin" && platform !== "win32") {
+  if (platform !== "win32") {
     return "disabled";
   }
 
@@ -130,6 +131,7 @@ export function registerAppUpdater({
   currentVersion,
   handleIpc,
   log,
+  markQuitting,
   scheduleInterval,
   scheduleTimeout,
   supportMode,
@@ -222,6 +224,7 @@ export function registerAppUpdater({
     }
 
     try {
+      markQuitting();
       updater.quitAndInstall(false, true);
     } catch (error) {
       log.error("Failed to install the downloaded update.", error);

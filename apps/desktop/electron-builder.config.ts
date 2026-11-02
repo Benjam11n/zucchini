@@ -72,10 +72,6 @@ const config: Configuration = {
     "!node_modules/better-sqlite3/src/**",
   ],
   icon: "build/icon.png",
-  linux: {
-    icon: "build/icon.png",
-    target: ["AppImage"],
-  },
   mac: {
     icon: "build/icon.icns",
     target: ["dmg", "zip"],

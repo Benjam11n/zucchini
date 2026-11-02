@@ -47,7 +47,7 @@ export class FocusApplicationService {
         ...input,
         completedDate: toDateKeyInTimeZone(
           new Date(input.completedAt),
-          this.runtime.getTimezone()
+          this.runtime.clock.timezone()
         ),
       };
 

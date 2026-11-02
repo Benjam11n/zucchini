@@ -338,12 +338,3 @@ export function buildHistorySummaryDay(
     summary: historyDay.summary,
   };
 }
-
-export function createRollingStreakState(streak: StreakState): StreakState {
-  return {
-    availableFreezes: streak.availableFreezes,
-    bestStreak: streak.bestStreak,
-    currentStreak: streak.currentStreak,
-    lastEvaluatedDate: streak.lastEvaluatedDate,
-  };
-}

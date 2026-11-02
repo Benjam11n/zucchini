@@ -2,7 +2,10 @@ import type { BrowserWindow as BrowserWindowType } from "electron";
 import { BrowserWindow } from "electron";
 
 import { resolveRuntimeIconPath } from "@/main/app/assets";
-import { shouldHideOnWindowClose } from "@/main/app/lifecycle";
+import {
+  shouldHideOnWindowClose,
+  shouldQuitWhenAllWindowsClosed,
+} from "@/main/app/lifecycle";
 import {
   applyWindowThemeMode,
   getWindowBackgroundColor,
@@ -24,6 +27,7 @@ interface WindowCoordinatorOptions {
   getAllWindows?: () => BrowserWindowType[];
   getIsQuitting: () => boolean;
   getTrayEnabled: () => boolean;
+  quit: () => void;
 }
 
 function positionFocusWidgetWindow(window: BrowserWindowType): void {
@@ -192,6 +196,15 @@ export class WindowCoordinator {
   private clearMainWindow(window: BrowserWindowType): void {
     if (this.mainWindow === window) {
       this.mainWindow = null;
+      if (
+        !this.options.getIsQuitting() &&
+        shouldQuitWhenAllWindowsClosed({
+          platform: process.platform,
+          trayEnabled: this.options.getTrayEnabled(),
+        })
+      ) {
+        this.options.quit();
+      }
     }
   }
 

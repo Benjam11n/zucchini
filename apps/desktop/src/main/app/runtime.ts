@@ -59,7 +59,7 @@ export function createAppRuntime({
     onOpenWindDown,
     repository: service,
     today: {
-      getTodayState: () => service.getTodayState(),
+      getTodayState: () => service.read({ type: "today.get" }),
     },
   });
   const tray = createAppTray({

@@ -67,6 +67,16 @@ export interface BackupRestorePreview {
   source: "auto" | "file";
 }
 
+export type BackupDatabasePreview = Pick<
+  BackupRestorePreview,
+  | "completedHabitCount"
+  | "focusSessionCount"
+  | "habitCount"
+  | "habitPreviewTotalCount"
+  | "habits"
+  | "latestActivityDate"
+>;
+
 interface BackupRestoreHabitPreview {
   category: string;
   frequency: string;

@@ -14,6 +14,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 import { DatabaseError } from "@/main/ports/database-error";
+import type { BackupDatabasePreview } from "@/shared/contracts/api/desktop-api";
 
 import { getElectronApp } from "./electron-app";
 import { schema } from "./schema";
@@ -165,15 +166,6 @@ interface TableInfoRow {
   name: string;
 }
 
-interface BackupDatabasePreviewRow {
-  completedHabitCount: number;
-  focusSessionCount: number;
-  habitCount: number;
-  habitPreviewTotalCount: number;
-  habits: BackupDatabaseHabitPreviewRow[];
-  latestActivityDate: string | null;
-}
-
 interface BackupDatabaseHabitRow {
   category: string;
   frequency: string;
@@ -182,17 +174,6 @@ interface BackupDatabaseHabitRow {
   name: string;
   pausedAt?: string | null;
   selectedWeekdays: string | null;
-  sortOrder: number;
-  targetCount: number;
-}
-
-interface BackupDatabaseHabitPreviewRow {
-  category: string;
-  frequency: string;
-  id: number;
-  name: string;
-  pausedAt: string | null;
-  selectedWeekdays: number[] | null;
   sortOrder: number;
   targetCount: number;
 }
@@ -306,6 +287,150 @@ function runWithDatabaseError<A>(label: string, execute: () => A): A {
   }
 }
 
+function validateDatabase(sourcePath: string): void {
+  runWithDatabaseError("validateDatabase", () => {
+    const database = new Database(sourcePath, {
+      fileMustExist: true,
+      readonly: true,
+    });
+
+    try {
+      const integrityCheck = database.pragma("integrity_check(1)", {
+        simple: true,
+      });
+
+      if (integrityCheck !== "ok") {
+        throw new Error("SQLite integrity check failed.");
+      }
+
+      const tableRows = database
+        .prepare(
+          "select name from sqlite_master where type = 'table' and name not like 'sqlite_%'"
+        )
+        .all() as TableInfoRow[];
+      const tableNames = new Set(tableRows.map((row) => row.name));
+
+      for (const tableName of tableNames) {
+        if (!ALLOWED_BACKUP_TABLE_NAME_SET.has(tableName)) {
+          throw new Error(`Backup contains an unexpected table: ${tableName}.`);
+        }
+      }
+
+      for (const [tableName, requiredColumns] of Object.entries(
+        REQUIRED_BACKUP_SCHEMA
+      )) {
+        if (!tableNames.has(tableName)) {
+          throw new Error(`Backup is missing the Zucchini ${tableName} table.`);
+        }
+
+        const columnRows = database
+          .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
+          .all() as TableInfoRow[];
+        const columnNames = new Set(columnRows.map((row) => row.name));
+
+        for (const columnName of requiredColumns) {
+          if (!columnNames.has(columnName)) {
+            throw new Error(
+              `Backup is missing the Zucchini ${tableName}.${columnName} column.`
+            );
+          }
+        }
+      }
+    } finally {
+      database.close();
+    }
+  });
+}
+
+const getDatabasePreview = (sourcePath: string): BackupDatabasePreview =>
+  runWithDatabaseError("getDatabasePreview", () => {
+    const database = new Database(sourcePath, {
+      fileMustExist: true,
+      readonly: true,
+    });
+
+    try {
+      const habitCount = readCount(
+        database,
+        "select count(*) as count from habits"
+      );
+      const habitPreviewTotalCount = readCount(
+        database,
+        "select count(*) as count from habits where is_archived = 0"
+      );
+      const pausedAtSelection = hasColumn(database, "habits", "paused_at")
+        ? "paused_at as pausedAt"
+        : "NULL as pausedAt";
+      const habitRows = database
+        .prepare(
+          `select id, name, category, frequency, selected_weekdays as selectedWeekdays, sort_order as sortOrder, target_count as targetCount, is_archived as isArchived, ${pausedAtSelection}
+             from habits
+             where is_archived = 0
+             order by sort_order asc, id asc
+             limit ?`
+        )
+        .all(BACKUP_HABIT_PREVIEW_LIMIT) as BackupDatabaseHabitRow[];
+      const habits = habitRows.map((row) => ({
+        category: row.category,
+        frequency: row.frequency,
+        id: row.id,
+        name: row.name,
+        pausedAt: row.pausedAt ?? null,
+        selectedWeekdays: parseBackupHabitWeekdays(row.selectedWeekdays),
+        sortOrder: row.sortOrder,
+        targetCount: row.targetCount,
+      }));
+      const focusSessionCount = readCount(
+        database,
+        "select count(*) as count from focus_sessions"
+      );
+      const completedHabitCount = readCount(
+        database,
+        "select count(*) as count from habit_period_status where completed = 1"
+      );
+      const latestHabitCompletedAt = hasColumn(
+        database,
+        "habit_period_status",
+        "completed_at"
+      )
+        ? (
+            database
+              .prepare(
+                "select max(completed_at) as value from habit_period_status where completed_at is not null"
+              )
+              .get() as { value: string | null }
+          ).value
+        : null;
+      const latestHabitPeriodStart = (
+        database
+          .prepare(
+            "select max(period_start) as value from habit_period_status where completed = 1 or completed_count > 0"
+          )
+          .get() as { value: string | null }
+      ).value;
+      const latestFocusDate = (
+        database
+          .prepare("select max(completed_date) as value from focus_sessions")
+          .get() as { value: string | null }
+      ).value;
+
+      return {
+        completedHabitCount,
+        focusSessionCount,
+        habitCount,
+        habitPreviewTotalCount,
+        habits,
+        latestActivityDate: maxDate([
+          latestHabitCompletedAt?.slice(0, 10),
+          latestHabitPeriodStart,
+          latestFocusDate,
+        ]),
+      };
+    } finally {
+      database.close();
+    }
+  });
+
 export class SqliteDatabaseClient {
   private database: Database.Database | null = null;
   private drizzleDb: DrizzleDatabase | null = null;
@@ -333,14 +458,7 @@ export class SqliteDatabaseClient {
     return path.join(userData, "zucchini.db");
   }
 
-  run<A>(label: string, execute: () => A): A {
-    return this.runWithDatabaseError(label, execute);
-  }
-
-  private runWithDatabaseError<A>(label: string, execute: () => A): A {
-    void this.databasePath;
-    return runWithDatabaseError(label, execute);
-  }
+  run = runWithDatabaseError;
 
   transaction<A>(label: string, execute: () => A): A {
     return runWithDatabaseError(label, () =>
@@ -369,7 +487,7 @@ export class SqliteDatabaseClient {
   }
 
   exportCsvData(destinationPath: string): void {
-    this.runWithDatabaseError("exportCsvData", () => {
+    runWithDatabaseError("exportCsvData", () => {
       fs.mkdirSync(destinationPath, { recursive: true });
 
       const database = this.getSqlite();
@@ -410,154 +528,9 @@ export class SqliteDatabaseClient {
     });
   }
 
-  validateDatabase(sourcePath: string): void {
-    this.runWithDatabaseError("validateDatabase", () => {
-      const database = new Database(sourcePath, {
-        fileMustExist: true,
-        readonly: true,
-      });
+  validateDatabase = validateDatabase;
 
-      try {
-        const integrityCheck = database.pragma("integrity_check(1)", {
-          simple: true,
-        });
-
-        if (integrityCheck !== "ok") {
-          throw new Error("SQLite integrity check failed.");
-        }
-
-        const tableRows = database
-          .prepare(
-            "select name from sqlite_master where type = 'table' and name not like 'sqlite_%'"
-          )
-          .all() as TableInfoRow[];
-        const tableNames = new Set(tableRows.map((row) => row.name));
-
-        for (const tableName of tableNames) {
-          if (!ALLOWED_BACKUP_TABLE_NAME_SET.has(tableName)) {
-            throw new Error(
-              `Backup contains an unexpected table: ${tableName}.`
-            );
-          }
-        }
-
-        for (const [tableName, requiredColumns] of Object.entries(
-          REQUIRED_BACKUP_SCHEMA
-        )) {
-          if (!tableNames.has(tableName)) {
-            throw new Error(
-              `Backup is missing the Zucchini ${tableName} table.`
-            );
-          }
-
-          const columnRows = database
-            .prepare(`pragma table_info(${quoteSqlIdentifier(tableName)})`)
-            .all() as TableInfoRow[];
-          const columnNames = new Set(columnRows.map((row) => row.name));
-
-          for (const columnName of requiredColumns) {
-            if (!columnNames.has(columnName)) {
-              throw new Error(
-                `Backup is missing the Zucchini ${tableName}.${columnName} column.`
-              );
-            }
-          }
-        }
-      } finally {
-        database.close();
-      }
-    });
-  }
-
-  getDatabasePreview(sourcePath: string): BackupDatabasePreviewRow {
-    return this.runWithDatabaseError("getDatabasePreview", () => {
-      const database = new Database(sourcePath, {
-        fileMustExist: true,
-        readonly: true,
-      });
-
-      try {
-        const habitCount = readCount(
-          database,
-          "select count(*) as count from habits"
-        );
-        const habitPreviewTotalCount = readCount(
-          database,
-          "select count(*) as count from habits where is_archived = 0"
-        );
-        const pausedAtSelection = hasColumn(database, "habits", "paused_at")
-          ? "paused_at as pausedAt"
-          : "NULL as pausedAt";
-        const habitRows = database
-          .prepare(
-            `select id, name, category, frequency, selected_weekdays as selectedWeekdays, sort_order as sortOrder, target_count as targetCount, is_archived as isArchived, ${pausedAtSelection}
-             from habits
-             where is_archived = 0
-             order by sort_order asc, id asc
-             limit ?`
-          )
-          .all(BACKUP_HABIT_PREVIEW_LIMIT) as BackupDatabaseHabitRow[];
-        const habits = habitRows.map((row) => ({
-          category: row.category,
-          frequency: row.frequency,
-          id: row.id,
-          name: row.name,
-          pausedAt: row.pausedAt ?? null,
-          selectedWeekdays: parseBackupHabitWeekdays(row.selectedWeekdays),
-          sortOrder: row.sortOrder,
-          targetCount: row.targetCount,
-        }));
-        const focusSessionCount = readCount(
-          database,
-          "select count(*) as count from focus_sessions"
-        );
-        const completedHabitCount = readCount(
-          database,
-          "select count(*) as count from habit_period_status where completed = 1"
-        );
-        const latestHabitCompletedAt = hasColumn(
-          database,
-          "habit_period_status",
-          "completed_at"
-        )
-          ? (
-              database
-                .prepare(
-                  "select max(completed_at) as value from habit_period_status where completed_at is not null"
-                )
-                .get() as { value: string | null }
-            ).value
-          : null;
-        const latestHabitPeriodStart = (
-          database
-            .prepare(
-              "select max(period_start) as value from habit_period_status where completed = 1 or completed_count > 0"
-            )
-            .get() as { value: string | null }
-        ).value;
-        const latestFocusDate = (
-          database
-            .prepare("select max(completed_date) as value from focus_sessions")
-            .get() as { value: string | null }
-        ).value;
-
-        return {
-          completedHabitCount,
-          focusSessionCount,
-          habitCount,
-          habitPreviewTotalCount,
-          habits,
-          latestActivityDate: maxDate([
-            latestHabitCompletedAt?.slice(0, 10),
-            latestHabitPeriodStart,
-            latestFocusDate,
-          ]),
-        };
-      } finally {
-        database.close();
-      }
-    });
-  }
+  getDatabasePreview = getDatabasePreview;
 
   replaceDatabase(sourcePath: string): void {
     const databasePath = this.getDatabasePath();

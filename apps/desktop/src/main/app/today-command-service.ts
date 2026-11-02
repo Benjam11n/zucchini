@@ -39,7 +39,7 @@ export class TodayCommandService {
 
   getTodayState(): TodayState {
     return this.runtime.withSyncedRead("getTodayState", () =>
-      this.runtime.buildCurrentTodayState()
+      this.runtime.todayReadModel.getTodayState()
     );
   }
 
@@ -194,7 +194,7 @@ export class TodayCommandService {
   pauseHabit(habitId: number): TodayState {
     return this.runtime.inInitializedTransaction("pauseHabit", () => {
       this.runtime.syncRollingState();
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       this.runtime.repository.habits.pauseHabit(
         habitId,
         this.runtime.clock.now().toISOString()
@@ -207,7 +207,7 @@ export class TodayCommandService {
   resumeHabit(habitId: number): TodayState {
     return this.runtime.inInitializedTransaction("resumeHabit", () => {
       this.runtime.syncRollingState();
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       this.runtime.repository.habits.resumeHabit(
         habitId,
         this.runtime.clock.now().toISOString()
@@ -230,7 +230,7 @@ export class TodayCommandService {
     }
 
     return this.runtime.inInitializedTransaction("createHabit", () => {
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       this.runtime.syncRollingState();
       const habitId = this.runtime.repository.habits.insertHabit(
         trimmedName,
@@ -285,7 +285,7 @@ export class TodayCommandService {
     targetCount: number | null = null
   ): TodayState {
     return this.runtime.inInitializedTransaction("updateHabitFrequency", () => {
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       const previousProgress = this.runtime.repository.history.getHabitProgress(
         today,
         habitId
@@ -316,7 +316,7 @@ export class TodayCommandService {
     return this.runtime.inInitializedTransaction(
       "updateHabitTargetCount",
       () => {
-        const today = this.runtime.getTodayKey();
+        const today = this.runtime.clock.todayKey();
         const habit = this.runtime.repository.habits
           .getHabits()
           .find((candidate) => candidate.id === habitId);
@@ -352,7 +352,7 @@ export class TodayCommandService {
   ): TodayState {
     return this.runtime.inInitializedTransaction("updateHabitWeekdays", () => {
       this.runtime.repository.history.removeStatusRowsForDate(
-        this.runtime.getTodayKey(),
+        this.runtime.clock.todayKey(),
         habitId
       );
       this.runtime.repository.habits.updateHabitWeekdays(
@@ -360,7 +360,7 @@ export class TodayCommandService {
         normalizeHabitWeekdays(selectedWeekdays)
       );
       this.runtime.repository.history.ensureStatusRow(
-        this.runtime.getTodayKey(),
+        this.runtime.clock.todayKey(),
         habitId
       );
       return this.runtime.rebuildCurrentTodayState();
@@ -441,7 +441,7 @@ export class TodayCommandService {
 
       this.runtime.repository.habits.reorderHabits(habitIds);
       this.runtime.repository.history.ensureStatusRow(
-        this.runtime.getTodayKey(),
+        this.runtime.clock.todayKey(),
         habitId
       );
       this.runtime.syncRollingState();
@@ -505,7 +505,7 @@ export class TodayCommandService {
 
   toggleWindDownAction(actionId: number): TodayState {
     return this.runtime.inInitializedTransaction("toggleWindDownAction", () => {
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       this.runtime.repository.windDownActions.ensureStatusRowsForDate(today);
       this.runtime.repository.windDownActions.toggleAction(
         today,
