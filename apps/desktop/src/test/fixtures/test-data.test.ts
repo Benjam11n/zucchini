@@ -304,13 +304,22 @@ describeWithFixtureDatabase("test data generator", () => {
       );
       const service = new AppApplicationService(repository, clock);
 
-      const todayState = service.getTodayState();
-      const history = service.getHistory(30);
-      const overview = service.getWeeklyReviewOverview();
-      const focusSessions = service.getFocusSessions(50);
-      const weeklyReview = service.getWeeklyReview(
-        getPreviousCompletedIsoWeek(clock.todayKey()).weekStart
-      );
+      const todayState = service.read({ type: "today.get" });
+      const history = service.read({
+        payload: { limit: 30 },
+        type: "history.get",
+      });
+      const overview = service.read({ type: "weeklyReview.overview" });
+      const focusSessions = service.read({
+        payload: { limit: 50 },
+        type: "focusSession.list",
+      });
+      const weeklyReview = service.read({
+        payload: {
+          weekStart: getPreviousCompletedIsoWeek(clock.todayKey()).weekStart,
+        },
+        type: "weeklyReview.get",
+      });
       const historyWithGoals = history.find(
         (day) => (day.focusQuotaGoals?.length ?? 0) > 0
       );

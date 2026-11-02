@@ -15,6 +15,8 @@ import {
   getPreviousCompletedIsoWeek,
   startOfIsoWeek,
 } from "@/shared/domain/date-key";
+import type { FocusSession } from "@/shared/domain/focus-session";
+import { toFocusMinutes } from "@/shared/domain/focus-session";
 import { getHabitCategoryProgress, isDailyHabit } from "@/shared/domain/habit";
 import type { HabitWithStatus } from "@/shared/domain/habit";
 import type { HistoryDay, HistorySummaryDay } from "@/shared/domain/history";
@@ -29,7 +31,28 @@ import type {
 } from "@/shared/domain/weekly-review";
 import type { TodayState } from "@/shared/read-models/today-state";
 
-import { ApplicationServiceRuntime } from "./application-service-runtime";
+import type { ApplicationServiceRuntime } from "./application-service-runtime";
+
+function buildFocusMinutesByDate(
+  sessions: FocusSession[]
+): Map<string, number> {
+  const totalSecondsByDate = new Map<string, number>();
+
+  for (const session of sessions) {
+    totalSecondsByDate.set(
+      session.completedDate,
+      (totalSecondsByDate.get(session.completedDate) ?? 0) +
+        session.durationSeconds
+    );
+  }
+
+  return new Map(
+    [...totalSecondsByDate.entries()].map(([date, totalSeconds]) => [
+      date,
+      toFocusMinutes(totalSeconds),
+    ])
+  );
+}
 
 interface HistoryListContext {
   focusMinutesByDate: Map<string, number>;
@@ -63,7 +86,7 @@ export class HistoryReadService {
         this.runtime.clock.now().toISOString()
       ),
       this.runtime.repository.history.getHabitsWithStatus(
-        this.runtime.getTodayKey()
+        this.runtime.clock.todayKey()
       ),
       focusMinutesByDate.get(todayState.date) ?? 0,
       this.runtime.repository.history.getFocusQuotaGoalsWithStatus(
@@ -114,7 +137,7 @@ export class HistoryReadService {
       [
         ...new Set([
           Number.parseInt(
-            this.runtime.buildCurrentTodayState().date.slice(0, 4),
+            this.runtime.todayReadModel.getTodayState().date.slice(0, 4),
             10
           ),
           ...this.runtime.repository.history.getSettledHistoryYears(),
@@ -127,7 +150,7 @@ export class HistoryReadService {
     rangeStart: string,
     rangeEnd: string
   ): HistoryRangeContext | null {
-    const todayState = this.runtime.buildCurrentTodayState();
+    const todayState = this.runtime.todayReadModel.getTodayState();
     const includeToday =
       todayState.date >= rangeStart && todayState.date <= rangeEnd;
     const settledSummaries = this.runtime.repository.history
@@ -144,13 +167,12 @@ export class HistoryReadService {
     const newestDate = includeToday
       ? todayState.date
       : (settledSummaries.at(-1)?.date ?? rangeEnd);
-    const focusMinutesByDate =
-      ApplicationServiceRuntime.buildFocusMinutesByDate(
-        this.runtime.repository.focusSessions.listSessionsInRange(
-          oldestDate,
-          newestDate
-        )
-      );
+    const focusMinutesByDate = buildFocusMinutesByDate(
+      this.runtime.repository.focusSessions.listSessionsInRange(
+        oldestDate,
+        newestDate
+      )
+    );
     const historicalHabitsByDate =
       settledSummaries.length > 0
         ? buildHistoricalHabitsByDate(
@@ -178,7 +200,7 @@ export class HistoryReadService {
     return buildHistorySummaryDay({
       categoryProgress: getHabitCategoryProgress(
         this.runtime.repository.history
-          .getHabitsWithStatus(this.runtime.getTodayKey())
+          .getHabitsWithStatus(this.runtime.clock.todayKey())
           .filter(isDailyHabit)
       ),
       date: todayState.date,
@@ -288,7 +310,7 @@ export class HistoryReadService {
 
   getHistoryDay(date: string): HistoryDay {
     return this.runtime.withSyncedRead("getHistoryDay", () => {
-      const todayState = this.runtime.buildCurrentTodayState();
+      const todayState = this.runtime.todayReadModel.getTodayState();
 
       if (date === todayState.date) {
         return buildHistoryDay(
@@ -297,7 +319,7 @@ export class HistoryReadService {
             this.runtime.clock.now().toISOString()
           ),
           this.runtime.repository.history.getHabitsWithStatus(
-            this.runtime.getTodayKey()
+            this.runtime.clock.todayKey()
           ),
           todayState.focusMinutes,
           this.runtime.repository.history.getFocusQuotaGoalsWithStatus(
@@ -314,7 +336,7 @@ export class HistoryReadService {
       }
 
       const focusMinutes =
-        ApplicationServiceRuntime.buildFocusMinutesByDate(
+        buildFocusMinutesByDate(
           this.runtime.repository.focusSessions.listSessionsInRange(date, date)
         ).get(date) ?? 0;
       const habitsByDate = buildHistoricalHabitsByDate(
@@ -364,7 +386,7 @@ export class HistoryReadService {
   }
 
   private buildHistoryListContext(limit?: number): HistoryListContext {
-    const todayState = this.runtime.buildCurrentTodayState();
+    const todayState = this.runtime.todayReadModel.getTodayState();
     const settledHistoryLimit =
       limit === undefined ? undefined : Math.max(limit - 1, 0);
     const settledHistoryOptions =
@@ -374,13 +396,12 @@ export class HistoryReadService {
       settledHistoryOptions
     );
     const oldestDate = settledSummaries.at(-1)?.date ?? todayState.date;
-    const focusMinutesByDate =
-      ApplicationServiceRuntime.buildFocusMinutesByDate(
-        this.runtime.repository.focusSessions.listSessionsInRange(
-          oldestDate,
-          todayState.date
-        )
-      );
+    const focusMinutesByDate = buildFocusMinutesByDate(
+      this.runtime.repository.focusSessions.listSessionsInRange(
+        oldestDate,
+        todayState.date
+      )
+    );
     const historicalHabitsByDate =
       settledSummaries.length > 0
         ? buildHistoricalHabitsByDate(
@@ -416,7 +437,7 @@ export class HistoryReadService {
       }
 
       const latestCompletedWeek = getPreviousCompletedIsoWeek(
-        this.runtime.getTodayKey()
+        this.runtime.clock.todayKey()
       );
       if (latestTrackedDate < latestCompletedWeek.weekStart) {
         return {
@@ -477,7 +498,7 @@ export class HistoryReadService {
 
   getInsightsDashboard(rangeDays?: InsightsRangeDays): InsightsDashboard {
     return this.runtime.withSyncedRead("getInsightsDashboard", () => {
-      const today = this.runtime.getTodayKey();
+      const today = this.runtime.clock.todayKey();
       const requestedRangeDays = rangeDays ?? 30;
       const rangeEnd = addDays(today, -1);
       const rangeStart = addDays(rangeEnd, -(requestedRangeDays * 2 - 1));
@@ -505,7 +526,7 @@ export class HistoryReadService {
         nowDate: today,
         rangeDays: requestedRangeDays,
         streak: this.runtime.repository.streaks.getPersistedStreakState(),
-        timezone: this.runtime.getTimezone(),
+        timezone: this.runtime.clock.timezone(),
       });
     });
   }

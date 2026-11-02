@@ -1148,7 +1148,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.getTodayState();
+    const todayState = service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-06")).toStrictEqual({
       allCompleted: false,
@@ -1253,7 +1253,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
       bestStreak: 3,
@@ -1313,7 +1313,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(repository.categoryStreakStates.get("productivity")).toStrictEqual({
       bestStreak: 3,
@@ -1379,7 +1379,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(repository.habitStreakStates.get(1)).toStrictEqual({
       bestStreak: 3,
@@ -1421,7 +1421,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-06")).toMatchObject({
       dayStatus: "rescheduled",
@@ -1456,7 +1456,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const today = service.getTodayState();
+    const today = service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
       allCompleted: true,
@@ -1500,7 +1500,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const today = service.getTodayState();
+    const today = service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
       allCompleted: false,
@@ -1556,7 +1556,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const today = service.getTodayState();
+    const today = service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
       allCompleted: true,
@@ -1600,7 +1600,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(
       repository.history.getHabitCarryoversForDate("2026-03-10")
@@ -1643,7 +1643,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const today = service.getTodayState();
+    const today = service.read({ type: "today.get" });
 
     expect(repository.dailySummaries.get("2026-03-09")).toMatchObject({
       dayStatus: "sick",
@@ -1684,7 +1684,7 @@ describe("habitService rollover", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    service.getTodayState();
+    service.read({ type: "today.get" });
 
     expect(
       repository.history.getHabitCarryoversForDate("2026-03-10")
@@ -1700,7 +1700,14 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.createHabit("Drink water", "nutrition", "daily");
+    const todayState = service.execute({
+      payload: {
+        category: "nutrition",
+        frequency: "daily",
+        name: "Drink water",
+      },
+      type: "habit.create",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       category: "nutrition",
@@ -1720,12 +1727,15 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.createHabit(
-      "Gym session",
-      "fitness",
-      "daily",
-      [1, 3, 5]
-    );
+    const todayState = service.execute({
+      payload: {
+        category: "fitness",
+        frequency: "daily",
+        name: "Gym session",
+        selectedWeekdays: [1, 3, 5],
+      },
+      type: "habit.create",
+    });
 
     expect(todayState.habits.map((habit) => habit.name)).toStrictEqual([
       "Habit 1",
@@ -1745,7 +1755,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitCategory(1, "fitness");
+    const todayState = service.execute({
+      payload: { category: "fitness", habitId: 1 },
+      type: "habit.updateCategory",
+    });
 
     expect(todayState.habits[0]?.category).toBe("fitness");
   });
@@ -1757,7 +1770,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.execute({
+      payload: { frequency: "weekly", habitId: 1 },
+      type: "habit.updateFrequency",
+    });
 
     expect(todayState.habits[0]?.frequency).toBe("weekly");
   });
@@ -1775,7 +1791,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const patch = service.toggleHabit(1);
+    const patch = service.execute({
+      payload: { habitId: 1 },
+      type: "habit.toggle",
+    });
 
     expect(patch.categoryStreaks?.productivity).toStrictEqual({
       bestStreak: 1,
@@ -1805,7 +1824,10 @@ describe("habit categories", () => {
         new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
       );
 
-      const patch = service.incrementHabitProgress(1);
+      const patch = service.execute({
+        payload: { habitId: 1 },
+        type: "habit.incrementProgress",
+      });
 
       expect(patch.habit).toMatchObject({
         completed: true,
@@ -1841,7 +1863,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitTargetCount(1, 4);
+    const todayState = service.execute({
+      payload: { habitId: 1, targetCount: 4 },
+      type: "habit.updateTargetCount",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1876,7 +1901,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "monthly", 5);
+    const todayState = service.execute({
+      payload: { frequency: "monthly", habitId: 1, targetCount: 5 },
+      type: "habit.updateFrequency",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       completed: false,
@@ -1905,7 +1933,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly", 1);
+    const todayState = service.execute({
+      payload: { frequency: "weekly", habitId: 1, targetCount: 1 },
+      type: "habit.updateFrequency",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       completed: true,
@@ -1934,7 +1965,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.execute({
+      payload: { frequency: "weekly", habitId: 1 },
+      type: "habit.updateFrequency",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1948,7 +1982,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitFrequency(1, "weekly");
+    const todayState = service.execute({
+      payload: { frequency: "weekly", habitId: 1 },
+      type: "habit.updateFrequency",
+    });
 
     expect(todayState.habits[0]).toMatchObject({
       frequency: "weekly",
@@ -1964,7 +2001,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const todayState = service.updateHabitWeekdays(1, [1, 3, 5]);
+    const todayState = service.execute({
+      payload: { habitId: 1, selectedWeekdays: [1, 3, 5] },
+      type: "habit.updateWeekdays",
+    });
 
     expect(todayState.habits).toStrictEqual([]);
     expect(repository.habitRows[0]?.selectedWeekdays).toStrictEqual([1, 3, 5]);
@@ -1993,7 +2033,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.reorderHabits([1, 999]);
+    const todayState = service.execute({
+      payload: { habitIds: [1, 999] },
+      type: "habit.reorder",
+    });
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
   });
@@ -2015,7 +2058,10 @@ describe("habit categories", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.unarchiveHabit(2);
+    const todayState = service.execute({
+      payload: { habitId: 2 },
+      type: "habit.unarchive",
+    });
 
     expect(todayState.habits.map((habit) => habit.id)).toStrictEqual([1, 2]);
     expect(repository.habitRows.find((habit) => habit.id === 2)).toMatchObject({
@@ -2034,7 +2080,10 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.pauseHabit(1);
+    const todayState = service.execute({
+      payload: { habitId: 1 },
+      type: "habit.pause",
+    });
 
     expect(repository.habitRows[0]?.pausedAt).toBe("2026-03-08T09:00:00.000Z");
     expect(repository.habitPausePeriods).toStrictEqual([
@@ -2069,7 +2118,10 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.resumeHabit(1);
+    const todayState = service.execute({
+      payload: { habitId: 1 },
+      type: "habit.resume",
+    });
 
     expect(repository.habitRows[0]?.pausedAt).toBeNull();
     expect(repository.habitPausePeriods).toStrictEqual([
@@ -2114,7 +2166,10 @@ describe("habit pause", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const todayState = service.resumeHabit(1);
+    const todayState = service.execute({
+      payload: { habitId: 1 },
+      type: "habit.resume",
+    });
 
     expect(repository.streak.currentStreak).toBe(4);
     expect(repository.dailySummaries.get("2026-03-06")).toBeUndefined();
@@ -2130,13 +2185,13 @@ describe("habit pause", () => {
       repository,
       new FakeClock("2026-03-06", "2026-03-06T09:00:00.000Z")
     );
-    pauseService.pauseHabit(1);
+    pauseService.execute({ payload: { habitId: 1 }, type: "habit.pause" });
 
     const resumeService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    resumeService.resumeHabit(1);
+    resumeService.execute({ payload: { habitId: 1 }, type: "habit.resume" });
 
     expect(repository.habitPausePeriods).toStrictEqual([
       {
@@ -2186,7 +2241,7 @@ describe("habit carryovers", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const today = service.moveUnfinishedHabitsToTomorrow();
+    const today = service.execute({ type: "today.moveUnfinishedToTomorrow" });
 
     expect(today.dayStatus).toBe("rescheduled");
     expect(
@@ -2209,13 +2264,16 @@ describe("habit carryovers", () => {
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    service.moveUnfinishedHabitsToTomorrow();
+    service.execute({ type: "today.moveUnfinishedToTomorrow" });
 
     const tomorrowService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-09", "2026-03-09T09:00:00.000Z")
     );
-    const tomorrow = tomorrowService.toggleHabitCarryover("2026-03-08", 1);
+    const tomorrow = tomorrowService.execute({
+      payload: { habitId: 1, sourceDate: "2026-03-08" },
+      type: "today.toggleCarryover",
+    });
 
     expect(tomorrow.habitCarryovers).toMatchObject([
       {
@@ -2234,9 +2292,12 @@ describe("habit carryovers", () => {
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    service.moveUnfinishedHabitsToTomorrow();
+    service.execute({ type: "today.moveUnfinishedToTomorrow" });
 
-    const today = service.setDayStatus(null);
+    const today = service.execute({
+      payload: { kind: null },
+      type: "today.setDayStatus",
+    });
 
     expect(today.dayStatus).toBeNull();
     expect(
@@ -2302,7 +2363,7 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const history = service.getHistory();
+    const history = service.read({ type: "history.get" });
 
     expect(history.map((day) => day.date)).toStrictEqual([
       "2026-03-08",
@@ -2342,7 +2403,10 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const history = service.getHistory(2);
+    const history = service.read({
+      payload: { limit: 2 },
+      type: "history.get",
+    });
 
     expect(history.map((day) => day.date)).toStrictEqual([
       "2026-03-08",
@@ -2374,15 +2438,21 @@ describe("history retrieval", () => {
       repository,
       new FakeClock("2026-03-07", "2026-03-07T09:00:00.000Z")
     );
-    service.upsertFocusQuotaGoal("weekly", 300);
+    service.execute({
+      payload: { frequency: "weekly", targetMinutes: 300 },
+      type: "focusQuotaGoal.upsert",
+    });
 
     const nextDayService = new AppApplicationService(
       repository,
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
-    nextDayService.upsertFocusQuotaGoal("weekly", 480);
+    nextDayService.execute({
+      payload: { frequency: "weekly", targetMinutes: 480 },
+      type: "focusQuotaGoal.upsert",
+    });
 
-    const history = nextDayService.getHistory();
+    const history = nextDayService.read({ type: "history.get" });
     const march7 = history.find((day) => day.date === "2026-03-07");
     const march8 = history.find((day) => day.date === "2026-03-08");
 
@@ -2402,9 +2472,12 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    expect(() => service.upsertFocusQuotaGoal("weekly", 20_000)).toThrow(
-      RangeError
-    );
+    expect(() =>
+      service.execute({
+        payload: { frequency: "weekly", targetMinutes: 20_000 },
+        type: "focusQuotaGoal.upsert",
+      })
+    ).toThrow(RangeError);
     expect(repository.getFocusQuotaGoals()).toHaveLength(0);
   });
 
@@ -2434,7 +2507,7 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const history = service.getHistory();
+    const history = service.read({ type: "history.get" });
 
     expect(history).toHaveLength(401);
     expect(history[1]?.date).toBe("2026-02-04");
@@ -2484,7 +2557,10 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const summary = service.getHistorySummaryForYear(2026);
+    const summary = service.read({
+      payload: { year: 2026 },
+      type: "history.summaryYear",
+    });
 
     expect(summary.map((day) => day.date)).toStrictEqual([
       "2026-03-10",
@@ -2497,7 +2573,9 @@ describe("history retrieval", () => {
       progress: 100,
       total: 1,
     });
-    expect(service.getHistorySummaryForYear(2024)).toStrictEqual([]);
+    expect(
+      service.read({ payload: { year: 2024 }, type: "history.summaryYear" })
+    ).toStrictEqual([]);
   });
 
   it("builds a weekly review overview for completed weeks", () => {
@@ -2543,7 +2621,7 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const overview = service.getWeeklyReviewOverview();
+    const overview = service.read({ type: "weeklyReview.overview" });
 
     expect(overview.latestReview).not.toBeNull();
     expect(overview.latestReview?.weekStart).toBe("2026-03-02");
@@ -2578,7 +2656,7 @@ describe("history retrieval", () => {
       new FakeClock("2026-03-10", "2026-03-10T09:00:00.000Z")
     );
 
-    const dashboard = service.getInsightsDashboard();
+    const dashboard = service.read({ type: "insights.dashboard" });
 
     expect(dashboard.summary.completed.value).toBe("1");
     expect(dashboard.habitLeaderboard.map((habit) => habit.name)).toStrictEqual(
@@ -2595,13 +2673,16 @@ describe("focus sessions", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    const focusSession = service.recordFocusSession({
-      completedAt: "2026-03-08T09:25:00.000Z",
-      completedDate: "2026-03-08",
-      durationSeconds: 1500,
-      entryKind: "completed",
-      startedAt: "2026-03-08T09:00:00.000Z",
-      timerSessionId: "timer-session-1",
+    const focusSession = service.execute({
+      payload: {
+        completedAt: "2026-03-08T09:25:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        entryKind: "completed",
+        startedAt: "2026-03-08T09:00:00.000Z",
+        timerSessionId: "timer-session-1",
+      },
+      type: "focusSession.record",
     });
 
     expect(focusSession).toMatchObject({
@@ -2609,7 +2690,7 @@ describe("focus sessions", () => {
       durationSeconds: 1500,
       id: 1,
     });
-    expect(service.getFocusSessions()).toHaveLength(1);
+    expect(service.read({ type: "focusSession.list" })).toHaveLength(1);
   });
 
   it("records focus session dates in the OS timezone", () => {
@@ -2623,13 +2704,16 @@ describe("focus sessions", () => {
       new FakeClock("2026-03-09", "2026-03-08T09:00:00.000Z", "Asia/Singapore")
     );
 
-    const focusSession = service.recordFocusSession({
-      completedAt: "2026-03-08T23:30:00.000Z",
-      completedDate: "2026-03-08",
-      durationSeconds: 1500,
-      entryKind: "completed",
-      startedAt: "2026-03-08T23:05:00.000Z",
-      timerSessionId: "timer-session-timezone",
+    const focusSession = service.execute({
+      payload: {
+        completedAt: "2026-03-08T23:30:00.000Z",
+        completedDate: "2026-03-08",
+        durationSeconds: 1500,
+        entryKind: "completed",
+        startedAt: "2026-03-08T23:05:00.000Z",
+        timerSessionId: "timer-session-timezone",
+      },
+      type: "focusSession.record",
     });
 
     expect(focusSession.completedDate).toBe("2026-03-09");
@@ -2642,14 +2726,17 @@ describe("focus sessions", () => {
     );
 
     expect(() =>
-      service.recordFocusSession({
-        completedAt: "bad-timestamp",
-        completedDate: "2026-03-08",
-        durationSeconds: 1500,
-        entryKind: "completed",
-        startedAt: "2026-03-08T09:00:00.000Z",
-        timerSessionId: "timer-session-invalid",
-      } as CreateFocusSessionInput)
+      service.execute({
+        payload: {
+          completedAt: "bad-timestamp",
+          completedDate: "2026-03-08",
+          durationSeconds: 1500,
+          entryKind: "completed",
+          startedAt: "2026-03-08T09:00:00.000Z",
+          timerSessionId: "timer-session-invalid",
+        } as CreateFocusSessionInput,
+        type: "focusSession.record",
+      })
     ).toThrow("ISO 8601");
   });
 });
@@ -2663,8 +2750,11 @@ describe("transaction error handling", () => {
       new FakeClock("2026-03-08", "2026-03-08T09:00:00.000Z")
     );
 
-    expect(() => service.createHabit("Read", "productivity", "daily")).toThrow(
-      "transaction failed: createHabit"
-    );
+    expect(() =>
+      service.execute({
+        payload: { category: "productivity", frequency: "daily", name: "Read" },
+        type: "habit.create",
+      })
+    ).toThrow("transaction failed: createHabit");
   });
 });

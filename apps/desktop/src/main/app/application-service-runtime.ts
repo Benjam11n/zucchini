@@ -2,8 +2,6 @@ import { TodayReadModelService } from "@/main/features/read-models/today-read-mo
 import { syncRollingState } from "@/main/features/streaks/sync-service";
 import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { Clock } from "@/shared/domain/clock";
-import type { FocusSession } from "@/shared/domain/focus-session";
-import { toFocusMinutes } from "@/shared/domain/focus-session";
 import type { HabitStatusPatch } from "@/shared/read-models/habit-status-patch";
 import type { TodayState } from "@/shared/read-models/today-state";
 
@@ -17,27 +15,6 @@ export class ApplicationServiceRuntime {
     this.repository = repository;
     this.clock = clock;
     this.todayReadModel = new TodayReadModelService(repository, clock);
-  }
-
-  static buildFocusMinutesByDate(
-    sessions: FocusSession[]
-  ): Map<string, number> {
-    const totalSecondsByDate = new Map<string, number>();
-
-    for (const session of sessions) {
-      totalSecondsByDate.set(
-        session.completedDate,
-        (totalSecondsByDate.get(session.completedDate) ?? 0) +
-          session.durationSeconds
-      );
-    }
-
-    return new Map(
-      [...totalSecondsByDate.entries()].map(([date, totalSeconds]) => [
-        date,
-        toFocusMinutes(totalSeconds),
-      ])
-    );
   }
 
   initialize(): void {
@@ -69,18 +46,6 @@ export class ApplicationServiceRuntime {
     });
   }
 
-  buildCurrentTodayState(): TodayState {
-    return this.todayReadModel.getTodayState();
-  }
-
-  getTodayKey(): string {
-    return this.clock.todayKey();
-  }
-
-  getTimezone(): string {
-    return this.clock.timezone();
-  }
-
   preserveTodayHabitProgress(
     today: string,
     habitId: number,
@@ -97,7 +62,7 @@ export class ApplicationServiceRuntime {
 
   rebuildCurrentTodayState(): TodayState {
     this.todayReadModel.invalidate();
-    return this.buildCurrentTodayState();
+    return this.todayReadModel.getTodayState();
   }
 
   mutateTodayState(
@@ -109,7 +74,7 @@ export class ApplicationServiceRuntime {
     } = {}
   ): TodayState {
     return this.inInitializedTransaction(label, () => {
-      const today = this.getTodayKey();
+      const today = this.clock.todayKey();
 
       if (options.syncRollingState) {
         this.syncRollingState();
@@ -131,7 +96,7 @@ export class ApplicationServiceRuntime {
     mutate: (today: string) => void
   ): HabitStatusPatch {
     return this.inInitializedTransaction(label, () => {
-      const today = this.getTodayKey();
+      const today = this.clock.todayKey();
 
       this.syncRollingState();
       this.repository.history.ensureStatusRowsForDate(today);

@@ -227,7 +227,9 @@ export class MainProcessRuntime {
       queueMicrotask(() => {
         this.warmAppRuntime(appRuntime);
         try {
-          void autoBackup.runIfDue(appRuntime.service.getTodayState().settings);
+          void autoBackup.runIfDue(
+            appRuntime.service.read({ type: "today.get" }).settings
+          );
         } catch (error) {
           this.options.logger.error("Failed to start auto backup.", error);
         }
@@ -249,14 +251,14 @@ export class MainProcessRuntime {
 
   private handleResume(): void {
     const runtime = this.getRuntime();
-    const { settings } = runtime.service.getTodayState();
+    const { settings } = runtime.service.read({ type: "today.get" });
     runtime.reminders.schedule(settings);
     this.runAutoBackupIfDue?.(settings);
   }
 
   private warmAppRuntime(nextRuntime: AppRuntime): void {
     try {
-      const todayState = nextRuntime.service.getTodayState();
+      const todayState = nextRuntime.service.read({ type: "today.get" });
       this.applySettings(nextRuntime, todayState.settings);
     } catch (error) {
       this.options.logger.error("Failed to warm app runtime.", error);

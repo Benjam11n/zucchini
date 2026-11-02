@@ -282,7 +282,9 @@ function getHabitStreakStatesForDay({
     const nextDate = currentState.lastEvaluatedDate
       ? clock.addDays(currentState.lastEvaluatedDate, 1)
       : firstTrackedDate;
-    if (clock.compareDateKeys(nextDate, cursor) > 0) {continue;}
+    if (clock.compareDateKeys(nextDate, cursor) > 0) {
+      continue;
+    }
     nextStates.set(
       habit.id,
       getNextHabitStreakState({

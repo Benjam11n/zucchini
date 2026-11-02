@@ -7,6 +7,7 @@ import type { App, BrowserWindow } from "electron";
 import type { AppRepository } from "@/main/infra/persistence/sqlite-app-repository";
 import type { ApplicationService } from "@/main/ports/application-service";
 import { addDays } from "@/shared/domain/date-key";
+import type { TodayState } from "@/shared/read-models/today-state";
 
 interface ScreenshotModeConfig {
   databasePath: string | null;
@@ -123,7 +124,7 @@ export function configureScreenshotUserDataPath(app: App): void {
 function seedMarketingHistory(
   repository: AppRepository,
   todayDate: string,
-  habits: ReturnType<ApplicationService["getTodayState"]>["habits"]
+  habits: TodayState["habits"]
 ): void {
   const dailyHabits = habits.filter((habit) => habit.frequency === "daily");
 
@@ -174,19 +175,22 @@ export function seedMarketingScreenshotData({
   repository: AppRepository;
   service: ApplicationService;
 }): void {
-  if (!isScreenshotMode() || service.getHabits().length > 0) {
+  if (!isScreenshotMode() || service.read({ type: "habit.list" }).length > 0) {
     return;
   }
 
-  let todayState = service.getTodayState();
+  let todayState = service.read({ type: "today.get" });
   for (const habit of MARKETING_HABITS) {
-    todayState = service.createHabit(
-      habit.name,
-      habit.category,
-      "daily",
-      null,
-      habit.targetCount
-    );
+    todayState = service.execute({
+      payload: {
+        category: habit.category,
+        frequency: "daily",
+        name: habit.name,
+        selectedWeekdays: null,
+        targetCount: habit.targetCount,
+      },
+      type: "habit.create",
+    });
   }
 
   for (const [name, count] of COMPLETED_MARKETING_HABITS) {
@@ -200,7 +204,10 @@ export function seedMarketingScreenshotData({
     repository.history.setHabitProgress(todayState.date, habit.id, count);
   }
 
-  service.upsertFocusQuotaGoal("weekly", 450);
+  service.execute({
+    payload: { frequency: "weekly", targetMinutes: 450 },
+    type: "focusQuotaGoal.upsert",
+  });
   seedMarketingHistory(repository, todayState.date, todayState.habits);
 }
 
