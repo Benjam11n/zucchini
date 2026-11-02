@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
@@ -10,12 +11,25 @@ import {
   buildTodayPageActions,
   buildWindDownPageActions,
 } from "@/renderer/app/route-page-props";
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import { HistoryPage } from "@/renderer/features/history/history-page";
 import type { HistoryViewMode } from "@/renderer/features/history/history.types";
 import type { HistoryViewModel } from "@/renderer/features/history/hooks/use-history-view-state";
+import { useHistoryStore } from "@/renderer/features/history/state/history-store";
+import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
+import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
+import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { TodayPage } from "@/renderer/features/today/today-page";
+import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 import { WindDownPage } from "@/renderer/features/wind-down/wind-down-page";
 import type { FocusQuotaGoalWithStatus } from "@/shared/domain/goal";
+
+const todayActions = buildTodayPageActions();
+const windDownActions = buildWindDownPageActions();
+const historyActions = buildHistoryPageActions();
+const focusActions = buildFocusPageActions();
+const settingsActions = buildSettingsPageActions();
+const insightsActions = buildInsightsPageActions();
 
 const EMPTY_FOCUS_QUOTA_GOALS: FocusQuotaGoalWithStatus[] = [];
 
@@ -35,8 +49,21 @@ const InsightsPage = lazy(async () => {
   return { default: module.InsightsPage };
 });
 
-function TodayRoute({ actions, state }: ReadyAppController) {
-  const pageActions = useMemo(() => buildTodayPageActions(actions), [actions]);
+function TodayRoute({ state: controllerState }: ReadyAppController) {
+  const todayState =
+    useTodayStore((store) => store.todayState) ?? controllerState.todayState;
+  const history = useHistoryStore(
+    useShallow((state) => ({
+      hasLoadedHistorySummary: state.hasLoadedHistorySummary,
+      historyDayByDate: state.historyDayByDate,
+      historySummary: state.historySummary,
+      isHistoryDayLoading: state.isHistoryDayLoading,
+      loadingHistoryDayKey: state.loadingHistoryDayKey,
+    }))
+  );
+  const managedHabits = useTodayStore((state) => state.managedHabits);
+  const state = { ...history, managedHabits, todayState };
+  const pageActions = todayActions;
   const viewModel = useMemo(
     () => ({
       hasLoadedHistorySummary: state.hasLoadedHistorySummary,
@@ -61,36 +88,51 @@ function TodayRoute({ actions, state }: ReadyAppController) {
   return <TodayPage actions={pageActions} viewModel={viewModel} />;
 }
 
-function WindDownRoute({ actions, state }: ReadyAppController) {
-  const pageActions = useMemo(
-    () => buildWindDownPageActions(actions),
-    [actions]
-  );
+function WindDownRoute({ state }: ReadyAppController) {
+  const todayState =
+    useTodayStore((store) => store.todayState) ?? state.todayState;
+  const pageActions = windDownActions;
   const viewModel = useMemo(
     () => ({
-      state: state.todayState,
+      state: todayState,
     }),
-    [state.todayState]
+    [todayState]
   );
 
   return <WindDownPage actions={pageActions} viewModel={viewModel} />;
 }
 
 function HistoryRoute({
-  actions,
   historyMode,
   historyViewModel,
   onHistoryModeChange,
-  state,
+  state: controllerState,
 }: ReadyAppController & {
   historyMode?: HistoryViewMode;
   historyViewModel?: HistoryViewModel;
   onHistoryModeChange?: (mode: HistoryViewMode) => void;
 }) {
-  const pageActions = useMemo(
-    () => buildHistoryPageActions(actions),
-    [actions]
+  const todayState =
+    useTodayStore((state) => state.todayState) ?? controllerState.todayState;
+  const history = useHistoryStore(
+    useShallow((state) => ({
+      contributionHistory: state.contributionHistory,
+      history: state.history,
+      historyLoadError: state.historyLoadError,
+      historyYears: state.historyYears,
+      selectedHistoryYear: state.selectedHistoryYear,
+    }))
   );
+  const review = useWeeklyReviewStore(
+    useShallow((state) => ({
+      selectedWeeklyReview: state.selectedWeeklyReview,
+      weeklyReviewError: state.weeklyReviewError,
+      weeklyReviewOverview: state.weeklyReviewOverview,
+      weeklyReviewPhase: state.weeklyReviewPhase,
+    }))
+  );
+  const state = { ...history, ...review, todayState };
+  const pageActions = historyActions;
   const viewModel = useMemo(
     () => ({
       contributionHistory: state.contributionHistory,
@@ -138,8 +180,27 @@ function HistoryRoute({
   );
 }
 
-function FocusRoute({ actions, state }: ReadyAppController) {
-  const pageActions = useMemo(() => buildFocusPageActions(actions), [actions]);
+function FocusRoute({ state: controllerState }: ReadyAppController) {
+  const todayState =
+    useTodayStore((store) => store.todayState) ?? controllerState.todayState;
+  const focus = useFocusStore(
+    useShallow((state) => ({
+      focusSaveErrorMessage: state.focusSaveErrorMessage,
+      focusSessions: state.focusSessions,
+      focusSessionsLoadError: state.focusSessionsLoadError,
+      focusSessionsPhase: state.focusSessionsPhase,
+      timerState: state.timerState,
+    }))
+  );
+  const settings = useSettingsStore(
+    useShallow((state) => ({
+      settingsDraft: state.settingsDraft,
+      settingsFieldErrors: state.settingsFieldErrors,
+      settingsSavePhase: state.settingsSavePhase,
+    }))
+  );
+  const state = { ...focus, ...settings, todayState };
+  const pageActions = focusActions;
   const viewModel = useMemo(
     () => ({
       fieldErrors: state.settingsFieldErrors,
@@ -183,11 +244,20 @@ function FocusRoute({ actions, state }: ReadyAppController) {
   );
 }
 
-function SettingsRoute({ actions, state }: ReadyAppController) {
-  const pageActions = useMemo(
-    () => buildSettingsPageActions(actions),
-    [actions]
+function SettingsRoute({ state: controllerState }: ReadyAppController) {
+  const todayState =
+    useTodayStore((store) => store.todayState) ?? controllerState.todayState;
+  const settings = useSettingsStore(
+    useShallow((state) => ({
+      settingsDraft: state.settingsDraft,
+      settingsFieldErrors: state.settingsFieldErrors,
+      settingsSaveErrorMessage: state.settingsSaveErrorMessage,
+      settingsSavePhase: state.settingsSavePhase,
+    }))
   );
+  const managedHabits = useTodayStore((state) => state.managedHabits);
+  const state = { ...settings, managedHabits, todayState };
+  const pageActions = settingsActions;
   const viewModel = useMemo(
     () => ({
       fieldErrors: state.settingsFieldErrors,
@@ -223,11 +293,16 @@ function SettingsRoute({ actions, state }: ReadyAppController) {
   );
 }
 
-function InsightsRoute({ actions, state }: ReadyAppController) {
-  const pageActions = useMemo(
-    () => buildInsightsPageActions(actions),
-    [actions]
+function InsightsRoute() {
+  const state = useInsightsStore(
+    useShallow((store) => ({
+      insightsDashboard: store.dashboard,
+      insightsError: store.error,
+      insightsPhase: store.phase,
+      insightsRangeDays: store.rangeDays,
+    }))
   );
+  const pageActions = insightsActions;
   const viewModel = useMemo(
     () => ({
       dashboard: state.insightsDashboard,
@@ -272,7 +347,7 @@ export function CurrentRoute(
       return <HistoryRoute {...controller} />;
     }
     case "insights": {
-      return <InsightsRoute {...controller} />;
+      return <InsightsRoute />;
     }
     case "settings": {
       return <SettingsRoute {...controller} />;

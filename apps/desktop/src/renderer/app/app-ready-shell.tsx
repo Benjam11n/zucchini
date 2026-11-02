@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import type { ReadyAppController } from "@/renderer/app/app-root";
 import { CurrentRoute } from "@/renderer/app/app-routes";
@@ -12,13 +13,31 @@ import {
   getHistoryMonthStats,
   getHistoryTrendPoints,
 } from "@/renderer/features/history/lib/history-timeline";
+import { useHistoryStore } from "@/renderer/features/history/state/history-store";
 import { TodaySidebar } from "@/renderer/features/today/components/today-sidebar/today-sidebar";
 import { WeeklyReviewSpotlightBanner } from "@/renderer/features/weekly-review/components/weekly-review-spotlight-banner/weekly-review-spotlight-banner";
+import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 import type { HistoryDailyCountDay } from "@/renderer/shared/history/history-daily-counts";
 import { getHistoryDayLookup } from "@/renderer/shared/history/history-summary";
 import { HabitCategoryPreferencesProvider } from "@/renderer/shared/providers/habit-category-preferences";
 import { formatDate } from "@/shared/domain/date-format";
 import { getMonthRange, parseDateKey } from "@/shared/domain/date-key";
+
+type ShellController = Omit<ReadyAppController, "state"> & {
+  state: ReadyAppController["state"] &
+    Pick<
+      ReturnType<typeof useHistoryStore.getState>,
+      | "contributionHistory"
+      | "history"
+      | "historySummary"
+      | "historyYears"
+      | "selectedHistoryYear"
+    > &
+    Pick<
+      ReturnType<typeof useWeeklyReviewStore.getState>,
+      "selectedWeeklyReview"
+    >;
+};
 
 function getRightSidebar({
   actions,
@@ -27,7 +46,7 @@ function getRightSidebar({
   historyViewModel,
   state,
   tab,
-}: ReadyAppController & {
+}: ShellController & {
   historyMode: HistoryViewMode;
   historyViewHistory: HistoryDailyCountDay[];
   historyViewModel: HistoryViewModel;
@@ -98,7 +117,20 @@ export function AppReadyShell({
 }: {
   controller: ReadyAppController;
 }) {
-  const { actions, state, tab } = controller;
+  const { actions, tab } = controller;
+  const history = useHistoryStore(
+    useShallow((store) => ({
+      contributionHistory: store.contributionHistory,
+      history: store.history,
+      historySummary: store.historySummary,
+      historyYears: store.historyYears,
+      selectedHistoryYear: store.selectedHistoryYear,
+    }))
+  );
+  const selectedWeeklyReview = useWeeklyReviewStore(
+    (store) => store.selectedWeeklyReview
+  );
+  const state = { ...controller.state, ...history, selectedWeeklyReview };
   const [historyMode, setHistoryMode] = useState<HistoryViewMode>("timeline");
   const historyViewHistory =
     state.contributionHistory.length > 0
@@ -115,6 +147,7 @@ export function AppReadyShell({
     historyMode,
     historyViewHistory,
     historyViewModel,
+    state,
   });
   const weeklyReviewBanner = useMemo(
     () =>

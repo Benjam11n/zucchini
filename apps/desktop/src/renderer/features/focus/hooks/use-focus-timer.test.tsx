@@ -628,7 +628,7 @@ describe("use focus timer", () => {
       await Promise.resolve();
     });
 
-    expect(useFocusStore.getState().timerState.remainingMs).toBe(1000);
+    expect(useFocusStore.getState().timerState.remainingMs).toBe(2000);
 
     rerender({
       pomodoroSettings: {

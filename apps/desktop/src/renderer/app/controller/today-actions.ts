@@ -437,9 +437,6 @@ export function createTodayActions({
           type: "today.toggleCarryover",
         })
     ),
-    handleToggleSickDay: refreshTodayCommand(() =>
-      window.desktop.command({ type: "today.toggleSickDay" })
-    ),
     handleSetDayStatus: refreshTodayCommand((kind: TodayState["dayStatus"]) =>
       window.desktop.command({
         payload: { kind },

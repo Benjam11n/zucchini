@@ -1,3 +1,6 @@
+import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
+import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
+
 /**
  * Top-level action factory for the renderer controller.
  *
@@ -6,16 +9,25 @@
  * cross-feature dependencies and merges the public action surface.
  */
 import { createBootActions } from "./boot-actions";
-import { createFocusActions } from "./focus-actions";
 import { createHistoryActions } from "./history-actions";
-import { createInsightsActions } from "./insights-actions";
 import { createSettingsActions } from "./settings-actions";
 import { createTodayActions } from "./today-actions";
 
 export function createAppActions() {
-  const focusActions = createFocusActions();
+  const focusActions = {
+    clearFocusSaveError: useFocusStore.getState().clearFocusSaveError,
+    loadFocusSessions: useFocusStore.getState().loadFocusSessions,
+    recordFocusSession: useFocusStore.getState().recordFocusSession,
+    setFocusSaveErrorMessage: useFocusStore.getState().setFocusSaveErrorMessage,
+    showFocusWidget: () => window.desktop.showFocusWidget(),
+  };
   const historyActions = createHistoryActions();
-  const insightsActions = createInsightsActions();
+  const insightsActions = {
+    handleSelectInsightsRangeDays: useInsightsStore.getState().setRangeDays,
+    loadInsightsDashboard: (force = false) =>
+      useInsightsStore.getState().loadDashboard({ force }),
+    resetInsightsDashboard: useInsightsStore.getState().resetDashboard,
+  };
   const settingsActions = createSettingsActions();
   const todayActions = createTodayActions({
     loadFocusSessions: focusActions.loadFocusSessions,

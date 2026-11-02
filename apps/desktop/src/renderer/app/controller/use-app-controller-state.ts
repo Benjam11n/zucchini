@@ -1,22 +1,10 @@
-/**
- * Controller state selectors.
- *
- * Pulls state from individual feature stores. Tab-aware selectors
- * (`useTabStoreSelector`) skip subscriptions for inactive tabs to avoid
- * unnecessary re-renders.
- */
 import { useShallow } from "zustand/react/shallow";
 
 import { useBootStore } from "@/renderer/app/state/boot-store";
 import { useUiStore } from "@/renderer/app/state/ui-store";
-import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
-import { useHistoryStore } from "@/renderer/features/history/state/history-store";
-import { useInsightsStore } from "@/renderer/features/insights/state/insights-store";
 import { useSettingsStore } from "@/renderer/features/settings/state/settings-store";
 import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
-
-import { useTabStoreSelector } from "./use-tab-store-selector";
 
 export function useAppControllerCoreState() {
   const bootState = useBootStore(
@@ -33,11 +21,9 @@ export function useAppControllerCoreState() {
   );
   const systemTheme = useUiStore((state) => state.systemTheme);
   const todayState = useTodayStore((state) => state.todayState);
-  const managedHabits = useTodayStore((state) => state.managedHabits);
 
   return {
     ...bootState,
-    managedHabits,
     ...settingsState,
     systemTheme,
     todayState,
@@ -52,63 +38,4 @@ export function useWeeklyReviewState() {
       weeklyReviewPhase: state.weeklyReviewPhase,
     }))
   );
-}
-
-export function useNonSettingsHistoryState() {
-  const tab = useUiStore((state) => state.tab);
-
-  return useHistoryStore(
-    useShallow((state) =>
-      tab === "settings"
-        ? null
-        : {
-            contributionHistory: state.contributionHistory,
-            hasLoadedHistorySummary: state.hasLoadedHistorySummary,
-            history: state.history,
-            historyDayByDate: state.historyDayByDate,
-            historyLoadError: state.historyLoadError,
-            historySummary: state.historySummary,
-            historyYears: state.historyYears,
-            isHistoryDayLoading: state.isHistoryDayLoading,
-            isHistoryLoading: state.isHistoryLoading,
-            loadingHistoryDayKey: state.loadingHistoryDayKey,
-            selectedHistoryYear: state.selectedHistoryYear,
-          }
-    )
-  );
-}
-
-export function useHistoryPageState() {
-  return useTabStoreSelector("history", useWeeklyReviewStore, (state) => ({
-    selectedWeeklyReview: state.selectedWeeklyReview,
-    weeklyReviewError: state.weeklyReviewError,
-  }));
-}
-
-export function useInsightsPageState() {
-  return useTabStoreSelector("insights", useInsightsStore, (state) => ({
-    insightsDashboard: state.dashboard,
-    insightsError: state.error,
-    insightsPhase: state.phase,
-    insightsRangeDays: state.rangeDays,
-  }));
-}
-
-export function useFocusPageState() {
-  return useTabStoreSelector("focus", useFocusStore, (state) => ({
-    focusSaveErrorMessage: state.focusSaveErrorMessage,
-    focusSessions: state.focusSessions,
-    focusSessionsLoadError: state.focusSessionsLoadError,
-    focusSessionsPhase: state.focusSessionsPhase,
-    hasLoadedFocusSessions: state.hasLoadedFocusSessions,
-    timerState: state.timerState,
-  }));
-}
-
-export function useSettingsPageState() {
-  return useTabStoreSelector("settings", useSettingsStore, (state) => ({
-    settingsFieldErrors: state.settingsFieldErrors,
-    settingsSaveErrorMessage: state.settingsSaveErrorMessage,
-    settingsSavePhase: state.settingsSavePhase,
-  }));
 }

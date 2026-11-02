@@ -280,6 +280,13 @@ function getSettingsDraftOrThrow(
 }
 
 describe("use app controller", () => {
+  it("keeps actions stable across controller renders", async () => {
+    const { hook } = await setupUseAppController();
+    const { actions } = hook.result.current;
+    hook.rerender();
+    expect(hook.result.current.actions).toBe(actions);
+  });
+
   it("autosaves valid settings changes after the debounce", async () => {
     cleanup();
     (globalThis.localStorage as { clear?: () => void } | undefined)?.clear?.();
@@ -355,6 +362,8 @@ describe("use app controller", () => {
     vi.restoreAllMocks();
 
     const { habits, hook } = await setupUseAppController();
+    const { useSettingsStore } =
+      await import("@/renderer/features/settings/state/settings-store");
 
     act(() => {
       hook.result.current.actions.handleTabChange("settings");
@@ -369,7 +378,7 @@ describe("use app controller", () => {
 
     await waitFor(() => {
       expect(hook.result.current.state.settingsSavePhase).toBe("invalid");
-      expect(hook.result.current.state.settingsFieldErrors.reminderTime).toBe(
+      expect(useSettingsStore.getState().settingsFieldErrors.reminderTime).toBe(
         "Reminder time must use HH:MM 24-hour format."
       );
     });
@@ -384,6 +393,8 @@ describe("use app controller", () => {
     vi.restoreAllMocks();
 
     const { habits, hook } = await setupUseAppController();
+    const { useSettingsStore } =
+      await import("@/renderer/features/settings/state/settings-store");
 
     act(() => {
       hook.result.current.actions.handleTabChange("settings");
@@ -400,7 +411,7 @@ describe("use app controller", () => {
     await waitFor(() => {
       expect(hook.result.current.state.settingsSavePhase).toBe("invalid");
       expect(
-        hook.result.current.state.settingsFieldErrors.focusLongBreakSeconds
+        useSettingsStore.getState().settingsFieldErrors.focusLongBreakSeconds
       ).toBe(
         "Long break duration must be greater than or equal to short break duration."
       );

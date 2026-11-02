@@ -8,9 +8,11 @@
 import { useEffect } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
-import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
+import type { useBootStore } from "@/renderer/app/state/boot-store";
+import type { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { shouldOpenWeeklyReviewSpotlight } from "@/renderer/features/weekly-review/lib/weekly-review-spotlight";
 import { readLastSeenWeeklyReviewStart } from "@/renderer/features/weekly-review/lib/weekly-review-storage";
+import type { useWeeklyReviewStore } from "@/renderer/features/weekly-review/state/weekly-review-store";
 import { useApplyThemeMode } from "@/renderer/shared/hooks/use-apply-theme-mode";
 import { toDateKey } from "@/shared/domain/date-key";
 import type { AppSettings } from "@/shared/domain/settings";
@@ -42,7 +44,7 @@ export function useAppLifecycleEffects({
   weeklyReviewPhase,
 }: {
   bootApp: ReturnType<typeof createAppActions>["bootApp"];
-  bootPhase: AppControllerState["bootPhase"];
+  bootPhase: ReturnType<typeof useBootStore.getState>["bootPhase"];
   loadHistorySummary: ReturnType<typeof createAppActions>["loadHistorySummary"];
   loadHistoryYears: ReturnType<typeof createAppActions>["loadHistoryYears"];
   openWindDown: ReturnType<typeof createAppActions>["handleOpenWindDown"];
@@ -53,9 +55,13 @@ export function useAppLifecycleEffects({
   setSystemTheme: ReturnType<typeof createAppActions>["setSystemTheme"];
   settingsDraft: AppSettings | null;
   systemTheme: "dark" | "light";
-  todayState: AppControllerState["todayState"];
-  weeklyReviewOverview: AppControllerState["weeklyReviewOverview"];
-  weeklyReviewPhase: AppControllerState["weeklyReviewPhase"];
+  todayState: ReturnType<typeof useTodayStore.getState>["todayState"];
+  weeklyReviewOverview: ReturnType<
+    typeof useWeeklyReviewStore.getState
+  >["weeklyReviewOverview"];
+  weeklyReviewPhase: ReturnType<
+    typeof useWeeklyReviewStore.getState
+  >["weeklyReviewPhase"];
 }) {
   useEffect(() => {
     void bootApp();

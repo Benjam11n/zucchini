@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 
 import type { WeeklyReviewHabitHeatmapRow } from "@/shared/domain/weekly-review";
 
-import { WeeklyReviewHabitChartImpl } from "./weekly-review-habit-chart-impl";
+import { WeeklyReviewHabitChart } from "./weekly-review-habit-chart";
 
 function createHeatmapRow(
   overrides: Partial<WeeklyReviewHabitHeatmapRow> = {}
@@ -28,10 +28,10 @@ function createHeatmapRow(
   };
 }
 
-describe("WeeklyReviewHabitChartImpl", () => {
+describe("WeeklyReviewHabitChart", () => {
   it("renders habit heatmap rows with weekday headers and denominators", () => {
     render(
-      <WeeklyReviewHabitChartImpl
+      <WeeklyReviewHabitChart
         heatmapRows={[
           createHeatmapRow(),
           createHeatmapRow({
@@ -59,7 +59,7 @@ describe("WeeklyReviewHabitChartImpl", () => {
   });
 
   it("renders an empty state when there are no daily rows", () => {
-    render(<WeeklyReviewHabitChartImpl heatmapRows={[]} />);
+    render(<WeeklyReviewHabitChart heatmapRows={[]} />);
 
     expect(
       screen.getByText("No daily habit activity for this week.")

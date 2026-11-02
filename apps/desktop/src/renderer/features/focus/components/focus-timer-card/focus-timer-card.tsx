@@ -6,6 +6,7 @@ import { FocusTimerActions } from "@/renderer/features/focus/components/focus-ti
 import { FocusTimerHeader } from "@/renderer/features/focus/components/focus-timer-header/focus-timer-header";
 import { PomodoroRoadmapCard } from "@/renderer/features/focus/components/pomodoro-roadmap-card/pomodoro-roadmap-card";
 import type { PersistedFocusTimerState } from "@/renderer/features/focus/focus.types";
+import { useFocusTimerNow } from "@/renderer/features/focus/hooks/use-focus-timer-now";
 import { formatTimerLabel } from "@/renderer/features/focus/lib/focus-timer-state";
 import {
   getCycleChipLabel,
@@ -78,7 +79,7 @@ export function FocusTimerCard({
   focusShortBreakSeconds,
   onCycleChange,
   pomodoroSettings,
-  timerState,
+  timerState: persistedTimerState,
   onDurationChange,
   onOpenPomodoroSettings,
   onPause,
@@ -88,6 +89,7 @@ export function FocusTimerCard({
   onSkipBreak,
   onStart,
 }: FocusTimerCardProps) {
+  const timerState = useFocusTimerNow(persistedTimerState);
   const {
     isBreak,
     isBreakFinalMinute,

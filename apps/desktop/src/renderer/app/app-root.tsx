@@ -10,9 +10,13 @@ import { AppErrorBoundary } from "@/renderer/app/app-error-boundary";
 import { AppReadyShell } from "@/renderer/app/app-ready-shell";
 import { BootErrorScreen } from "@/renderer/app/boot-error-screen";
 import { getBootErrorDisplay } from "@/renderer/app/boot/boot-errors";
+import { appActions } from "@/renderer/app/controller/app-actions";
 import { useAppController } from "@/renderer/app/controller/use-app-controller";
 import { LoadingStateCard } from "@/renderer/app/loading-state-card";
+import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
+import { useTodayStore } from "@/renderer/features/today/state/today-store";
 import { Toaster } from "@/renderer/shared/components/ui/sonner";
+import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 
 const FocusWidget = lazy(async () => {
   const module =
@@ -27,6 +31,19 @@ export type ReadyAppController = AppController & {
     todayState: NonNullable<AppController["state"]["todayState"]>;
   };
 };
+
+function FocusTimerEffects() {
+  const todayState = useTodayStore((state) => state.todayState);
+  useFocusTimer({
+    clearFocusSaveError: appActions.clearFocusSaveError,
+    pomodoroSettings: todayState
+      ? getPomodoroTimerSettings(todayState.settings)
+      : null,
+    recordFocusSession: appActions.recordFocusSession,
+    setFocusSaveErrorMessage: appActions.setFocusSaveErrorMessage,
+  });
+  return null;
+}
 
 function MainApp() {
   const controller = useAppController();
@@ -81,6 +98,7 @@ export default function App() {
       description="The app hit an unexpected error. Reload Zucchini to continue."
       title="Unexpected app error"
     >
+      <FocusTimerEffects />
       <MainApp />
       <Toaster />
     </AppErrorBoundary>
