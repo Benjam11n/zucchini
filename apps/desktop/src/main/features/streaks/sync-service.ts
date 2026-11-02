@@ -1,4 +1,3 @@
-import { createRollingStreakState } from "@/main/features/today/state-builder";
 import type { PersistedCategoryStreakState } from "@/shared/domain/category-streak";
 /**
  * Rolling streak synchronization service.
@@ -527,7 +526,7 @@ export function syncRollingState(
     return;
   }
 
-  let rollingState = createRollingStreakState(persisted);
+  let rollingState = { ...persisted };
 
   while (clock.compareDateKeys(cursor, yesterday) <= 0) {
     repository.history.ensureStatusRowsForDate(cursor);
@@ -565,11 +564,14 @@ export function syncRollingState(
         `${cursor}T23:59:59.000`)
       : null;
 
-    const next = settleClosedDay(createRollingStreakState(rollingState), {
-      allCompleted,
-      completedAt,
-      dayStatus: currentDayStatus,
-    });
+    const next = settleClosedDay(
+      { ...rollingState },
+      {
+        allCompleted,
+        completedAt,
+        dayStatus: currentDayStatus,
+      }
+    );
 
     rollingState = {
       availableFreezes: next.availableFreezes,
