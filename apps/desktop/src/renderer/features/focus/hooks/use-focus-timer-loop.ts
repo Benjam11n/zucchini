@@ -92,10 +92,6 @@ export function useFocusTimerLeadershipLoop({
 
         useFocusStore.getState().setTimerState(transition.nextState);
 
-        if (transition.kind === "updated") {
-          return;
-        }
-
         if (transition.kind === "breakCompleted") {
           await notify(
             window.desktop.showNotification,

@@ -19,7 +19,6 @@ export interface TimerNotification {
 
 type FocusTimerTickTransition =
   | { kind: "unchanged" }
-  | { kind: "updated"; nextState: PersistedFocusTimerState }
   | {
       cycleCompletionId: string;
       focusSessionInput: CreateFocusSessionInput | null;
@@ -75,14 +74,7 @@ export function resolveFocusTimerTick(
   const remainingMs = msUntil(currentState.endsAt, now);
 
   if (remainingMs > 0) {
-    return {
-      kind: "updated",
-      nextState: {
-        ...currentState,
-        lastUpdatedAt: toIsoTimestamp(now),
-        remainingMs,
-      },
-    };
+    return { kind: "unchanged" };
   }
 
   if (currentState.phase === "focus") {

@@ -373,7 +373,7 @@ describe("focus widget", () => {
     act(() => {
       useFocusStore.getState().setTimerState({
         ...useFocusStore.getState().timerState,
-        remainingMs: 60_000,
+        endsAt: new Date(Date.now() + 60_000).toISOString(),
       });
     });
 
@@ -425,7 +425,7 @@ describe("focus widget", () => {
     act(() => {
       useFocusStore.getState().setTimerState({
         ...useFocusStore.getState().timerState,
-        remainingMs: 60_000,
+        endsAt: new Date(Date.now() + 60_000).toISOString(),
       });
     });
 

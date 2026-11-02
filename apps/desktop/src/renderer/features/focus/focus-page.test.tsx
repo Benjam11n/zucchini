@@ -155,7 +155,7 @@ describe("focus tab", () => {
         breakVariant: "short",
         completedFocusCycles: 1,
         focusDurationMs: minutesMs(25),
-        now: new Date("2026-03-08T09:00:00.000Z"),
+        now: new Date(),
         timerSessionId: "timer-session-page-short",
       })
     );
@@ -170,7 +170,7 @@ describe("focus tab", () => {
     act(() => {
       useFocusStore.getState().setTimerState({
         ...useFocusStore.getState().timerState,
-        remainingMs: 60_000,
+        endsAt: new Date(Date.now() + 60_000).toISOString(),
       });
     });
 
@@ -275,7 +275,7 @@ describe("focus tab", () => {
     act(() => {
       useFocusStore.getState().setTimerState({
         ...useFocusStore.getState().timerState,
-        remainingMs: 60_000,
+        endsAt: new Date(Date.now() + 60_000).toISOString(),
       });
     });
 

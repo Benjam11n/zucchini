@@ -1,11 +1,9 @@
 import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
 import { useUiStore } from "@/renderer/app/state/ui-store";
-import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useFocusStore } from "@/renderer/features/focus/state/focus-store";
 import type { SettingsFieldErrors } from "@/renderer/features/settings/settings.types";
 import { writeLastSeenWeeklyReviewStart } from "@/renderer/features/weekly-review/lib/weekly-review-storage";
 import { useSystemTheme } from "@/renderer/shared/hooks/use-system-theme";
-import { getPomodoroTimerSettings } from "@/shared/domain/settings";
 
 import { appActions } from "./app-actions";
 import {
@@ -118,7 +116,6 @@ function buildControllerActions({
     handleTabChange: actions.handleTabChange,
     handleToggleHabit: actions.handleToggleHabit,
     handleToggleHabitCarryover: actions.handleToggleHabitCarryover,
-    handleToggleSickDay: actions.handleToggleSickDay,
     handleToggleWindDownAction: actions.handleToggleWindDownAction,
     handleUnarchiveFocusQuotaGoal: actions.handleUnarchiveFocusQuotaGoal,
     handleUnarchiveHabit: actions.handleUnarchiveHabit,
@@ -233,15 +230,6 @@ export function useAppController() {
     todayState: coreState.todayState,
     weeklyReviewOverview: weeklyReviewState.weeklyReviewOverview,
     weeklyReviewPhase: weeklyReviewState.weeklyReviewPhase,
-  });
-
-  useFocusTimer({
-    clearFocusSaveError: actions.clearFocusSaveError,
-    pomodoroSettings: coreState.todayState
-      ? getPomodoroTimerSettings(coreState.todayState.settings)
-      : null,
-    recordFocusSession: actions.recordFocusSession,
-    setFocusSaveErrorMessage: actions.setFocusSaveErrorMessage,
   });
 
   return {

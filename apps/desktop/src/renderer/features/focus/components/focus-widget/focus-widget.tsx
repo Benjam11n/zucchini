@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { FocusWidgetControls } from "@/renderer/features/focus/components/focus-widget-controls/focus-widget-controls";
 import { useFocusTimer } from "@/renderer/features/focus/hooks/use-focus-timer";
 import { useFocusTimerActions } from "@/renderer/features/focus/hooks/use-focus-timer-actions";
+import { useFocusTimerNow } from "@/renderer/features/focus/hooks/use-focus-timer-now";
 import { useFocusWidgetSizeSync } from "@/renderer/features/focus/hooks/use-focus-widget-size-sync";
 import { useFocusWidgetSnapshot } from "@/renderer/features/focus/hooks/use-focus-widget-snapshot";
 import {
@@ -77,7 +78,9 @@ function handleClose() {
 
 export function FocusWidget() {
   const widgetRef = useRef<HTMLElement | null>(null);
-  const timerState = useFocusStore((state) => state.timerState);
+  const timerState = useFocusTimerNow(
+    useFocusStore((state) => state.timerState)
+  );
   const { clearFocusSaveError, setFocusSaveErrorMessage, setTimerState } =
     useFocusTimerActions();
   const todayState = useFocusWidgetSnapshot();
