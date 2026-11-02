@@ -7,15 +7,12 @@ describe("main asset helpers", () => {
     const appPath = "/Users/tester/Zucchini";
 
     vi.resetModules();
-    vi.doMock(
-      import("electron"),
-      (): Partial<typeof ElectronModule> => ({
-        app: {
-          getAppPath: () => appPath,
-          isPackaged: false,
-        } as ElectronModule.App,
-      })
-    );
+    vi.doMock(import("electron"), (): Partial<typeof ElectronModule> => ({
+      app: {
+        getAppPath: () => appPath,
+        isPackaged: false,
+      } as ElectronModule.App,
+    }));
 
     const { resolveMascotAssetPath, resolveRuntimeIconPath } =
       await import("./assets");
@@ -32,15 +29,12 @@ describe("main asset helpers", () => {
     const appPath = "/Applications/Zucchini.app/Contents/Resources/app.asar";
 
     vi.resetModules();
-    vi.doMock(
-      import("electron"),
-      (): Partial<typeof ElectronModule> => ({
-        app: {
-          getAppPath: () => appPath,
-          isPackaged: true,
-        } as ElectronModule.App,
-      })
-    );
+    vi.doMock(import("electron"), (): Partial<typeof ElectronModule> => ({
+      app: {
+        getAppPath: () => appPath,
+        isPackaged: true,
+      } as ElectronModule.App,
+    }));
 
     const { resolveMascotAssetPath, resolveRuntimeIconPath } =
       await import("./assets");

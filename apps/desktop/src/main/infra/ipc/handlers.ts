@@ -141,9 +141,8 @@ export function registerIpcHandlers({
   registerHandler(APP_IPC_CHANNELS.command, (command: unknown) =>
     runCommand(validateAppCommand(command))
   );
-  registerHandler(
-    APP_IPC_CHANNELS.query,
-    (query: unknown): AppQueryResult => service.read(validateAppQuery(query))
+  registerHandler(APP_IPC_CHANNELS.query, (query: unknown): AppQueryResult =>
+    service.read(validateAppQuery(query))
   );
 
   registerHandler(APP_IPC_CHANNELS.getDesktopNotificationStatus, () =>
