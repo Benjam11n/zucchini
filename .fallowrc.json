@@ -6,7 +6,6 @@
     "apps/desktop/tsdown.config.mts",
     "oxlint.config.ts"
   ],
-  "ignoreDependencies": ["shadcn"],
   "duplicates": {
     "ignore": [
       "apps/desktop/src/**/*.test.ts",
