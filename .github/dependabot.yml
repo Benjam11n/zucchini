@@ -3,47 +3,23 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "cron"
-      cronjob: "0 4 1,16 * *"
-      timezone: "Asia/Singapore"
-    commit-message:
-      prefix: "actions"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "github-actions"
-      - "automated"
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "cron"
-      cronjob: "0 4 1,16 * *"
-      timezone: "Asia/Singapore"
+      interval: "monthly"
+    versioning-strategy: increase
     cooldown:
       default-days: 7
-    open-pull-requests-limit: 10
-    commit-message:
-      prefix: "pnpm"
-      prefix-development: "chore"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "pnpm"
-      - "automated"
     groups:
-      minor-patch-updates:
+      minor-patch:
         patterns:
           - "*"
-        exclude-patterns:
-          - "react"
-          - "typescript"
         update-types:
           - "minor"
           - "patch"
-    ignore:
-      - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-    versioning-strategy: increase
