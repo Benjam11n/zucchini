@@ -17,6 +17,7 @@ import type {
 } from "@/shared/domain/habit";
 import type { HabitPeriodStatusSnapshot } from "@/shared/domain/habit-period-status-snapshot";
 import type { PersistedHabitStreakState } from "@/shared/domain/habit-streak";
+import type { StreakState } from "@/shared/domain/streak";
 import { settleClosedDay } from "@/shared/domain/streak-engine";
 
 interface StreakSyncRepository {
@@ -66,24 +67,14 @@ interface StreakSyncRepository {
     getPersistedHabitStreakStates(
       habitIds: readonly number[]
     ): PersistedHabitStreakState[];
-    getPersistedStreakState(): {
-      availableFreezes: number;
-      bestStreak: number;
-      currentStreak: number;
-      lastEvaluatedDate: string | null;
-    };
+    getPersistedStreakState(): StreakState;
     savePersistedCategoryStreakStates(
       states: readonly PersistedCategoryStreakState[]
     ): void;
     savePersistedHabitStreakStates(
       states: readonly PersistedHabitStreakState[]
     ): void;
-    savePersistedStreakState(state: {
-      availableFreezes: number;
-      bestStreak: number;
-      currentStreak: number;
-      lastEvaluatedDate: string | null;
-    }): void;
+    savePersistedStreakState(state: StreakState): void;
   };
 }
 
@@ -263,6 +254,52 @@ function getNextHabitStreakState({
   });
 }
 
+function getHabitStreakStatesForDay({
+  clock,
+  cursor,
+  dailyHabits,
+  dayStatus,
+  firstTrackedDate,
+  freezeUsed,
+  habitById,
+  habitIdsWithIncompleteCarryovers,
+  stateByHabitId,
+}: {
+  clock: Clock;
+  cursor: string;
+  dailyHabits: Habit[];
+  dayStatus: DayStatusKind | null;
+  firstTrackedDate: string;
+  freezeUsed: boolean;
+  habitById: Map<number, HabitWithStatus>;
+  habitIdsWithIncompleteCarryovers: Set<number>;
+  stateByHabitId: Map<number, PersistedHabitStreakState>;
+}): Map<number, PersistedHabitStreakState> {
+  const nextStates = new Map(stateByHabitId);
+  for (const habit of dailyHabits) {
+    const currentState =
+      stateByHabitId.get(habit.id) ?? createEmptyHabitStreakState(habit.id);
+    const nextDate = currentState.lastEvaluatedDate
+      ? clock.addDays(currentState.lastEvaluatedDate, 1)
+      : firstTrackedDate;
+    if (clock.compareDateKeys(nextDate, cursor) > 0) {continue;}
+    nextStates.set(
+      habit.id,
+      getNextHabitStreakState({
+        cursor,
+        dayStatus,
+        freezeUsed,
+        habit: habitById.get(habit.id) ?? null,
+        hasIncompleteHabitCarryover: habitIdsWithIncompleteCarryovers.has(
+          habit.id
+        ),
+        state: currentState,
+      })
+    );
+  }
+  return nextStates;
+}
+
 function syncHabitStreakStates(
   repository: StreakSyncRepository,
   clock: Clock,
@@ -278,7 +315,7 @@ function syncHabitStreakStates(
   const persistedStates =
     repository.streaks.getPersistedHabitStreakStates(habitIds);
   const shouldBackfillMissingStates = persistedStates.length === 0;
-  const stateByHabitId = new Map(
+  let stateByHabitId = new Map(
     persistedStates.map((state) => [state.habitId, state])
   );
   let addedMissingState = false;
@@ -322,47 +359,29 @@ function syncHabitStreakStates(
       repository,
       cursor
     );
-    const habitIdsWithIncompleteCarryovers = new Set<number>();
-    for (const carryover of repository.history.getHabitCarryoversForDate(
-      cursor
-    )) {
-      if (!carryover.completed) {
-        habitIdsWithIncompleteCarryovers.add(carryover.id);
-      }
-    }
-
-    const habitById = new Map<number, HabitWithStatus>();
-    for (const habit of repository.history.getHabitsWithStatus(cursor)) {
-      if (isDailyHabit(habit)) {
-        habitById.set(habit.id, habit);
-      }
-    }
-
-    for (const habit of dailyHabits) {
-      const currentState =
-        stateByHabitId.get(habit.id) ?? createEmptyHabitStreakState(habit.id);
-      const nextDate = currentState.lastEvaluatedDate
-        ? clock.addDays(currentState.lastEvaluatedDate, 1)
-        : firstTrackedDate;
-
-      if (clock.compareDateKeys(nextDate, cursor) > 0) {
-        continue;
-      }
-
-      stateByHabitId.set(
-        habit.id,
-        getNextHabitStreakState({
-          cursor,
-          dayStatus,
-          freezeUsed,
-          habit: habitById.get(habit.id) ?? null,
-          hasIncompleteHabitCarryover: habitIdsWithIncompleteCarryovers.has(
-            habit.id
-          ),
-          state: currentState,
-        })
-      );
-    }
+    const habitIdsWithIncompleteCarryovers = new Set(
+      repository.history
+        .getHabitCarryoversForDate(cursor)
+        .filter((carryover) => !carryover.completed)
+        .map((carryover) => carryover.id)
+    );
+    const habitById = new Map(
+      repository.history
+        .getHabitsWithStatus(cursor)
+        .filter(isDailyHabit)
+        .map((habit) => [habit.id, habit])
+    );
+    stateByHabitId = getHabitStreakStatesForDay({
+      clock,
+      cursor,
+      dailyHabits,
+      dayStatus,
+      firstTrackedDate,
+      freezeUsed,
+      habitById,
+      habitIdsWithIncompleteCarryovers,
+      stateByHabitId,
+    });
 
     cursor = clock.addDays(cursor, 1);
   }
