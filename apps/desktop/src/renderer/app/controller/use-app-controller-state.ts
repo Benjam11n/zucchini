@@ -55,26 +55,20 @@ export function useWeeklyReviewState() {
 }
 
 export function useNonSettingsHistoryState() {
-  const tab = useUiStore((state) => state.tab);
-
   return useHistoryStore(
-    useShallow((state) =>
-      tab === "settings"
-        ? null
-        : {
-            contributionHistory: state.contributionHistory,
-            hasLoadedHistorySummary: state.hasLoadedHistorySummary,
-            history: state.history,
-            historyDayByDate: state.historyDayByDate,
-            historyLoadError: state.historyLoadError,
-            historySummary: state.historySummary,
-            historyYears: state.historyYears,
-            isHistoryDayLoading: state.isHistoryDayLoading,
-            isHistoryLoading: state.isHistoryLoading,
-            loadingHistoryDayKey: state.loadingHistoryDayKey,
-            selectedHistoryYear: state.selectedHistoryYear,
-          }
-    )
+    useShallow((state) => ({
+      contributionHistory: state.contributionHistory,
+      hasLoadedHistorySummary: state.hasLoadedHistorySummary,
+      history: state.history,
+      historyDayByDate: state.historyDayByDate,
+      historyLoadError: state.historyLoadError,
+      historySummary: state.historySummary,
+      historyYears: state.historyYears,
+      isHistoryDayLoading: state.isHistoryDayLoading,
+      isHistoryLoading: state.isHistoryLoading,
+      loadingHistoryDayKey: state.loadingHistoryDayKey,
+      selectedHistoryYear: state.selectedHistoryYear,
+    }))
   );
 }
 
