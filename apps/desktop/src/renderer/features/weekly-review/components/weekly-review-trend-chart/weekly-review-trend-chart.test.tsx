@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import type { WeeklyReviewTrendPoint } from "@/shared/domain/weekly-review";
 
-import { WeeklyReviewTrendChartImpl } from "./weekly-review-trend-chart-impl";
+import { WeeklyReviewTrendChart } from "./weekly-review-trend-chart";
 
 function createTrendPoint(
   overrides: Partial<WeeklyReviewTrendPoint> = {}
@@ -25,10 +25,10 @@ function createTrendPoint(
   };
 }
 
-describe("WeeklyReviewTrendChartImpl", () => {
+describe("WeeklyReviewTrendChart", () => {
   it("renders both trend series with labels and points", () => {
     render(
-      <WeeklyReviewTrendChartImpl
+      <WeeklyReviewTrendChart
         trend={[
           createTrendPoint(),
           createTrendPoint({
@@ -55,7 +55,7 @@ describe("WeeklyReviewTrendChartImpl", () => {
   });
 
   it("renders an empty trend chart without crashing", () => {
-    render(<WeeklyReviewTrendChartImpl trend={[]} />);
+    render(<WeeklyReviewTrendChart trend={[]} />);
 
     expect(screen.getByText("Trend line")).toBeInTheDocument();
     expect(screen.getByTestId("trend-completion-line")).toHaveAttribute(
@@ -67,7 +67,7 @@ describe("WeeklyReviewTrendChartImpl", () => {
 
   it("thins dense week labels so the x axis stays readable", () => {
     render(
-      <WeeklyReviewTrendChartImpl
+      <WeeklyReviewTrendChart
         trend={[
           createTrendPoint({
             label: "Mar 16 - Mar 22",
@@ -119,7 +119,7 @@ describe("WeeklyReviewTrendChartImpl", () => {
   });
 
   it("shows completion percentage and raw focus minutes in tooltip", () => {
-    render(<WeeklyReviewTrendChartImpl trend={[createTrendPoint()]} />);
+    render(<WeeklyReviewTrendChart trend={[createTrendPoint()]} />);
 
     fireEvent.focus(screen.getByLabelText("Mar 2: 73% weekly completion"));
 

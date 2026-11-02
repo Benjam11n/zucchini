@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import type { WeeklyReview } from "@/shared/domain/weekly-review";
 
-import { WeeklyReviewDailyCadenceChartImpl } from "./weekly-review-daily-cadence-chart-impl";
+import { WeeklyReviewDailyCadenceChart } from "./weekly-review-daily-cadence-chart";
 
 function createReview(overrides: Partial<WeeklyReview> = {}): WeeklyReview {
   return {
@@ -58,9 +58,9 @@ function createReview(overrides: Partial<WeeklyReview> = {}): WeeklyReview {
   };
 }
 
-describe("WeeklyReviewDailyCadenceChartImpl", () => {
+describe("WeeklyReviewDailyCadenceChart", () => {
   it("renders weekday labels and skips bars for null completion rates", () => {
-    render(<WeeklyReviewDailyCadenceChartImpl review={createReview()} />);
+    render(<WeeklyReviewDailyCadenceChart review={createReview()} />);
 
     expect(screen.getByText("Daily cadence")).toBeInTheDocument();
     expect(screen.getByText("Mon")).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("WeeklyReviewDailyCadenceChartImpl", () => {
   });
 
   it("shows formatted completion tooltip when a bar receives focus", () => {
-    render(<WeeklyReviewDailyCadenceChartImpl review={createReview()} />);
+    render(<WeeklyReviewDailyCadenceChart review={createReview()} />);
 
     fireEvent.focus(screen.getByLabelText("Monday: 60% completion"));
 
