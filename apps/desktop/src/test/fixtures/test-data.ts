@@ -1036,7 +1036,6 @@ export function generateTestData(
       reminderTime: settings.reminderTime,
       resetFocusTimerShortcut: settings.resetFocusTimerShortcut,
       themeMode: settings.themeMode,
-      timezone: settings.timezone,
       toggleFocusTimerShortcut: settings.toggleFocusTimerShortcut,
       windDownTime: settings.windDownTime,
     })

@@ -29,7 +29,6 @@ export const habits = sqliteTable("habits", {
     .notNull()
     .default(false),
   name: text().notNull(),
-  pausedAt: text("paused_at"),
   selectedWeekdays: text("selected_weekdays"),
   sortOrder: integer("sort_order").notNull(),
   targetCount: integer("target_count").notNull().default(1),
@@ -240,7 +239,6 @@ export const settings = sqliteTable("settings", {
   reminderTime: text("reminder_time").notNull(),
   resetFocusTimerShortcut: text("reset_focus_timer_shortcut").notNull(),
   themeMode: text("theme_mode").notNull(),
-  timezone: text().notNull(),
   toggleFocusTimerShortcut: text("toggle_focus_timer_shortcut").notNull(),
   windDownTime: text("wind_down_time").notNull(),
 });

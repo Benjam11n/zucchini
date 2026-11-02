@@ -346,7 +346,7 @@ describeWithFixtureDatabase("test data generator", () => {
         weekOptions: true,
       });
 
-      repository.close();
+      repository.client.close();
     },
     FIXTURE_TEST_TIMEOUT_MS
   );

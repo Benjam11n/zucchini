@@ -80,7 +80,10 @@ describeWithSqlite("runMigrations", () => {
       habitPausePeriodColumns.some((column) => column.name === "resumed_at")
     ).toBe(true);
     expect(habitsColumns.some((column) => column.name === "paused_at")).toBe(
-      true
+      false
+    );
+    expect(settingsColumns.some((column) => column.name === "timezone")).toBe(
+      false
     );
     expect(
       settingsColumns.some((column) => column.name === "auto_backup_cadence")
@@ -93,6 +96,53 @@ describeWithSqlite("runMigrations", () => {
     expect(migrationsCount.count).toBeGreaterThan(0);
 
     client.close();
+  });
+
+  it("restores and migrates an old backup while preserving paused habits", () => {
+    const backupPath = createTempDbPath("old-backup");
+    const backup = new SqliteDatabaseClient({ databasePath: backupPath });
+    runMigrations(backup);
+    const sqlite = backup.getSqlite();
+    // Reconstruct the schema and migration marker of a 0021 backup.
+    sqlite.exec(`
+      ALTER TABLE habits ADD COLUMN paused_at text;
+      ALTER TABLE settings ADD COLUMN timezone text NOT NULL DEFAULT 'UTC';
+      DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations);
+      INSERT INTO habits (id, name, category, frequency, created_at, sort_order, target_count, is_archived, paused_at)
+      VALUES (1, 'Existing period', 'fitness', 'daily', '2026-01-01', 0, 1, 0, '2026-02-01'),
+             (2, 'Missing period', 'fitness', 'daily', '2026-01-01', 1, 1, 0, '2026-02-02');
+      INSERT INTO habit_pause_periods (habit_id, paused_at, resumed_at) VALUES (1, '2026-02-01', NULL);
+    `);
+    backup.close();
+
+    const restored = new SqliteDatabaseClient({
+      databasePath: createTempDbPath("restored"),
+    });
+    restored.validateDatabase(backupPath);
+    expect(
+      restored
+        .getDatabasePreview(backupPath)
+        .habits.map((habit) => habit.pausedAt)
+    ).toEqual(["2026-02-01", null]);
+    restored.replaceDatabase(backupPath);
+    runMigrations(restored);
+    expect(
+      restored
+        .getSqlite()
+        .prepare(
+          "select habit_id, paused_at from habit_pause_periods where resumed_at is null order by habit_id"
+        )
+        .all()
+    ).toEqual([
+      { habit_id: 1, paused_at: "2026-02-01" },
+      { habit_id: 2, paused_at: "2026-02-02" },
+    ]);
+    expect(
+      restored
+        .getDatabasePreview(restored.getDatabasePath())
+        .habits.map((habit) => habit.pausedAt)
+    ).toEqual(["2026-02-01", "2026-02-02"]);
+    restored.close();
   });
 
   it("backfills legacy focus sessions without timer session ids", () => {
