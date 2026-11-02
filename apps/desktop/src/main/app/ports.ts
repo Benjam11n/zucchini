@@ -5,6 +5,7 @@ import type {
   Tray,
 } from "electron";
 
+import type { BackupDatabasePreview } from "@/shared/contracts/api/desktop-api";
 import type { AppUpdateState } from "@/shared/contracts/app-updater";
 
 export interface LoggerPort {
@@ -21,26 +22,6 @@ export interface DataManagementRepositoryPort {
   replaceDatabase(sourcePath: string): void;
   resetDatabase(): void;
   validateDatabase(sourcePath: string): void;
-}
-
-export interface BackupDatabasePreview {
-  completedHabitCount: number;
-  focusSessionCount: number;
-  habitCount: number;
-  habitPreviewTotalCount: number;
-  habits: BackupDatabaseHabitPreview[];
-  latestActivityDate: string | null;
-}
-
-export interface BackupDatabaseHabitPreview {
-  category: string;
-  frequency: string;
-  id: number;
-  name: string;
-  pausedAt: string | null;
-  selectedWeekdays: number[] | null;
-  sortOrder: number;
-  targetCount: number;
 }
 
 export interface DataManagementServicePort {
@@ -84,6 +65,7 @@ export interface AutoUpdaterPort {
 }
 
 export interface UpdaterRuntimePorts {
+  markQuitting: () => void;
   app: {
     getAppPath: () => string;
     getVersion: () => string;

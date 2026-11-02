@@ -62,6 +62,7 @@ export class MainProcessRuntime {
   private readonly windowCoordinator = new WindowCoordinator({
     getIsQuitting: () => this.isQuitting,
     getTrayEnabled: () => this.trayEnabled,
+    quit: () => this.options.app.quit(),
   });
   private readonly focusTimerGlobalShortcutManager =
     createFocusTimerGlobalShortcutManager({
@@ -208,6 +209,7 @@ export class MainProcessRuntime {
           this.windowCoordinator.broadcastUpdateState(state),
         ipcMain: this.options.ipcMain,
         log: this.options.logger,
+        markQuitting: () => this.markQuitting(),
       });
 
       const mainWindow = this.windowCoordinator.ensureMainWindow();

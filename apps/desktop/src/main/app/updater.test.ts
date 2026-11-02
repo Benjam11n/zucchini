@@ -70,6 +70,7 @@ describe("registerAppUpdater()", () => {
       () => AppUpdateState | undefined | Promise<AppUpdateState | undefined>
     >();
     const broadcastState = vi.fn<(state: AppUpdateState) => void>();
+    const markQuitting = vi.fn();
     const scheduleInterval = vi.fn();
     const scheduleTimeout = vi.fn();
     const log = {
@@ -85,6 +86,7 @@ describe("registerAppUpdater()", () => {
         handlers.set(channel, handler);
       },
       log,
+      markQuitting,
       scheduleInterval,
       scheduleTimeout,
       supportMode: supportsAutoUpdates ? "production" : "disabled",
@@ -96,6 +98,7 @@ describe("registerAppUpdater()", () => {
       controller,
       handlers,
       log,
+      markQuitting,
       scheduleInterval,
       scheduleTimeout,
       updater,
@@ -103,7 +106,7 @@ describe("registerAppUpdater()", () => {
   }
 
   it("registers manual download and install handlers", async () => {
-    const { handlers, updater } = createController();
+    const { handlers, markQuitting, updater } = createController();
 
     updater.emit("update-available", {
       version: "0.2.0",
@@ -119,6 +122,10 @@ describe("registerAppUpdater()", () => {
 
     await handlers.get(APP_UPDATER_CHANNELS.installUpdate)?.();
 
+    expect(markQuitting).toHaveBeenCalledOnce();
+    expect(markQuitting.mock.invocationCallOrder[0]).toBeLessThan(
+      updater.quitAndInstall.mock.invocationCallOrder.at(0) ?? 0
+    );
     expect(updater.quitAndInstall.mock.calls).toHaveLength(1);
     expect(updater.quitAndInstall).toHaveBeenCalledWith(false, true);
   });
@@ -288,6 +295,7 @@ describe("registerAppUpdater()", () => {
         info: vi.fn(),
         warn: vi.fn(),
       },
+      markQuitting: vi.fn(),
       scheduleInterval: vi.fn(),
       scheduleTimeout: vi.fn(),
       supportMode: "development",
@@ -299,13 +307,36 @@ describe("registerAppUpdater()", () => {
 });
 
 describe("resolveAppUpdateSupportMode()", () => {
+  it.each(["darwin", "linux"] as const)(
+    "disables updates on %s",
+    (platform) => {
+      expect(
+        resolveAppUpdateSupportMode({
+          appIsPackaged: true,
+          hasConfigFile: true,
+          hasDevConfigFile: true,
+          platform,
+        })
+      ).toBe("disabled");
+    }
+  );
+  it("enables production updates on Windows", () => {
+    expect(
+      resolveAppUpdateSupportMode({
+        appIsPackaged: true,
+        hasConfigFile: true,
+        hasDevConfigFile: false,
+        platform: "win32",
+      })
+    ).toBe("production");
+  });
   it("returns development when an unpackaged app has dev-app-update.yml", () => {
     expect(
       resolveAppUpdateSupportMode({
         appIsPackaged: false,
         hasConfigFile: false,
         hasDevConfigFile: true,
-        platform: "darwin",
+        platform: "win32",
       })
     ).toBe("development");
   });

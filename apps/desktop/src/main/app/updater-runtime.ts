@@ -21,6 +21,7 @@ export function registerUpdaterRuntime({
   broadcastState,
   ipcMain,
   log,
+  markQuitting,
 }: UpdaterRuntimePorts) {
   return registerAppUpdater({
     broadcastState,
@@ -43,6 +44,7 @@ export function registerUpdaterRuntime({
       });
     },
     log,
+    markQuitting,
     scheduleInterval: globalThis.setInterval,
     scheduleTimeout: globalThis.setTimeout,
     supportMode: resolveAppUpdateSupportMode({
