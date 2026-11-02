@@ -1,4 +1,4 @@
-import type { ReadyAppController } from "@/renderer/app/app-root";
+import { appActions as actions } from "@/renderer/app/controller/app-actions";
 import type { FocusPageActions } from "@/renderer/features/focus/focus.types";
 import type { HistoryPageActions } from "@/renderer/features/history/history.types";
 import type { InsightsPageActions } from "@/renderer/features/insights/insights.types";
@@ -7,11 +7,7 @@ import type { TodayPageActions } from "@/renderer/features/today/today.types";
 import type { WindDownPageActions } from "@/renderer/features/wind-down/wind-down.types";
 import type { HabitManagementActions } from "@/renderer/shared/components/app/habit-management/habit-management.types";
 
-type ControllerActions = ReadyAppController["actions"];
-
-function buildHabitManagementActions(
-  actions: ControllerActions
-): HabitManagementActions {
+function buildHabitManagementActions(): HabitManagementActions {
   return {
     archiveHabit: actions.handleArchiveHabit,
     createHabit: actions.handleCreateHabit,
@@ -27,26 +23,22 @@ function buildHabitManagementActions(
   };
 }
 
-export function buildTodayPageActions(
-  actions: ControllerActions
-): TodayPageActions {
+export function buildTodayPageActions(): TodayPageActions {
   return {
     habits: {
-      ...buildHabitManagementActions(actions),
+      ...buildHabitManagementActions(),
       decrementProgress: actions.handleDecrementHabitProgress,
       incrementProgress: actions.handleIncrementHabitProgress,
       toggleCarryover: actions.handleToggleHabitCarryover,
       toggleHabit: actions.handleToggleHabit,
     },
     history: {
-      loadDay: actions.handleLoadHistoryDay,
+      loadDay: actions.loadHistoryDay,
     },
   };
 }
 
-export function buildWindDownPageActions(
-  actions: ControllerActions
-): WindDownPageActions {
+export function buildWindDownPageActions(): WindDownPageActions {
   return {
     windDown: {
       createAction: actions.handleCreateWindDownAction,
@@ -57,36 +49,32 @@ export function buildWindDownPageActions(
   };
 }
 
-export function buildHistoryPageActions(
-  actions: ControllerActions
-): HistoryPageActions {
+export function buildHistoryPageActions(): HistoryPageActions {
   return {
     history: {
-      loadYears: actions.handleLoadHistoryYears,
+      loadYears: actions.loadHistoryYears,
       navigateToToday: () => actions.handleTabChange("today"),
-      selectMonth: actions.handleSelectHistoryMonth,
+      selectMonth: actions.selectHistoryMonth,
     },
     weeklyReview: {
-      loadOverview: actions.handleLoadWeeklyReviewOverview,
-      select: actions.handleWeeklyReviewSelect,
+      loadOverview: actions.loadWeeklyReviewOverview,
+      select: actions.selectWeeklyReview,
     },
   };
 }
 
-export function buildFocusPageActions(
-  actions: ControllerActions
-): FocusPageActions {
+export function buildFocusPageActions(): FocusPageActions {
   return {
     focusQuotaGoals: {
       archive: actions.handleArchiveFocusQuotaGoal,
       upsert: actions.handleUpsertFocusQuotaGoal,
     },
     focusTimer: {
-      recordSession: actions.handleRecordFocusSession,
-      showWidget: actions.handleShowFocusWidget,
+      recordSession: actions.recordFocusSession,
+      showWidget: actions.showFocusWidget,
     },
     sessions: {
-      retryLoad: actions.handleRetryFocusLoad,
+      retryLoad: () => actions.loadFocusSessions(true),
     },
     settings: {
       change: actions.handleSettingsDraftChange,
@@ -94,9 +82,7 @@ export function buildFocusPageActions(
   };
 }
 
-export function buildSettingsPageActions(
-  actions: ControllerActions
-): SettingsPageActions {
+export function buildSettingsPageActions(): SettingsPageActions {
   return {
     dataManagement: {
       chooseBackupForRestore: actions.handleChooseBackupForRestore,
@@ -114,7 +100,7 @@ export function buildSettingsPageActions(
       unarchive: actions.handleUnarchiveFocusQuotaGoal,
       upsert: actions.handleUpsertFocusQuotaGoal,
     },
-    habits: buildHabitManagementActions(actions),
+    habits: buildHabitManagementActions(),
     openWindDown: actions.handleOpenWindDown,
     settings: {
       change: actions.handleSettingsDraftChange,
@@ -122,12 +108,10 @@ export function buildSettingsPageActions(
   };
 }
 
-export function buildInsightsPageActions(
-  actions: ControllerActions
-): InsightsPageActions {
+export function buildInsightsPageActions(): InsightsPageActions {
   return {
     insights: {
-      retryLoad: actions.handleRetryInsightsLoad,
+      retryLoad: () => actions.loadInsightsDashboard(true),
       selectRangeDays: actions.handleSelectInsightsRangeDays,
     },
   };

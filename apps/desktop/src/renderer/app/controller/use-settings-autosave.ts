@@ -9,12 +9,12 @@
 import { useEffect, useRef } from "react";
 
 import type { createAppActions } from "@/renderer/app/controller/app-actions";
-import type { AppControllerState } from "@/renderer/app/controller/app-controller.types";
 import {
   areAppSettingsEqual,
   mapSettingsValidationErrors,
   validateAppSettings,
 } from "@/renderer/features/settings/lib/settings-form";
+import type { SettingsSavePhase } from "@/renderer/features/settings/settings.types";
 import { runAppIpcTask } from "@/renderer/shared/ipc/app-ipc-task";
 import type { AppSettings } from "@/shared/domain/settings";
 
@@ -43,7 +43,7 @@ export function useSettingsAutosave({
     typeof createAppActions
   >["setSettingsValidationErrors"];
   settingsDraft: AppSettings | null;
-  settingsSavePhase: AppControllerState["settingsSavePhase"];
+  settingsSavePhase: SettingsSavePhase;
 }) {
   const lastSavedDraft = useRef<AppSettings | null>(null);
   const settingsSavePhaseRef = useRef(settingsSavePhase);
