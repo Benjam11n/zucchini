@@ -5,7 +5,7 @@
  * from the `habits` SQLite table. Delegates to Drizzle ORM for all queries
  * and maps rows to domain `Habit` objects via shared mappers.
  */
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, isNull, sql } from "drizzle-orm";
 
 import { habitPausePeriods, habits } from "@/main/infra/db/schema";
 import type { SqliteDatabaseClient } from "@/main/infra/db/sqlite-client";
@@ -52,7 +52,12 @@ export class SqliteHabitsRepository {
     return this.client.run("getHabits", () =>
       this.client
         .getDrizzle()
-        .select()
+        .select({
+          ...getTableColumns(habits),
+          pausedAt: sql<
+            string | null
+          >`(select paused_at from habit_pause_periods where habit_id = ${habits.id} and resumed_at is null order by paused_at desc, id desc limit 1)`,
+        })
         .from(habits)
         .where(eq(habits.isArchived, false))
         .orderBy(asc(habits.sortOrder), asc(habits.id))
@@ -65,7 +70,12 @@ export class SqliteHabitsRepository {
     return this.client.run("getHabitById", () => {
       const row = this.client
         .getDrizzle()
-        .select()
+        .select({
+          ...getTableColumns(habits),
+          pausedAt: sql<
+            string | null
+          >`(select paused_at from habit_pause_periods where habit_id = ${habits.id} and resumed_at is null order by paused_at desc, id desc limit 1)`,
+        })
         .from(habits)
         .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
         .get();
@@ -95,22 +105,6 @@ export class SqliteHabitsRepository {
         .all()
         .map((row) => mapHabitPausePeriod(row))
     );
-  }
-
-  repairHabitPauseCache(): void {
-    this.client.run("repairHabitPauseCache", () => {
-      this.client.getSqlite().exec(`
-        UPDATE habits
-        SET paused_at = (
-          SELECT habit_pause_periods.paused_at
-          FROM habit_pause_periods
-          WHERE habit_pause_periods.habit_id = habits.id
-            AND habit_pause_periods.resumed_at IS NULL
-          ORDER BY habit_pause_periods.paused_at DESC, habit_pause_periods.id DESC
-          LIMIT 1
-        );
-      `);
-    });
   }
 
   getMaxSortOrder(): number {
@@ -243,12 +237,6 @@ export class SqliteHabitsRepository {
 
       this.client
         .getDrizzle()
-        .update(habits)
-        .set({ pausedAt })
-        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
-        .run();
-      this.client
-        .getDrizzle()
         .insert(habitPausePeriods)
         .values({
           habitId,
@@ -265,47 +253,16 @@ export class SqliteHabitsRepository {
       if (!habit || !habit.pausedAt) {
         return;
       }
-      const openPeriod = this.client
+      this.client
         .getDrizzle()
-        .select()
-        .from(habitPausePeriods)
+        .update(habitPausePeriods)
+        .set({ resumedAt })
         .where(
           and(
             eq(habitPausePeriods.habitId, habitId),
             isNull(habitPausePeriods.resumedAt)
           )
         )
-        .get();
-
-      this.client
-        .getDrizzle()
-        .update(habits)
-        .set({ pausedAt: null })
-        .where(and(eq(habits.id, habitId), eq(habits.isArchived, false)))
-        .run();
-      if (openPeriod) {
-        this.client
-          .getDrizzle()
-          .update(habitPausePeriods)
-          .set({ resumedAt })
-          .where(
-            and(
-              eq(habitPausePeriods.habitId, habitId),
-              isNull(habitPausePeriods.resumedAt)
-            )
-          )
-          .run();
-        return;
-      }
-
-      this.client
-        .getDrizzle()
-        .insert(habitPausePeriods)
-        .values({
-          habitId,
-          pausedAt: habit.pausedAt,
-          resumedAt,
-        })
         .run();
     });
   }

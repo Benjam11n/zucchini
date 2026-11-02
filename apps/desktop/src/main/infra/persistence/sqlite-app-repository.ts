@@ -22,11 +22,17 @@ export interface AppRepository {
   focusQuotaGoals: Public<SqliteFocusQuotaGoalRepository>;
   focusSessions: Public<SqliteFocusSessionRepository>;
   focusTimerState: Public<SqliteFocusTimerStateRepository>;
-  habits: Public<SqliteHabitsRepository>;
+  habits: Omit<
+    Public<SqliteHabitsRepository>,
+    "countActiveHabits" | "getHabitById"
+  >;
   history: Public<SqliteHistoryRepository>;
   reminderRuntimeState: Public<SqliteReminderRuntimeStateRepository>;
-  settings: Public<SqliteSettingsRepository>;
-  streaks: Public<SqliteStreakRepository>;
+  settings: Omit<
+    Public<SqliteSettingsRepository>,
+    "seedDefaults" | "updateAutoBackupLastRunAt"
+  >;
+  streaks: Omit<Public<SqliteStreakRepository>, "ensureInitialized">;
   windDownActions: Public<SqliteWindDownActionRepository>;
   windDownRuntimeState: Public<SqliteWindDownRuntimeStateRepository>;
 
@@ -36,7 +42,7 @@ export interface AppRepository {
 }
 
 export class SqliteAppRepository {
-  private readonly client: SqliteDatabaseClient;
+  readonly client: SqliteDatabaseClient;
   readonly habits: SqliteHabitsRepository;
   readonly history: SqliteHistoryRepository;
   readonly focusSessions: SqliteFocusSessionRepository;
@@ -74,7 +80,6 @@ export class SqliteAppRepository {
 
   initializeSchema(): void {
     runMigrations(this.client);
-    this.habits.repairHabitPauseCache();
   }
 
   seedDefaults(timezone: string): void {
@@ -84,37 +89,5 @@ export class SqliteAppRepository {
 
   runInTransaction<A>(label: string, execute: () => A): A {
     return this.client.transaction(label, execute);
-  }
-
-  getDatabasePath(): string {
-    return this.client.getDatabasePath();
-  }
-
-  async exportBackup(destinationPath: string): Promise<void> {
-    await this.client.exportBackup(destinationPath);
-  }
-
-  exportCsvData(destinationPath: string): void {
-    this.client.exportCsvData(destinationPath);
-  }
-
-  validateDatabase(sourcePath: string): void {
-    this.client.validateDatabase(sourcePath);
-  }
-
-  getDatabasePreview(sourcePath: string) {
-    return this.client.getDatabasePreview(sourcePath);
-  }
-
-  replaceDatabase(sourcePath: string): void {
-    this.client.replaceDatabase(sourcePath);
-  }
-
-  resetDatabase(): void {
-    this.client.resetDatabase();
-  }
-
-  close(): void {
-    this.client.close();
   }
 }

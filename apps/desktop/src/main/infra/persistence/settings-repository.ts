@@ -82,7 +82,6 @@ export class SqliteSettingsRepository {
         reminderTime: settingsToSave.reminderTime,
         resetFocusTimerShortcut: settingsToSave.resetFocusTimerShortcut,
         themeMode: settingsToSave.themeMode,
-        timezone: settingsToSave.timezone,
         toggleFocusTimerShortcut: settingsToSave.toggleFocusTimerShortcut,
         windDownTime: settingsToSave.windDownTime,
       })
@@ -105,7 +104,6 @@ export class SqliteSettingsRepository {
           reminderTime: settingsToSave.reminderTime,
           resetFocusTimerShortcut: settingsToSave.resetFocusTimerShortcut,
           themeMode: settingsToSave.themeMode,
-          timezone: settingsToSave.timezone,
           toggleFocusTimerShortcut: settingsToSave.toggleFocusTimerShortcut,
           windDownTime: settingsToSave.windDownTime,
         },
@@ -207,7 +205,6 @@ export class SqliteSettingsRepository {
           reminderTime: defaults.reminderTime,
           resetFocusTimerShortcut: defaults.resetFocusTimerShortcut,
           themeMode: defaults.themeMode,
-          timezone: defaults.timezone,
           toggleFocusTimerShortcut: defaults.toggleFocusTimerShortcut,
           windDownTime: defaults.windDownTime,
         })

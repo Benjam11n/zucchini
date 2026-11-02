@@ -57,7 +57,7 @@ function parseDayStatusKind(value: string): DayStatusKind {
   throw new Error("Day status kind cannot be null.");
 }
 
-export function mapHabit(row: HabitRow): Habit {
+export function mapHabit(row: HabitRow & { pausedAt: string | null }): Habit {
   return {
     category: normalizeHabitCategory(row.category),
     createdAt: row.createdAt,

@@ -147,14 +147,19 @@ export class MainProcessRuntime {
         app: this.options.app,
         clock: systemClock,
         dialog: this.options.dialog,
-        repository: appRuntime.repository,
+        repository: appRuntime.repository.client,
         service: appRuntime.service,
         shell: this.options.shell,
       });
       const autoBackup = createAutoBackupService({
         clock: systemClock,
         log: this.options.logger,
-        repository: appRuntime.repository,
+        repository: {
+          exportBackup: (destinationPath) =>
+            appRuntime.repository.client.exportBackup(destinationPath),
+          getDatabasePath: () => appRuntime.repository.client.getDatabasePath(),
+          settings: appRuntime.repository.settings,
+        },
         shell: this.options.shell,
       });
       this.runAutoBackupIfDue = (settings) => {
@@ -285,7 +290,7 @@ export class MainProcessRuntime {
 
     this.appRuntime.reminders.cancel();
     this.appRuntime.tray.destroy();
-    this.appRuntime.repository.close();
+    this.appRuntime.repository.client.close();
   }
 
   private registerFatalErrorHandlers(): void {

@@ -312,7 +312,7 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
       createMockDatabaseConstructor({
         columnRowsByTable: {
           settings: DEFAULT_COLUMN_ROWS.filter(
-            ({ name }) => name !== "timezone"
+            ({ name }) => name !== "theme_mode"
           ),
         },
       })
@@ -324,7 +324,7 @@ describe("SqliteDatabaseClient.validateDatabase()", () => {
     });
 
     expect(() => client.validateDatabase("/tmp/backup.db")).toThrow(
-      "Backup is missing the Zucchini settings.timezone column"
+      "Backup is missing the Zucchini settings.theme_mode column"
     );
   });
 });

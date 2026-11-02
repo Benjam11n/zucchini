@@ -126,9 +126,6 @@ class FakeRepository implements AppRepository {
   get habits(): AppRepository["habits"] {
     return {
       archiveHabit: this.archiveHabit.bind(this),
-      countActiveHabits: () => this.getHabits().length,
-      getHabitById: (habitId) =>
-        this.habitRows.find((habit) => habit.id === habitId) ?? null,
       getHabits: this.getHabits.bind(this),
       getMaxSortOrder: this.getMaxSortOrder.bind(this),
       getPausePeriods: () => this.habitPausePeriods,
@@ -139,7 +136,6 @@ class FakeRepository implements AppRepository {
       pauseHabit: this.pauseHabit.bind(this),
       renameHabit: this.renameHabit.bind(this),
       reorderHabits: this.reorderHabits.bind(this),
-      repairHabitPauseCache: () => {},
       resumeHabit: this.resumeHabit.bind(this),
       unarchiveHabit: this.unarchiveHabit.bind(this),
       updateHabitCategory: this.updateHabitCategory.bind(this),
@@ -221,14 +217,11 @@ class FakeRepository implements AppRepository {
     return {
       getSettings: this.getSettings.bind(this),
       saveSettings: this.saveSettings.bind(this),
-      seedDefaults: this.seedDefaults.bind(this),
-      updateAutoBackupLastRunAt: this.updateAutoBackupLastRunAt.bind(this),
     };
   }
 
   get streaks(): AppRepository["streaks"] {
     return {
-      ensureInitialized: () => {},
       getPersistedCategoryStreakStates:
         this.getPersistedCategoryStreakStates.bind(this),
       getPersistedHabitStreakStates:
