@@ -2,6 +2,81 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2-beta.16 - 2026-11-03
+
+Changes since `v0.1.2-beta.15`.
+
+### Features
+
+- Derive pause state and timezone
+- Update AGENTS.md
+
+### Fixes
+
+- Correct desktop update and quit behavior
+- Preserve history selection on settings
+- Dispose pixel blast state safely
+- Declare web css imports
+- Derive review sidebar month in shell
+- Remove synced timer draft effects
+- Align history and insights date metrics
+- Use month-to-date sidebar consistency
+- Refresh category streaks on habit updates
+
+### Refactors
+
+- Select route view models directly from stores
+- Extract database transfer operations
+- Dispatch application operations through handlers
+- Simplify renderer controller subscriptions
+- Simplify habit streak synchronization
+- Reuse backup preview contract
+- Render weekly review charts directly
+- Inline runtime settings service
+- Simplify desktop helper abstractions
+- Remove effect dependency
+- Remove redundant wrappers and metadata
+- Remove unused postprocessing
+- Inline pixel blast config
+- Inline ipc and service delegation
+- Remove repository port layer
+- Simplify sqlite app repository
+- Flatten component directory structure and remove redundant index files
+- Clean up desktop shared utilities
+- Centralize date formatting helpers
+- Centralize date formatting
+- Split shared ui components
+- Move carousel state into context
+- Standardize desktop date formatting
+
+### Documentation
+
+- Tighten app agent instructions
+
+### Maintenance
+
+- Simplify dependabot to monthly grouped updates
+- Upgrade dependencies
+- Prefer alias imports
+- Remove wait-on from desktop dev scripts
+- Remove unused carousel exports
+- Update zod schema APIs
+- Update minor and patch dependencies
+- Bump electron from 41.3.0 to 42.2.0 (#61)
+- Bump @typescript/native-preview (#60)
+
+### Other
+
+- Merge branch 't3/8baf0573' into release-audit-fixes
+- Merge branch 't3/6964edcb' into release-audit-fixes
+- Merge branch 't3/948cd50b' into release-audit-fixes
+- Apply updated formatter
+- Avoid focus timer tick persistence
+- Cache intl formatters
+- Bump fallow-rs/fallow
+- Bump pnpm/action-setup (#63)
+- Bump actions/dependency-review-action from 4.9.0 to 5.0.0 (#62)
+
 ## 0.1.2-beta.15 - 2026-06-01
 
 Changes since `v0.1.2-beta.14`.
